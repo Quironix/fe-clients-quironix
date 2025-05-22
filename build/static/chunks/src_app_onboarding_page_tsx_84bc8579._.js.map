@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///Users/mateo/birdxlab/fe-clients-quironix/src/app/onboarding/page.tsx"],"sourcesContent":["\"use client\";\n\nimport OnboardingLayout from \"./layout\";\n\nconst OnboardingPage = () => {\n  return <OnboardingLayout />;\n};\n\nexport default OnboardingPage;\n"],"names":[],"mappings":";;;;AAEA;AAFA;;;AAIA,MAAM,iBAAiB;IACrB,qBAAO,6LAAC,sIAAA,CAAA,UAAgB;;;;;AAC1B;KAFM;uCAIS","debugId":null}}]
+}
