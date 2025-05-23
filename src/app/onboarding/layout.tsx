@@ -4,12 +4,15 @@ import React, { useState } from "react";
 import { Step } from "@/components/Stepper/types";
 import PersonalInformationStep from "./components/steps/PersonalInformationStep";
 import TwoFactorStep from "./components/steps/TwoFactorStep";
-
+import TermsAndConditionStep from "./components/steps/TermsAndConditionStep";
+import ContractSignStep from "./components/steps/ConstractSignStep";
+import SuccessOnboarding from "./components/steps/SuccessOnboarding";
 const steps: Step[] = [
   { id: 1, label: "Datos personales", completed: false },
   { id: 2, label: "Autenticación", completed: false },
   { id: 3, label: "Verificación", completed: false },
   { id: 4, label: "Confirmación", completed: false },
+  { id: 5, label: "Success", completed: false },
 ];
 
 // Renombramos el componente original a OnboardingSteps
@@ -52,6 +55,12 @@ const OnboardingSteps = () => {
         return <PersonalInformationStep {...stepProps} />;
       case 1:
         return <TwoFactorStep {...stepProps} />;
+      case 2:
+        return <TermsAndConditionStep {...stepProps} />;
+      case 3:
+        return <ContractSignStep {...stepProps} />;
+      case 4:
+        return <SuccessOnboarding {...stepProps} />;
       // Aquí irán los demás casos para los otros pasos
       default:
         return null;

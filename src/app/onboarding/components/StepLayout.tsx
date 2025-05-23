@@ -9,15 +9,15 @@ const StepLayout: React.FC<StepLayoutProps> = ({
   children,
 }) => {
   return (
-    <div className="bg-white w-full max-w-6xl flex gap-8">
+    <div className="bg-white w-full max-w-6xl flex gap-8 h-[700px]">
       {/* Panel izquierdo */}
-      <div className="w-2/5 bg-[#2F6EFF] p-8 text-white">
+      <div className="w-2/5 bg-[#2F6EFF] p-8 text-white h-full">
         <h1 className="text-2xl font-bold">{title}</h1>
         <p className="text-md">{description}</p>
       </div>
 
       {/* Panel derecho */}
-      <div className="w-3/5 p-8">{children}</div>
+      <div className="w-3/5 p-8 h-full">{children}</div>
     </div>
   );
 };

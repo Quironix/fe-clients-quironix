@@ -2,7 +2,6 @@
 
 import React from "react";
 import { StepItemProps } from "./types";
-import { Button } from "../ui/button";
 
 const StepItem: React.FC<StepItemProps> = ({
   step,

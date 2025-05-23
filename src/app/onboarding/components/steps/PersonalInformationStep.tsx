@@ -20,74 +20,75 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
       title="Datos personales"
       description="Completa los campos obligatorios para acceder a tu cuenta."
     >
-      {/* Stepper */}
-      <div className="mb-8">
-        <Stepper
-          steps={steps}
-          currentStep={currentStep}
-          onStepChange={onStepChange}
-        />
-      </div>
-
-      <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              País<span className="text-red-500">*</span>
-            </label>
-            <select className="w-full p-3 border border-gray-300 rounded-lg">
-              <option>Selecciona</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Razón social<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Completa"
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Nombre<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Completa"
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Apellido<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Completa"
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Número de teléfono<span className="text-red-500">*</span>
-          </label>
-          <input
-            type="tel"
-            placeholder="+56 9 1234 5678"
-            className="w-full p-3 border border-gray-300 rounded-lg"
+      <section className="h-full">
+        {/* Botones de navegación */}
+        <div className="h-1/6 bg-blue-300">
+          <Stepper
+            steps={steps}
+            currentStep={currentStep}
+            onStepChange={onStepChange}
           />
         </div>
+        <div className="h-4/6 bg-red-300">
+          <div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  País<span className="text-red-500">*</span>
+                </label>
+                <select className="w-full p-3 border border-gray-300 rounded-lg">
+                  <option>Selecciona</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Razón social<span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Completa"
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                />
+              </div>
+            </div>
 
-        {/* Botones de navegación */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Nombre<span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Completa"
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Apellido<span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Completa"
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Número de teléfono<span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                placeholder="+56 9 1234 5678"
+                className="w-full p-3 border border-gray-300 rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
         <div
-          className={`flex pt-8 ${isFirstStep ? "justify-end" : "justify-between"}`}
+          className={`h-1/6 bg-green-300 flex items-center ${isFirstStep ? "justify-end" : "justify-between"}`}
         >
           {!isFirstStep && (
             <Button
@@ -103,7 +104,7 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
             Continuar <ArrowRightIcon className="w-4 h-4" />
           </Button>
         </div>
-      </form>
+      </section>
     </StepLayout>
   );
 };

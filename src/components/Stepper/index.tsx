@@ -16,7 +16,7 @@ const Stepper: React.FC<StepperProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-center w-full py-4">
+    <div className="flex items-center justify-center w-full py-4 h-full">
       {steps.map((step, index) => (
         <StepItem
           key={step.id}

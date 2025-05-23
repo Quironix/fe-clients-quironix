@@ -11,7 +11,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { CheckCircleIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon } from "lucide-react";
 
 const TwoFactorStep: React.FC<OnboardingStepProps> = ({
   onNext,
@@ -32,71 +32,71 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
       title="Autentificación de dos factores"
       description="Por tu seguridad, es necesario completar la autenticación en dos pasos."
     >
-      {/* Stepper */}
-      <div className="mb-8">
-        <Stepper
-          steps={steps}
-          currentStep={currentStep}
-          onStepChange={onStepChange}
-        />
-      </div>
-
-      <div className="space-y-8">
-        <div>
-          <p className="text-lg mb-8">
-            Ingresa el código que ha sido enviado a tu email:
-          </p>
-          <div className="flex justify-center flex-col items-center border border-gray-300 rounded-lg px-4 py-8">
-            <InputOTP maxLength={6} className="gap-3 justify-center">
-              <InputOTPGroup className="gap-3">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <InputOTPSlot
-                    key={index}
-                    index={index}
-                    className="rounded-lg border-2 w-12 h-12"
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600 inline-flex items-center gap-2">
-                ¿No has recibido el código?{" "}
-                <button
-                  onClick={handleResendCode}
-                  className="text-orange-500 hover:text-orange-600 font-medium"
-                >
-                  Reenviar código
-                </button>
+      <section className="h-full">
+        <div className="h-1/6 bg-blue-300">
+          <Stepper
+            steps={steps}
+            currentStep={currentStep}
+            onStepChange={onStepChange}
+          />
+        </div>
+        <div className="h-4/6 bg-red-300">
+          <div className="space-y-8 min-h-2/3 max-h-2/3">
+            <div>
+              <p className="mb-8">
+                Ingresa el código que ha sido enviado{" "}
+                <span className="font-bold">a tu email:</span>
               </p>
+              <div className="flex justify-center flex-col items-center border border-gray-300 rounded-lg px-4 py-8">
+                <InputOTP maxLength={6} className="gap-3 justify-center">
+                  <InputOTPGroup className="gap-3">
+                    {Array.from({ length: 6 }).map((_, index) => (
+                      <InputOTPSlot
+                        key={index}
+                        index={index}
+                        className="rounded-lg border-2 w-12 h-12"
+                      />
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
+
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-600 inline-flex items-center gap-2">
+                    ¿No has recibido el código?{" "}
+                    <button
+                      onClick={handleResendCode}
+                      className="text-orange-500 hover:text-orange-600 font-medium"
+                    >
+                      Reenviar código
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <p className="">
+                Al continuar,{" "}
+                <span className="font-bold">estás aceptando lo siguiente:</span>
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-2 text-gray-600">
+                  <CheckCircleIcon className="w-5 h-5 text-orange-500" />
+                  Que creemos una cuenta para ti (a menos que ya esté creada)
+                </li>
+                <li className="flex items-center gap-2 text-gray-600">
+                  <CheckCircleIcon className="w-5 h-5 text-orange-500" />
+                  Nuestros "Términos y condiciones"
+                </li>
+                <li className="flex items-center gap-2 text-gray-600">
+                  <CheckCircleIcon className="w-5 h-5 text-orange-500" />
+                  Nuestras "Políticas de privacidad"
+                </li>
+              </ul>
             </div>
           </div>
         </div>
-
-        <div className="space-y-4">
-          <p className="font-medium">
-            Al continuar, estás aceptando lo siguiente:
-          </p>
-          <ul className="space-y-3">
-            <li className="flex items-center gap-2 text-gray-600">
-              <CheckCircleIcon className="w-5 h-5 text-orange-500" />
-              Que creemos una cuenta para ti (a menos que ya esté creada)
-            </li>
-            <li className="flex items-center gap-2 text-gray-600">
-              <CheckCircleIcon className="w-5 h-5 text-orange-500" />
-              Nuestros "Términos y condiciones"
-            </li>
-            <li className="flex items-center gap-2 text-gray-600">
-              <CheckCircleIcon className="w-5 h-5 text-orange-500" />
-              Nuestras "Políticas de privacidad"
-            </li>
-          </ul>
-        </div>
-
-        {/* Botones de navegación */}
-        <div
-          className={`flex pt-8 ${isFirstStep ? "justify-end" : "justify-between"}`}
-        >
+        <div className="h-1/6 flex justify-between items-center bg-green-300">
           {!isFirstStep && (
             <Button
               type="button"
@@ -104,14 +104,14 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
               variant="outline"
               className="px-6 py-2"
             >
-              ← Volver
+              <ArrowLeftIcon className="w-4 h-4" /> Volver
             </Button>
           )}
           <Button type="button" onClick={onNext} className="px-6 py-2">
-            Continuar →
+            Continuar <ArrowRightIcon className="w-4 h-4" />
           </Button>
         </div>
-      </div>
+      </section>
     </StepLayout>
   );
 };
