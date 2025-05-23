@@ -33,14 +33,14 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
       description="Por tu seguridad, es necesario completar la autenticación en dos pasos."
     >
       <section className="h-full">
-        <div className="h-1/6 bg-blue-300">
+        <div className="h-1/6 ">
           <Stepper
             steps={steps}
             currentStep={currentStep}
             onStepChange={onStepChange}
           />
         </div>
-        <div className="h-4/6 bg-red-300">
+        <div className="h-4/6">
           <div className="space-y-8 min-h-2/3 max-h-2/3">
             <div>
               <p className="mb-8">
@@ -96,7 +96,7 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
             </div>
           </div>
         </div>
-        <div className="h-1/6 flex justify-between items-center bg-green-300">
+        <div className="h-1/6 flex justify-between items-center">
           {!isFirstStep && (
             <Button
               type="button"

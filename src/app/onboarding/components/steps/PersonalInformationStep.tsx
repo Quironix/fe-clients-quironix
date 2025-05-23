@@ -22,15 +22,15 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
     >
       <section className="h-full">
         {/* Botones de navegación */}
-        <div className="h-1/6 bg-blue-300">
+        <div className="h-1/6 ">
           <Stepper
             steps={steps}
             currentStep={currentStep}
             onStepChange={onStepChange}
           />
         </div>
-        <div className="h-4/6 bg-red-300">
-          <div>
+        <div className="h-4/6 ">
+          <div className="h-full space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -88,7 +88,7 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
           </div>
         </div>
         <div
-          className={`h-1/6 bg-green-300 flex items-center ${isFirstStep ? "justify-end" : "justify-between"}`}
+          className={`h-1/6 flex items-center ${isFirstStep ? "justify-end" : "justify-between"}`}
         >
           {!isFirstStep && (
             <Button

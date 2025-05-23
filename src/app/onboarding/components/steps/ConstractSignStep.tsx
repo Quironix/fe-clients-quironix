@@ -24,51 +24,52 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
 
   return (
     <StepLayout
-      title="Términos y condiciones"
-      description="Estos son los términos y condiciones. Léelos detenidamente antes de continuar."
+      title="Firma tu contrato"
+      description="Este es el contrato para comenzar a usar la plataforma. Por favor, léelo con calma y fírmalo para continuar."
     >
       <section className="h-full">
-        <div className="h-1/6 bg-blue-300">
+        <div className="h-1/6 ">
           <Stepper
             steps={steps}
             currentStep={currentStep}
             onStepChange={onStepChange}
           />
         </div>
-        <div className="h-4/6 bg-red-300">
-          <div className="flex justify-between items-center border border-gray-300 rounded-lg px-5 py-10">
-            <div className="w-1/2">
-              <Image
-                src="/img/contract-icon.svg"
-                alt="Contract icon"
-                width={100}
-                height={100}
-                className="w-full h-full"
-              />
+        <div className="h-4/6  ">
+          <div className="h-full">
+            <div className="flex justify-between items-center border border-gray-300 rounded-lg h-[90%]">
+              <div className="w-1/2 h-full ">
+                <Image
+                  src="/img/contract-icon.svg"
+                  alt="Terms and condition icon"
+                  width={100}
+                  height={100}
+                  className="w-full h-full"
+                />
+              </div>
+              <div className="w-1/2 h-full flex justify-center items-center  text-center">
+                <Button
+                  variant="outline"
+                  className="border-2 border-orange-300 text-gray-500 bg-white"
+                >
+                  <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
+                  contrato
+                </Button>
+              </div>
             </div>
 
-            <div className="w-1/2 text-center">
-              <Button
-                variant="outline"
-                className="border-2 border-orange-300 text-gray-500 bg-white"
+            <div className="flex items-center justify-center space-x-2 mt-3">
+              <Checkbox id="terms" />
+              <label
+                htmlFor="terms"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
-                contrato
-              </Button>
+                Firmar contrato
+              </label>
             </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox id="terms" />
-            <label
-              htmlFor="terms"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Firmar contrato
-            </label>
           </div>
         </div>
-        <div className="h-1/6 flex justify-between items-center bg-green-300">
+        <div className="h-1/6 flex justify-between items-center ">
           {!isFirstStep && (
             <Button
               type="button"

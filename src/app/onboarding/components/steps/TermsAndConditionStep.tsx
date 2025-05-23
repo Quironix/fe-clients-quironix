@@ -28,46 +28,48 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
       description="Estos son los términos y condiciones. Léelos detenidamente antes de continuar."
     >
       <section className="h-full">
-        <div className="h-1/6 bg-blue-300">
+        <div className="h-1/6">
           <Stepper
             steps={steps}
             currentStep={currentStep}
             onStepChange={onStepChange}
           />
         </div>
-        <div className="h-4/6 bg-red-300">
-          <div className="flex justify-between items-center border border-gray-300 rounded-lg h-full p-5">
-            <div className="w-1/2 h-full bg-orange-300">
-              <Image
-                src="/img/terms-and-condition.svg"
-                alt="Terms and condition icon"
-                width={100}
-                height={100}
-                className="w-full h-full"
-              />
+        <div className="h-4/6 ">
+          <div className="h-full">
+            <div className="flex justify-between items-center border border-gray-300 rounded-lg h-[90%]">
+              <div className="w-1/2 h-ful">
+                <Image
+                  src="/img/terms-and-condition.svg"
+                  alt="Terms and condition icon"
+                  width={100}
+                  height={100}
+                  className="w-full h-full"
+                />
+              </div>
+              <div className="w-1/2 h-full flex justify-center items-center text-center">
+                <Button
+                  variant="outline"
+                  className="border-2 border-orange-300 text-gray-500 bg-white"
+                >
+                  <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
+                  términos y condiciones
+                </Button>
+              </div>
             </div>
-            <div className="w-1/2 h-full flex justify-center items-center bg-purple-300 text-center">
-              <Button
-                variant="outline"
-                className="border-2 border-orange-300 text-gray-500 bg-white"
-              >
-                <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
-                términos y condiciones
-              </Button>
-            </div>
-          </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox id="terms" />
-            <label
-              htmlFor="terms"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Acepto los términos y condiciones
-            </label>
+            <div className="flex items-center justify-center mt-3 space-x-2">
+              <Checkbox id="terms" />
+              <label
+                htmlFor="terms"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Acepto los términos y condiciones
+              </label>
+            </div>
           </div>
         </div>
-        <div className="h-1/6 flex justify-between items-center bg-green-300">
+        <div className="h-1/6 flex justify-between items-center">
           {!isFirstStep && (
             <Button
               type="button"
