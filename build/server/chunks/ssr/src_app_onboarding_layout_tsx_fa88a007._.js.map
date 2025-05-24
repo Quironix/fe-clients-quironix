@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///Users/mateo/birdxlab/fe-clients-quironix/src/app/onboarding/layout.tsx"],"sourcesContent":["import React from \"react\";\n\nconst LayoutOnboarding = ({ children }: { children: React.ReactNode }) => {\n  return (\n    <section className=\"flex flex-col items-center justify-center h-screen w-screen\">\n      {children}\n    </section>\n  );\n};\n\nexport default LayoutOnboarding;\n"],"names":[],"mappings":";;;;;AAEA,MAAM,mBAAmB,CAAC,EAAE,QAAQ,EAAiC;IACnE,qBACE,8OAAC;QAAQ,WAAU;kBAChB;;;;;;AAGP;uCAEe","debugId":null}}]
-}
