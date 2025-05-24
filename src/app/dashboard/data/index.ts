@@ -76,7 +76,7 @@ export const sidebarData: any = {
   ],
   navGroups: [
     {
-      title: "Admin",
+      title: "Compañía",
       items: [
         {
           title: "Dashboard",
@@ -84,15 +84,19 @@ export const sidebarData: any = {
           icon: IconLayoutDashboard,
         },
         {
-          title: "Planes y suscripciones",
+          title: "Onboarding",
           icon: IconCreditCard,
           items: [
             {
-              title: "Planes",
+              title: "Configuración cliente",
               url: "/dashboard/plans",
             },
             {
-              title: "Suscripciones",
+              title: "Integraciones",
+              url: "/dashboard/subscriptions",
+            },
+            {
+              title: "Bancos y cuentas",
               url: "/dashboard/subscriptions",
             },
           ],
@@ -116,10 +120,52 @@ export const sidebarData: any = {
           ],
         },
         {
-          title: "Clientes",
-          url: "/dashboard/clients",
-          // badge: "3",
+          title: "Config. de la cartera",
           icon: IconHeartHandshake,
+          items: [
+            {
+              title: "Creación de deudores",
+              url: "/dashboard/admin-users",
+            },
+            {
+              title: "Asignar deudor",
+              url: "/dashboard/admin-users",
+            },
+            {
+              title: "Periodo mensual y cierre",
+              url: "/dashboard/admin-users",
+            },
+            {
+              title: "Flujo de caja",
+              url: "/dashboard/admin-users",
+            },
+            {
+              title: "Comunicaciones",
+              url: "/dashboard/admin-users",
+            },
+            {
+              title: "Configuración de indicadores",
+              url: "/dashboard/admin-users",
+            },
+          ],
+        },
+        {
+          title: "Transacciones",
+          icon: IconHeartHandshake,
+          items: [
+            {
+              title: "Ingreso DTE",
+              url: "/dashboard/admin-users",
+            },
+            {
+              title: "Ingreso pago",
+              url: "/dashboard/admin-users",
+            },
+            {
+              title: "Carga de cartolas",
+              url: "/dashboard/admin-users",
+            },
+          ],
         },
       ],
     },
