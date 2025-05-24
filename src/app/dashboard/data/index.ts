@@ -102,20 +102,20 @@ export const sidebarData: any = {
           ],
         },
         {
-          title: "Usuarios",
+          title: "Admin. Usuarios",
           icon: IconUsers,
           items: [
             {
-              title: "Admin. Usuarios",
-              url: "/dashboard/admin-users",
+              title: "Usuarios",
+              url: "/dashboard/users",
             },
             {
-              title: "Admin. Roles",
-              url: "/dashboard/admin-roles",
+              title: "Roles",
+              url: "/dashboard/roles",
             },
             {
               title: "Historial de acciones",
-              url: "/dashboard/admin-actions-history",
+              url: "/dashboard/actions-history",
             },
           ],
         },

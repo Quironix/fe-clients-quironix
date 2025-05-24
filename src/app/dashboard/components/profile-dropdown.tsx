@@ -13,17 +13,12 @@ import { signOut, useSession } from "next-auth/react";
 import { Briefcase, ChevronsUpDown, User } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import useProfile from "@/hooks/useProfile";
+import { useProfileContext } from "@/context/ProfileContext";
 import { useEffect } from "react";
+
 export const ProfileDropdown = () => {
   const { state } = useSidebar();
-  const { data: session }: any = useSession();
-  const { profile, isLoadingProfile } = useProfile();
-
-  useEffect(() => {
-    console.log(profile);
-    console.log(session);
-  }, [profile, session]);
+  const { profile, session, isLoading } = useProfileContext();
 
   return (
     <>
@@ -60,7 +55,7 @@ export const ProfileDropdown = () => {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm leading-none font-medium">
-                {isLoadingProfile && !profile
+                {isLoading && !profile
                   ? "Cargando..."
                   : profile?.first_name + " " + profile?.last_name}
               </p>

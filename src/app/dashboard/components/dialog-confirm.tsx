@@ -9,8 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Trash2, X } from "lucide-react";
+import { AlertCircle, Share2, Trash2, X } from "lucide-react";
 import React from "react";
 
 interface DialogConfirmProps {
@@ -21,6 +20,7 @@ interface DialogConfirmProps {
   confirmButtonText?: string;
   onConfirm: () => void;
   onCancel?: () => void;
+  type?: "danger" | "warning";
 }
 
 const DialogConfirm: React.FC<DialogConfirmProps> = ({
@@ -31,6 +31,7 @@ const DialogConfirm: React.FC<DialogConfirmProps> = ({
   confirmButtonText = "Eliminar",
   onConfirm,
   onCancel,
+  type = "warning",
 }) => {
   return (
     <AlertDialog>
@@ -44,7 +45,11 @@ const DialogConfirm: React.FC<DialogConfirmProps> = ({
 
         <div className="flex flex-col items-center justify-center px-6 py-10">
           <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center mb-4">
-            <Trash2 className="h-10 w-10 text-[#FC5C5C]" />
+            {type === "danger" ? (
+              <Trash2 className="h-10 w-10 text-[#FC5C5C]" />
+            ) : (
+              <AlertCircle className="h-10 w-10 text-amber-500" />
+            )}
           </div>
 
           <AlertDialogHeader className="text-center">
@@ -64,7 +69,10 @@ const DialogConfirm: React.FC<DialogConfirmProps> = ({
           >
             {cancelButtonText}
           </AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="flex-1 bg-blue-600 hover:bg-blue-700">
+          <AlertDialogAction
+            onClick={onConfirm}
+            className="flex-1 bg-blue-600 hover:bg-blue-700"
+          >
             {confirmButtonText}
           </AlertDialogAction>
         </AlertDialogFooter>

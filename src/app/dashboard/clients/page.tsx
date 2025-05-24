@@ -8,7 +8,7 @@ import TitleSection from "../components/title-section";
 import { Edit, Plus, Building, Trash2, Users, Dot, Circle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
-import Search from "../admin-users/components/search";
+import Search from "../users/components/search";
 import {
   Table,
   TableCell,
@@ -63,9 +63,11 @@ const ClientsContent = () => {
   const filteredClients = useMemo(() => {
     if (!searchTerm) return clients;
     return clients.filter(
-      client =>
+      (client) =>
         client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.contacts?.[0]?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        client.contacts?.[0]?.email
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase())
     );
   }, [clients, searchTerm]);
 
@@ -83,31 +85,46 @@ const ClientsContent = () => {
     switch (status) {
       case "VALIDATED":
         return (
-          <Badge variant="outline" className="bg-white text-green-800 border-green-800 p-1 px-4">
+          <Badge
+            variant="outline"
+            className="bg-white text-green-800 border-green-800 p-1 px-4"
+          >
             <Circle className="text-green-800" fill="currentColor" /> Validado
           </Badge>
         );
       case "INVITED":
         return (
-          <Badge variant="outline" className="bg-white text-blue-800 border-blue-800 p-1 px-4">
+          <Badge
+            variant="outline"
+            className="bg-white text-blue-800 border-blue-800 p-1 px-4"
+          >
             <Circle className="text-blue-800" fill="currentColor" /> Invitado
           </Badge>
         );
       case "ACTIVE":
         return (
-          <Badge variant="outline" className="bg-white text-green-800 border-green-800  p-1 px-4">
+          <Badge
+            variant="outline"
+            className="bg-white text-green-800 border-green-800  p-1 px-4"
+          >
             <Circle className="text-green-800" fill="currentColor" /> Activo
           </Badge>
         );
       case "INACTIVE":
         return (
-          <Badge variant="outline" className="bg-white text-red-800 border-red-800 p-1 px-4">
+          <Badge
+            variant="outline"
+            className="bg-white text-red-800 border-red-800 p-1 px-4"
+          >
             <Circle className="text-red-800" fill="currentColor" /> Inactivo
           </Badge>
         );
       default:
         return (
-          <Badge variant="outline" className="bg-white border-gray-800 text-gray-800 p-1 px-4">
+          <Badge
+            variant="outline"
+            className="bg-white border-gray-800 text-gray-800 p-1 px-4"
+          >
             <Circle className="text-gray-800" fill="currentColor" />
             S/I
           </Badge>
@@ -158,7 +175,7 @@ const ClientsContent = () => {
                     {/* <div className="overflow-y-auto max-h-[80vh] p-3"> */}
                     <ScrollArea className="h-[80vh] px-4">
                       <ClientForm
-                        onSubmit={data => {
+                        onSubmit={(data) => {
                           return createClient(session?.token, data);
                         }}
                         setOpen={setIsCreateDialogOpen}
@@ -171,13 +188,27 @@ const ClientsContent = () => {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-gray-50">
-                        <TableHead className="text-primary font-semibold">Razón social</TableHead>
-                        <TableHead className="text-primary font-semibold">Nombre</TableHead>
-                        <TableHead className="text-primary font-semibold">Apellido</TableHead>
-                        <TableHead className="text-primary font-semibold">País</TableHead>
-                        <TableHead className="text-primary font-semibold">Email</TableHead>
-                        <TableHead className="text-primary font-semibold">Plan</TableHead>
-                        <TableHead className="text-primary font-semibold">Estado</TableHead>
+                        <TableHead className="text-primary font-semibold">
+                          Razón social
+                        </TableHead>
+                        <TableHead className="text-primary font-semibold">
+                          Nombre
+                        </TableHead>
+                        <TableHead className="text-primary font-semibold">
+                          Apellido
+                        </TableHead>
+                        <TableHead className="text-primary font-semibold">
+                          País
+                        </TableHead>
+                        <TableHead className="text-primary font-semibold">
+                          Email
+                        </TableHead>
+                        <TableHead className="text-primary font-semibold">
+                          Plan
+                        </TableHead>
+                        <TableHead className="text-primary font-semibold">
+                          Estado
+                        </TableHead>
                         <TableHead className="text-primary font-semibold text-right">
                           Acciones
                         </TableHead>
@@ -188,20 +219,38 @@ const ClientsContent = () => {
                         <LoaderTable cols={8} />
                       ) : filteredClients.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                          <TableCell
+                            colSpan={8}
+                            className="text-center py-8 text-gray-500"
+                          >
                             No se encontraron clientes
                           </TableCell>
                         </TableRow>
                       ) : (
-                        filteredClients.map(client => (
-                          <TableRow key={client.id} className="hover:bg-gray-50">
-                            <TableCell className="font-medium">{client.name}</TableCell>
-                            <TableCell>{client.contacts?.[0]?.first_name || "—"} </TableCell>
-                            <TableCell>{client.contacts?.[0]?.last_name || "—"}</TableCell>
+                        filteredClients.map((client) => (
+                          <TableRow
+                            key={client.id}
+                            className="hover:bg-gray-50"
+                          >
+                            <TableCell className="font-medium">
+                              {client.name}
+                            </TableCell>
+                            <TableCell>
+                              {client.contacts?.[0]?.first_name || "—"}{" "}
+                            </TableCell>
+                            <TableCell>
+                              {client.contacts?.[0]?.last_name || "—"}
+                            </TableCell>
                             <TableCell>{client.country?.name || "—"}</TableCell>
-                            <TableCell>{client.contacts?.[0]?.email || "—"}</TableCell>
-                            <TableCell>{client.subscriptions?.[0]?.plan?.name || "—"}</TableCell>
-                            <TableCell>{renderStatusBadge(client.status || "active")}</TableCell>
+                            <TableCell>
+                              {client.contacts?.[0]?.email || "—"}
+                            </TableCell>
+                            <TableCell>
+                              {client.subscriptions?.[0]?.plan?.name || "—"}
+                            </TableCell>
+                            <TableCell>
+                              {renderStatusBadge(client.status || "active")}
+                            </TableCell>
                             <TableCell className="flex justify-end gap-2">
                               <DialogForm
                                 title="Editar cliente"
@@ -218,7 +267,7 @@ const ClientsContent = () => {
                                   </Button>
                                 }
                                 open={editingClientId === client.id}
-                                onOpenChange={open => {
+                                onOpenChange={(open) => {
                                   if (!open) {
                                     setEditingClientId(null);
                                     setEditClient(null);
@@ -241,7 +290,9 @@ const ClientsContent = () => {
                                     <Trash2 className="text-red-500 h-4 w-4" />
                                   </Button>
                                 }
-                                onConfirm={() => deleteClient(session?.token, client.id || "")}
+                                onConfirm={() =>
+                                  deleteClient(session?.token, client.id || "")
+                                }
                               />
                             </TableCell>
                           </TableRow>

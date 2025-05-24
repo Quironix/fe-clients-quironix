@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { SessionProvider } from "next-auth/react";
+import { ProfileProvider } from "@/context/ProfileContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,8 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        {children}
-        <Toaster position="top-right" />
+        <SessionProvider>
+          <ProfileProvider>
+            {children}
+            <Toaster position="top-right" />
+          </ProfileProvider>
+        </SessionProvider>
       </body>
     </html>
   );
