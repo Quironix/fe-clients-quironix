@@ -7,6 +7,7 @@ import TwoFactorStep from "./components/steps/TwoFactorStep";
 import TermsAndConditionStep from "./components/steps/TermsAndConditionStep";
 import ContractSignStep from "./components/steps/ConstractSignStep";
 import SuccessOnboarding from "./components/steps/SuccessOnboarding";
+import { useProfileContext } from "@/context/ProfileContext";
 const steps: Step[] = [
   { id: 1, label: "Datos personales", completed: false },
   { id: 2, label: "Autenticación", completed: false },
@@ -17,6 +18,7 @@ const steps: Step[] = [
 
 // Renombramos el componente original a OnboardingSteps
 const OnboardingSteps = () => {
+  const { profile } = useProfileContext();
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
 
@@ -48,6 +50,7 @@ const OnboardingSteps = () => {
       currentStep,
       steps: stepsState,
       onStepChange: handleStepChange,
+      profile,
     };
 
     switch (currentStep) {
@@ -77,7 +80,7 @@ const OnboardingSteps = () => {
 };
 
 // Este es el layout real de Next.js
-const OnboardingLayout = ({ children }: { children: React.ReactNode }) => {
+const OnboardingLayout = () => {
   return <OnboardingSteps />;
 };
 

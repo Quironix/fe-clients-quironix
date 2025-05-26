@@ -1,7 +1,7 @@
 export interface CustomSessionInterface {
   user: User;
   expires: Date;
-  access_token: string;
+  token: string;
   refresh_token: string;
   expires_at: number;
 }
