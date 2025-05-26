@@ -28,9 +28,11 @@ import { Input } from "@/components/ui/input";
 import RoleForm from "./components/form-role";
 import DialogConfirm from "../components/dialog-confirm";
 import { useSearchParams } from "next/navigation";
+import { useProfileContext } from "@/context/ProfileContext";
 
 const RolesContent = () => {
   const { data: session }: any = useSession();
+  const { profile } = useProfileContext();
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("search") || "";
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -48,10 +50,10 @@ const RolesContent = () => {
   } = useRoleStore();
 
   useEffect(() => {
-    if (session?.token) {
-      refreshRoles(session?.token);
+    if (session?.token && profile?.client?.id) {
+      refreshRoles(session?.token, profile?.client?.id);
     }
-  }, [session?.token]);
+  }, [session?.token, profile?.client?.id]);
 
   // Actualizar el searchTerm en el store cuando cambie el parámetro de búsqueda en la URL
   useEffect(() => {
@@ -70,7 +72,12 @@ const RolesContent = () => {
     const roleData = data as Role;
     if (roleData && roleData.id) {
       // Actualizar el rol con los datos completos incluyendo scopes
-      await updateRole(session?.token, roleData.id, roleData);
+      await updateRole(
+        session?.token,
+        roleData.id,
+        roleData,
+        profile?.client?.id
+      );
       setEditingRoleId(null);
     }
   };
@@ -88,8 +95,8 @@ const RolesContent = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Admin. Roles"
-          description="Aquí puedes ver un resumen de tus deudas y pagos."
+          title="Roles"
+          description="Aquí puedes ver un resumen de tus roles."
           icon={<UsersIcon color="white" />}
           subDescription="Usuarios"
         />
@@ -127,7 +134,11 @@ const RolesContent = () => {
                       <RoleForm
                         onSubmit={(data) => {
                           const roleData = data as Role;
-                          return createRole(session?.token, roleData);
+                          return createRole(
+                            session?.token,
+                            roleData,
+                            profile?.client?.id
+                          );
                         }}
                         setOpen={setIsCreateDialogOpen}
                       />
@@ -199,7 +210,11 @@ const RolesContent = () => {
                                     </Button>
                                   }
                                   onConfirm={() =>
-                                    deleteRole(session?.token, role.id || "")
+                                    deleteRole(
+                                      session?.token,
+                                      role.id || "",
+                                      profile?.client?.id
+                                    )
                                   }
                                 />
                               </TableCell>

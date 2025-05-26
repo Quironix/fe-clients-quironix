@@ -1,11 +1,14 @@
 import { Role } from "./types";
 
-export const getAll = async (accessToken: string) => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/roles`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+export const getAll = async (accessToken: string, clientId: string) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/roles`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
 
   if (!response.ok) {
     throw new Error("Failed to fetch roles");
@@ -14,15 +17,22 @@ export const getAll = async (accessToken: string) => {
   return response.json();
 };
 
-export const create = async (accessToken: string, role: Role) => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/roles/create`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(role),
-  });
+export const create = async (
+  accessToken: string,
+  role: Role,
+  clientId: string
+) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/roles/create`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(role),
+    }
+  );
 
   if (!response.ok) {
     throw new Error("Failed to create role");
@@ -31,19 +41,27 @@ export const create = async (accessToken: string, role: Role) => {
   return response.json();
 };
 
-export const update = async (accessToken: string, roleId: string, role: Role) => {
+export const update = async (
+  accessToken: string,
+  roleId: string,
+  role: Role,
+  clientId: string
+) => {
   console.log("Actualizando rol con ID:", roleId);
   console.log("Datos enviados:", JSON.stringify(role));
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/roles/${roleId}`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(role),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/roles/${roleId}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(role),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.text();
@@ -58,13 +76,20 @@ export const update = async (accessToken: string, roleId: string, role: Role) =>
   }
 };
 
-export const remove = async (accessToken: string, roleId: string) => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/roles/${roleId}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+export const remove = async (
+  accessToken: string,
+  roleId: string,
+  clientId: string
+) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/roles/${roleId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
 
   if (!response.ok) {
     throw new Error("Failed to delete role");
@@ -74,12 +99,15 @@ export const remove = async (accessToken: string, roleId: string) => {
 };
 
 export const getAdminResources = async (accessToken: string) => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/resources`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/resources`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
 
   if (!response.ok) {
     throw new Error("Failed to get admin resources");

@@ -102,7 +102,7 @@ export const sidebarData: any = {
           ],
         },
         {
-          title: "Admin. Usuarios",
+          title: "Usuarios",
           icon: IconUsers,
           items: [
             {
