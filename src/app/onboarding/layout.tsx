@@ -8,6 +8,7 @@ import TermsAndConditionStep from "./components/steps/TermsAndConditionStep";
 import ContractSignStep from "./components/steps/ConstractSignStep";
 import SuccessOnboarding from "./components/steps/SuccessOnboarding";
 import { useProfileContext } from "@/context/ProfileContext";
+import { Loader, Loader2 } from "lucide-react";
 const steps: Step[] = [
   { id: 1, label: "Datos personales", completed: false },
   { id: 2, label: "Autenticación", completed: false },
@@ -73,7 +74,13 @@ const OnboardingSteps = () => {
   return (
     <section className="bg-[#1249C7] min-h-screen w-screen">
       <div className="container mx-auto h-screen flex items-center justify-center">
-        {renderStep()}
+        {profile ? (
+          renderStep()
+        ) : (
+          <div className="text-white flex items-center gap-2">
+            <Loader className="animate-spin" /> Cargando...
+          </div>
+        )}
       </div>
     </section>
   );
