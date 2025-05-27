@@ -53,6 +53,8 @@ export interface Client {
   updated_at: string;
   deleted_at: null;
   subscriptions: Subscription[];
+  terms_and_conditions?: string;
+  contract?: string;
 }
 
 export interface Subscription {

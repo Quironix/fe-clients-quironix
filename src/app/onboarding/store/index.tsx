@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { UserProfile } from "../types";
-import { sendCode, verifyCode } from "../services";
+import { sendCode, signContract, verifyCode } from "../services";
 
 interface OnboardingData {
   // Step 1: Información básica
@@ -39,6 +39,7 @@ interface OnboardingStore {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
   sendCode: (accessToken: string, clientId: string) => Promise<boolean>;
+  signContract: (accessToken: string, clientId: string) => Promise<boolean>;
 }
 
 const initialData: OnboardingData = {
@@ -128,6 +129,25 @@ const useOnboardingStore = create<OnboardingStore>((set, get) => ({
         error: "Error al procesar el onboarding",
         loading: false,
       });
+    }
+  },
+
+  signContract: async (accessToken: string, clientId: string) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await signContract(accessToken, clientId);
+
+      if (response?.error) {
+        set({ loading: false, error: response.error });
+        return false;
+      }
+
+      set({ loading: false });
+      return true;
+    } catch (error) {
+      console.error("Error al firmar el contrato:", error);
+      set({ loading: false, error: "Error al firmar el contrato" });
+      return false;
     }
   },
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepProps } from "../../types";
 import StepLayout from "../StepLayout";
@@ -8,6 +8,7 @@ import Stepper from "@/components/Stepper";
 import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
 import { ArrowLeftIcon, ArrowRightIcon, File, FileText } from "lucide-react";
+
 const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
   onNext,
   onBack,
@@ -16,10 +17,25 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
   currentStep,
   steps,
   onStepChange,
+  profile,
 }) => {
-  const handleResendCode = () => {
-    // Aquí iría la lógica para reenviar el código
-    console.log("Reenviando código...");
+  const [hasReadTerms, setHasReadTerms] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  const handleOpenTerms = () => {
+    if (profile?.client?.terms_and_conditions) {
+      const pdfWindow = window.open();
+      if (pdfWindow) {
+        pdfWindow.document.write(`
+          <iframe width='100%' height='100%' src='${profile.client.terms_and_conditions}'></iframe>
+        `);
+        setHasReadTerms(true);
+      }
+    }
+  };
+
+  const handleTermsAcceptance = (checked: boolean) => {
+    setTermsAccepted(checked);
   };
 
   return (
@@ -51,6 +67,7 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
                 <Button
                   variant="outline"
                   className="border-2 border-orange-300 text-gray-500 bg-white"
+                  onClick={handleOpenTerms}
                 >
                   <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
                   términos y condiciones
@@ -59,10 +76,17 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
             </div>
 
             <div className="flex items-center justify-center mt-3 space-x-2">
-              <Checkbox id="terms" />
+              <Checkbox
+                id="terms"
+                checked={termsAccepted}
+                onCheckedChange={handleTermsAcceptance}
+                disabled={!hasReadTerms}
+              />
               <label
                 htmlFor="terms"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className={`text-sm font-medium leading-none ${
+                  !hasReadTerms ? "text-gray-400" : ""
+                }`}
               >
                 Acepto los términos y condiciones
               </label>
@@ -80,7 +104,12 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
               <ArrowLeftIcon className="w-4 h-4" /> Volver
             </Button>
           )}
-          <Button type="button" onClick={onNext} className="px-6 py-2">
+          <Button
+            type="button"
+            onClick={onNext}
+            className="px-6 py-2"
+            disabled={!termsAccepted}
+          >
             Continuar <ArrowRightIcon className="w-4 h-4" />
           </Button>
         </div>

@@ -48,3 +48,29 @@ export const verifyCode = async (accessToken: string, clientId: string) => {
     return { error: "Error al verificar el código" };
   }
 };
+
+export const signContract = async (accessToken: string, clientId: string) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/contracts/sign`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { error: data.message || "Error al firmar el contrato" };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error:", error);
+    return { error: "Error al firmar el contrato" };
+  }
+};

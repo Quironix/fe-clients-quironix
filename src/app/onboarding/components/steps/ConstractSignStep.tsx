@@ -1,13 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepProps } from "../../types";
 import StepLayout from "../StepLayout";
 import Stepper from "@/components/Stepper";
 import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
-import { ArrowLeftIcon, ArrowRightIcon, File, FileText } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, FileText } from "lucide-react";
+import { signContract } from "../../services";
+import { useProfileContext } from "@/context/ProfileContext";
+
 const ContractSignStep: React.FC<OnboardingStepProps> = ({
   onNext,
   onBack,
@@ -16,10 +19,39 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
   currentStep,
   steps,
   onStepChange,
+  profile,
 }) => {
-  const handleResendCode = () => {
-    // Aquí iría la lógica para reenviar el código
-    console.log("Reenviando código...");
+  const [hasReadContract, setHasReadContract] = useState(false);
+  const [contractSigned, setContractSigned] = useState(false);
+  const { session } = useProfileContext();
+
+  const handleOpenContract = () => {
+    if (profile?.client?.contract) {
+      const pdfWindow = window.open();
+      if (pdfWindow) {
+        pdfWindow.document.write(`
+          <iframe width='100%' height='100%' src='${profile.client.contract}'></iframe>
+        `);
+        setHasReadContract(true);
+      }
+    }
+  };
+
+  const handleContractSigning = (checked: boolean) => {
+    setContractSigned(checked);
+  };
+
+  const handleSignContract = async () => {
+    if (profile?.client?.id) {
+      const success = await signContract(
+        session?.token as string,
+        profile?.client?.id as string
+      );
+
+      if (!success.error) {
+        onNext();
+      }
+    }
   };
 
   return (
@@ -51,6 +83,7 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
                 <Button
                   variant="outline"
                   className="border-2 border-orange-300 text-gray-500 bg-white"
+                  onClick={handleOpenContract}
                 >
                   <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
                   contrato
@@ -59,10 +92,17 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
             </div>
 
             <div className="flex items-center justify-center space-x-2 mt-3">
-              <Checkbox id="terms" />
+              <Checkbox
+                id="terms"
+                checked={contractSigned}
+                onCheckedChange={handleContractSigning}
+                disabled={!hasReadContract}
+              />
               <label
                 htmlFor="terms"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className={`text-sm font-medium leading-none ${
+                  !hasReadContract ? "text-gray-400" : ""
+                }`}
               >
                 Firmar contrato
               </label>
@@ -80,7 +120,12 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
               <ArrowLeftIcon className="w-4 h-4" /> Volver
             </Button>
           )}
-          <Button type="button" onClick={onNext} className="px-6 py-2">
+          <Button
+            type="button"
+            onClick={handleSignContract}
+            className="px-6 py-2"
+            disabled={!contractSigned}
+          >
             Continuar <ArrowRightIcon className="w-4 h-4" />
           </Button>
         </div>

@@ -15,7 +15,7 @@ export default auth(async (req: any) => {
   );
 
   const profile: UserProfile = await response.json();
-  console.log("profile", profile.client.status);
+  console.log("profile", profile?.client?.status);
 
   // Si no hay autenticación y no está en sign-in, redirigir a sign-in
   if (!req.auth && req.nextUrl.pathname !== "/sign-in") {
@@ -25,7 +25,7 @@ export default auth(async (req: any) => {
 
   // Si está autenticado, verificar el estado del cliente
   if (req.auth) {
-    const clientStatus = profile.client.status;
+    const clientStatus = profile?.client?.status;
     console.log("clientStatus", clientStatus);
 
     // Si el estado es INVITED y no está en onboarding, redirigir a onboarding
