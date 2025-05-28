@@ -4,10 +4,10 @@ export const signIn = async (email: string, password: string) => {
       `${process.env.NEXT_PUBLIC_API_URL}/v2/auth/sign-in`,
       {
         method: "POST",
-        body: JSON.stringify({ email, password }),
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ email, password }),
       }
     );
 

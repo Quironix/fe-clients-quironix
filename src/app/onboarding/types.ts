@@ -31,6 +31,8 @@ export interface UserProfile {
   updated_at: string;
 }
 
+export type ClientStatus = "INVITED" | "VALIDATED" | "SIGNED";
+
 export interface Client {
   id: string;
   name: string;
@@ -45,7 +47,7 @@ export interface Client {
   phone_number: null;
   category: null;
   currency: null;
-  status: "INVITED" | "VALIDATED" | "ACTIVE" | "INACTIVE";
+  status: ClientStatus;
   addresses: any[];
   contacts: Contact[];
   logo_url: null;

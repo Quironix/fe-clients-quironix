@@ -1,10 +1,12 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { CustomSessionInterface } from "./types";
-import {
-  getUserProfile,
-  signIn as signInService,
-} from "./app/(auth)/sign-in/services/auth.service";
+import { signIn as signInService } from "./app/(auth)/sign-in/services/auth.service";
+
+interface AuthUser {
+  token: string;
+  email: string;
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -13,24 +15,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: {},
         password: {},
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<AuthUser | null> {
         try {
           const response = await signInService(
             credentials.email as string,
             credentials.password as any
           );
 
-          const userProfile = await getUserProfile(response.token);
-          const user = { ...userProfile, token: response.token };
-
-          if (!user) {
+          if (!response?.token) {
             throw new Error("Credenciales inválidas");
           }
 
-          return user;
+          return {
+            token: response.token,
+            email: credentials.email as string,
+          };
         } catch (error: any) {
-          console.log("ERROR", error);
-          throw new Error(error);
+          console.error("Error en autenticación:", error);
+          throw new Error(error?.message || "Error en la autenticación");
         }
       },
     }),
@@ -50,23 +52,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     jwt({ token, user }: any) {
       if (user) {
-        token.session = user;
+        token.token = user.token;
+        token.email = user.email;
       }
-
       return token;
     },
     session({ session, token }: any) {
-      session.token = token.session.token;
+      session.token = token.token;
       session.iat = token.iat;
       session.exp = token.exp;
       session.jti = token.jti;
       session.user = {
-        id: token.session.id,
-        email: token.session.email,
-        name: token.session.name,
-        last_name: token.session.last_name,
-        type: token.session.type,
-        role: token.session.role,
+        email: token.email,
       };
       return session;
     },
