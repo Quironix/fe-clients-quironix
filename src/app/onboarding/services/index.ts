@@ -51,6 +51,14 @@ export const verifyCode = async (accessToken: string, clientId: string) => {
 
 export const signContract = async (accessToken: string, clientId: string) => {
   try {
+    if (!accessToken) {
+      return { error: "No se proporcionó un token de acceso" };
+    }
+
+    if (!clientId) {
+      return { error: "No se proporcionó un ID de cliente" };
+    }
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/contracts/sign`,
       {

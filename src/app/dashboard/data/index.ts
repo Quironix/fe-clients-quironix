@@ -89,15 +89,15 @@ export const sidebarData: any = {
           items: [
             {
               title: "Configuración cliente",
-              url: "/dashboard/plans",
+              url: "/dashboard/settings",
             },
             {
               title: "Integraciones",
-              url: "/dashboard/subscriptions",
+              url: "/dashboard/integrations",
             },
             {
               title: "Bancos y cuentas",
-              url: "/dashboard/subscriptions",
+              url: "/dashboard/banks",
             },
           ],
         },

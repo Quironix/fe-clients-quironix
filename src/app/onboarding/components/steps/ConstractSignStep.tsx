@@ -10,6 +10,7 @@ import Image from "next/image";
 import { ArrowLeftIcon, ArrowRightIcon, FileText } from "lucide-react";
 import { signContract } from "../../services";
 import { useProfileContext } from "@/context/ProfileContext";
+import { toast } from "sonner";
 
 const ContractSignStep: React.FC<OnboardingStepProps> = ({
   onNext,
@@ -47,9 +48,12 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
         session?.token as string,
         profile?.client?.id as string
       );
+      debugger;
 
       if (!success.error) {
         onNext();
+      } else {
+        toast.error(success.error);
       }
     }
   };

@@ -98,9 +98,10 @@ export const remove = async (
   return response.json();
 };
 
-export const getAdminResources = async (accessToken: string) => {
+export const getResources = async (accessToken: string) => {
+  console.log("accessToken", accessToken);
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/resources`,
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/system-resources`,
     {
       method: "GET",
       headers: {

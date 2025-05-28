@@ -1,9 +1,18 @@
 import { auth } from "@/auth";
 import { UserProfile } from "./app/onboarding/types";
 
+type ClientStatus = "INVITED" | "VALIDATED" | "SIGNED";
+
 export default auth(async (req: any) => {
   const session: any = req.auth;
   console.log("session", session.token);
+
+  if (!session.token) {
+    const newUrl = new URL("/sign-in", req.nextUrl.origin);
+    return Response.redirect(newUrl);
+  } else {
+    return undefined;
+  }
 
   const response: any = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/v2/auth/profile`,
@@ -25,7 +34,7 @@ export default auth(async (req: any) => {
 
   // Si está autenticado, verificar el estado del cliente
   if (req.auth) {
-    const clientStatus = profile?.client?.status;
+    let clientStatus = profile?.client?.status;
     console.log("clientStatus", clientStatus);
 
     // Si el estado es INVITED y no está en onboarding, redirigir a onboarding

@@ -5,11 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormProvider, useForm } from "react-hook-form";
-import { FormMessage, FormControl, FormLabel, FormField, FormItem } from "@/components/ui/form";
+import {
+  FormMessage,
+  FormControl,
+  FormLabel,
+  FormField,
+  FormItem,
+} from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Role, Scope } from "../services/types";
-import { getAdminResources } from "../services";
+import { getResources } from "../services";
 import { useSession } from "next-auth/react";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,7 +32,10 @@ import { DialogClose } from "@/components/ui/dialog";
 const roleFormSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(3, "Campo requerido").max(50, "Máximo 50 caracteres"),
-  description: z.string().min(3, "Campo requerido").max(50, "Máximo 50 caracteres"),
+  description: z
+    .string()
+    .min(3, "Campo requerido")
+    .max(50, "Máximo 50 caracteres"),
   permissions: z
     .array(
       z.object({
@@ -58,7 +67,7 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
       name: defaultValues?.name || "",
       description: defaultValues?.description || "",
       permissions:
-        defaultValues?.scopes?.map(scope => {
+        defaultValues?.scopes?.map((scope) => {
           if (typeof scope === "string") {
             return {
               resource_id: scope,
@@ -84,7 +93,7 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
   }, [session?.token]);
 
   const fetchResources = async () => {
-    const resourcesData = await getAdminResources(session?.token);
+    const resourcesData = await getResources(session?.token);
     setResources(resourcesData);
 
     // Inicializa los permisos si no hay valores por defecto
@@ -103,8 +112,11 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
     try {
       // Transformar los permisos al formato esperado por la API
       const formattedScopes = data.permissions
-        .filter(permission => permission.can_view || permission.can_edit || permission.can_delete)
-        .map(permission => ({
+        .filter(
+          (permission) =>
+            permission.can_view || permission.can_edit || permission.can_delete
+        )
+        .map((permission) => ({
           resource_id: permission.resource_id,
           can_view: permission.can_view || false,
           can_edit: permission.can_edit || false,
@@ -141,7 +153,9 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
     checked: boolean
   ) => {
     const permissions = form.getValues("permissions") || [];
-    const resourceIndex = permissions.findIndex(p => p.resource_id === resourceId);
+    const resourceIndex = permissions.findIndex(
+      (p) => p.resource_id === resourceId
+    );
 
     if (resourceIndex === -1) {
       // Si no existe, agregamos un nuevo permiso
@@ -168,7 +182,7 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
     permissionType: "can_view" | "can_edit" | "can_delete"
   ): boolean => {
     const permissions = form.watch("permissions") || [];
-    const permission = permissions.find(p => p.resource_id === resourceId);
+    const permission = permissions.find((p) => p.resource_id === resourceId);
     return permission ? !!permission[permissionType] : false;
   };
 
@@ -206,7 +220,10 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
                   Descripción<span className="text-orange-500">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Ej: Administrador de recursos" {...field} />
+                  <Textarea
+                    placeholder="Ej: Administrador de recursos"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -226,21 +243,27 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-1/3">Secciones</TableHead>
-                    <TableHead className="text-center">Crear/Actualizar</TableHead>
+                    <TableHead className="text-center">
+                      Crear/Actualizar
+                    </TableHead>
                     <TableHead className="text-center">Lectura</TableHead>
                     <TableHead className="text-center">Eliminar</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {resources.map(resource => (
+                  {resources.map((resource) => (
                     <TableRow key={resource.id}>
                       <TableCell>{resource.name}</TableCell>
                       <TableCell className="text-center">
                         <Checkbox
                           id={`edit-${resource.id}`}
                           checked={isChecked(resource.id, "can_edit")}
-                          onCheckedChange={checked =>
-                            handleCheckboxChange(resource.id, "can_edit", checked === true)
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange(
+                              resource.id,
+                              "can_edit",
+                              checked === true
+                            )
                           }
                         />
                       </TableCell>
@@ -248,8 +271,12 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
                         <Checkbox
                           id={`view-${resource.id}`}
                           checked={isChecked(resource.id, "can_view")}
-                          onCheckedChange={checked =>
-                            handleCheckboxChange(resource.id, "can_view", checked === true)
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange(
+                              resource.id,
+                              "can_view",
+                              checked === true
+                            )
                           }
                         />
                       </TableCell>
@@ -257,8 +284,12 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
                         <Checkbox
                           id={`delete-${resource.id}`}
                           checked={isChecked(resource.id, "can_delete")}
-                          onCheckedChange={checked =>
-                            handleCheckboxChange(resource.id, "can_delete", checked === true)
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange(
+                              resource.id,
+                              "can_delete",
+                              checked === true
+                            )
                           }
                         />
                       </TableCell>
@@ -269,7 +300,9 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
             </div>
 
             {form.formState.errors.permissions && (
-              <span className="text-red-500 text-xs mt-1">Debe asignar al menos un permiso</span>
+              <span className="text-red-500 text-xs mt-1">
+                Debe asignar al menos un permiso
+              </span>
             )}
           </div>
         </div>

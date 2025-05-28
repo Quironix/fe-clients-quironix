@@ -48,7 +48,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
   fetchUsers: async (accessToken: string, clientId: string) => {
     set({ loading: true, error: null, users: [] });
     try {
-      const users = await getAll(accessToken, clientId);
+      const users = (await getAll(accessToken, clientId)) || [];
       set({ users, loading: false });
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
