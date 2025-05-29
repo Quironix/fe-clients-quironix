@@ -169,108 +169,115 @@ export const sidebarData: any = {
         },
       ],
     },
-    // {
-    //   title: "Pages",
-    //   items: [
-    //     {
-    //       title: "Auth",
-    //       icon: IconLockAccess,
-    //       items: [
-    //         {
-    //           title: "Sign In",
-    //           url: "/sign-in",
-    //         },
-    //         {
-    //           title: "Sign In (2 Col)",
-    //           url: "/sign-in-2",
-    //         },
-    //         {
-    //           title: "Sign Up",
-    //           url: "/sign-up",
-    //         },
-    //         {
-    //           title: "Forgot Password",
-    //           url: "/forgot-password",
-    //         },
-    //         {
-    //           title: "OTP",
-    //           url: "/otp",
-    //         },
-    //       ],
-    //     },
-    //     {
-    //       title: "Errors",
-    //       icon: IconBug,
-    //       items: [
-    //         {
-    //           title: "Unauthorized",
-    //           url: "/401",
-    //           icon: IconLock,
-    //         },
-    //         {
-    //           title: "Forbidden",
-    //           url: "/403",
-    //           icon: IconUserOff,
-    //         },
-    //         {
-    //           title: "Not Found",
-    //           url: "/404",
-    //           icon: IconError404,
-    //         },
-    //         {
-    //           title: "Internal Server Error",
-    //           url: "/500",
-    //           icon: IconServerOff,
-    //         },
-    //         {
-    //           title: "Maintenance Error",
-    //           url: "/503",
-    //           icon: IconBarrierBlock,
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Other",
-    //   items: [
-    //     {
-    //       title: "Settings",
-    //       icon: IconSettings,
-    //       items: [
-    //         {
-    //           title: "Profile",
-    //           url: "/settings",
-    //           icon: IconUserCog,
-    //         },
-    //         {
-    //           title: "Account",
-    //           url: "/settings/account",
-    //           icon: IconTool,
-    //         },
-    //         {
-    //           title: "Appearance",
-    //           url: "/settings/appearance",
-    //           icon: IconPalette,
-    //         },
-    //         {
-    //           title: "Notifications",
-    //           url: "/settings/notifications",
-    //           icon: IconNotification,
-    //         },
-    //         {
-    //           title: "Display",
-    //           url: "/settings/display",
-    //           icon: IconBrowserCheck,
-    //         },
-    //       ],
-    //     },
-    //     {
-    //       title: "Help Center",
-    //       url: "/help-center",
-    //       icon: IconHelp,
-    //     },
-    //   ],
-    // },
   ],
 };
+
+export const languages = [
+  {
+    name: "Español",
+    code: "ES",
+  },
+  {
+    name: "Inglés",
+    code: "EN",
+  },
+  {
+    name: "Portugués",
+    code: "PT",
+  },
+  {
+    name: "Francés",
+    code: "FR",
+  },
+  {
+    name: "Alemán",
+    code: "DE",
+  },
+  {
+    name: "Italiano",
+    code: "IT",
+  },
+];
+
+export const categories = [
+  "Agricultura, Ganadería, Silvicultura y Pesca",
+  "Explotación de Minas y Canteras",
+  "Industrias Manufacturera",
+  "Suministro de Electricidad, Gas, Vapor y Aire Acondicionado",
+  "Suministro de Agua; Evacuación de Agua residuales, gestión de desechos y descontaminación",
+  "Construcción",
+  "Comercio al Por Mayor y al por Menor; Reparación de Vehículos Automotores y Motocicletas",
+  "Transporte y Almacenamiento",
+  "Actividades de Alojamiento y de Servicio de Comidas",
+  "Información y Comunicaciones",
+  "Actividades Financieras y de Seguros",
+  "Actividades inmobiliarias",
+  "Actividades Profesionales, Cientificas y Técnicas",
+  "Actividades de Servicios Administrativos y de Apoyo",
+  "Adm. Pública y Defensa; Planes de Seguridad Social de Afiliación Obligatoria",
+  "Enseñanza",
+  "Actividades de Atención de la Salud Humana y de Asistencia Social",
+  "Actividades Artísticas, de Entretenimiento y Recreativas",
+  "Otras Actividades de Servicios",
+  "Actividades de los Hogaes como Empleadores; Actividades No Diferenciadas de los Hogares",
+  "Actividades de Organizaciones y Órganos Extraterritoriales",
+];
+
+export const typeDocuments = [
+  "Cédula de identidad",
+  "Cédula extranjera",
+  "Pasaporte",
+];
+
+export const currencies = [
+  {
+    name: "Dólar estadounidense",
+    code: "USD",
+    symbol: "$",
+  },
+  {
+    name: "Euro",
+    code: "EUR",
+    symbol: "€",
+  },
+  {
+    name: "Peso argentino",
+    code: "ARS",
+    symbol: "$",
+  },
+  {
+    name: "Real brasileño",
+    code: "BRL",
+    symbol: "R$",
+  },
+  {
+    name: "Peso chileno",
+    code: "CLP",
+    symbol: "$",
+  },
+  {
+    name: "Peso colombiano",
+    code: "COP",
+    symbol: "$",
+  },
+  {
+    name: "Peso mexicano",
+    code: "MXN",
+    symbol: "$",
+  },
+  {
+    name: "Sol peruano",
+    code: "PEN",
+    symbol: "S/",
+  },
+  {
+    name: "Libra esterlina",
+    code: "GBP",
+    symbol: "£",
+  },
+  {
+    name: "Yen japonés",
+    code: "JPY",
+    symbol: "¥",
+  },
+];

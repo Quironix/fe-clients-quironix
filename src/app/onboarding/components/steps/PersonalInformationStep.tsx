@@ -64,7 +64,7 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
       if (session?.token) {
         setIsLoadingData(true);
         try {
-          await Promise.all([refreshCountries(session.token)]);
+          await Promise.all([refreshCountries(session?.token)]);
         } catch (error) {
           console.error("Error al cargar datos:", error);
         } finally {

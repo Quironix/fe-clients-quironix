@@ -39,7 +39,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         `${process.env.NEXT_PUBLIC_API_URL}/v2/auth/profile`,
         {
           headers: {
-            Authorization: `Bearer ${session.token}`,
+            Authorization: `Bearer ${session?.token}`,
           },
         }
       );

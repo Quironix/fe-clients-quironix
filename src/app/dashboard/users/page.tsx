@@ -39,7 +39,7 @@ const UsersContent = () => {
 
   useEffect(() => {
     if (session?.token && profile?.client?.id) {
-      fetchUsers(session.token, profile.client.id);
+      fetchUsers(session?.token, profile.client.id);
     }
   }, [session?.token, profile?.client?.id]);
 

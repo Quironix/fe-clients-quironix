@@ -28,6 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DialogClose } from "@/components/ui/dialog";
+import { useProfileContext } from "@/context/ProfileContext";
 
 const roleFormSchema = z.object({
   id: z.string().optional(),
@@ -59,6 +60,7 @@ interface RoleFormProps {
 const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
   const [resources, setResources] = useState<any[]>([]);
   const { data: session }: any = useSession();
+  const { profile } = useProfileContext();
 
   const form = useForm<RoleFormValue>({
     resolver: zodResolver(roleFormSchema),
@@ -87,17 +89,9 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
   });
 
   useEffect(() => {
-    if (session?.token) {
-      fetchResources();
-    }
-  }, [session?.token]);
-
-  const fetchResources = async () => {
-    const resourcesData = await getResources(session?.token);
-    setResources(resourcesData);
-
-    // Inicializa los permisos si no hay valores por defecto
-    if (!defaultValues?.scopes || defaultValues.scopes.length === 0) {
+    if (session?.token && profile?.client?.id) {
+      const resourcesData =
+        profile?.client.subscriptions[0].plan.system_resources;
       const initialPermissions = resourcesData.map((resource: any) => ({
         resource_id: resource.id,
         can_view: false,
@@ -105,8 +99,25 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
         can_delete: false,
       }));
       form.setValue("permissions", initialPermissions);
+      // fetchResources();
     }
-  };
+  }, [session?.token, profile?.client?.id]);
+
+  // const fetchResources = async () => {
+  //   const resourcesData = await getResources(session?.token);
+  //   setResources(resourcesData);
+
+  //   // Inicializa los permisos si no hay valores por defecto
+  //   if (!defaultValues?.scopes || defaultValues.scopes.length === 0) {
+  //     const initialPermissions = resourcesData.map((resource: any) => ({
+  //       resource_id: resource.id,
+  //       can_view: false,
+  //       can_edit: false,
+  //       can_delete: false,
+  //     }));
+  //     form.setValue("permissions", initialPermissions);
+  //   }
+  // };
 
   const handleSubmit = async (data: RoleFormValue): Promise<void> => {
     try {

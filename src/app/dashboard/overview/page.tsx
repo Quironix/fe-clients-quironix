@@ -7,61 +7,17 @@ import TitleSection from "../components/title-section";
 import { LayoutDashboard } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { TabsContent, TabsList, TabsTrigger, Tabs } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { RecentSales } from "./recent-sales";
 import { Overview } from "./overview";
 
 const OverviewPage = () => {
-  const data = [
-    {
-      name: "Jan",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Feb",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Mar",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Apr",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "May",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Jun",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Jul",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Aug",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Sep",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Oct",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Nov",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-    {
-      name: "Dec",
-      total: Math.floor(Math.random() * 5000) + 1000,
-    },
-  ];
   return (
     <>
       <Header fixed>
@@ -82,7 +38,11 @@ const OverviewPage = () => {
           subDescription="Dashboard"
         />
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
-          <Tabs orientation="vertical" defaultValue="overview" className="space-y-4">
+          <Tabs
+            orientation="vertical"
+            defaultValue="overview"
+            className="space-y-4"
+          >
             <div className="w-full overflow-x-auto pb-2">
               <TabsList>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -101,7 +61,9 @@ const OverviewPage = () => {
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total de deudas</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Total de deudas
+                    </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -117,12 +79,16 @@ const OverviewPage = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">$45,231.89</div>
-                    <p className="text-muted-foreground text-xs">+20.1% from last month</p>
+                    <p className="text-muted-foreground text-xs">
+                      +20.1% from last month
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total de pagos</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Total de pagos
+                    </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -140,12 +106,16 @@ const OverviewPage = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">+2350</div>
-                    <p className="text-muted-foreground text-xs">+180.1% from last month</p>
+                    <p className="text-muted-foreground text-xs">
+                      +180.1% from last month
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Cobros por realizar</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Cobros por realizar
+                    </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -162,12 +132,16 @@ const OverviewPage = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">+12,234</div>
-                    <p className="text-muted-foreground text-xs">+19% from last month</p>
+                    <p className="text-muted-foreground text-xs">
+                      +19% from last month
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Transacciones realizadas</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Transacciones realizadas
+                    </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -183,7 +157,9 @@ const OverviewPage = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">+573</div>
-                    <p className="text-muted-foreground text-xs">+201 since last hour</p>
+                    <p className="text-muted-foreground text-xs">
+                      +201 since last hour
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -199,7 +175,9 @@ const OverviewPage = () => {
                 <Card className="col-span-1 lg:col-span-3">
                   <CardHeader>
                     <CardTitle>Transacciones recientes</CardTitle>
-                    <CardDescription>Tienes un total de 256 cobros y pagos.</CardDescription>
+                    <CardDescription>
+                      Tienes un total de 256 cobros y pagos.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <RecentSales />

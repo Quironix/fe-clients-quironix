@@ -4,7 +4,13 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormProvider, useForm } from "react-hook-form";
-import { FormMessage, FormControl, FormLabel, FormField, FormItem } from "@/components/ui/form";
+import {
+  FormMessage,
+  FormControl,
+  FormLabel,
+  FormField,
+  FormItem,
+} from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ClientCreate, ClientFormData, ClientDTO } from "../services/dto";
@@ -62,7 +68,7 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
           reject(new Error("Error al convertir archivo a base64"));
         }
       };
-      reader.onerror = error => reject(error);
+      reader.onerror = (error) => reject(error);
     });
   };
 
@@ -71,7 +77,10 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
       if (session?.token) {
         setIsLoadingData(true);
         try {
-          await Promise.all([refreshPlans(session.token), refreshCountries(session.token)]);
+          await Promise.all([
+            refreshPlans(session?.token),
+            refreshCountries(session?.token),
+          ]);
         } catch (error) {
           console.error("Error al cargar datos:", error);
         } finally {
@@ -176,7 +185,7 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
                         Cargando...
                       </SelectItem>
                     ) : (
-                      countries.map(country => (
+                      countries.map((country) => (
                         <SelectItem key={country.id} value={country.id}>
                           {country.name}
                         </SelectItem>
@@ -245,7 +254,9 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
                 <FormItem>
                   <FormLabel>
                     Selecciona un plan<span className="text-orange-500">*</span>{" "}
-                    {isLoadingPlans && <Loader className="inline animate-spin w-4 h-4" />}
+                    {isLoadingPlans && (
+                      <Loader className="inline animate-spin w-4 h-4" />
+                    )}
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -267,7 +278,7 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
                           No hay planes disponibles
                         </SelectItem>
                       ) : (
-                        plans.map(plan => (
+                        plans.map((plan) => (
                           <SelectItem key={plan.id} value={plan.id || ""}>
                             {plan.name}
                           </SelectItem>
@@ -287,7 +298,8 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Términos y condiciones<span className="text-orange-500">*</span>
+                  Términos y condiciones
+                  <span className="text-orange-500">*</span>
                 </FormLabel>
                 <div className="flex gap-2">
                   <div className="w-full">
@@ -296,14 +308,17 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
                       accept=".pdf"
                       className="hidden"
                       id="terms_file"
-                      onChange={async e => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
                           try {
                             const base64 = await convertToBase64(file);
                             field.onChange(base64);
                           } catch (error) {
-                            console.error("Error al convertir archivo a base64:", error);
+                            console.error(
+                              "Error al convertir archivo a base64:",
+                              error
+                            );
                           }
                         }
                       }}
@@ -359,7 +374,9 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
                         type="button"
                         className="ml-2 bg-blue-700 text-white"
                         onClick={() => {
-                          const input = document.getElementById("terms_file") as HTMLInputElement;
+                          const input = document.getElementById(
+                            "terms_file"
+                          ) as HTMLInputElement;
                           if (input) {
                             input.value = ""; // Limpiar el input para permitir seleccionar el mismo archivo
                             input.click();
@@ -410,14 +427,17 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
                       accept=".pdf"
                       className="hidden"
                       id="contract_file"
-                      onChange={async e => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
                           try {
                             const base64 = await convertToBase64(file);
                             field.onChange(base64);
                           } catch (error) {
-                            console.error("Error al convertir archivo a base64:", error);
+                            console.error(
+                              "Error al convertir archivo a base64:",
+                              error
+                            );
                           }
                         }
                       }}
@@ -524,7 +544,11 @@ const ClientForm = ({ defaultValues, onSubmit, setOpen }: ClientFormProps) => {
           />
         </div>
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={() => setOpen && setOpen(false)}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setOpen && setOpen(false)}
+          >
             Cancelar
           </Button>
           <Button
