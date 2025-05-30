@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Node.js app to Azure Web App - fe-clients-quironix
+name: Deploy master - to=fe-clients-quironix
 
 on:
   push:
@@ -9,56 +6,51 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  ENV_PATH: .env.production
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v1
         with:
-          node-version: '22.x'
+          node-version: "20.x"
+
+      - name: create env file
+        env:
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          AUTH_TRUST_HOST: true
+
+        run: |
+          touch $ENV_PATH
+          echo NEXTAUTH_SECRET=$NEXTAUTH_SECRET >> $ENV_PATH
+          echo NEXTAUTH_URL=$NEXTAUTH_URL >> $ENV_PATH
+          echo NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL >> $ENV_PATH
+          echo AUTH_TRUST_HOST=$AUTH_TRUST_HOST >> $ENV_PATH
+
+          echo NODE_ENV=production >> $ENV_PATH
+          cat $ENV_PATH
 
       - name: npm install, build, and test
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+          npm install --force
+          npm run build
+          mv ./build/static ./build/standalone/build
+          mv ./public ./build/standalone
+          mv $ENV_PATH ./build/standalone
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: node-app
-          path: release.zip
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: node-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-      
-      - name: 'Deploy to Azure Web App'
+      - name: "Deploy to Azure Web App"
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'fe-clients-quironix'
-          slot-name: 'Production'
+          app-name: "fe-clients-quironix"
+          slot-name: "Production"
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_417E823041874C66A94C879CFCFA9A38 }}
