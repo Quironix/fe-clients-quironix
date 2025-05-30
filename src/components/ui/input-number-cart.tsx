@@ -8,6 +8,7 @@ interface InputNumberCartProps {
   min?: number;
   max?: number;
   disabled?: boolean;
+  step?: number;
 }
 
 const InputNumberCart = ({
@@ -17,6 +18,7 @@ const InputNumberCart = ({
   min = 0,
   max,
   disabled = false,
+  step = 1,
 }: InputNumberCartProps) => {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const val = Number(e.target.value);
@@ -57,6 +59,7 @@ const InputNumberCart = ({
         min={min}
         max={max}
         disabled={disabled}
+        step={step}
       />
       <button
         type="button"

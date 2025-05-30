@@ -117,8 +117,34 @@ const StepEntity: React.FC<StepProps> = ({
     }
   }, [profile, form]);
 
+  const hasFormChanges = () => {
+    const currentValues = form.getValues();
+    const initialValues = {
+      first_name: profile?.client?.name || "",
+      country_id: profile?.client?.country_id || "",
+      dni_type: profile?.client?.dni_type || "",
+      dni_number: profile?.client?.dni_number || "",
+      language: profile?.client?.language || "",
+      category: profile?.client?.category || "",
+      currency: profile?.client?.currency || "",
+      operational: {
+        erp_code: profile?.client?.operational?.erp_code || "",
+        decimals:
+          (profile?.client?.operational?.decimals as unknown as number) || 0,
+        logo_url: profile?.client?.operational?.logo_url || "",
+      },
+    };
+
+    return JSON.stringify(currentValues) !== JSON.stringify(initialValues);
+  };
+
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
+      if (!hasFormChanges()) {
+        onNext();
+        return;
+      }
+
       setLoading(true);
       const { base64String } = useSettingsImageStore.getState();
       const formData = {

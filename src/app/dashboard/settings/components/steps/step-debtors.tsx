@@ -10,6 +10,7 @@ import {
   Cog,
   Loader,
   Settings2,
+  ShieldAlert,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -26,6 +27,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import InputNumberCart from "@/components/ui/input-number-cart";
+import { updateDataClient } from "../../services";
+import { useProfileContext } from "@/context/ProfileContext";
+import { toast } from "sonner";
 
 const StepDebtors: React.FC<StepProps> = ({
   onNext,
@@ -38,50 +42,109 @@ const StepDebtors: React.FC<StepProps> = ({
   profile,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const { session, refreshProfile } = useProfileContext();
 
   const debtorsSchema = z.object({
-    operational: z.object({
-      segmentation: z.object({
-        low: z.number().min(0, "El valor mínimo es requerido"),
-        medium: z.number().min(0, "El valor medio es requerido"),
-        high: z.number().min(0, "El valor alto es requerido"),
-      }),
-      dbt: z.object({
-        low: z.number().min(0, "El valor mínimo es requerido"),
-        medium: z.number().min(0, "El valor medio es requerido"),
-        high: z.number().min(0, "El valor alto es requerido"),
-      }),
-      automatic_nettings_process: z.boolean().default(false),
-      amount_from: z.number().min(0, "El valor mínimo es requerido"),
-      amount_to: z.number().min(0, "El valor máximo es requerido"),
-      committed_amount_tolerance: z
-        .number()
-        .min(0, "El valor mínimo es requerido"),
-      days_tolerance: z.number().min(0, "El valor mínimo es requerido"),
-    }),
+    operational: z
+      .object({
+        segmentation: z
+          .object({
+            low: z
+              .number()
+              .min(0, "El valor mínimo debe ser mayor o igual a 0"),
+            medium: z
+              .number()
+              .min(0, "El valor medio debe ser mayor o igual a 0"),
+            high: z.number().min(0, "El valor alto debe ser mayor o igual a 0"),
+          })
+          .refine(
+            (data) => {
+              if (data.low === 0 && data.medium === 0 && data.high === 0)
+                return true;
+              return data.low < data.medium && data.medium < data.high;
+            },
+            {
+              message:
+                "Los valores deben estar en orden ascendente: bajo < medio < alto",
+              path: ["segmentation"],
+            }
+          ),
+        dbt: z
+          .object({
+            low: z
+              .number()
+              .min(0, "El valor mínimo debe ser mayor o igual a 0"),
+            medium: z
+              .number()
+              .min(0, "El valor medio debe ser mayor o igual a 0"),
+            high: z.number().min(0, "El valor alto debe ser mayor o igual a 0"),
+          })
+          .refine(
+            (data) => {
+              if (data.low === 0 && data.medium === 0 && data.high === 0)
+                return true;
+              return data.low < data.medium && data.medium < data.high;
+            },
+            {
+              message:
+                "Los valores deben estar en orden ascendente: bajo < medio < alto",
+              path: ["dbt"],
+            }
+          ),
+        automatic_nettings_process: z.boolean(),
+        amount_from: z
+          .number()
+          .min(0, "El monto inicial debe ser mayor o igual a 0"),
+        amount_to: z
+          .number()
+          .min(0, "El monto final debe ser mayor o igual a 0"),
+        committed_amount_tolerance: z
+          .number()
+          .min(0, "La tolerancia debe ser mayor o igual a 0")
+          .max(100, "La tolerancia no puede ser mayor a 100%"),
+        days_tolerance: z
+          .number()
+          .min(0, "Los días de tolerancia deben ser mayor o igual a 0"),
+      })
+      .refine(
+        (data) => {
+          if (data.amount_from === 0 && data.amount_to === 0) return true;
+          return data.amount_from < data.amount_to;
+        },
+        {
+          message: "El monto inicial debe ser menor al monto final",
+          path: ["amount_from"],
+        }
+      ),
   });
 
-  const form = useForm<z.infer<typeof debtorsSchema>>({
+  type DebtorsFormType = z.infer<typeof debtorsSchema>;
+
+  const form = useForm<DebtorsFormType>({
     resolver: zodResolver(debtorsSchema),
     defaultValues: {
       operational: {
         segmentation: {
-          low: 0,
-          medium: 0,
-          high: 0,
+          low: profile?.client?.operational?.segmentation?.low || 0,
+          medium: profile?.client?.operational?.segmentation?.medium || 0,
+          high: profile?.client?.operational?.segmentation?.high || 0,
         },
         dbt: {
-          low: 0,
-          medium: 0,
-          high: 0,
+          low: profile?.client?.operational?.dbt?.low || 0,
+          medium: profile?.client?.operational?.dbt?.medium || 0,
+          high: profile?.client?.operational?.dbt?.high || 0,
         },
-        automatic_nettings_process: false,
-        amount_from: 0,
-        amount_to: 0,
-        committed_amount_tolerance: 0,
-        days_tolerance: 0,
+        automatic_nettings_process:
+          profile?.client?.operational?.automatic_nettings_process || false,
+        amount_from: profile?.client?.operational?.amount_from || 0,
+        amount_to: profile?.client?.operational?.amount_to || 0,
+        committed_amount_tolerance:
+          profile?.client?.operational?.committed_amount_tolerance || 20,
+        days_tolerance: profile?.client?.operational?.days_tolerance || 0,
       },
     },
+    mode: "onChange",
   });
 
   useEffect(() => {
@@ -110,9 +173,109 @@ const StepDebtors: React.FC<StepProps> = ({
     }
   }, [profile, form]);
 
-  const handleSubmit = (data: z.infer<typeof debtorsSchema>) => {
-    console.log(data);
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      console.log("Estado del formulario actualizado:", {
+        isValid: form.formState.isValid,
+        isDirty: form.formState.isDirty,
+        errors: form.formState.errors,
+        values: value,
+        hasChanges: hasFormChanges(),
+      });
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  const hasFormChanges = () => {
+    const currentValues = form.getValues();
+    const initialValues = {
+      operational: {
+        segmentation: {
+          low: profile?.client?.operational?.segmentation?.low || 0,
+          medium: profile?.client?.operational?.segmentation?.medium || 0,
+          high: profile?.client?.operational?.segmentation?.high || 0,
+        },
+        dbt: {
+          low: profile?.client?.operational?.dbt?.low || 0,
+          medium: profile?.client?.operational?.dbt?.medium || 0,
+          high: profile?.client?.operational?.dbt?.high || 0,
+        },
+        automatic_nettings_process:
+          profile?.client?.operational?.automatic_nettings_process || false,
+        amount_from: profile?.client?.operational?.amount_from || 0,
+        amount_to: profile?.client?.operational?.amount_to || 0,
+        committed_amount_tolerance:
+          profile?.client?.operational?.committed_amount_tolerance || 0,
+        days_tolerance: profile?.client?.operational?.days_tolerance || 0,
+      },
+    };
+
+    return JSON.stringify(currentValues) !== JSON.stringify(initialValues);
   };
+
+  useEffect(() => {
+    if (!profile || !session) {
+      toast.error("No se pudo cargar la información del perfil");
+      return;
+    }
+    setIsLoadingProfile(false);
+  }, [profile, session]);
+
+  const handleSubmit = async (data: z.infer<typeof debtorsSchema>) => {
+    try {
+      if (!profile?.client_id || !session?.token) {
+        toast.error("No se encontró la información necesaria para actualizar");
+        return;
+      }
+
+      if (!hasFormChanges()) {
+        onNext();
+        return;
+      }
+
+      setLoading(true);
+
+      const formData = {
+        operational: {
+          ...data.operational,
+        },
+      };
+
+      const response = await updateDataClient(
+        formData,
+        profile.client_id,
+        session.token
+      );
+
+      if (!response.error) {
+        await refreshProfile();
+        toast.success("Datos actualizados correctamente");
+        onNext();
+      } else {
+        toast.error(response.message || "Error al actualizar los datos");
+      }
+    } catch (error) {
+      console.error("Error al enviar el formulario:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Error al actualizar los datos"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isLoadingProfile) {
+    return (
+      <StepLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="flex items-center gap-2">
+            <Loader className="w-4 h-4 animate-spin" />
+            <span>Cargando información...</span>
+          </div>
+        </div>
+      </StepLayout>
+    );
+  }
 
   return (
     <StepLayout>
@@ -130,7 +293,7 @@ const StepDebtors: React.FC<StepProps> = ({
                 onStepChange={onStepChange}
               />
             </div>
-            <div className="h-4/6 space-y-4">
+            <div className="h-4/6 overflow-y-auto space-y-4">
               <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                 <TitleStep
                   title="Criterios de segmentación de deudores"
@@ -152,6 +315,10 @@ const StepDebtors: React.FC<StepProps> = ({
                               type="number"
                               placeholder="Ej: 1"
                               {...field}
+                              value={Number(field.value) || 0}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -171,6 +338,10 @@ const StepDebtors: React.FC<StepProps> = ({
                               type="number"
                               placeholder="Ej: 2"
                               {...field}
+                              value={Number(field.value) || 0}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -190,6 +361,10 @@ const StepDebtors: React.FC<StepProps> = ({
                               type="number"
                               placeholder="Ej: 3"
                               {...field}
+                              value={Number(field.value) || 0}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -215,6 +390,10 @@ const StepDebtors: React.FC<StepProps> = ({
                               type="number"
                               placeholder="Ej: 1"
                               {...field}
+                              value={Number(field.value) || 0}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -234,6 +413,10 @@ const StepDebtors: React.FC<StepProps> = ({
                               type="number"
                               placeholder="Ej: 2"
                               {...field}
+                              value={Number(field.value) || 0}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -253,6 +436,10 @@ const StepDebtors: React.FC<StepProps> = ({
                               type="number"
                               placeholder="Ej: 3"
                               {...field}
+                              value={Number(field.value) || 0}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -301,7 +488,7 @@ const StepDebtors: React.FC<StepProps> = ({
                             <InputNumberCart
                               value={field.value ?? 0}
                               onChange={(val) => field.onChange(val)}
-                              placeholder="Ej: 100000"
+                              placeholder="Ej: 5000"
                               min={0}
                             />
                           </FormControl>
@@ -315,7 +502,61 @@ const StepDebtors: React.FC<StepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Monto desde
+                            Monto hasta
+                            <span className="text-orange-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <InputNumberCart
+                              value={field.value ?? 0}
+                              onChange={(val) => field.onChange(val)}
+                              placeholder="Ej: 5000"
+                              min={0}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
+                <TitleStep
+                  title="Criterios de incumplimiento"
+                  icon={<ShieldAlert size={16} />}
+                />
+                <div className="space-y-2 w-full mt-1">
+                  <div className="grid grid-cols-3 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="operational.committed_amount_tolerance"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Tolerancia monto comprometido (%)
+                            <span className="text-orange-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <InputNumberCart
+                              value={field.value ?? 0}
+                              onChange={(val) => field.onChange(val)}
+                              placeholder="Ej: 20%"
+                              min={0}
+                              max={100}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="operational.days_tolerance"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Tolerancia en días
                             <span className="text-orange-500">*</span>
                           </FormLabel>
                           <FormControl>
@@ -347,11 +588,13 @@ const StepDebtors: React.FC<StepProps> = ({
                   <ArrowLeftIcon className="w-4 h-4" /> Volver
                 </Button>
               )}
+
               <Button
                 type="submit"
-                onClick={onNext}
                 className="px-6 py-2"
-                disabled={loading}
+                disabled={
+                  loading || (form.formState.isDirty && !form.formState.isValid)
+                }
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
