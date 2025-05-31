@@ -1,4 +1,4 @@
-import { getCountries } from "@/app/dashboard/clients/services";
+// import { getCountries } from "@/app/dashboard/clients/services";
 import { create } from "zustand";
 
 interface Country {
@@ -15,13 +15,13 @@ interface DashboardStore {
   refreshCountries: (accessToken: string) => void;
 }
 
-const useDashboardStore = create<DashboardStore>(set => ({
+const useDashboardStore = create<DashboardStore>((set) => ({
   defaultOpen: true,
   setDefaultOpen: (defaultOpen: boolean) => set({ defaultOpen }),
   countries: [],
   setCountries: (countries: Country[]) => set({ countries }),
   refreshCountries: (accessToken: string) => {
-    getCountries(accessToken).then(countries => set({ countries }));
+    // getCountries(accessToken).then(countries => set({ countries }));
   },
 }));
 
