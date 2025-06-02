@@ -9,6 +9,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  ENV_PATH: .env.production
+
 jobs:
   build:
     runs-on: ubuntu-latest
