@@ -3,7 +3,7 @@ name: Deploy master - to=fe-clients-quironix
 on:
   push:
     branches:
-      - main
+      - develop
   workflow_dispatch:
 
 env:
@@ -23,9 +23,9 @@ jobs:
 
       - name: create env file
         env:
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXTAUTH_SECRET: ${{ vars.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ vars.NEXTAUTH_URL }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
           AUTH_TRUST_HOST: true
 
         run: |
