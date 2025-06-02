@@ -125,7 +125,7 @@ export const sidebarData: any = {
           items: [
             {
               title: "Creación de deudores",
-              url: "/dashboard/debtors/create",
+              url: "/dashboard/debtors",
             },
 
             {

@@ -26,31 +26,12 @@ const CreateDebtorPage = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Deudores"
+          title="Creación de deudores"
           description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
           icon={<FileCog color="white" />}
           subDescription="Configuración de la cartera"
         />
-        <div className="flex justify-between items-start gap-5 p-3 border border-gray-200 rounded-md h-[320px]">
-          <div className="w-[25%] h-full">
-            <Image
-              src="/img/debtors-image.svg"
-              alt="Deudores"
-              className="w-full h-full object-cover rounded-md"
-              width={100}
-              height={100}
-            />
-          </div>
-          <div className="w-[37.5%] h-full">
-            <CreateManualDebtor />
-          </div>
-          <div className="w-[37.5%] h-full">
-            <BulkDebtors />
-          </div>
-        </div>
-        <div className="mt-5 border border-gray-200 rounded-md p-3">
-          <ListDebtors />
-        </div>
+        <h1>Crear deudor</h1>
       </Main>
     </>
   );
