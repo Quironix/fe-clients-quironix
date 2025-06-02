@@ -125,27 +125,24 @@ export const sidebarData: any = {
           items: [
             {
               title: "Creación de deudores",
-              url: "/dashboard/admin-users",
+              url: "/dashboard/debtors/create",
             },
-            {
-              title: "Asignar deudor",
-              url: "/dashboard/admin-users",
-            },
+
             {
               title: "Periodo mensual y cierre",
-              url: "/dashboard/admin-users",
+              url: "/dashboard/monthly-period",
             },
             {
               title: "Flujo de caja",
-              url: "/dashboard/admin-users",
+              url: "/dashboard/cash-flow",
             },
             {
               title: "Comunicaciones",
-              url: "/dashboard/admin-users",
+              url: "/dashboard/communications",
             },
             {
               title: "Configuración de indicadores",
-              url: "/dashboard/admin-users",
+              url: "/dashboard/indicators",
             },
           ],
         },
