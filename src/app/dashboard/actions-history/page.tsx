@@ -7,20 +7,20 @@ import { useDashboard } from "@/stores/dashboard/dashboardStore";
 import { Main } from "../components/main";
 import { Button } from "@/components/ui/button";
 import TitleSection from "../components/title-section";
-import { ChartArea, LayoutDashboard, Square, UserIcon, UsersIcon } from "lucide-react";
+import {
+  ChartArea,
+  LayoutDashboard,
+  Square,
+  UserIcon,
+  UsersIcon,
+} from "lucide-react";
+import Language from "@/components/ui/language";
 const ActionsHistoryPage = () => {
   const { defaultOpen } = useDashboard();
   return (
     <>
       <Header fixed>
-        <div className="ml-auto flex items-center space-x-4">
-          <Button
-            size="icon"
-            className="bg-orange-500 text-white rounded-full hover:bg-orange-400 cursor-pointer"
-          >
-            ES
-          </Button>
-        </div>
+        <Language />
       </Header>
       <Main>
         <TitleSection

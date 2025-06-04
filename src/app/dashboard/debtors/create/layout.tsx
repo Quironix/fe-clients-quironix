@@ -9,6 +9,9 @@ import { UsersIcon } from "lucide-react";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Step } from "@/components/Stepper/types";
 import DebtorsDataStep from "./components/steps/debtor-data";
+import AttentionStep from "./components/steps/attention-step";
+import ContactInfoStep from "./components/steps/contact-info-step";
+import Language from "@/components/ui/language";
 const steps: Step[] = [
   { id: 1, label: "Configuración de la entidad", completed: false },
   { id: 2, label: "Configuración de deudores", completed: false },
@@ -54,6 +57,10 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
     switch (currentStep) {
       case 0:
         return <DebtorsDataStep {...stepProps} />;
+      case 1:
+        return <AttentionStep {...stepProps} />;
+      case 2:
+        return <ContactInfoStep {...stepProps} />;
       // Aquí irán los demás casos para los otros pasos
       default:
         return null;
@@ -63,14 +70,7 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <Header fixed>
-        <div className="ml-auto flex items-center space-x-4">
-          <Button
-            size="icon"
-            className="bg-orange-500 text-white rounded-full hover:bg-orange-400 cursor-pointer"
-          >
-            ES
-          </Button>
-        </div>
+        <Language />
       </Header>
       <Main>
         <TitleSection

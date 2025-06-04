@@ -10,19 +10,13 @@ import Image from "next/image";
 import CreateManualDebtor from "../components/create-manual-debtor";
 import BulkDebtors from "../components/bulk-debtors";
 import ListDebtors from "../components/list-debtors";
+import Language from "@/components/ui/language";
 
 const CreateDebtorPage = () => {
   return (
     <>
       <Header fixed>
-        <div className="ml-auto flex items-center space-x-4">
-          <Button
-            size="icon"
-            className="bg-orange-500 text-white rounded-full hover:bg-orange-400 cursor-pointer"
-          >
-            ES
-          </Button>
-        </div>
+        <Language />
       </Header>
       <Main>
         <TitleSection

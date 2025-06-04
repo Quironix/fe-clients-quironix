@@ -563,7 +563,7 @@ const StepContacts: React.FC<StepProps> = ({
                                 }}
                                 disabled={loadingUsers}
                               >
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                   <SelectValue
                                     placeholder={
                                       loadingUsers

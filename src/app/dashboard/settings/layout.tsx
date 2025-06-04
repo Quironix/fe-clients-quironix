@@ -11,6 +11,7 @@ import { Step } from "@/components/Stepper/types";
 import StepEntity from "./components/steps/step-entity";
 import StepDebtors from "./components/steps/step-debtors";
 import StepContacts from "./components/steps/step-contacts";
+import Language from "@/components/ui/language";
 
 const steps: Step[] = [
   { id: 1, label: "Configuración de la entidad", completed: false },
@@ -70,14 +71,7 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <Header fixed>
-        <div className="ml-auto flex items-center space-x-4">
-          <Button
-            size="icon"
-            className="bg-orange-500 text-white rounded-full hover:bg-orange-400 cursor-pointer"
-          >
-            ES
-          </Button>
-        </div>
+        <Language />
       </Header>
       <Main>
         <TitleSection
