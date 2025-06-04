@@ -188,279 +188,277 @@ const StepEntity: React.FC<StepProps> = ({
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
-          className="h-full w-full space-y-6"
+          className="h-full  w-full space-y-6"
           autoComplete="off"
         >
-          <section className="h-full">
-            <div className="h-1/6">
-              <Stepper
-                steps={steps}
-                currentStep={currentStep}
-                onStepChange={onStepChange}
+          <div className="h-1/6">
+            <Stepper
+              steps={steps}
+              currentStep={currentStep}
+              onStepChange={onStepChange}
+            />
+          </div>
+          <div className="h-4/6 max-h-4/6 overflow-y-auto space-y-4 border border-gray-200 rounded-md p-5">
+            <TitleStep
+              title="Configuración de entidad"
+              icon={<Cog size={16} />}
+            />
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="first_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Nombre<span className="text-orange-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ej: Juan López" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="h-4/6 space-y-4  border border-gray-200 rounded-md p-5">
-              <TitleStep
-                title="Configuración de entidad"
-                icon={<Cog size={16} />}
-              />
-              <div className="grid grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="first_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Nombre<span className="text-orange-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: Juan López" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                <FormField
-                  control={form.control}
-                  name="dni_type"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Tipo de documento</FormLabel>
-                      <FormControl>
-                        <SearchInput
-                          value={field.value}
-                          onValueChange={(value) =>
-                            form.setValue("dni_type", value)
-                          }
-                          options={typeDocuments.map((type) => ({
-                            value: type,
-                            label: type,
-                          }))}
-                          placeholder="Selecciona un tipo de documento"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="dni_number"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Número de documento
-                        <span className="text-orange-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: 180716106" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="country_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        País
-                        <span className="text-orange-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <SearchInput
-                          value={field.value}
-                          onValueChange={(value) =>
-                            form.setValue("country_id", value)
-                          }
-                          options={countries.map((country: any) => ({
-                            value: country.id.toString(),
-                            label: country.name,
-                          }))}
-                          placeholder="Selecciona un país"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="language"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Idioma
-                        <span className="text-orange-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <SearchInput
-                          value={field.value}
-                          onValueChange={(value) =>
-                            form.setValue("language", value)
-                          }
-                          options={languages.map((language: any) => ({
-                            value: language.code,
-                            label: language.name,
-                          }))}
-                          placeholder="Selecciona un idioma"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Rubro
-                        <span className="text-orange-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <SearchInput
-                          value={field.value}
-                          onValueChange={(value) =>
-                            form.setValue("category", value)
-                          }
-                          options={categories.map((category: any) => ({
-                            value: category,
-                            label: category,
-                          }))}
-                          placeholder="Selecciona un rubro"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="currency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Moneda
-                        <span className="text-orange-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <SearchInput
-                          value={field.value}
-                          onValueChange={(value) =>
-                            form.setValue("currency", value)
-                          }
-                          options={currencies.map((currency: any) => ({
-                            value: currency.code,
-                            label: `${currency.name} (${currency.symbol})`,
-                          }))}
-                          placeholder="Selecciona una moneda"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="operational.decimals"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Decimales
-                        <span className="text-orange-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: 2" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="operational.erp_code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Código ERP
-                        <span className="text-orange-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: 123456" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex justify-start items-center gap-4 mb-10">
-                {!previewUrl ? (
-                  <div className="bg-[#F1F5F9] rounded-lg flex justify-center items-center h-40 w-40 min-w-40 text-gray-400 gap-2">
-                    <ImagePlus className="w-10 h-10 " /> Logo
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex flex-col gap-2">
-                      <Image
-                        src={previewUrl}
-                        alt="logo"
-                        className="w-40 h-40 min-w-40 max-w-40 rounded-lg border border-gray-300 object-contain"
-                        width={160}
-                        height={160}
-                        unoptimized
+              <FormField
+                control={form.control}
+                name="dni_type"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Tipo de documento</FormLabel>
+                    <FormControl>
+                      <SearchInput
+                        value={field.value}
+                        onValueChange={(value) =>
+                          form.setValue("dni_type", value)
+                        }
+                        options={typeDocuments.map((type) => ({
+                          value: type,
+                          label: type,
+                        }))}
+                        placeholder="Selecciona un tipo de documento"
                       />
-                      <Button
-                        type="button"
-                        onClick={() => clearImage()}
-                        variant="outline"
-                        className="rounded-full w-8 h-8 flex justify-center items-center -mt-10 bg-red-500 text-white"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-                <ImageUploader />
-              </div>
+              />
+              <FormField
+                control={form.control}
+                name="dni_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Número de documento
+                      <span className="text-orange-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ej: 180716106" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-            <div
-              className={`h-1/6 mt-6 flex items-center ${isFirstStep ? "justify-end" : "justify-between"}`}
-            >
-              {!isFirstStep && (
-                <Button
-                  type="button"
-                  onClick={onBack}
-                  variant="outline"
-                  className="px-6 py-2"
-                >
-                  <ArrowLeftIcon className="w-4 h-4" /> Volver
-                </Button>
-              )}
-              <Button
-                type="submit"
-                className="px-6 py-2"
-                disabled={loading || !form.formState.isValid}
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader className="w-4 h-4 animate-spin" /> Cargando
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="country_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      País
+                      <span className="text-orange-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <SearchInput
+                        value={field.value}
+                        onValueChange={(value) =>
+                          form.setValue("country_id", value)
+                        }
+                        options={countries.map((country: any) => ({
+                          value: country.id.toString(),
+                          label: country.name,
+                        }))}
+                        placeholder="Selecciona un país"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="language"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Idioma
+                      <span className="text-orange-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <SearchInput
+                        value={field.value}
+                        onValueChange={(value) =>
+                          form.setValue("language", value)
+                        }
+                        options={languages.map((language: any) => ({
+                          value: language.code,
+                          label: language.name,
+                        }))}
+                        placeholder="Selecciona un idioma"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Rubro
+                      <span className="text-orange-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <SearchInput
+                        value={field.value}
+                        onValueChange={(value) =>
+                          form.setValue("category", value)
+                        }
+                        options={categories.map((category: any) => ({
+                          value: category,
+                          label: category,
+                        }))}
+                        placeholder="Selecciona un rubro"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Moneda
+                      <span className="text-orange-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <SearchInput
+                        value={field.value}
+                        onValueChange={(value) =>
+                          form.setValue("currency", value)
+                        }
+                        options={currencies.map((currency: any) => ({
+                          value: currency.code,
+                          label: `${currency.name} (${currency.symbol})`,
+                        }))}
+                        placeholder="Selecciona una moneda"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="operational.decimals"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Decimales
+                      <span className="text-orange-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ej: 2" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="operational.erp_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Código ERP
+                      <span className="text-orange-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ej: 123456" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="flex justify-start items-center gap-4 mb-10">
+              {!previewUrl ? (
+                <div className="bg-[#F1F5F9] rounded-lg flex justify-center items-center h-40 w-40 min-w-40 text-gray-400 gap-2">
+                  <ImagePlus className="w-10 h-10 " /> Logo
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <Image
+                      src={previewUrl}
+                      alt="logo"
+                      className="w-40 h-40 min-w-40 max-w-40 rounded-lg border border-gray-300 object-contain"
+                      width={160}
+                      height={160}
+                      unoptimized
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => clearImage()}
+                      variant="outline"
+                      className="rounded-full w-8 h-8 flex justify-center items-center -mt-10 bg-red-500 text-white"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </Button>
                   </div>
-                ) : (
-                  <>
-                    Continuar <ArrowRightIcon className="w-4 h-4" />
-                  </>
-                )}
-              </Button>
+                </>
+              )}
+              <ImageUploader />
             </div>
-          </section>
+          </div>
+          <div
+            className={`h-1/6 mt-6 flex items-center ${isFirstStep ? "justify-end" : "justify-between"}`}
+          >
+            {!isFirstStep && (
+              <Button
+                type="button"
+                onClick={onBack}
+                variant="outline"
+                className="px-6 py-2"
+              >
+                <ArrowLeftIcon className="w-4 h-4" /> Volver
+              </Button>
+            )}
+            <Button
+              type="submit"
+              className="px-6 py-2"
+              disabled={loading || !form.formState.isValid}
+            >
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <Loader className="w-4 h-4 animate-spin" /> Cargando
+                </div>
+              ) : (
+                <>
+                  Continuar <ArrowRightIcon className="w-4 h-4" />
+                </>
+              )}
+            </Button>
+          </div>
         </form>
       </FormProvider>
     </StepLayout>
