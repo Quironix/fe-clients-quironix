@@ -432,7 +432,7 @@ const StepEntity: React.FC<StepProps> = ({
               </div>
             </div>
             <div
-              className={`h-1/6 flex items-center ${isFirstStep ? "justify-end" : "justify-between"}`}
+              className={`h-1/6 mt-6 flex items-center ${isFirstStep ? "justify-end" : "justify-between"}`}
             >
               {!isFirstStep && (
                 <Button

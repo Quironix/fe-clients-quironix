@@ -576,7 +576,7 @@ const StepDebtors: React.FC<StepProps> = ({
               </div>
             </div>
             <div
-              className={`h-1/6 flex items-center ${isFirstStep ? "justify-end" : "justify-between"}`}
+              className={`h-1/6 flex items-center mt-6 ${isFirstStep ? "justify-end" : "justify-between"}`}
             >
               {!isFirstStep && (
                 <Button

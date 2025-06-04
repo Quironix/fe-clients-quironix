@@ -81,12 +81,12 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
       </Header>
       <Main>
         <TitleSection
-          title="Usuarios"
-          description="Aquí puedes ver un resumen de tus usuarios."
+          title="Configuración cliente"
+          description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
           icon={<UsersIcon color="white" />}
-          subDescription="Usuarios"
+          subDescription="Onboarding"
         />
-        <div className="h-screen bg-white rounded-md p-4 px-8 border border-gray-200">
+        <div className="h-auto bg-white rounded-md p-4 px-8 border border-gray-200">
           {renderStep()}
         </div>
       </Main>

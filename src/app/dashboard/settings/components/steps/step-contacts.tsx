@@ -32,7 +32,6 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { toast } from "sonner";
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { E164Number } from "libphonenumber-js/core";
-
 import {
   Accordion,
   AccordionContent,
@@ -41,6 +40,15 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import InputNumberCart from "@/components/ui/input-number-cart";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { getAll as getUsersService } from "../../../users/services";
+import { User } from "../../../users/services/types";
 
 const StepContacts: React.FC<StepProps> = ({
   onNext,
@@ -54,7 +62,32 @@ const StepContacts: React.FC<StepProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState("item-0");
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const { session, refreshProfile } = useProfileContext();
+
+  // Cargar usuarios cuando el componente se monta
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!session?.token || !profile?.client?.id) return;
+
+      setLoadingUsers(true);
+      try {
+        const usersData = await getUsersService(
+          session.token,
+          profile.client.id
+        );
+        setUsers(usersData || []);
+      } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+        toast.error("Error al cargar usuarios");
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, [session?.token, profile?.client?.id]);
 
   const items = [
     {
@@ -108,7 +141,12 @@ const StepContacts: React.FC<StepProps> = ({
       extension_request_period: z.number().min(0, "Campo requerido"),
       annual_extensions_per_debtor: z.number().min(0, "Campo requerido"),
       maximum_extension_period: z.number().min(0, "Campo requerido"),
-      approvers: z.string().optional(),
+      approving_users: z
+        .array(z.string())
+        .min(1, "Debe seleccionar al menos un aprobador"),
+      country_id: z.string().optional(),
+      currency: z.string().optional(),
+      tax_id: z.string().optional(),
     }),
   });
 
@@ -134,6 +172,8 @@ const StepContacts: React.FC<StepProps> = ({
         extension_request_period: 0,
         annual_extensions_per_debtor: 0,
         maximum_extension_period: 0,
+        approving_users:
+          (profile?.client?.operational as any)?.approving_users || [],
       },
     },
     mode: "onChange",
@@ -210,9 +250,16 @@ const StepContacts: React.FC<StepProps> = ({
         toast.error("Error de sesión");
         return;
       }
+      delete data.operational.country_id;
+      delete data.operational.currency;
+      delete data.operational.tax_id;
 
       const updateData = {
         contacts: data.contacts,
+        operational: {
+          ...data.operational,
+          approving_users: data.operational.approving_users,
+        },
       };
 
       await updateDataClient(updateData, profile.client.id, session?.token);
@@ -231,16 +278,16 @@ const StepContacts: React.FC<StepProps> = ({
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)}>
         <StepLayout>
-          <section className="h-screen">
-            <div className="h-1/6 ">
+          <section className="min-h-screen">
+            <div className="mb-6">
               <Stepper
                 steps={steps}
                 currentStep={currentStep}
                 onStepChange={onStepChange}
               />
             </div>
-            <div className="h-4/6  overflow-y-auto space-y-4">
-              <div className="h-full w-full space-y-6">
+            <div className="space-y-4">
+              <div className="w-full space-y-6">
                 <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                   <div className="flex justify-between items-center">
                     <TitleStep
@@ -297,10 +344,7 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.first_name`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>
-                                      Nombre
-                                      <span className="text-orange-500">*</span>
-                                    </FormLabel>
+                                    <FormLabel>Nombre</FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
@@ -321,10 +365,7 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.last_name`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>
-                                      Apellido
-                                      <span className="text-orange-500">*</span>
-                                    </FormLabel>
+                                    <FormLabel>Apellido</FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
@@ -345,10 +386,7 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.email`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>
-                                      Correo electrónico
-                                      <span className="text-orange-500">*</span>
-                                    </FormLabel>
+                                    <FormLabel>Correo electrónico</FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
@@ -369,10 +407,7 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.phone`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>
-                                      Teléfono
-                                      <span className="text-orange-500">*</span>
-                                    </FormLabel>
+                                    <FormLabel>Teléfono</FormLabel>
                                     <FormControl>
                                       <PhoneInput
                                         placeholder="Ej: +56 9 9891 8080"
@@ -458,7 +493,6 @@ const StepContacts: React.FC<StepProps> = ({
                           <FormItem>
                             <FormLabel>
                               Plazo Para solicitud de prórroga
-                              <span className="text-orange-500">*</span>
                             </FormLabel>
                             <FormControl>
                               <InputNumberCart
@@ -479,7 +513,6 @@ const StepContacts: React.FC<StepProps> = ({
                           <FormItem>
                             <FormLabel>
                               Nro. Prórrogas anuales por deudor
-                              <span className="text-orange-500">*</span>
                             </FormLabel>
                             <FormControl>
                               <InputNumberCart
@@ -498,10 +531,7 @@ const StepContacts: React.FC<StepProps> = ({
                         name="operational.maximum_extension_period"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
-                              Plazo Máximo de prorroga
-                              <span className="text-orange-500">*</span>
-                            </FormLabel>
+                            <FormLabel>Plazo Máximo de prorroga</FormLabel>
                             <FormControl>
                               <InputNumberCart
                                 value={field.value ?? 0}
@@ -516,21 +546,129 @@ const StepContacts: React.FC<StepProps> = ({
                       />
                       <FormField
                         control={form.control}
-                        name="operational.approvers"
+                        name="operational.approving_users"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
-                              Aprobadores
-                              <span className="text-orange-500">*</span>
-                            </FormLabel>
+                            <FormLabel>Aprobadores</FormLabel>
                             <FormControl>
-                              <Input
-                                type="text"
-                                placeholder="Nombre"
-                                {...field}
-                                value={field.value || ""}
-                                onChange={(e) => field.onChange(e.target.value)}
-                              />
+                              <Select
+                                value={field.value?.[0] || ""}
+                                onValueChange={(value) => {
+                                  if (value && !field.value?.includes(value)) {
+                                    field.onChange([
+                                      ...(field.value || []),
+                                      value,
+                                    ]);
+                                  }
+                                }}
+                                disabled={loadingUsers}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue
+                                    placeholder={
+                                      loadingUsers
+                                        ? "Cargando usuarios..."
+                                        : "Seleccionar aprobador"
+                                    }
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {users.map((user) => (
+                                    <SelectItem key={user.id} value={user.id!}>
+                                      {user.first_name} {user.last_name} (
+                                      {user.email})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            {field.value && field.value.length > 0 && (
+                              <div className="mt-2">
+                                <span className="text-sm text-gray-600">
+                                  Usuarios seleccionados:
+                                </span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {field.value.map((userId) => {
+                                    const user = users.find(
+                                      (u) => u.id === userId
+                                    );
+                                    if (!user) return null;
+                                    return (
+                                      <div
+                                        key={userId}
+                                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs"
+                                      >
+                                        <span>
+                                          {user.first_name} {user.last_name}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            field.onChange(
+                                              field.value?.filter(
+                                                (id) => id !== userId
+                                              )
+                                            );
+                                          }}
+                                          className="text-blue-600 hover:text-blue-800"
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
+                  <TitleStep
+                    title="Impuestos"
+                    icon={<ChartLine className="w-5 h-5" />}
+                  />
+                  <div className="space-y-2 flex justify-between items-start w-full gap-4">
+                    <div className="grid grid-cols-3 gap-5 w-full">
+                      <FormField
+                        control={form.control}
+                        name="operational.country_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>País</FormLabel>
+                            <FormControl>
+                              <Input type="text" placeholder="Chile" disabled />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="operational.currency"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Moneda</FormLabel>
+                            <FormControl>
+                              <Input type="text" placeholder="CLP" disabled />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="operational.tax_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Impuesto</FormLabel>
+                            <FormControl>
+                              <Input type="text" placeholder="IVA" disabled />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -540,19 +678,8 @@ const StepContacts: React.FC<StepProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
-                <div className="flex justify-between items-center">
-                  <TitleStep
-                    title="Impuestos"
-                    icon={<ChartLine className="w-5 h-5" />}
-                  />
-                  <div className="flex items-center gap-2"></div>
-                </div>
-              </div>
             </div>
-            <div
-              className={`h-1/6 flex items-center ${isFirstStep ? "justify-end" : "justify-between"}`}
-            >
+            <div className="mt-6 flex items-center justify-between">
               {!isFirstStep && (
                 <Button
                   type="button"
@@ -563,23 +690,25 @@ const StepContacts: React.FC<StepProps> = ({
                   <ArrowLeftIcon className="w-4 h-4" /> Volver
                 </Button>
               )}
-              <Button
-                type="submit"
-                className="px-6 py-2"
-                disabled={
-                  loading || (!form.formState.isValid && !hasFormChanges())
-                }
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader className="w-4 h-4 animate-spin" /> Cargando
-                  </div>
-                ) : (
-                  <>
-                    Continuar <ArrowRightIcon className="w-4 h-4" />
-                  </>
-                )}
-              </Button>
+              <div className={isFirstStep ? "ml-auto" : ""}>
+                <Button
+                  type="submit"
+                  className="px-6 py-2"
+                  disabled={
+                    loading || (!form.formState.isValid && !hasFormChanges())
+                  }
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader className="w-4 h-4 animate-spin" /> Cargando
+                    </div>
+                  ) : (
+                    <>
+                      Continuar <ArrowRightIcon className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </section>
         </StepLayout>
