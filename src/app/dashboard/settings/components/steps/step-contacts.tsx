@@ -121,10 +121,16 @@ const StepContacts: React.FC<StepProps> = ({
     contacts: z
       .array(
         z.object({
-          first_name: z.string().min(1, "Campo requerido"),
-          last_name: z.string().min(1, "Campo requerido"),
+          first_name: z
+            .string()
+            .min(1, "El nombre es requerido")
+            .max(50, "El nombre no puede exceder 50 caracteres"),
+          last_name: z
+            .string()
+            .min(1, "El apellido es requerido")
+            .max(50, "El apellido no puede exceder 50 caracteres"),
           email: z.string().email("Email inválido"),
-          position: z.string().optional(),
+          position: z.string().min(1, "El cargo es requerido"),
           phone: z
             .string()
             .min(8, "Campo requerido")
@@ -132,18 +138,18 @@ const StepContacts: React.FC<StepProps> = ({
             .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
               message: "Número de teléfono inválido",
             }),
-          type_contact: z.array(z.string()).optional(),
-          is_default: z.boolean().optional(),
+          type_contact: z
+            .array(z.string())
+            .min(1, "Debe seleccionar al menos un tipo de contacto"),
+          is_default: z.boolean(),
         })
       )
-      .min(1, "Debe haber al menos un contacto"),
+      .min(1, "Debe agregar al menos un contacto"),
     operational: z.object({
       extension_request_period: z.number().min(0, "Campo requerido"),
       annual_extensions_per_debtor: z.number().min(0, "Campo requerido"),
       maximum_extension_period: z.number().min(0, "Campo requerido"),
-      approving_users: z
-        .array(z.string())
-        .min(1, "Debe seleccionar al menos un aprobador"),
+      approving_users: z.string().min(1, "Debe seleccionar un aprobador"),
       country_id: z.string().optional(),
       currency: z.string().optional(),
       tax_id: z.string().optional(),
@@ -168,17 +174,26 @@ const StepContacts: React.FC<StepProps> = ({
             },
           ],
       operational: {
-        extension_request_period: (profile?.client?.operational as any)
-          ?.extension_request_period,
-        annual_extensions_per_debtor: (profile?.client?.operational as any)
-          ?.annual_extensions_per_debtor,
-        maximum_extension_period: (profile?.client?.operational as any)
-          ?.maximum_extension_period,
-        approving_users:
-          (profile?.client?.operational as any)?.approving_users || [],
+        extension_request_period:
+          (profile?.client?.operational as any)?.extension_request_period ?? 0,
+        annual_extensions_per_debtor:
+          (profile?.client?.operational as any)?.annual_extensions_per_debtor ??
+          0,
+        maximum_extension_period:
+          (profile?.client?.operational as any)?.maximum_extension_period ?? 0,
+        approving_users: (() => {
+          const approvingUsers = (profile?.client?.operational as any)
+            ?.approving_users;
+          // Si es un array, tomar el primer elemento, si es string mantenerlo, si no existe usar ""
+          if (Array.isArray(approvingUsers)) {
+            return approvingUsers[0] || "";
+          }
+          return approvingUsers || "";
+        })(),
       },
     },
-    mode: "onChange",
+    mode: "all",
+    reValidateMode: "onChange",
   });
 
   // useFieldArray para manejar contactos dinámicamente
@@ -189,26 +204,59 @@ const StepContacts: React.FC<StepProps> = ({
 
   // Actualizar valores cuando el perfil cambie
   useEffect(() => {
-    if (profile?.client?.contacts?.length) {
-      form.reset({
-        contacts: profile.client.contacts,
-      });
+    if (profile?.client) {
+      const newValues: ContactsFormType = {
+        contacts: profile.client.contacts?.length
+          ? profile.client.contacts.map((contact) => ({
+              first_name: contact.first_name || "",
+              last_name: contact.last_name || "",
+              email: contact.email || "",
+              position: (contact as any).position || "",
+              phone: (contact as any).phone || "",
+              type_contact: (contact as any).type_contact || [],
+              is_default: (contact as any).is_default || false,
+            }))
+          : [
+              {
+                first_name: "",
+                last_name: "",
+                email: "",
+                phone: "",
+                position: "",
+                type_contact: [],
+                is_default: false,
+              },
+            ],
+        operational: {
+          extension_request_period:
+            (profile.client.operational as any)?.extension_request_period ?? 0,
+          annual_extensions_per_debtor:
+            (profile.client.operational as any)?.annual_extensions_per_debtor ??
+            0,
+          maximum_extension_period:
+            (profile.client.operational as any)?.maximum_extension_period ?? 0,
+          approving_users: (() => {
+            const approvingUsers = (profile.client.operational as any)
+              ?.approving_users;
+            // Si es un array, tomar el primer elemento, si es string mantenerlo, si no existe usar ""
+            if (Array.isArray(approvingUsers)) {
+              return approvingUsers[0] || "";
+            }
+            return approvingUsers || "";
+          })(),
+        },
+      };
+      form.reset(newValues);
     }
   }, [profile, form]);
 
-  // Debug del estado del formulario
+  // Forzar validación cuando el formulario esté listo
   useEffect(() => {
-    const subscription = form.watch((value) => {
-      console.log("Estado del formulario:", {
-        isValid: form.formState.isValid,
-        isDirty: form.formState.isDirty,
-        errors: form.formState.errors,
-        hasChanges: hasFormChanges(),
-        values: value,
-      });
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
+    const timer = setTimeout(() => {
+      form.trigger();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [form, profile]);
 
   // Función para añadir un nuevo contacto
   const addContact = () => {
@@ -252,14 +300,17 @@ const StepContacts: React.FC<StepProps> = ({
         toast.error("Error de sesión");
         return;
       }
-      delete data.operational.country_id;
-      delete data.operational.currency;
-      delete data.operational.tax_id;
+      // delete data.operational.country_id;
+      // delete data.operational.currency;
+      // delete data.operational.tax_id;
 
       const updateData = {
         contacts: data.contacts,
         operational: {
-          ...data.operational,
+          extension_request_period: data.operational.extension_request_period,
+          annual_extensions_per_debtor:
+            data.operational.annual_extensions_per_debtor,
+          maximum_extension_period: data.operational.maximum_extension_period,
           approving_users: data.operational.approving_users,
         },
       };
@@ -275,8 +326,6 @@ const StepContacts: React.FC<StepProps> = ({
       setLoading(false);
     }
   };
-
-  console.log("FORM", form.formState.errors);
 
   return (
     <FormProvider {...form}>
@@ -342,7 +391,7 @@ const StepContacts: React.FC<StepProps> = ({
                         </div>
                         <AccordionContent className="flex flex-col gap-4 text-balance">
                           <div className="space-y-2 flex justify-between items-start w-full gap-4">
-                            <div className="grid grid-cols-2 gap-2 w-3/4">
+                            <div className="grid grid-cols-3 gap-2 w-3/4">
                               <FormField
                                 control={form.control}
                                 name={`contacts.${index}.first_name`}
@@ -424,6 +473,27 @@ const StepContacts: React.FC<StepProps> = ({
                                           !!form.formState.errors.contacts?.[
                                             index
                                           ]?.phone
+                                        }
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`contacts.${index}.position`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Cargo</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="text"
+                                        placeholder="Ej: Gerente"
+                                        {...field}
+                                        value={field.value || ""}
+                                        onChange={(e) =>
+                                          field.onChange(e.target.value)
                                         }
                                       />
                                     </FormControl>
@@ -556,14 +626,9 @@ const StepContacts: React.FC<StepProps> = ({
                             <FormLabel>Aprobadores</FormLabel>
                             <FormControl>
                               <Select
-                                value={field.value?.[0] || ""}
+                                value={field.value || ""}
                                 onValueChange={(value) => {
-                                  if (value && !field.value?.includes(value)) {
-                                    field.onChange([
-                                      ...(field.value || []),
-                                      value,
-                                    ]);
-                                  }
+                                  field.onChange(value);
                                 }}
                                 disabled={loadingUsers}
                               >
@@ -586,33 +651,26 @@ const StepContacts: React.FC<StepProps> = ({
                                 </SelectContent>
                               </Select>
                             </FormControl>
-                            {field.value && field.value.length > 0 && (
+                            {field.value && (
                               <div className="mt-2">
                                 <span className="text-sm text-gray-600">
-                                  Usuarios seleccionados:
+                                  Usuario seleccionado:
                                 </span>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {field.value.map((userId) => {
+                                <div className="mt-1">
+                                  {(() => {
                                     const user = users.find(
-                                      (u) => u.id === userId
+                                      (u) => u.id === field.value
                                     );
                                     if (!user) return null;
                                     return (
-                                      <div
-                                        key={userId}
-                                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs"
-                                      >
+                                      <div className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs w-fit">
                                         <span>
                                           {user.first_name} {user.last_name}
                                         </span>
                                         <button
                                           type="button"
                                           onClick={() => {
-                                            field.onChange(
-                                              field.value?.filter(
-                                                (id) => id !== userId
-                                              )
-                                            );
+                                            field.onChange("");
                                           }}
                                           className="text-blue-600 hover:text-blue-800"
                                         >
@@ -620,7 +678,7 @@ const StepContacts: React.FC<StepProps> = ({
                                         </button>
                                       </div>
                                     );
-                                  })}
+                                  })()}
                                 </div>
                               </div>
                             )}
@@ -645,9 +703,9 @@ const StepContacts: React.FC<StepProps> = ({
                           <Input
                             type="text"
                             placeholder="Chile"
-                            disabled
+                            value={profile?.client?.country?.name || ""}
                             readOnly
-                            value={profile?.client?.country?.name}
+                            disabled
                           />
                         </FormControl>
                         <FormMessage />
@@ -658,9 +716,9 @@ const StepContacts: React.FC<StepProps> = ({
                           <Input
                             type="text"
                             placeholder="CLP"
-                            disabled
+                            value={profile?.client?.country?.currency || ""}
                             readOnly
-                            value={profile?.client?.country?.currency}
+                            disabled
                           />
                         </FormControl>
                         <FormMessage />
@@ -671,8 +729,12 @@ const StepContacts: React.FC<StepProps> = ({
                           <Input
                             type="text"
                             placeholder="IVA"
+                            value={
+                              profile?.client?.country?.tax_rate?.toString() ||
+                              ""
+                            }
+                            readOnly
                             disabled
-                            value={profile?.client?.country?.tax_rate}
                           />
                         </FormControl>
                         <FormMessage />
@@ -697,9 +759,7 @@ const StepContacts: React.FC<StepProps> = ({
                 <Button
                   type="submit"
                   className="px-6 py-2"
-                  disabled={
-                    loading || (!form.formState.isValid && !hasFormChanges())
-                  }
+                  disabled={loading || !form.formState.isValid}
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
