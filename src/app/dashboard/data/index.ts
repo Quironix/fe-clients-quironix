@@ -220,61 +220,57 @@ export const categories = [
   "Actividades de Organizaciones y Órganos Extraterritoriales",
 ];
 
-export const typeDocuments = [
-  "Cédula de identidad",
-  "Cédula extranjera",
-  "Pasaporte",
-];
+export const typeDocuments = ["RUT", "RUC"];
 
 export const currencies = [
-  {
-    name: "Dólar estadounidense",
-    code: "USD",
-    symbol: "$",
-  },
-  {
-    name: "Euro",
-    code: "EUR",
-    symbol: "€",
-  },
-  {
-    name: "Peso argentino",
-    code: "ARS",
-    symbol: "$",
-  },
-  {
-    name: "Real brasileño",
-    code: "BRL",
-    symbol: "R$",
-  },
+  // {
+  //   name: "Dólar estadounidense",
+  //   code: "USD",
+  //   symbol: "$",
+  // },
+  // {
+  //   name: "Euro",
+  //   code: "EUR",
+  //   symbol: "€",
+  // },
+  // {
+  //   name: "Peso argentino",
+  //   code: "ARS",
+  //   symbol: "$",
+  // },
+  // {
+  //   name: "Real brasileño",
+  //   code: "BRL",
+  //   symbol: "R$",
+  // },
   {
     name: "Peso chileno",
     code: "CLP",
     symbol: "$",
   },
-  {
-    name: "Peso colombiano",
-    code: "COP",
-    symbol: "$",
-  },
-  {
-    name: "Peso mexicano",
-    code: "MXN",
-    symbol: "$",
-  },
+  // {
+  //   name: "Peso colombiano",
+  //   code: "COP",
+  //   symbol: "$",
+  // },
+  // {
+  //   name: "Peso mexicano",
+  //   code: "MXN",
+  //   symbol: "$",
+  // },
   {
     name: "Sol peruano",
     code: "PEN",
     symbol: "S/",
   },
-  {
-    name: "Libra esterlina",
-    code: "GBP",
-    symbol: "£",
-  },
-  {
-    name: "Yen japonés",
-    code: "JPY",
-    symbol: "¥",
-  },
+  // {
+  //   name: "Libra esterlina",
+  //   code: "GBP",
+  //   symbol: "£",
+  // },
+  // {
+  //   name: "Yen japonés",
+  //   code: "JPY",
+  //   symbol: "¥",
+  // },
 ];

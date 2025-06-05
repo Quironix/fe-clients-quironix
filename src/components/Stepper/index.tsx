@@ -24,7 +24,7 @@ const Stepper: React.FC<StepperProps> = ({
           index={index}
           isActive={currentStep === index}
           isLast={index === steps.length - 1}
-          // onClick={() => handleStepClick(index)}
+          onClick={() => handleStepClick(index)}
         />
       ))}
     </div>

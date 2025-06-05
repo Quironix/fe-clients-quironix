@@ -58,18 +58,25 @@ const StepDebtors: React.FC<StepProps> = ({
               .min(0, "El valor medio debe ser mayor o igual a 0"),
             high: z.number().min(0, "El valor alto debe ser mayor o igual a 0"),
           })
-          .refine(
-            (data) => {
-              if (data.low === 0 && data.medium === 0 && data.high === 0)
-                return true;
-              return data.low < data.medium && data.medium < data.high;
-            },
-            {
-              message:
-                "Los valores deben estar en orden ascendente: bajo < medio < alto",
-              path: ["segmentation"],
+          .superRefine((data, ctx) => {
+            if (data.low === 0 && data.medium === 0 && data.high === 0) return;
+
+            if (data.low >= data.medium) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El valor bajo debe ser menor que el valor medio",
+                path: ["low"],
+              });
             }
-          ),
+
+            if (data.medium >= data.high) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El valor medio debe ser menor que el valor alto",
+                path: ["medium"],
+              });
+            }
+          }),
         dbt: z
           .object({
             low: z
@@ -80,18 +87,25 @@ const StepDebtors: React.FC<StepProps> = ({
               .min(0, "El valor medio debe ser mayor o igual a 0"),
             high: z.number().min(0, "El valor alto debe ser mayor o igual a 0"),
           })
-          .refine(
-            (data) => {
-              if (data.low === 0 && data.medium === 0 && data.high === 0)
-                return true;
-              return data.low < data.medium && data.medium < data.high;
-            },
-            {
-              message:
-                "Los valores deben estar en orden ascendente: bajo < medio < alto",
-              path: ["dbt"],
+          .superRefine((data, ctx) => {
+            if (data.low === 0 && data.medium === 0 && data.high === 0) return;
+
+            if (data.low >= data.medium) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El valor bajo debe ser menor que el valor medio",
+                path: ["low"],
+              });
             }
-          ),
+
+            if (data.medium >= data.high) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El valor medio debe ser menor que el valor alto",
+                path: ["medium"],
+              });
+            }
+          }),
         automatic_nettings_process: z.boolean(),
         amount_from: z
           .number()

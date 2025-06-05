@@ -377,7 +377,14 @@ const StepEntity: React.FC<StepProps> = ({
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Ej: 2" {...field} />
+                      <Input
+                        placeholder="Ej: 2"
+                        type="number"
+                        value={field.value}
+                        onChange={(e) => {
+                          field.onChange(Number(e.target.value));
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

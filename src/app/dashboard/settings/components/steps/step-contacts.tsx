@@ -151,7 +151,6 @@ const StepContacts: React.FC<StepProps> = ({
   });
 
   type ContactsFormType = z.infer<typeof contactsSchema>;
-
   const form = useForm<ContactsFormType>({
     resolver: zodResolver(contactsSchema),
     defaultValues: {
@@ -169,9 +168,12 @@ const StepContacts: React.FC<StepProps> = ({
             },
           ],
       operational: {
-        extension_request_period: 0,
-        annual_extensions_per_debtor: 0,
-        maximum_extension_period: 0,
+        extension_request_period: (profile?.client?.operational as any)
+          ?.extension_request_period,
+        annual_extensions_per_debtor: (profile?.client?.operational as any)
+          ?.annual_extensions_per_debtor,
+        maximum_extension_period: (profile?.client?.operational as any)
+          ?.maximum_extension_period,
         approving_users:
           (profile?.client?.operational as any)?.approving_users || [],
       },
@@ -273,6 +275,8 @@ const StepContacts: React.FC<StepProps> = ({
       setLoading(false);
     }
   };
+
+  console.log("FORM", form.formState.errors);
 
   return (
     <FormProvider {...form}>
@@ -635,45 +639,44 @@ const StepContacts: React.FC<StepProps> = ({
                   />
                   <div className="space-y-2 flex justify-between items-start w-full gap-4">
                     <div className="grid grid-cols-3 gap-5 w-full">
-                      <FormField
-                        control={form.control}
-                        name="operational.country_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>País</FormLabel>
-                            <FormControl>
-                              <Input type="text" placeholder="Chile" disabled />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="operational.currency"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Moneda</FormLabel>
-                            <FormControl>
-                              <Input type="text" placeholder="CLP" disabled />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="operational.tax_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Impuesto</FormLabel>
-                            <FormControl>
-                              <Input type="text" placeholder="IVA" disabled />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <FormItem>
+                        <FormLabel>País</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="Chile"
+                            disabled
+                            readOnly
+                            value={profile?.client?.country?.name}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                      <FormItem>
+                        <FormLabel>Moneda</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="CLP"
+                            disabled
+                            readOnly
+                            value={profile?.client?.country?.currency}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                      <FormItem>
+                        <FormLabel>Impuesto</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="IVA"
+                            disabled
+                            value={profile?.client?.country?.tax_rate}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     </div>
                   </div>
                 </div>
