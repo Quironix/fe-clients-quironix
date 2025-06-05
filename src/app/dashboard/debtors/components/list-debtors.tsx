@@ -32,13 +32,16 @@ import { useDebtorsStore } from "../store";
 import { useProfileContext } from "@/context/ProfileContext";
 import Loader from "@/components/Loader";
 import { Debtors } from "./types";
+import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
+import { toast } from "sonner";
 
 const ListDebtors = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const { session, profile } = useProfileContext();
-  const { debtors, loading, error, fetchDebtors } = useDebtorsStore();
+  const { debtors, loading, error, fetchDebtors, deleteDebtor } =
+    useDebtorsStore();
 
   useEffect(() => {
     if (session?.token && profile?.client?.id) {
@@ -56,9 +59,17 @@ const ListDebtors = () => {
     // Aquí iría la lógica para editar
   };
 
-  const handleDelete = (debtor: Debtors) => {
-    console.log("Eliminar deudor:", debtor);
-    // Aquí iría la lógica para eliminar
+  const handleDelete = async (debtor: Debtors) => {
+    if (session?.token && profile?.client?.id) {
+      try {
+        await deleteDebtor(session.token, profile.client.id, debtor.id);
+        toast.success("Deudor eliminado correctamente");
+        fetchDebtors(session.token, profile.client.id);
+      } catch (error) {
+        toast.error("Error al eliminar deudor");
+        console.error("Error al eliminar deudor:", error);
+      }
+    }
   };
 
   // Filtrar deudores basado en el término de búsqueda
@@ -225,6 +236,7 @@ const ListDebtors = () => {
                 <TableCell className="text-center">
                   <div className="flex justify-center gap-1">
                     <Button
+                      disabled={true}
                       variant="ghost"
                       size="icon"
                       onClick={() => handleAssignUser(debtor)}
@@ -242,15 +254,24 @@ const ListDebtors = () => {
                     >
                       <Edit />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(debtor)}
-                      title="Eliminar"
-                      className="hover:bg-red-500 hover:text-white text-primary"
-                    >
-                      <Trash2 />
-                    </Button>
+                    <DialogConfirm
+                      title="¿Eliminar deudor?"
+                      description={`¿Estás seguro que deseas eliminar el deudor "${debtor.name}"? Esta acción no se puede deshacer.`}
+                      triggerButton={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Eliminar"
+                          className="hover:bg-red-500 hover:text-white text-primary"
+                        >
+                          <Trash2 />
+                        </Button>
+                      }
+                      cancelButtonText="Cancelar"
+                      confirmButtonText="Sí, eliminar"
+                      onConfirm={() => handleDelete(debtor)}
+                      type="danger"
+                    />
                   </div>
                 </TableCell>
               </TableRow>

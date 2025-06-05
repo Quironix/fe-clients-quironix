@@ -85,3 +85,20 @@ export const bulkDebtors = async (
   );
   return response.json();
 };
+
+export const deleteDebtor = async (
+  accessToken: string,
+  clientId: string,
+  debtorId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/debtors/${debtorId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.json();
+};

@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import { createDebtor, getDebtors, updateDebtor } from "../services";
+import {
+  createDebtor,
+  deleteDebtor,
+  getDebtors,
+  updateDebtor,
+} from "../services";
 import { BulkUploadResponse } from "../types";
 
 interface DebtorsStore {
@@ -15,6 +20,11 @@ interface DebtorsStore {
   ) => Promise<void>;
   updateDebtor: (
     debtor: any,
+    accessToken: string,
+    clientId: string
+  ) => Promise<void>;
+  deleteDebtor: (
+    debtorId: string,
     accessToken: string,
     clientId: string
   ) => Promise<void>;
@@ -72,6 +82,21 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
         error?.toString() ||
         "Error desconocido al actualizar el deudor";
       set({ error: errorMessage });
+    } finally {
+      set({ loading: false });
+    }
+  },
+  deleteDebtor: async (
+    accessToken: string,
+    clientId: string,
+    debtorId: string
+  ) => {
+    set({ loading: true, error: null, debtors: [] });
+    try {
+      await deleteDebtor(accessToken, clientId, debtorId);
+      get().fetchDebtors(accessToken, clientId);
+    } catch (error: any) {
+      set({ error });
     } finally {
       set({ loading: false });
     }
