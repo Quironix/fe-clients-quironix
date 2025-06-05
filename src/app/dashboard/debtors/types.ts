@@ -42,3 +42,31 @@ export interface Address {
   postal_code: string;
   is_primary: boolean;
 }
+
+export enum BulkDebtorsSchema {
+  DEBTORS = "DEBTORS",
+  MOVEMENTS = "MOVEMENTS",
+  INVOICES = "INVOICES",
+  PAYMENTS = "PAYMENTS",
+}
+
+export interface BulkUploadError {
+  row: number;
+  value: any;
+  column: string;
+  message: string;
+}
+
+export interface BulkUploadResponse {
+  id: string;
+  clientId: string;
+  validCount: number;
+  totalCount: number;
+  invalidCount: number;
+  errors: BulkUploadError[];
+  createdAt: string;
+  updatedAt: string;
+  schema: string;
+  success?: boolean;
+  message?: string;
+}

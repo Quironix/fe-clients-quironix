@@ -1,10 +1,12 @@
 import { create } from "zustand";
 import { createDebtor, getDebtors, updateDebtor } from "../services";
+import { BulkUploadResponse } from "../types";
 
 interface DebtorsStore {
   debtors: any[];
   loading: boolean;
   error: string | null;
+  bulkUploadErrors: BulkUploadResponse | null;
   fetchDebtors: (accessToken: string, clientId: string) => Promise<void>;
   createDebtor: (
     debtor: any,
@@ -16,12 +18,15 @@ interface DebtorsStore {
     accessToken: string,
     clientId: string
   ) => Promise<void>;
+  setBulkUploadErrors: (errors: BulkUploadResponse) => void;
+  clearBulkUploadErrors: () => void;
 }
 
 export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   debtors: [],
   loading: false,
   error: null,
+  bulkUploadErrors: null,
   fetchDebtors: async (accessToken: string, clientId: string) => {
     set({ loading: true, error: null });
     try {
@@ -70,5 +75,11 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+  setBulkUploadErrors: (errors: BulkUploadResponse) => {
+    set({ bulkUploadErrors: errors });
+  },
+  clearBulkUploadErrors: () => {
+    set({ bulkUploadErrors: null });
   },
 }));

@@ -1,3 +1,5 @@
+import { BulkDebtorsSchema } from "../types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const getDebtors = async (accessToken: string, clientId: string) => {
@@ -57,6 +59,28 @@ export const updateDebtor = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify(debtor),
+    }
+  );
+  return response.json();
+};
+
+export const bulkDebtors = async (
+  accessToken: string,
+  clientId: string,
+  file: File
+) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("schemaType", BulkDebtorsSchema.DEBTORS);
+
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/file-processing/upload`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: "POST",
+      body: formData,
     }
   );
   return response.json();
