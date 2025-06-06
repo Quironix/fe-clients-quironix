@@ -9,17 +9,29 @@ import React from "react";
 import { sidebarData } from "../data";
 import { NavGroup } from "./nav-group";
 import { ProfileDropdown } from "./profile-dropdown";
-import { PiggyBank } from "lucide-react";
+import Image from "next/image";
 
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   const { state } = useSidebar();
   return (
     <Sidebar collapsible="icon" variant="floating" {...props}>
       <SidebarHeader className="bg-primary text-white rounded-md rounded-b-none border-none">
-        <div className="flex items-center justify-center py-2">
-          <PiggyBank size={32} />
-          {state === "expanded" && (
-            <span className="text-white text-3xl font-black ml-1">Quironix</span>
+        <div className="flex items-center justify-start py-2">
+          {state === "expanded" ? (
+            <Image
+              src="/img/logo-sidebar.png"
+              alt="logo"
+              className="ml-2 mt-2"
+              width={120}
+              height={120}
+            />
+          ) : (
+            <Image
+              src="/img/isotipo-quironix.png"
+              alt="logo"
+              width={100}
+              height={100}
+            />
           )}
         </div>
       </SidebarHeader>

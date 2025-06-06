@@ -125,7 +125,7 @@ export const sidebarData: any = {
           items: [
             {
               title: "Creación de deudores",
-              url: "/dashboard/debtors/create",
+              url: "/dashboard/debtors",
             },
 
             {
@@ -201,9 +201,11 @@ export const categories = [
   "Explotación de Minas y Canteras",
   "Industrias Manufacturera",
   "Suministro de Electricidad, Gas, Vapor y Aire Acondicionado",
-  "Suministro de Agua; Evacuación de Agua residuales, gestión de desechos y descontaminación",
+  "Suministro de Agua",
+  "Evacuación de Agua residuales, gestión de desechos y descontaminación",
   "Construcción",
-  "Comercio al Por Mayor y al por Menor; Reparación de Vehículos Automotores y Motocicletas",
+  "Comercio al Por Mayor y al por Menor",
+  "Reparación de Vehículos Automotores y Motocicletas",
   "Transporte y Almacenamiento",
   "Actividades de Alojamiento y de Servicio de Comidas",
   "Información y Comunicaciones",
@@ -211,70 +213,110 @@ export const categories = [
   "Actividades inmobiliarias",
   "Actividades Profesionales, Cientificas y Técnicas",
   "Actividades de Servicios Administrativos y de Apoyo",
-  "Adm. Pública y Defensa; Planes de Seguridad Social de Afiliación Obligatoria",
+  "Adm. Pública y Defensa",
+  "Planes de Seguridad Social de Afiliación Obligatoria",
   "Enseñanza",
   "Actividades de Atención de la Salud Humana y de Asistencia Social",
   "Actividades Artísticas, de Entretenimiento y Recreativas",
   "Otras Actividades de Servicios",
-  "Actividades de los Hogaes como Empleadores; Actividades No Diferenciadas de los Hogares",
+  "Actividades de los Hogaes como Empleadores",
+  "Actividades No Diferenciadas de los Hogares",
   "Actividades de Organizaciones y Órganos Extraterritoriales",
 ];
 
-export const typeDocuments = [
-  "Cédula de identidad",
-  "Cédula extranjera",
-  "Pasaporte",
+export const channels = [
+  {
+    name: "Correo electrónico",
+    value: "EMAIL",
+  },
+  {
+    name: "Teléfono",
+    value: "PHONE",
+  },
+  {
+    name: "Correo postal",
+    value: "MAIL",
+  },
+  {
+    name: "Presencial",
+    value: "IN_PERSON",
+  },
+  {
+    name: "WhatsApp",
+    value: "WHATSAPP",
+  },
+  {
+    name: "SMS",
+    value: "SMS",
+  },
 ];
 
+export const functionsContact = [
+  {
+    name: "Atención a proveedores",
+    value: "Atención a proveedores",
+  },
+  {
+    name: "Gerencia o jefatura",
+    value: "Gerencia o jefatura",
+  },
+  {
+    name: "Tesorería",
+    value: "Tesorería",
+  },
+];
+
+export const typeDocuments = ["RUT", "RUC"];
+
 export const currencies = [
-  {
-    name: "Dólar estadounidense",
-    code: "USD",
-    symbol: "$",
-  },
-  {
-    name: "Euro",
-    code: "EUR",
-    symbol: "€",
-  },
-  {
-    name: "Peso argentino",
-    code: "ARS",
-    symbol: "$",
-  },
-  {
-    name: "Real brasileño",
-    code: "BRL",
-    symbol: "R$",
-  },
+  // {
+  //   name: "Dólar estadounidense",
+  //   code: "USD",
+  //   symbol: "$",
+  // },
+  // {
+  //   name: "Euro",
+  //   code: "EUR",
+  //   symbol: "€",
+  // },
+  // {
+  //   name: "Peso argentino",
+  //   code: "ARS",
+  //   symbol: "$",
+  // },
+  // {
+  //   name: "Real brasileño",
+  //   code: "BRL",
+  //   symbol: "R$",
+  // },
   {
     name: "Peso chileno",
     code: "CLP",
     symbol: "$",
   },
-  {
-    name: "Peso colombiano",
-    code: "COP",
-    symbol: "$",
-  },
-  {
-    name: "Peso mexicano",
-    code: "MXN",
-    symbol: "$",
-  },
+  // {
+  //   name: "Peso colombiano",
+  //   code: "COP",
+  //   symbol: "$",
+  // },
+  // {
+  //   name: "Peso mexicano",
+  //   code: "MXN",
+  //   symbol: "$",
+  // },
   {
     name: "Sol peruano",
     code: "PEN",
     symbol: "S/",
   },
-  {
-    name: "Libra esterlina",
-    code: "GBP",
-    symbol: "£",
-  },
-  {
-    name: "Yen japonés",
-    code: "JPY",
-    symbol: "¥",
-  },
+  // {
+  //   name: "Libra esterlina",
+  //   code: "GBP",
+  //   symbol: "£",
+  // },
+  // {
+  //   name: "Yen japonés",
+  //   code: "JPY",
+  //   symbol: "¥",
+  // },
 ];

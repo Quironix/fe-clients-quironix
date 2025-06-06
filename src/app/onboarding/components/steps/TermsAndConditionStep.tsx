@@ -24,13 +24,8 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
 
   const handleOpenTerms = () => {
     if (profile?.client?.terms_and_conditions) {
-      const pdfWindow = window.open();
-      if (pdfWindow) {
-        pdfWindow.document.write(`
-          <iframe width='100%' height='100%' src='${profile.client.terms_and_conditions}'></iframe>
-        `);
-        setHasReadTerms(true);
-      }
+      window.open(profile.client.terms_and_conditions, "_blank");
+      setHasReadTerms(true);
     }
   };
 

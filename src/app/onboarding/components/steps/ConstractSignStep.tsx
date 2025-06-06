@@ -28,13 +28,8 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
 
   const handleOpenContract = () => {
     if (profile?.client?.contract) {
-      const pdfWindow = window.open();
-      if (pdfWindow) {
-        pdfWindow.document.write(`
-          <iframe width='100%' height='100%' src='${profile.client.contract}'></iframe>
-        `);
-        setHasReadContract(true);
-      }
+      window.open(profile.client.contract, "_blank");
+      setHasReadContract(true);
     }
   };
 

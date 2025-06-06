@@ -7,19 +7,13 @@ import { FileText, LayoutDashboard } from "lucide-react";
 import Header from "../components/header";
 import CardItem from "./components/card-item";
 import IntegrationsImage from "@/public/img/integrations.svg";
+import Language from "@/components/ui/language";
 
 const IntegrationsPage = () => {
   return (
     <>
       <Header fixed>
-        <div className="ml-auto flex items-center space-x-4">
-          <Button
-            size="icon"
-            className="bg-orange-500 text-white rounded-full hover:bg-orange-400 cursor-pointer"
-          >
-            ES
-          </Button>
-        </div>
+        <Language />
       </Header>
       <Main>
         <TitleSection

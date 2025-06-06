@@ -152,12 +152,12 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {isLoadingData ? (
+                            {isLoadingData && countries.length === 0 ? (
                               <SelectItem value="loading" disabled>
                                 Cargando...
                               </SelectItem>
                             ) : (
-                              countries.map((country) => (
+                              countries?.map((country: any) => (
                                 <SelectItem key={country.id} value={country.id}>
                                   {country.name}
                                 </SelectItem>

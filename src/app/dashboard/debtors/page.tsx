@@ -1,28 +1,22 @@
 import React from "react";
-import TitleSection from "../../components/title-section";
+import TitleSection from "@/app/dashboard/components/title-section";
 
 import { FileCog, UsersIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import Header from "../../components/header";
-import { Main } from "../../components/main";
+import Header from "@/app/dashboard/components/header";
+import { Main } from "@/app/dashboard/components/main";
 import Image from "next/image";
-import CreateManualDebtor from "../components/create-manual-debtor";
-import BulkDebtors from "../components/bulk-debtors";
-import ListDebtors from "../components/list-debtors";
+import CreateManualDebtor from "./components/create-manual-debtor";
+import BulkDebtors from "./components/bulk-debtors";
+import ListDebtors from "./components/list-debtors";
+import Language from "@/components/ui/language";
 
-const CreateDebtorPage = () => {
+const DebtorsPage = () => {
   return (
     <>
       <Header fixed>
-        <div className="ml-auto flex items-center space-x-4">
-          <Button
-            size="icon"
-            className="bg-orange-500 text-white rounded-full hover:bg-orange-400 cursor-pointer"
-          >
-            ES
-          </Button>
-        </div>
+        <Language />
       </Header>
       <Main>
         <TitleSection
@@ -56,4 +50,4 @@ const CreateDebtorPage = () => {
   );
 };
 
-export default CreateDebtorPage;
+export default DebtorsPage;

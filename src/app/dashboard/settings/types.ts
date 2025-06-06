@@ -37,6 +37,7 @@ export interface Client {
   dni_type: null;
   dni_number: null;
   country_id: string;
+  country: Country;
   operational_id: string;
   type: string;
   language: string;
@@ -89,6 +90,15 @@ export interface Subscription {
   updated_at: string;
   status: string;
   plan: Plan;
+}
+
+export interface Country {
+  id: string;
+  name: string;
+  iso: string;
+  tax_rate: number;
+  currency: string;
+  created_at: string;
 }
 
 export interface Plan {

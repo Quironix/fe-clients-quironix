@@ -29,6 +29,7 @@ import RoleForm from "./components/form-role";
 import DialogConfirm from "../components/dialog-confirm";
 import { useSearchParams } from "next/navigation";
 import { useProfileContext } from "@/context/ProfileContext";
+import Language from "@/components/ui/language";
 
 const RolesContent = () => {
   const { data: session }: any = useSession();
@@ -84,14 +85,7 @@ const RolesContent = () => {
   return (
     <>
       <Header fixed>
-        <div className="ml-auto flex items-center space-x-4">
-          <Button
-            size="icon"
-            className="bg-orange-500 text-white rounded-full hover:bg-orange-400 cursor-pointer"
-          >
-            ES
-          </Button>
-        </div>
+        <Language />
       </Header>
       <Main>
         <TitleSection

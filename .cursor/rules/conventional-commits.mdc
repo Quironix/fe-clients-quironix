@@ -1,0 +1,184 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Conventional Commits Rules
+
+## Commit Message Format
+Always follow the Conventional Commits specification v1.0.0 for all commit messages.
+
+### Structure
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Required Elements
+- **type**: MUST be one of the allowed types
+- **description**: MUST be a short summary in present tense, lowercase, no period at end
+
+### Commit Types
+Use these types exclusively:
+- `feat`: new feature for the user
+- `fix`: bug fix for the user
+- `docs`: documentation changes
+- `style`: formatting, missing semicolons, etc (no code change)
+- `refactor`: code change that neither fixes a bug nor adds a feature
+- `perf`: code change that improves performance
+- `test`: adding missing tests or correcting existing tests
+- `build`: changes that affect the build system or external dependencies
+- `ci`: changes to CI configuration files and scripts
+- `chore`: other changes that don't modify src or test files
+- `revert`: reverts a previous commit
+
+### Scope (Optional)
+- Use parentheses: `feat(auth): add login validation`
+- Common scopes for this project: `api`, `ui`, `auth`, `components`, `utils`, `config`, `types`, `hooks`, `services`
+
+### Breaking Changes
+- Add `!` after type/scope: `feat!: remove deprecated API`
+- OR add footer: `BREAKING CHANGE: description`
+
+## Examples
+
+### Feature Examples
+```
+feat: add user profile page
+feat(auth): implement JWT token refresh
+feat(ui): add dark mode toggle
+feat(api): add pagination to user list endpoint
+feat(components): create reusable Button component
+```
+
+### Bug Fix Examples
+```
+fix: resolve memory leak in data fetching
+fix(auth): prevent duplicate login requests
+fix(ui): correct responsive layout on mobile
+fix(api): handle null values in user data
+fix(components): fix Modal closing animation
+```
+
+### Documentation Examples
+```
+docs: add API documentation for user endpoints
+docs: update README with new installation steps
+docs(auth): document authentication flow
+docs: add contributing guidelines
+```
+
+### Style Examples
+```
+style: format code with prettier
+style: fix eslint warnings
+style(components): organize imports alphabetically
+style: remove trailing whitespaces
+```
+
+### Refactor Examples
+```
+refactor: simplify user validation logic
+refactor(utils): extract common date functions
+refactor(components): split large component into smaller ones
+refactor: migrate from class to functional components
+```
+
+### Performance Examples
+```
+perf: optimize image loading with lazy loading
+perf(api): add caching to frequently accessed endpoints
+perf: reduce bundle size by code splitting
+perf(components): memoize expensive calculations
+```
+
+### Test Examples
+```
+test: add unit tests for user service
+test(auth): add integration tests for login flow
+test: increase test coverage for utils functions
+test(components): add snapshot tests for UI components
+```
+
+### Build Examples
+```
+build: update webpack configuration
+build: upgrade to React 18
+build: add TypeScript strict mode
+build: configure ESLint and Prettier
+```
+
+### CI Examples
+```
+ci: add GitHub Actions workflow
+ci: configure automated testing
+ci: add deployment pipeline
+ci: update Node.js version in CI
+```
+
+### Chore Examples
+```
+chore: update dependencies
+chore: clean up unused files
+chore: update .gitignore
+chore: configure VS Code settings
+```
+
+### Breaking Change Examples
+```
+feat!: remove deprecated user API endpoints
+
+BREAKING CHANGE: The /api/v1/users endpoint has been removed. Use /api/v2/users instead.
+```
+
+```
+refactor!: change authentication method
+
+BREAKING CHANGE: JWT tokens are now required for all API calls. Session-based auth is no longer supported.
+```
+
+### Multi-paragraph Body Examples
+```
+fix: prevent racing of requests
+
+Introduce a request id and a reference to latest request. Dismiss
+incoming responses other than from latest request.
+
+Remove timeouts which were used to mitigate the racing issue but are
+obsolete now.
+
+Reviewed-by: John Doe
+Refs: #123
+```
+
+### Revert Examples
+```
+revert: let us never again speak of the noodle incident
+
+Refs: 676104e, a215868
+```
+
+## Rules for AI Assistant
+1. ALWAYS suggest commit messages in Conventional Commits format
+2. Keep descriptions concise and in present tense
+3. Use lowercase for descriptions (except proper nouns)
+4. No period at the end of descriptions
+5. Use appropriate scope when relevant to the changes
+6. Indicate breaking changes with `!` or footer
+7. Suggest multiple commit messages if changes span multiple types
+8. Prefer specific scopes over generic ones
+9. Use imperative mood: "add" not "added" or "adds"
+10. Maximum 50 characters for the subject line
+11. Wrap body at 72 characters if present
+
+## Common Patterns for This Project
+- Frontend components: `feat(components): add UserCard component`
+- API integrations: `feat(api): integrate payment gateway`
+- Authentication: `fix(auth): resolve token expiration handling`
+- UI/UX improvements: `feat(ui): improve mobile navigation`
+- Type definitions: `feat(types): add User interface definition`
+- Custom hooks: `feat(hooks): create useLocalStorage hook`
+- Services: `refactor(services): simplify API client configuration`

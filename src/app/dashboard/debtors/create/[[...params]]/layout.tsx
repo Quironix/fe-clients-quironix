@@ -1,18 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-import Header from "../components/header";
+import React, { useEffect, useState } from "react";
+import Header from "@/app/dashboard/components/header";
 import { Button } from "@/components/ui/button";
-import { Main } from "../components/main";
-import TitleSection from "../components/title-section";
-import { UsersIcon } from "lucide-react";
+import { Main } from "@/app/dashboard/components/main";
+import TitleSection from "@/app/dashboard/components/title-section";
+import { FileCog } from "lucide-react";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Step } from "@/components/Stepper/types";
-import StepEntity from "./components/steps/step-entity";
-import StepDebtors from "./components/steps/step-debtors";
-import StepContacts from "./components/steps/step-contacts";
+import DebtorsDataStep from "./components/steps/debtor-data";
+import AttentionStep from "./components/steps/attention-step";
+import ContactInfoStep from "./components/steps/contact-info-step";
 import Language from "@/components/ui/language";
-
+import { useParams, useSearchParams } from "next/navigation";
+import { useDebtorsStore } from "../../store";
+import { Debtor } from "../../types";
 const steps: Step[] = [
   { id: 1, label: "Configuración de la entidad", completed: false },
   { id: 2, label: "Configuración de deudores", completed: false },
@@ -20,9 +22,18 @@ const steps: Step[] = [
 ];
 
 const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
-  const { profile } = useProfileContext();
+  const { profile, session } = useProfileContext();
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
+  const { fetchDebtorById, setDataDebtor } = useDebtorsStore();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
+
+  useEffect(() => {
+    if (id && profile?.client?.id) {
+      fetchDebtorById(session?.token, profile?.client?.id, id);
+    }
+  }, [id, profile?.client?.id]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -57,11 +68,11 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
 
     switch (currentStep) {
       case 0:
-        return <StepEntity {...stepProps} />;
+        return <DebtorsDataStep {...stepProps} />;
       case 1:
-        return <StepDebtors {...stepProps} />;
+        return <AttentionStep {...stepProps} />;
       case 2:
-        return <StepContacts {...stepProps} />;
+        return <ContactInfoStep {...stepProps} />;
       // Aquí irán los demás casos para los otros pasos
       default:
         return null;
@@ -75,12 +86,12 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
       </Header>
       <Main>
         <TitleSection
-          title="Configuración cliente"
+          title={`${id ? "Edición" : "Creación"} de deudores`}
           description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
-          icon={<UsersIcon color="white" />}
-          subDescription="Onboarding"
+          icon={<FileCog color="white" />}
+          subDescription="Configuración de la cartera"
         />
-        <div className="h-auto bg-white rounded-md p-4 px-8 border border-gray-200">
+        <div className="h-screen bg-white rounded-md p-4 px-8 border border-gray-200">
           {renderStep()}
         </div>
       </Main>
