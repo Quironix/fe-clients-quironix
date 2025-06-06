@@ -17,7 +17,7 @@ import * as z from "zod";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
 import Stepper from "@/components/Stepper";
-import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mail, Save } from "lucide-react";
 import { getCountries } from "@/app/services";
 import { useProfileContext } from "@/context/ProfileContext";
 import {
@@ -30,6 +30,10 @@ import {
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { E164Number } from "libphonenumber-js/core";
 import FormPopover from "@/components/ui/form-popover";
+import { useDebtorsStore } from "../../../store";
+import { functionsContact } from "@/app/dashboard/data";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const debtorFormSchema = z.object({
   contact_info: z.array(
@@ -67,19 +71,20 @@ const ContactInfoStep: React.FC<StepProps> = ({
     Array<{ id: string; name: string }>
   >([]);
   const { session } = useProfileContext();
-
+  const { dataDebtor, updateDebtor, setDataDebtor } = useDebtorsStore();
+  const router = useRouter();
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
     defaultValues: {
       contact_info: [
         {
-          name: "",
-          role: "",
-          function: "",
-          email: "",
-          phone: "",
-          channel: "",
+          name: dataDebtor?.contacts?.[0]?.name || "",
+          role: dataDebtor?.contacts?.[0]?.role || "",
+          function: dataDebtor?.contacts?.[0]?.function || "",
+          email: dataDebtor?.contacts?.[0]?.email || "",
+          phone: dataDebtor?.contacts?.[0]?.phone || "",
+          channel: dataDebtor?.contacts?.[0]?.channel || "",
         },
       ],
     },
@@ -103,26 +108,22 @@ const ContactInfoStep: React.FC<StepProps> = ({
 
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
     setSubmitAttempted(true);
-
-    debugger;
-
     try {
-      console.log("Datos del deudor:", data);
-
       if (Object.keys(form.formState.errors).length > 0) {
-        console.error("Hay errores en el formulario:", form.formState.errors);
+        toast.error("Hay errores en el formulario");
         return;
       }
-
-      // Aquí iría la lógica para guardar el deudor
-      console.log("Datos a enviar:", data);
-
-      // Si todo está bien, continuar al siguiente paso
-      if (onNext) {
-        onNext();
+      if (data.contact_info.length > 0 && dataDebtor?.id) {
+        dataDebtor.contacts[0] = data.contact_info[0];
+        dataDebtor.email = data.contact_info[0].email;
+        dataDebtor.phone = data.contact_info[0].phone;
+        await updateDebtor(session?.token, profile?.client?.id, dataDebtor);
       }
+      toast.success("Deudor guardado correctamente");
+      router.push("/dashboard/debtors");
+      router.refresh();
     } catch (error) {
-      console.error("Error al guardar el deudor:", error);
+      toast.error("Error al guardar el deudor");
     }
   };
 
@@ -151,10 +152,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                   name="contact_info.0.name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Contacto{" "}
-                        <FormPopover description="Nombre del contacto" />
-                      </FormLabel>
+                      <FormLabel>Contacto </FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -187,12 +185,11 @@ const ContactInfoStep: React.FC<StepProps> = ({
                             <SelectValue placeholder="Selecciona una función" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="admin">Administrador</SelectItem>
-                            <SelectItem value="manager">Gerente</SelectItem>
-                            <SelectItem value="supervisor">
-                              Supervisor
-                            </SelectItem>
-                            <SelectItem value="other">Otro</SelectItem>
+                            {functionsContact.map((func) => (
+                              <SelectItem key={func.value} value={func.value}>
+                                {func.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -286,8 +283,8 @@ const ContactInfoStep: React.FC<StepProps> = ({
                   }
                 }}
               >
-                {form.formState.isSubmitting ? "Guardando..." : "Continuar"}{" "}
-                <ArrowRight className="w-4 h-4 text-white" />
+                {form.formState.isSubmitting ? "Guardando..." : "Finalizar"}{" "}
+                <Save className="w-4 h-4 text-white" />
               </Button>
             </div>
           </form>

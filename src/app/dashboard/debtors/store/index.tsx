@@ -5,23 +5,25 @@ import {
   getDebtors,
   updateDebtor,
 } from "../services";
-import { BulkUploadResponse } from "../types";
+import { BulkUploadResponse, Debtor } from "../types";
 
 interface DebtorsStore {
+  dataDebtor: Debtor;
+  setDataDebtor: (debtor: any) => void;
   debtors: any[];
   loading: boolean;
   error: string | null;
   bulkUploadErrors: BulkUploadResponse | null;
   fetchDebtors: (accessToken: string, clientId: string) => Promise<void>;
   createDebtor: (
-    debtor: any,
     accessToken: string,
-    clientId: string
+    clientId: string,
+    debtor: any
   ) => Promise<void>;
   updateDebtor: (
-    debtor: any,
     accessToken: string,
-    clientId: string
+    clientId: string,
+    debtor: any
   ) => Promise<void>;
   deleteDebtor: (
     debtorId: string,
@@ -33,6 +35,8 @@ interface DebtorsStore {
 }
 
 export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
+  dataDebtor: {} as Debtor,
+  setDataDebtor: (debtor: Debtor) => set({ dataDebtor: debtor }),
   debtors: [],
   loading: false,
   error: null,
@@ -54,11 +58,13 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
       set({ loading: false });
     }
   },
-  createDebtor: async (debtor: any, accessToken: string, clientId: string) => {
+  createDebtor: async (accessToken: string, clientId: string, debtor: any) => {
     set({ loading: true, error: null });
     try {
-      await createDebtor(debtor, accessToken, clientId);
-      get().fetchDebtors(accessToken, clientId);
+      const response = await createDebtor(accessToken, clientId, debtor);
+      set({ dataDebtor: response });
+      console.log("response", response);
+      // get().fetchDebtors(accessToken, clientId);
     } catch (error: any) {
       console.error("Error en createDebtor:", error);
       const errorMessage =
@@ -70,11 +76,15 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
       set({ loading: false });
     }
   },
-  updateDebtor: async (debtor: any, accessToken: string, clientId: string) => {
+  updateDebtor: async (
+    accessToken: string,
+    clientId: string,
+    debtor: string
+  ) => {
     set({ loading: true, error: null });
     try {
-      await updateDebtor(debtor, accessToken, clientId);
-      get().fetchDebtors(accessToken, clientId);
+      await updateDebtor(accessToken, clientId, debtor);
+      // get().fetchDebtors(accessToken, clientId);
     } catch (error: any) {
       console.error("Error en updateDebtor:", error);
       const errorMessage =

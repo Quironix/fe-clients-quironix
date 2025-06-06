@@ -1,4 +1,5 @@
 export interface Debtor {
+  id?: string;
   name: string;
   channel: string;
   debtor_code: string;
@@ -20,6 +21,8 @@ export interface Contact {
   role: string;
   email: string;
   phone: string;
+  channel?: string;
+  function?: string;
 }
 
 export interface Metadatum {

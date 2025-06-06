@@ -23,20 +23,24 @@ import {
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
 import Stepper from "@/components/Stepper";
-import { FileText, Plus, Minus } from "lucide-react";
+import { FileText, Plus, Minus, ArrowLeft, ArrowRight } from "lucide-react";
 import { Debtor } from "@/app/dashboard/debtors/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getCountries } from "@/app/services";
 import { useProfileContext } from "@/context/ProfileContext";
-import { categories } from "@/app/dashboard/data";
+import { categories, channels, typeDocuments } from "@/app/dashboard/data";
 import InputNumberCart from "@/components/ui/input-number-cart";
 import Required from "@/components/ui/required";
 import { DialogClose } from "@/components/ui/dialog";
 import { SearchInput } from "@/components/ui/search-input";
+import { useDebtorsStore } from "../../../store";
+import { toast } from "sonner";
 
 const debtorFormSchema = z.object({
   name: z.string().min(1, "Campo requerido"),
-  channel: z.string().min(1, "Campo requerido"),
+  channel: z.enum(
+    channels.map((channel) => channel.value) as [string, ...string[]]
+  ),
   debtor_code: z.string().min(1, "Campo requerido"),
   addresses: z.array(
     z.object({
@@ -51,8 +55,8 @@ const debtorFormSchema = z.object({
   dni: z.object({
     type: z.string().min(1, "Campo requerido"),
     dni: z.string().min(1, "Campo requerido"),
-    emit_date: z.string().min(1, "Campo requerido"),
-    expiration_date: z.string().min(1, "Campo requerido"),
+    emit_date: z.string().optional(),
+    expiration_date: z.string().optional(),
   }),
   metadata: z.array(
     z.object({
@@ -61,20 +65,16 @@ const debtorFormSchema = z.object({
     })
   ),
   currency: z.string().min(1, "Campo requerido"),
-  email: z.string().min(1, "Campo requerido"),
-  phone: z.string().min(1, "Campo requerido"),
   contacts: z.array(
     z.object({
-      name: z.string().min(1, "Campo requerido"),
-      role: z.string().min(1, "Campo requerido"),
-      email: z.string().min(1, "Campo requerido"),
-      phone: z.string().min(1, "Campo requerido"),
+      name: z.string().optional(),
+      role: z.string().optional(),
+      email: z.string().optional(),
+      phone: z.string().optional(),
     })
   ),
   category: z.string().min(1, "Campo requerido"),
-  economic_activities: z.string().min(1, "Campo requerido"),
-  sales_person: z.string().min(1, "Campo requerido"),
-  attention_days_hours: z.string().min(1, "Campo requerido"),
+  economic_activities: z.array(z.string()).min(1, "Campo requerido"),
 });
 
 type DebtorFormValues = z.infer<typeof debtorFormSchema>;
@@ -89,64 +89,92 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   onStepChange,
   profile,
 }) => {
+  const { createDebtor, setDataDebtor, dataDebtor, updateDebtor } =
+    useDebtorsStore();
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [countries, setCountries] = useState<
     Array<{ id: string; name: string }>
   >([]);
   const { session } = useProfileContext();
-
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
     defaultValues: {
-      name: "Distribuidora ABC S.A.",
-      channel: "Mayorista",
-      debtor_code: "DEB001",
+      name: dataDebtor?.name || "",
+
+      channel: dataDebtor?.channel || "EMAIL",
+      debtor_code: dataDebtor?.debtor_code || "",
       addresses: [
         {
-          street: "Av. Providencia 1234, Oficina 501",
-          city: "Santiago",
-          state: "Región Metropolitana",
-          country: countries.length > 0 ? countries[0]?.id : "", // Se llenará desde la API
-          postal_code: "7500000",
-          is_primary: true,
+          street: dataDebtor?.addresses?.[0]?.street || "",
+          city: dataDebtor?.addresses?.[0]?.city || "",
+          state: dataDebtor?.addresses?.[0]?.state || "",
+          country: dataDebtor?.addresses?.[0]?.country || "", // Se llenará desde la API
+          postal_code: dataDebtor?.addresses?.[0]?.postal_code || "",
+          is_primary: dataDebtor?.addresses?.[0]?.is_primary || true,
         },
       ],
       dni: {
-        type: "RUT",
-        dni: "76.123.456-7",
-        emit_date: "2020-01-15",
-        expiration_date: "2030-01-15",
+        type: dataDebtor?.dni?.type || "RUT",
+        dni: dataDebtor?.dni?.dni || "",
+        emit_date: dataDebtor?.dni?.emit_date || "",
+        expiration_date: dataDebtor?.dni?.expiration_date || "",
       },
       metadata: [
-        { value: 1, type: "RISK_CLASSIFICATION" },
-        { value: 1000, type: "CREDIT_LINE" },
-        { value: 1000000, type: "CREDIT_LINE_AMOUNT" },
-        { value: "10%", type: "CREDIT_LINE_TOLERANCE" },
-        { value: "Vigente", type: "CREDIT_STATUS" },
-        { value: 30, type: "PAYMENT_TERMS" },
-      ],
-      currency: "CLP",
-      email: "contacto@distribuidoraabc.cl",
-      phone: "+56 9 8765 4321",
-      contacts: [
         {
-          name: "María González",
-          role: "Gerente de Ventas",
-          email: "maria.gonzalez@distribuidoraabc.cl",
-          phone: "+56 9 8765 4322",
+          value:
+            dataDebtor?.metadata?.find((meta) => meta.type === "PAYMENT_TERMS")
+              ?.value || 0,
+          type: "PAYMENT_TERMS",
+        },
+        {
+          value:
+            dataDebtor?.metadata?.find(
+              (meta) => meta.type === "RISK_CLASSIFICATION"
+            )?.value || 0,
+          type: "RISK_CLASSIFICATION",
+        },
+        {
+          value:
+            dataDebtor?.metadata?.find((meta) => meta.type === "CREDIT_LINE")
+              ?.value || 0,
+          type: "CREDIT_LINE",
+        },
+        {
+          value:
+            dataDebtor?.metadata?.find(
+              (meta) => meta.type === "CREDIT_LINE_AMOUNT"
+            )?.value || 0,
+          type: "CREDIT_LINE_AMOUNT",
+        },
+        {
+          value:
+            dataDebtor?.metadata?.find(
+              (meta) => meta.type === "CREDIT_LINE_TOLERANCE"
+            )?.value || "",
+          type: "CREDIT_LINE_TOLERANCE",
+        },
+        {
+          value:
+            dataDebtor?.metadata?.find((meta) => meta.type === "CREDIT_STATUS")
+              ?.value || "Vigente",
+          type: "CREDIT_STATUS",
         },
       ],
-      category:
-        "Comercio al Por Mayor y al por Menor; Reparación de Vehículos Automotores y Motocicletas",
-      economic_activities: "Venta al por mayor de productos alimenticios",
-      sales_person: "Juan Pérez",
-      attention_days_hours:
-        "Lunes a Viernes: 9:00 - 18:00, Sábados: 9:00 - 13:00",
+      currency: dataDebtor?.currency || "CLP",
+      contacts: [
+        {
+          name: dataDebtor?.contacts?.[0]?.name || "",
+          role: dataDebtor?.contacts?.[0]?.role || "",
+          email: dataDebtor?.contacts?.[0]?.email || "",
+          phone: dataDebtor?.contacts?.[0]?.phone || "",
+        },
+      ],
+      category: dataDebtor?.category || "",
+      economic_activities: dataDebtor?.economic_activities || [""],
     },
   });
 
-  // Cargar países cuando el componente se monta
   useEffect(() => {
     const fetchCountries = async () => {
       if (!session?.token) return;
@@ -164,26 +192,52 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
     setSubmitAttempted(true);
-
-    debugger;
-
     try {
-      console.log("Datos del deudor:", data);
-
       if (Object.keys(form.formState.errors).length > 0) {
         console.error("Hay errores en el formulario:", form.formState.errors);
         return;
       }
+      data.contacts[0].email = profile?.email;
+      data.contacts[0].phone = profile?.phone_number;
+      data.contacts[0].name = profile?.first_name + " " + profile?.last_name;
+      data.contacts[0].role = profile?.roles[0]?.name;
 
-      // Aquí iría la lógica para guardar el deudor
-      console.log("Datos a enviar:", data);
-
-      // Si todo está bien, continuar al siguiente paso
+      if (dataDebtor?.id) {
+        const updatedData = {
+          id: dataDebtor.id,
+          ...Object.keys(data).reduce(
+            (acc: Record<string, unknown>, key: string) => {
+              if (
+                JSON.stringify(data[key as keyof typeof data]) !==
+                  JSON.stringify(dataDebtor[key as keyof typeof dataDebtor]) &&
+                key !== "id"
+              ) {
+                acc[key] = data[key as keyof typeof data];
+              }
+              return acc;
+            },
+            {}
+          ),
+        };
+        const updatedDataWithAllFields = {
+          ...dataDebtor,
+          ...updatedData,
+        };
+        setDataDebtor(updatedDataWithAllFields);
+        if (Object.keys(updatedData).length > 1) {
+          await updateDebtor(session?.token, profile?.client?.id, updatedData);
+        } else {
+          toast.error("No hay cambios para actualizar");
+        }
+      } else {
+        setDataDebtor(data);
+        await createDebtor(session?.token, profile?.client?.id, data);
+      }
       if (onNext) {
         onNext();
       }
     } catch (error) {
-      console.error("Error al guardar el deudor:", error);
+      toast.error("Error al guardar el deudor");
     }
   };
 
@@ -198,7 +252,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       </div>
       <div className="h-5/6 space-y-4 border border-gray-200 rounded-md p-5 overflow-y-auto">
         <TitleStep title="Ingreso deudores" icon={<FileText size={16} />} />
-
         <FormProvider {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
@@ -231,7 +284,21 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         Tipo de documento <Required />
                       </FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona un tipo de documento" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {typeDocuments.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -392,7 +459,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         Actividades económicas <Required />
                       </FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input
+                          {...field}
+                          value={field.value.join(", ")}
+                          onChange={(e) =>
+                            field.onChange(e.target.value.split(", "))
+                          }
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -407,7 +480,25 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         Canal <Required />
                       </FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona un canal" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {channels.map((channel: any) => (
+                              <SelectItem
+                                key={channel.value}
+                                value={channel.value}
+                              >
+                                {channel.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -503,23 +594,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         Tolerancia línea de crédito <Required />
                       </FormLabel>
                       <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona una tolerancia" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="10" defaultChecked>
-                              10%
-                            </SelectItem>
-                            <SelectItem value="20">20%</SelectItem>
-                            <SelectItem value="30">30%+</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -575,7 +650,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   }
                 }}
               >
-                {form.formState.isSubmitting ? "Guardando..." : "Guardar"}
+                {form.formState.isSubmitting ? "Guardando..." : "Continuar"}
+                <ArrowRight className="w-4 h-4 text-white" />
               </Button>
             </div>
           </form>
