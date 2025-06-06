@@ -49,7 +49,7 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   error: null,
   bulkUploadErrors: null,
   fetchDebtors: async (accessToken: string, clientId: string) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, dataDebtor: {} as Debtor });
     try {
       const response = await getDebtors(accessToken, clientId);
       const debtorsData = response.data || response.debtors || response || [];

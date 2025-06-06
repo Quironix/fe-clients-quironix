@@ -14,6 +14,7 @@ import ContactInfoStep from "./components/steps/contact-info-step";
 import Language from "@/components/ui/language";
 import { useParams, useSearchParams } from "next/navigation";
 import { useDebtorsStore } from "../../store";
+import { Debtor } from "../../types";
 const steps: Step[] = [
   { id: 1, label: "Configuración de la entidad", completed: false },
   { id: 2, label: "Configuración de deudores", completed: false },
@@ -24,7 +25,7 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
   const { profile, session } = useProfileContext();
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
-  const { fetchDebtorById } = useDebtorsStore();
+  const { fetchDebtorById, setDataDebtor } = useDebtorsStore();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 

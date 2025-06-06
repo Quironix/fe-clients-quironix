@@ -73,6 +73,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
   const { session } = useProfileContext();
   const { dataDebtor, updateDebtor, setDataDebtor } = useDebtorsStore();
   const router = useRouter();
+
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
@@ -114,7 +115,6 @@ const ContactInfoStep: React.FC<StepProps> = ({
         return;
       }
       if (data.contact_info.length > 0 && dataDebtor?.id) {
-        debugger;
         dataDebtor.contacts[0] = data.contact_info[0];
         dataDebtor.email = data.contact_info[0].email;
         dataDebtor.phone = data.contact_info[0].phone;
