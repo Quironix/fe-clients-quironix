@@ -4,15 +4,22 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormProvider, useForm } from "react-hook-form";
-import {
-  FormMessage,
-  FormControl,
-  FormLabel,
-  FormField,
-  FormItem,
-} from "@/components/ui/form";
+import { FormControl, FormField, FormItem } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import TitleStep from "@/app/dashboard/settings/components/title-step";
+import { StepProps } from "@/app/dashboard/settings/types";
+import Stepper from "@/components/Stepper";
+import {
+  CalendarClock,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChevronsUpDown,
+} from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { getCountries } from "@/app/services";
+import { useProfileContext } from "@/context/ProfileContext";
 import {
   Select,
   SelectContent,
@@ -20,26 +27,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import TitleStep from "@/app/dashboard/settings/components/title-step";
-import { StepProps } from "@/app/dashboard/settings/types";
-import Stepper from "@/components/Stepper";
 import {
-  FileText,
-  Plus,
-  Minus,
-  CalendarClock,
-  ArrowLeft,
-  ArrowRight,
-} from "lucide-react";
-import { Debtor } from "@/app/dashboard/debtors/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { getCountries } from "@/app/services";
-import { useProfileContext } from "@/context/ProfileContext";
-import { categories } from "@/app/dashboard/data";
-import InputNumberCart from "@/components/ui/input-number-cart";
-import Required from "@/components/ui/required";
-import { DialogClose } from "@/components/ui/dialog";
-import { SearchInput } from "@/components/ui/search-input";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableHead,
@@ -48,6 +48,8 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
+import { useDebtorsStore } from "@/app/dashboard/debtors/store";
+import { toast } from "sonner";
 
 const debtorFormSchema = z.object({
   attention_days_hours: z.array(
@@ -75,10 +77,26 @@ const debtorFormSchema = z.object({
           }
         }
       })
+      .optional()
   ),
 });
 
 type DebtorFormValues = z.infer<typeof debtorFormSchema>;
+
+// Función para generar las opciones de horario
+const generateTimeOptions = () => {
+  const times = [];
+  for (let hour = 8; hour <= 22; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const timeString = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+      times.push({
+        value: timeString,
+        label: timeString,
+      });
+    }
+  }
+  return times;
+};
 
 const AttentionStep: React.FC<StepProps> = ({
   onNext,
@@ -94,13 +112,24 @@ const AttentionStep: React.FC<StepProps> = ({
   const [countries, setCountries] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [openStartTimePopovers, setOpenStartTimePopovers] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [openEndTimePopovers, setOpenEndTimePopovers] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const { dataDebtor, updateDebtor, setDataDebtor } = useDebtorsStore();
   const { session } = useProfileContext();
+
+  const timeOptions = generateTimeOptions();
 
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
     defaultValues: {
-      attention_days_hours: [],
+      attention_days_hours: Array.isArray(dataDebtor?.attention_days_hours)
+        ? dataDebtor.attention_days_hours
+        : [],
     },
   });
 
@@ -123,7 +152,10 @@ const AttentionStep: React.FC<StepProps> = ({
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
     setSubmitAttempted(true);
 
-    debugger;
+    //elimina los elementos undefined de data.attention_days_hours
+    data.attention_days_hours = data.attention_days_hours.filter(
+      (item: any) => item.day !== undefined
+    );
 
     try {
       console.log("Datos del deudor:", data);
@@ -133,14 +165,21 @@ const AttentionStep: React.FC<StepProps> = ({
         return;
       }
 
-      // Aquí iría la lógica para guardar el deudor
-      console.log("Datos a enviar:", data);
-
-      // Si todo está bien, continuar al siguiente paso
+      if (data.attention_days_hours.length > 0 && dataDebtor?.id) {
+        setDataDebtor({
+          ...dataDebtor,
+          attention_days_hours: data.attention_days_hours,
+        });
+        await updateDebtor(session?.token, profile?.client?.id, {
+          id: dataDebtor?.id,
+          attention_days_hours: data.attention_days_hours,
+        });
+      }
       if (onNext) {
         onNext();
       }
     } catch (error) {
+      toast.error("Error al guardar el deudor");
       console.error("Error al guardar el deudor:", error);
     }
   };
@@ -156,7 +195,6 @@ const AttentionStep: React.FC<StepProps> = ({
       </div>
       <div className="h-5/6 space-y-4 border border-gray-200 rounded-md p-5 overflow-y-auto">
         <TitleStep title="Atención" icon={<CalendarClock size={16} />} />
-
         <FormProvider {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
@@ -181,6 +219,8 @@ const AttentionStep: React.FC<StepProps> = ({
                         "Miércoles",
                         "Jueves",
                         "Viernes",
+                        "Sábado",
+                        "Domingo",
                       ].map((day, index) => (
                         <TableRow key={day} className="align-middle">
                           <TableCell className="py-3">
@@ -223,19 +263,81 @@ const AttentionStep: React.FC<StepProps> = ({
                               control={form.control}
                               name={`attention_days_hours.${index}.hour_start`}
                               render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      type="time"
-                                      {...field}
-                                      disabled={
-                                        form.watch(
-                                          `attention_days_hours.${index}.day`
-                                        ) !== day
-                                      }
-                                      className="w-full"
-                                    />
-                                  </FormControl>
+                                <FormItem className="flex flex-col">
+                                  <Popover
+                                    open={openStartTimePopovers[index] || false}
+                                    onOpenChange={(open) =>
+                                      setOpenStartTimePopovers((prev) => ({
+                                        ...prev,
+                                        [index]: open,
+                                      }))
+                                    }
+                                  >
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant="outline"
+                                          role="combobox"
+                                          aria-expanded={
+                                            openStartTimePopovers[index] ||
+                                            false
+                                          }
+                                          className={cn(
+                                            "w-full justify-between",
+                                            !field.value &&
+                                              "text-muted-foreground"
+                                          )}
+                                          disabled={
+                                            form.watch(
+                                              `attention_days_hours.${index}.day`
+                                            ) !== day
+                                          }
+                                        >
+                                          {field.value || "Hora inicio"}
+                                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-full p-0">
+                                      <Command>
+                                        <CommandInput placeholder="Buscar hora..." />
+                                        <CommandEmpty>
+                                          No se encontró la hora.
+                                        </CommandEmpty>
+                                        <CommandGroup className="max-h-64 overflow-auto">
+                                          {timeOptions.map((time) => (
+                                            <CommandItem
+                                              key={time.value}
+                                              value={time.value}
+                                              onSelect={(currentValue) => {
+                                                field.onChange(
+                                                  currentValue === field.value
+                                                    ? ""
+                                                    : currentValue
+                                                );
+                                                setOpenStartTimePopovers(
+                                                  (prev) => ({
+                                                    ...prev,
+                                                    [index]: false,
+                                                  })
+                                                );
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value === time.value
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                                )}
+                                              />
+                                              {time.label}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
                                 </FormItem>
                               )}
                             />
@@ -245,19 +347,80 @@ const AttentionStep: React.FC<StepProps> = ({
                               control={form.control}
                               name={`attention_days_hours.${index}.hour_end`}
                               render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      type="time"
-                                      {...field}
-                                      disabled={
-                                        form.watch(
-                                          `attention_days_hours.${index}.day`
-                                        ) !== day
-                                      }
-                                      className="w-full"
-                                    />
-                                  </FormControl>
+                                <FormItem className="flex flex-col">
+                                  <Popover
+                                    open={openEndTimePopovers[index] || false}
+                                    onOpenChange={(open) =>
+                                      setOpenEndTimePopovers((prev) => ({
+                                        ...prev,
+                                        [index]: open,
+                                      }))
+                                    }
+                                  >
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant="outline"
+                                          role="combobox"
+                                          aria-expanded={
+                                            openEndTimePopovers[index] || false
+                                          }
+                                          className={cn(
+                                            "w-full justify-between",
+                                            !field.value &&
+                                              "text-muted-foreground"
+                                          )}
+                                          disabled={
+                                            form.watch(
+                                              `attention_days_hours.${index}.day`
+                                            ) !== day
+                                          }
+                                        >
+                                          {field.value || "Hora fin"}
+                                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-full p-0">
+                                      <Command>
+                                        <CommandInput placeholder="Buscar hora..." />
+                                        <CommandEmpty>
+                                          No se encontró la hora.
+                                        </CommandEmpty>
+                                        <CommandGroup className="max-h-64 overflow-auto">
+                                          {timeOptions.map((time) => (
+                                            <CommandItem
+                                              key={time.value}
+                                              value={time.value}
+                                              onSelect={(currentValue) => {
+                                                field.onChange(
+                                                  currentValue === field.value
+                                                    ? ""
+                                                    : currentValue
+                                                );
+                                                setOpenEndTimePopovers(
+                                                  (prev) => ({
+                                                    ...prev,
+                                                    [index]: false,
+                                                  })
+                                                );
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value === time.value
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                                )}
+                                              />
+                                              {time.label}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
                                 </FormItem>
                               )}
                             />

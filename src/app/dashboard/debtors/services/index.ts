@@ -27,29 +27,27 @@ export const getDebtors = async (accessToken: string, clientId: string) => {
 };
 
 export const createDebtor = async (
-  debtor: any,
   accessToken: string,
-  clientId: string
+  clientId: string,
+  debtor: any
 ) => {
-  const response = await fetch(
-    `${API_URL}/v2/clients/${clientId}/debtors/create`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(debtor),
-    }
-  );
+  const response = await fetch(`${API_URL}/v2/clients/${clientId}/debtors`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(debtor),
+  });
   return response.json();
 };
 
 export const updateDebtor = async (
-  debtor: any,
   accessToken: string,
-  clientId: string
+  clientId: string,
+  debtor: any
 ) => {
+  debugger;
   const response = await fetch(
     `${API_URL}/v2/clients/${clientId}/debtors/${debtor.id}`,
     {
