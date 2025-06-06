@@ -2,10 +2,12 @@ import { create } from "zustand";
 import {
   createDebtor,
   deleteDebtor,
+  getDebtorById,
   getDebtors,
   updateDebtor,
 } from "../services";
 import { BulkUploadResponse, Debtor } from "../types";
+import { toast } from "sonner";
 
 interface DebtorsStore {
   dataDebtor: Debtor;
@@ -15,6 +17,11 @@ interface DebtorsStore {
   error: string | null;
   bulkUploadErrors: BulkUploadResponse | null;
   fetchDebtors: (accessToken: string, clientId: string) => Promise<void>;
+  fetchDebtorById: (
+    accessToken: string,
+    clientId: string,
+    debtorId: string
+  ) => Promise<void>;
   createDebtor: (
     accessToken: string,
     clientId: string,
@@ -53,6 +60,31 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
         error?.message ||
         error?.toString() ||
         "Error desconocido al obtener los deudores";
+      set({ error: errorMessage });
+    } finally {
+      set({ loading: false });
+    }
+  },
+  fetchDebtorById: async (
+    accessToken: string,
+    clientId: string,
+    debtorId: string
+  ) => {
+    set({ loading: true, error: null, dataDebtor: {} as Debtor });
+    try {
+      const response = await getDebtorById(accessToken, clientId, debtorId);
+
+      if (!response?.id) {
+        toast.error("Error al obtener el deudor");
+        window.location.href = "/dashboard/debtors";
+      }
+      set({ dataDebtor: response });
+    } catch (error: any) {
+      console.error("Error en fetchDebtorById:", error);
+      const errorMessage =
+        error?.message ||
+        error?.toString() ||
+        "Error desconocido al obtener el deudor";
       set({ error: errorMessage });
     } finally {
       set({ loading: false });

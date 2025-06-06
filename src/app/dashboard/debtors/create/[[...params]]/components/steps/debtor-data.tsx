@@ -33,13 +33,16 @@ import InputNumberCart from "@/components/ui/input-number-cart";
 import Required from "@/components/ui/required";
 import { DialogClose } from "@/components/ui/dialog";
 import { SearchInput } from "@/components/ui/search-input";
-import { useDebtorsStore } from "../../../store";
+import { useDebtorsStore } from "../../../../store";
 import { toast } from "sonner";
 
 const debtorFormSchema = z.object({
   name: z.string().min(1, "Campo requerido"),
   channel: z.enum(
-    channels.map((channel) => channel.value) as [string, ...string[]]
+    channels.map((channel) => channel.value) as [string, ...string[]],
+    {
+      errorMap: () => ({ message: "Debe seleccionar un valor" }),
+    }
   ),
   debtor_code: z.string().min(1, "Campo requerido"),
   addresses: z.array(
@@ -96,84 +99,149 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     Array<{ id: string; name: string }>
   >([]);
   const { session } = useProfileContext();
+
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
     defaultValues: {
-      name: dataDebtor?.name || "",
-
-      channel: dataDebtor?.channel || "EMAIL",
-      debtor_code: dataDebtor?.debtor_code || "",
+      name: "",
+      channel: "EMAIL",
+      debtor_code: "",
       addresses: [
         {
-          street: dataDebtor?.addresses?.[0]?.street || "",
-          city: dataDebtor?.addresses?.[0]?.city || "",
-          state: dataDebtor?.addresses?.[0]?.state || "",
-          country: dataDebtor?.addresses?.[0]?.country || "", // Se llenará desde la API
-          postal_code: dataDebtor?.addresses?.[0]?.postal_code || "",
-          is_primary: dataDebtor?.addresses?.[0]?.is_primary || true,
+          street: "",
+          city: "",
+          state: "",
+          country: "",
+          postal_code: "",
+          is_primary: true,
         },
       ],
       dni: {
-        type: dataDebtor?.dni?.type || "RUT",
-        dni: dataDebtor?.dni?.dni || "",
-        emit_date: dataDebtor?.dni?.emit_date || "",
-        expiration_date: dataDebtor?.dni?.expiration_date || "",
+        type: "RUT",
+        dni: "",
+        emit_date: "",
+        expiration_date: "",
       },
       metadata: [
         {
-          value:
-            dataDebtor?.metadata?.find((meta) => meta.type === "PAYMENT_TERMS")
-              ?.value || 0,
+          value: 0,
           type: "PAYMENT_TERMS",
         },
         {
-          value:
-            dataDebtor?.metadata?.find(
-              (meta) => meta.type === "RISK_CLASSIFICATION"
-            )?.value || 0,
+          value: 0,
           type: "RISK_CLASSIFICATION",
         },
         {
-          value:
-            dataDebtor?.metadata?.find((meta) => meta.type === "CREDIT_LINE")
-              ?.value || 0,
+          value: 0,
           type: "CREDIT_LINE",
         },
         {
-          value:
-            dataDebtor?.metadata?.find(
-              (meta) => meta.type === "CREDIT_LINE_AMOUNT"
-            )?.value || 0,
+          value: 0,
           type: "CREDIT_LINE_AMOUNT",
         },
         {
-          value:
-            dataDebtor?.metadata?.find(
-              (meta) => meta.type === "CREDIT_LINE_TOLERANCE"
-            )?.value || "",
+          value: "",
           type: "CREDIT_LINE_TOLERANCE",
         },
         {
-          value:
-            dataDebtor?.metadata?.find((meta) => meta.type === "CREDIT_STATUS")
-              ?.value || "Vigente",
+          value: "Vigente",
           type: "CREDIT_STATUS",
         },
       ],
-      currency: dataDebtor?.currency || "CLP",
+      currency: "CLP",
       contacts: [
         {
-          name: dataDebtor?.contacts?.[0]?.name || "",
-          role: dataDebtor?.contacts?.[0]?.role || "",
-          email: dataDebtor?.contacts?.[0]?.email || "",
-          phone: dataDebtor?.contacts?.[0]?.phone || "",
+          name: "",
+          role: "",
+          email: "",
+          phone: "",
         },
       ],
-      category: dataDebtor?.category || "",
-      economic_activities: dataDebtor?.economic_activities || [""],
+      category: "",
+      economic_activities: [""],
     },
   });
+
+  useEffect(() => {
+    if (dataDebtor?.id) {
+      const formData: DebtorFormValues = {
+        name: dataDebtor.name || "",
+        channel: dataDebtor.channel || "EMAIL",
+        debtor_code: dataDebtor.debtor_code || "",
+        addresses: [
+          {
+            street: dataDebtor.addresses?.[0]?.street || "",
+            city: dataDebtor.addresses?.[0]?.city || "",
+            state: dataDebtor.addresses?.[0]?.state || "",
+            country: dataDebtor.addresses?.[0]?.country || "",
+            postal_code: dataDebtor.addresses?.[0]?.postal_code || "",
+            is_primary: dataDebtor.addresses?.[0]?.is_primary || true,
+          },
+        ],
+        dni: {
+          type: dataDebtor.dni?.type || "RUT",
+          dni: dataDebtor.dni?.dni || "",
+          emit_date: dataDebtor.dni?.emit_date || "",
+          expiration_date: dataDebtor.dni?.expiration_date || "",
+        },
+        metadata: [
+          {
+            value:
+              dataDebtor.metadata?.find((meta) => meta.type === "PAYMENT_TERMS")
+                ?.value || 0,
+            type: "PAYMENT_TERMS",
+          },
+          {
+            value:
+              dataDebtor.metadata?.find(
+                (meta) => meta.type === "RISK_CLASSIFICATION"
+              )?.value || 0,
+            type: "RISK_CLASSIFICATION",
+          },
+          {
+            value:
+              dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
+                ?.value || 0,
+            type: "CREDIT_LINE",
+          },
+          {
+            value:
+              dataDebtor.metadata?.find(
+                (meta) => meta.type === "CREDIT_LINE_AMOUNT"
+              )?.value || 0,
+            type: "CREDIT_LINE_AMOUNT",
+          },
+          {
+            value:
+              dataDebtor.metadata?.find(
+                (meta) => meta.type === "CREDIT_LINE_TOLERANCE"
+              )?.value || "",
+            type: "CREDIT_LINE_TOLERANCE",
+          },
+          {
+            value:
+              dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_STATUS")
+                ?.value || "Vigente",
+            type: "CREDIT_STATUS",
+          },
+        ],
+        currency: dataDebtor.currency || "CLP",
+        contacts: [
+          {
+            name: dataDebtor.contacts?.[0]?.name || "",
+            role: dataDebtor.contacts?.[0]?.role || "",
+            email: dataDebtor.contacts?.[0]?.email || "",
+            phone: dataDebtor.contacts?.[0]?.phone || "",
+          },
+        ],
+        category: dataDebtor.category || "",
+        economic_activities: dataDebtor.economic_activities || [""],
+      };
+
+      form.reset(formData);
+    }
+  }, [dataDebtor?.id, form]);
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -197,6 +265,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         console.error("Hay errores en el formulario:", form.formState.errors);
         return;
       }
+
       data.contacts[0].email = profile?.email;
       data.contacts[0].phone = profile?.phone_number;
       data.contacts[0].name = profile?.first_name + " " + profile?.last_name;
@@ -204,30 +273,22 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
       if (dataDebtor?.id) {
         const updatedData = {
-          id: dataDebtor.id,
-          ...Object.keys(data).reduce(
-            (acc: Record<string, unknown>, key: string) => {
-              if (
-                JSON.stringify(data[key as keyof typeof data]) !==
-                  JSON.stringify(dataDebtor[key as keyof typeof dataDebtor]) &&
-                key !== "id"
-              ) {
-                acc[key] = data[key as keyof typeof data];
-              }
-              return acc;
-            },
-            {}
-          ),
-        };
-        const updatedDataWithAllFields = {
           ...dataDebtor,
-          ...updatedData,
+          ...data,
+          id: dataDebtor.id,
         };
-        setDataDebtor(updatedDataWithAllFields);
-        if (Object.keys(updatedData).length > 1) {
+
+        const hasChanges = Object.keys(data).some((key) => {
+          const formValue = data[key as keyof typeof data];
+          const storeValue = dataDebtor[key as keyof typeof dataDebtor];
+
+          return JSON.stringify(formValue) !== JSON.stringify(storeValue);
+        });
+
+        setDataDebtor(updatedData);
+
+        if (hasChanges) {
           await updateDebtor(session?.token, profile?.client?.id, updatedData);
-        } else {
-          toast.error("No hay cambios para actualizar");
         }
       } else {
         setDataDebtor(data);

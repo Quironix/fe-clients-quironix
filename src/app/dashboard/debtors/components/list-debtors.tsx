@@ -34,8 +34,10 @@ import Loader from "@/components/Loader";
 import { Debtors } from "./types";
 import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const ListDebtors = () => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -56,6 +58,7 @@ const ListDebtors = () => {
 
   const handleEdit = (debtor: Debtors) => {
     console.log("Editar deudor:", debtor);
+    router.push(`/dashboard/debtors/create?id=${debtor.id}`);
     // Aquí iría la lógica para editar
   };
 

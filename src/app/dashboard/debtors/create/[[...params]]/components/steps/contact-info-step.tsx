@@ -30,7 +30,7 @@ import {
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { E164Number } from "libphonenumber-js/core";
 import FormPopover from "@/components/ui/form-popover";
-import { useDebtorsStore } from "../../../store";
+import { useDebtorsStore } from "../../../../store";
 import { functionsContact } from "@/app/dashboard/data";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -114,6 +114,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
         return;
       }
       if (data.contact_info.length > 0 && dataDebtor?.id) {
+        debugger;
         dataDebtor.contacts[0] = data.contact_info[0];
         dataDebtor.email = data.contact_info[0].email;
         dataDebtor.phone = data.contact_info[0].phone;
@@ -180,7 +181,10 @@ const ContactInfoStep: React.FC<StepProps> = ({
                     <FormItem>
                       <FormLabel>Función</FormLabel>
                       <FormControl>
-                        <Select>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona una función" />
                           </SelectTrigger>
@@ -204,7 +208,10 @@ const ContactInfoStep: React.FC<StepProps> = ({
                     <FormItem>
                       <FormLabel>Canal preferente de comunicación</FormLabel>
                       <FormControl>
-                        <Select>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un canal" />
                           </SelectTrigger>

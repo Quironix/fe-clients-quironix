@@ -26,6 +26,20 @@ export const getDebtors = async (accessToken: string, clientId: string) => {
   }
 };
 
+export const getDebtorById = async (
+  accessToken: string,
+  clientId: string,
+  debtorId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/debtors/${debtorId}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+  return response.json();
+};
+
 export const createDebtor = async (
   accessToken: string,
   clientId: string,
@@ -47,7 +61,6 @@ export const updateDebtor = async (
   clientId: string,
   debtor: any
 ) => {
-  debugger;
   const response = await fetch(
     `${API_URL}/v2/clients/${clientId}/debtors/${debtor.id}`,
     {
