@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/table";
 import { DialogClose } from "@/components/ui/dialog";
 import { useProfileContext } from "@/context/ProfileContext";
+import { Loader2 } from "lucide-react";
 
 const roleFormSchema = z.object({
   id: z.string().optional(),
@@ -92,13 +93,15 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
     if (session?.token && profile?.client?.id) {
       const resourcesData =
         profile?.client.subscriptions[0].plan.system_resources;
-      const initialPermissions = resourcesData.map((resource: any) => ({
-        resource_id: resource.id,
-        can_view: false,
-        can_edit: false,
-        can_delete: false,
-      }));
-      form.setValue("permissions", initialPermissions);
+      // const initialPermissions = resourcesData.map((resource: any) => ({
+      //   resource_id: resource.id,
+      //   can_view: false,
+      //   can_edit: false,
+      //   can_delete: false,
+      // }));
+      setResources(resourcesData);
+      // form.setValue("permissions", initialPermissions);
+      // console.log("initialPermissions", initialPermissions);
       // fetchResources();
     }
   }, [session?.token, profile?.client?.id]);
@@ -328,7 +331,13 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
             className="bg-blue-700 text-white"
             disabled={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? "Guardando..." : "Guardar"}
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Guardando
+              </>
+            ) : (
+              "Guardar"
+            )}
           </Button>
         </div>
       </form>
