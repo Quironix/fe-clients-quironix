@@ -31,6 +31,7 @@ jobs:
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_FINTOC_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_FINTOC_PUBLIC_KEY }}
           AUTH_TRUST_HOST: true
 
         run: |
@@ -39,6 +40,7 @@ jobs:
           echo NEXTAUTH_URL=$NEXTAUTH_URL >> $ENV_PATH
           echo NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL >> $ENV_PATH
           echo AUTH_TRUST_HOST=$AUTH_TRUST_HOST >> $ENV_PATH
+          echo NEXT_PUBLIC_FINTOC_PUBLIC_KEY=$NEXT_PUBLIC_FINTOC_PUBLIC_KEY >> $ENV_PATH
 
           echo NODE_ENV=production >> $ENV_PATH
           cat $ENV_PATH
