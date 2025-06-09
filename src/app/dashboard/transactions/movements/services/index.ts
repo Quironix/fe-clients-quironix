@@ -1,4 +1,4 @@
-import { BulkDebtorsSchema } from "../../debtors/types";
+import { BulkDebtorsSchema } from "../../../debtors/types";
 import { MovementRequest } from "./types";
 
 export const getAll = async (accessToken: string, clientId: string) => {

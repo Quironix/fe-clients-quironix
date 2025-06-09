@@ -12,9 +12,9 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import Header from "../../components/header";
-import { Main } from "../../components/main";
-import AlertIncomplete from "../../debtors/components/alert-incomplete";
+import Header from "../../../components/header";
+import { Main } from "../../../components/main";
+import AlertIncomplete from "../../../debtors/components/alert-incomplete";
 import BulkMovements from "../components/bulk-movements";
 import { useMovementStore } from "../store";
 
@@ -114,7 +114,7 @@ const IncompletePage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bulkUploadErrors.errors.map((error, index) => (
+                  {bulkUploadErrors.errors.map((error: any, index: number) => (
                     <TableRow key={index}>
                       <TableCell>{error.row}</TableCell>
                       <TableCell className="font-medium">

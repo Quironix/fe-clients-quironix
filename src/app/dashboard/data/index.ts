@@ -143,7 +143,7 @@ export const sidebarData: any = {
             },
             {
               title: "Carga de cartolas",
-              url: "/dashboard/transactions/bills",
+              url: "/dashboard/transactions/movements",
             },
           ],
         },
