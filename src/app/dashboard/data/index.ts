@@ -135,15 +135,15 @@ export const sidebarData: any = {
           items: [
             {
               title: "Ingreso DTE",
-              url: "/dashboard/admin-users",
+              url: "/dashboard/transactions/dte",
             },
             {
               title: "Ingreso pago",
-              url: "/dashboard/admin-users",
+              url: "/dashboard/transactions/payment",
             },
             {
               title: "Carga de cartolas",
-              url: "/dashboard/movements",
+              url: "/dashboard/transactions/bills",
             },
           ],
         },

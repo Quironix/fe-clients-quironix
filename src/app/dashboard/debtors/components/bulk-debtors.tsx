@@ -1,23 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { FileDown, FileUp, AlertTriangle, CheckCircle, X } from "lucide-react";
-import React, { useRef, useState } from "react";
-import { bulkDebtors } from "../services";
 import { useProfileContext } from "@/context/ProfileContext";
-import { useDebtorsStore } from "../store";
-import { toast } from "sonner";
-import { BulkUploadResponse, BulkUploadError } from "../types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle, FileDown, FileUp } from "lucide-react";
 import { useRouter } from "next/navigation";
+import React, { useRef, useState } from "react";
+import { toast } from "sonner";
+import { bulkDebtors } from "../services";
+import { useDebtorsStore } from "../store";
+import { BulkUploadResponse } from "../types";
 
 const BulkDebtors = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,18 +20,6 @@ const BulkDebtors = () => {
   const { session, profile } = useProfileContext();
   const { fetchDebtors, setBulkUploadErrors } = useDebtorsStore();
   const router = useRouter();
-
-  const getErrorMessage = (errorCode: string): string => {
-    const errorMessages: { [key: string]: string } = {
-      IS_REQUIRED: "Campo requerido",
-      INVALID_FORMAT: "Formato inválido",
-      INVALID_EMAIL: "Email inválido",
-      INVALID_PHONE: "Teléfono inválido",
-      DUPLICATE_VALUE: "Valor duplicado",
-      INVALID_LENGTH: "Longitud inválida",
-    };
-    return errorMessages[errorCode] || errorCode;
-  };
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -105,11 +84,6 @@ const BulkDebtors = () => {
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
-  };
-
-  const handleCloseErrors = () => {
-    setShowErrors(false);
-    setUploadResult(null);
   };
 
   return (
