@@ -42,11 +42,7 @@ export const columns: ColumnDef<Movement>[] = [
     accessorKey: "description",
     header: "Descripción",
     cell: ({ row }) => {
-      return (
-        <div className="max-w-[200px] truncate">
-          {row.getValue("description")}
-        </div>
-      );
+      return <div className="text-center">{row.getValue("description")}</div>;
     },
   },
   {
@@ -54,19 +50,7 @@ export const columns: ColumnDef<Movement>[] = [
     header: "Comentario",
     cell: ({ row }) => {
       const comment = row.getValue("comment") as string | null;
-      return <div className="max-w-[150px] truncate">{comment || "-"}</div>;
-    },
-  },
-  {
-    id: "actions",
-    header: "Acciones",
-    cell: ({ row }) => {
-      return (
-        <div className="flex justify-end gap-2">
-          {/* Aquí se pueden agregar botones de acciones como editar, eliminar, etc. */}
-          <span className="text-sm text-gray-500">ACCIONES</span>
-        </div>
-      );
+      return <div className="text-center">{comment || "-"}</div>;
     },
   },
 ];
