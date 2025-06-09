@@ -11,7 +11,7 @@ export const getAll = async (accessToken: string, clientId: string) => {
   );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch roles");
+    throw new Error("Failed to fetch bank information");
   }
 
   return response.json();

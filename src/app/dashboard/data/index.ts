@@ -1,28 +1,11 @@
-import { TopNavItem } from "../interfaces";
 import {
-  IconBarrierBlock,
-  IconBrowserCheck,
-  IconBug,
-  IconChecklist,
-  IconError404,
-  IconHelp,
-  IconLayoutDashboard,
-  IconLock,
-  IconLockAccess,
-  IconMessages,
-  IconNotification,
-  IconPackages,
-  IconPalette,
-  IconServerOff,
-  IconSettings,
-  IconTool,
-  IconUserCog,
-  IconUserOff,
-  IconUsers,
   IconCreditCard,
   IconHeartHandshake,
+  IconLayoutDashboard,
+  IconUsers,
 } from "@tabler/icons-react";
 import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
+import { TopNavItem } from "../interfaces";
 
 export const topNav: TopNavItem[] = [
   {
@@ -160,7 +143,7 @@ export const sidebarData: any = {
             },
             {
               title: "Carga de cartolas",
-              url: "/dashboard/admin-users",
+              url: "/dashboard/movements",
             },
           ],
         },
