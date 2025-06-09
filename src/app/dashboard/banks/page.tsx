@@ -16,7 +16,7 @@ import { getFintoc } from "@fintoc/fintoc-js";
 import { FileText, Link, Loader2, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import DialogConfirm from "../components/dialog-confirm";
 import Header from "../components/header";
@@ -31,7 +31,7 @@ import {
 } from "./services/fintoc.service";
 import { useBankInformationStore } from "./store";
 
-const BanksPage = () => {
+const BanksContent = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const [isFintocProccessOpen, setIsFintocProccessOpen] =
@@ -242,6 +242,14 @@ const BanksPage = () => {
         </div>{" "}
       </Main>
     </>
+  );
+};
+
+const BanksPage = () => {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <BanksContent />
+    </Suspense>
   );
 };
 
