@@ -7,11 +7,13 @@ const CreateManual = ({
   description,
   buttonText,
   buttonLink,
+  buttonComponent,
 }: {
   title: React.ReactNode;
   description: string;
-  buttonText: string;
-  buttonLink: string;
+  buttonText?: string;
+  buttonLink?: string;
+  buttonComponent?: React.ReactNode;
 }) => {
   const router = useRouter();
   return (
@@ -21,12 +23,16 @@ const CreateManual = ({
       </h2>
       <div className="flex flex-col items-center justify-center w-full">
         <span className="text-sm text-gray-500">{description}</span>
-        <Button
-          className="mt-4 px-10 bg-[#1249C7] text-white hover:bg-[#1249C7]/90"
-          onClick={() => router.push(buttonLink)}
-        >
-          {buttonText}
-        </Button>
+        {buttonComponent ? (
+          buttonComponent
+        ) : (
+          <Button
+            className="mt-4 px-10 bg-[#1249C7] text-white hover:bg-[#1249C7]/90"
+            onClick={() => router.push(buttonLink || "")}
+          >
+            {buttonText}
+          </Button>
+        )}
       </div>
     </div>
   );
