@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import Stepper from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useProfileContext } from "@/context/ProfileContext";
+import { FileText } from "lucide-react";
+import Image from "next/image";
+import React, { useState } from "react";
+import { toast } from "sonner";
+import { signContract } from "../../services";
 import { OnboardingStepProps } from "../../types";
 import StepLayout from "../StepLayout";
-import Stepper from "@/components/Stepper";
-import { Checkbox } from "@/components/ui/checkbox";
-import Image from "next/image";
-import { ArrowLeftIcon, ArrowRightIcon, FileText } from "lucide-react";
-import { signContract } from "../../services";
-import { useProfileContext } from "@/context/ProfileContext";
-import { toast } from "sonner";
+import { ContinueAndBackButtons } from "./ContinueAndBackButtons";
 
 const ContractSignStep: React.FC<OnboardingStepProps> = ({
   onNext,
@@ -22,8 +23,9 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
   onStepChange,
   profile,
 }) => {
-  const [hasReadContract, setHasReadContract] = useState(false);
-  const [contractSigned, setContractSigned] = useState(false);
+  const [hasReadContract, setHasReadContract] = useState<boolean>(false);
+  const [contractSigned, setContractSigned] = useState<boolean>(false);
+  const [isSigningContract, setIsSigningContract] = useState<boolean>(false);
   const { session } = useProfileContext();
 
   const handleOpenContract = () => {
@@ -39,12 +41,12 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
 
   const handleSignContract = async () => {
     if (profile?.client?.id) {
+      setIsSigningContract(true);
       const success = await signContract(
         session?.token as string,
         profile?.client?.id as string
       );
-      debugger;
-
+      setIsSigningContract(false);
       if (!success.error) {
         onNext();
       } else {
@@ -66,68 +68,58 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
             onStepChange={onStepChange}
           />
         </div>
-        <div className="h-4/6  ">
-          <div className="h-full">
-            <div className="flex justify-between items-center border border-gray-300 rounded-lg h-[90%]">
-              <div className="w-1/2 h-full ">
-                <Image
-                  src="/img/contract-icon.svg"
-                  alt="Terms and condition icon"
-                  width={100}
-                  height={100}
-                  className="w-full h-full"
-                />
+        <div className="p-8 h-[70%]">
+          <div className="">
+            <div className="h-full">
+              <div className="flex justify-between items-center border border-gray-300 rounded-lg h-full">
+                <div className="w-1/2 h-[250px]">
+                  <Image
+                    src="/img/contract-icon.svg"
+                    alt="Terms and condition icon"
+                    width={100}
+                    height={100}
+                    className="w-full h-full"
+                  />
+                </div>
+                <div className="w-1/2 h-full flex justify-center items-center  text-center">
+                  <Button
+                    variant="outline"
+                    className="border-2 border-orange-300 text-gray-500 bg-white"
+                    onClick={handleOpenContract}
+                  >
+                    <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
+                    contrato
+                  </Button>
+                </div>
               </div>
-              <div className="w-1/2 h-full flex justify-center items-center  text-center">
-                <Button
-                  variant="outline"
-                  className="border-2 border-orange-300 text-gray-500 bg-white"
-                  onClick={handleOpenContract}
-                >
-                  <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
-                  contrato
-                </Button>
-              </div>
-            </div>
 
-            <div className="flex items-center justify-center space-x-2 mt-3">
-              <Checkbox
-                id="terms"
-                checked={contractSigned}
-                onCheckedChange={handleContractSigning}
-                disabled={!hasReadContract}
-              />
-              <label
-                htmlFor="terms"
-                className={`text-sm font-medium leading-none ${
-                  !hasReadContract ? "text-gray-400" : ""
-                }`}
-              >
-                Firmar contrato
-              </label>
+              <div className="flex items-center justify-center space-x-2 mt-6">
+                <Checkbox
+                  id="terms"
+                  checked={contractSigned}
+                  onCheckedChange={handleContractSigning}
+                  disabled={!hasReadContract}
+                />
+                <label
+                  htmlFor="terms"
+                  className={`text-sm font-medium leading-none ${
+                    !hasReadContract ? "text-gray-400" : ""
+                  }`}
+                >
+                  Firmar contrato
+                </label>
+              </div>
             </div>
           </div>
         </div>
-        <div className="h-1/6 flex justify-between items-center ">
-          {!isFirstStep && (
-            <Button
-              type="button"
-              onClick={onBack}
-              variant="outline"
-              className="px-6 py-2"
-            >
-              <ArrowLeftIcon className="w-4 h-4" /> Volver
-            </Button>
-          )}
-          <Button
-            type="button"
-            onClick={handleSignContract}
-            className="px-6 py-2"
-            disabled={!contractSigned}
-          >
-            Continuar <ArrowRightIcon className="w-4 h-4" />
-          </Button>
-        </div>
+
+        <ContinueAndBackButtons
+          isFirstStep={isFirstStep}
+          onBack={onBack}
+          loading={isSigningContract}
+          blockContinue={!contractSigned || isSigningContract}
+          onContinue={handleSignContract}
+        />
       </section>
     </StepLayout>
   );

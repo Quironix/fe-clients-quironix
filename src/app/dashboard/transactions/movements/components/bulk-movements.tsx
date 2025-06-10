@@ -6,7 +6,7 @@ import { FileDown, FileUp, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { toast } from "sonner";
-import { BulkUploadResponse } from "../../debtors/types";
+import { BulkUploadResponse } from "../../../debtors/types";
 import { bulkMovements } from "../services";
 import { useMovementStore } from "../store";
 

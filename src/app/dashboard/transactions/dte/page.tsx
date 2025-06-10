@@ -18,7 +18,7 @@ import { useDTEStore } from "./store";
 // import CreateManualDebtor from "./components/create-manual-debtor";
 // import ListDebtors from "./components/list-debtors";
 
-const pageDTE = () => {
+const PageDTE = () => {
   const { dtes, loading, fetchDTE } = useDTEStore();
   const { session, profile } = useProfileContext();
 
@@ -57,4 +57,4 @@ const pageDTE = () => {
   );
 };
 
-export default pageDTE;
+export default PageDTE;

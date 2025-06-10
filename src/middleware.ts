@@ -1,10 +1,17 @@
 import { auth } from "@/auth";
-import { UserProfile } from "./app/onboarding/types";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { UserProfile } from "./app/onboarding/types";
 
 const PUBLIC_PATHS = ["/sign-in", "/onboarding"];
 const DASHBOARD_PATHS = ["/dashboard"];
+
+const fetchProfile = async (token: string) => {
+  return await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v2/auth/profile`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
 
 // Cache para el perfil del usuario
 const profileCache = new Map<
@@ -45,15 +52,14 @@ export default auth(async (req) => {
 
     if (cachedProfile && now - cachedProfile.timestamp < CACHE_DURATION) {
       profile = cachedProfile.profile;
+      if (currentPath.startsWith("/onboarding")) {
+        const response = await fetchProfile(session?.token);
+        profile = await response.json();
+        // Guardar en caché
+        profileCache.set(session?.token, { profile, timestamp: now });
+      }
     } else {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v2/auth/profile`,
-        {
-          headers: {
-            Authorization: `Bearer ${session?.token}`,
-          },
-        }
-      );
+      const response = await fetchProfile(session?.token);
 
       if (!response.ok) {
         // Si el token es inválido, limpiar la caché y redirigir a sign-in
@@ -68,7 +74,7 @@ export default auth(async (req) => {
 
     const clientStatus = profile?.client?.status;
 
-    console.log("CLIENT STATUS", clientStatus);
+    console.log("CLIENT STATUSSSS", clientStatus);
 
     // Si el estado es INVITED
     if (clientStatus === "INVITED") {

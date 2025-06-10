@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
 import { Step } from "@/components/Stepper/types";
-import PersonalInformationStep from "./components/steps/PersonalInformationStep";
-import TwoFactorStep from "./components/steps/TwoFactorStep";
-import TermsAndConditionStep from "./components/steps/TermsAndConditionStep";
-import ContractSignStep from "./components/steps/ConstractSignStep";
-import SuccessOnboarding from "./components/steps/SuccessOnboarding";
 import { useProfileContext } from "@/context/ProfileContext";
-import { Loader, Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
+import { useState } from "react";
+import ContractSignStep from "./components/steps/ConstractSignStep";
+import PersonalInformationStep from "./components/steps/PersonalInformationStep";
+import SuccessOnboarding from "./components/steps/SuccessOnboarding";
+import TermsAndConditionStep from "./components/steps/TermsAndConditionStep";
+import TwoFactorStep from "./components/steps/TwoFactorStep";
 const steps: Step[] = [
   { id: 1, label: "Datos personales", completed: false },
   { id: 2, label: "Autenticación", completed: false },

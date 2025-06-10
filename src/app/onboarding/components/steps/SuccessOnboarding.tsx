@@ -1,13 +1,12 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { OnboardingStepProps } from "../../types";
-import StepLayout from "../StepLayout";
 import Stepper from "@/components/Stepper";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
+import { OnboardingStepProps } from "../../types";
+import StepLayout from "../StepLayout";
 const SuccessOnboarding: React.FC<OnboardingStepProps> = ({
   onNext,
   onBack,
@@ -32,7 +31,7 @@ const SuccessOnboarding: React.FC<OnboardingStepProps> = ({
             onStepChange={onStepChange}
           />
         </div>
-        <div className="h-5/6 ">
+        <div className="p-8 h-[70%]">
           <div className="space-y-4">
             <div className="flex justify-center items-center border border-gray-300 rounded-lg px-5 py-5">
               <Image
@@ -40,7 +39,7 @@ const SuccessOnboarding: React.FC<OnboardingStepProps> = ({
                 alt="Contract icon"
                 width={100}
                 height={100}
-                className="w-1/2 h-auto"
+                className="w-1/2 h-[200px]"
               />
             </div>
 
@@ -55,11 +54,15 @@ const SuccessOnboarding: React.FC<OnboardingStepProps> = ({
               <p className="text-sm text-gray-500 mt-3">
                 Ahora estás listo para ingresar a la plataforma.
               </p>
-              <Link href="/dashboard">
-                <Button className="mt-3">Ingresar a la plataforma</Button>
-              </Link>
             </div>
           </div>
+        </div>
+        <div className="flex justify-end border-t border-orange-500 p-4">
+          <Link href="/dashboard">
+            <Button className="px-6 py-2 border-2 border-primary h-10 w-50">
+              Ingresar a la plataforma
+            </Button>
+          </Link>
         </div>
       </section>
     </StepLayout>

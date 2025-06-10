@@ -1,11 +1,52 @@
 "use client";
 import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
 import { Button } from "@/components/ui/button";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DTE } from "../types";
+
+const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
+  const router = useRouter();
+
+  return (
+    <div className="flex justify-center gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() =>
+          router.push(
+            `/dashboard/transactions/dte/create?id=${row.original.id}`
+          )
+        }
+        title="Editar"
+        className="hover:bg-amber-500 hover:text-white text-primary"
+      >
+        <Edit />
+      </Button>
+      <DialogConfirm
+        title="¿Eliminar deudor?"
+        description={`¿Estás seguro que deseas eliminar el deudor "${row.original.number}"? Esta acción no se puede deshacer.`}
+        triggerButton={
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Eliminar"
+            className="hover:bg-red-500 hover:text-white text-primary"
+          >
+            <Trash2 />
+          </Button>
+        }
+        cancelButtonText="Cancelar"
+        confirmButtonText="Sí, eliminar"
+        onConfirm={() => console.log(row)}
+        type="danger"
+      />
+    </div>
+  );
+};
+
 export const columns: ColumnDef<DTE>[] = [
   {
     accessorKey: "number",
@@ -71,42 +112,7 @@ export const columns: ColumnDef<DTE>[] = [
     id: "actions",
     header: "Acciones",
     cell: ({ row }) => {
-      const router = useRouter();
-      return (
-        <div className="flex justify-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() =>
-              router.push(
-                `/dashboard/transactions/dte/create?id=${row.original.id}`
-              )
-            }
-            title="Editar"
-            className="hover:bg-amber-500 hover:text-white text-primary"
-          >
-            <Edit />
-          </Button>
-          <DialogConfirm
-            title="¿Eliminar deudor?"
-            description={`¿Estás seguro que deseas eliminar el deudor "${row.original.number}"? Esta acción no se puede deshacer.`}
-            triggerButton={
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Eliminar"
-                className="hover:bg-red-500 hover:text-white text-primary"
-              >
-                <Trash2 />
-              </Button>
-            }
-            cancelButtonText="Cancelar"
-            confirmButtonText="Sí, eliminar"
-            onConfirm={() => console.log(row)}
-            type="danger"
-          />
-        </div>
-      );
+      return <AcctionsCellComponent row={row} />;
     },
   },
 ];

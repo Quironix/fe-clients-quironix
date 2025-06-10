@@ -1,36 +1,30 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { OnboardingStepProps } from "../../types";
-import StepLayout from "../StepLayout";
 import Stepper from "@/components/Stepper";
+import { Button } from "@/components/ui/button";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CheckCircleIcon,
-  Loader,
-} from "lucide-react";
 import { useProfileContext } from "@/context/ProfileContext";
-import useOnboardingStore from "../../store";
-import { toast } from "sonner";
-import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircleIcon, Loader } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { verifyCode } from "../../services";
-import { FormDescription, FormMessage } from "@/components/ui/form";
-import {
-  FormField,
-  FormControl,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
+import useOnboardingStore from "../../store";
+import { OnboardingStepProps } from "../../types";
+import StepLayout from "../StepLayout";
+import { ContinueAndBackButtons } from "./ContinueAndBackButtons";
 
 const COUNTDOWN_TIME = 120; // 2 minutos en segundos
 
@@ -49,6 +43,7 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
   const [countdown, setCountdown] = useState(COUNTDOWN_TIME);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
   const [isCodeValid, setIsCodeValid] = useState(false);
+  const [isValidatingCode, setIsValidatingCode] = useState<boolean>(false);
 
   const form = useForm<{ code: string }>({
     resolver: zodResolver(z.object({ code: z.string().min(6) })),
@@ -59,11 +54,11 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
 
   const handleSubmit = async (data: { code: string }) => {
     if (profile?.client?.id && session?.token) {
+      setIsValidatingCode(true);
       const success = await verifyCode(
         session?.token as string,
         profile?.client?.id as string
       );
-
       if (!success.error) {
         setIsCodeValid(true);
         toast.success("Código verificado correctamente");
@@ -72,6 +67,7 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
         setIsCodeValid(false);
         toast.error(error || "Error al verificar el código");
       }
+      setIsValidatingCode(false);
     }
   };
 
@@ -134,104 +130,113 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
             className="h-full"
             autoComplete="off"
           >
-            <div className="h-1/6 ">
-              <Stepper
-                steps={steps}
-                currentStep={currentStep}
-                onStepChange={onStepChange}
-              />
-            </div>
-            <div className="h-4/6">
-              <div className="space-y-8 min-h-2/3 max-h-2/3">
-                <div>
-                  <p className="mb-8">
-                    Ingresa el código que ha sido enviado{" "}
-                    <span className="font-bold">a tu email:</span>
-                  </p>
-                  <div className="flex justify-center flex-col items-center border border-gray-300 rounded-lg px-4 pt-10 pb-6">
-                    <FormField
-                      control={form.control}
-                      name="code"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <InputOTP
-                              maxLength={6}
-                              className="gap-3 justify-center"
-                              {...field}
-                              onChange={(value) => {
-                                field.onChange(value);
-                                if (value.length === 6) {
-                                  form.handleSubmit(handleSubmit)();
-                                }
-                              }}
-                            >
-                              <InputOTPGroup className="gap-3">
-                                {Array.from({ length: 6 }).map((_, index) => (
-                                  <InputOTPSlot
-                                    key={index}
-                                    index={index}
-                                    className="rounded-lg border-2 w-12 h-12"
-                                  />
-                                ))}
-                              </InputOTPGroup>
-                            </InputOTP>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+            <div className="p-8 h-[85%]">
+              <div className="h-1/6 ">
+                <Stepper
+                  steps={steps}
+                  currentStep={currentStep}
+                  onStepChange={onStepChange}
+                />
+              </div>
+              <div className="h-4/6">
+                <div className="space-y-8 min-h-2/3 max-h-2/3">
+                  <div>
+                    <p className="mb-4 text-sm">
+                      Ingresa el código que ha sido enviado{" "}
+                      <span className="font-bold">a tu email:</span>
+                    </p>
+                    <div className="flex justify-center flex-col items-center border border-gray-300 rounded-lg px-4 pt-10 pb-6">
+                      <FormField
+                        control={form.control}
+                        name="code"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <InputOTP
+                                maxLength={6}
+                                className="gap-3 justify-center"
+                                {...field}
+                                onChange={(value) => {
+                                  field.onChange(value);
+                                  if (value.length === 6) {
+                                    form.handleSubmit(handleSubmit)();
+                                  }
+                                }}
+                              >
+                                <InputOTPGroup className="gap-3">
+                                  {Array.from({ length: 6 }).map((_, index) => (
+                                    <InputOTPSlot
+                                      key={index}
+                                      index={index}
+                                      className="rounded-lg border-2 w-12 h-12"
+                                    />
+                                  ))}
+                                </InputOTPGroup>
+                              </InputOTP>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600 inline-flex items-center gap-2">
-                        ¿No has recibido el código?{" "}
-                        <Button
-                          onClick={handleResendCode}
-                          disabled={isResendDisabled || loading}
-                          className="text-orange-500 hover:text-orange-600 font-medium bg-transparent p-0 m-0 hover:bg-transparent shadow-none disabled:opacity-50 disabled:cursor-not-allowe underline"
-                        >
-                          {loading ? (
-                            <span className="flex items-center gap-2">
-                              <Loader className="w-4 h-4 animate-spin" />
-                              Enviando...
-                            </span>
-                          ) : isResendDisabled ? (
-                            `Reenviar en ${formatTime(countdown)}`
-                          ) : (
-                            "Reenviar código"
-                          )}
-                        </Button>
-                      </p>
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600 inline-flex items-center gap-2">
+                          ¿No has recibido el código?{" "}
+                          <Button
+                            onClick={handleResendCode}
+                            disabled={isResendDisabled || loading}
+                            className="text-orange-500 hover:text-orange-600 font-medium bg-transparent p-0 m-0 hover:bg-transparent shadow-none disabled:opacity-50 disabled:cursor-not-allowe underline"
+                          >
+                            {loading ? (
+                              <span className="flex items-center gap-2">
+                                <Loader className="w-4 h-4 animate-spin" />
+                                Enviando...
+                              </span>
+                            ) : isResendDisabled ? (
+                              `Reenviar en ${formatTime(countdown)}`
+                            ) : (
+                              "Reenviar código"
+                            )}
+                          </Button>
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="space-y-4">
-                  <p className="">
-                    Al continuar,{" "}
-                    <span className="font-bold">
-                      estás aceptando lo siguiente:
-                    </span>
-                  </p>
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-2 text-gray-600">
-                      <CheckCircleIcon className="w-5 h-5 text-orange-500" />
-                      Que creemos una cuenta para ti (a menos que ya esté
-                      creada)
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-600">
-                      <CheckCircleIcon className="w-5 h-5 text-orange-500" />
-                      Nuestros "Términos y condiciones"
-                    </li>
-                    <li className="flex items-center gap-2 text-gray-600">
-                      <CheckCircleIcon className="w-5 h-5 text-orange-500" />
-                      Nuestras "Políticas de privacidad"
-                    </li>
-                  </ul>
+                  <div className="space-y-4 text-sm">
+                    <p className="">
+                      Al continuar,{" "}
+                      <span className="font-bold">
+                        estás aceptando lo siguiente:
+                      </span>
+                    </p>
+                    <ul className="space-y-3">
+                      <li className="flex items-center gap-2 text-gray-600">
+                        <CheckCircleIcon className="w-5 h-5 text-primary" />
+                        Que creemos una cuenta para ti (a menos que ya esté
+                        creada)
+                      </li>
+                      <li className="flex items-center gap-2 text-gray-600">
+                        <CheckCircleIcon className="w-5 h-5 text-primary" />
+                        Nuestros "Términos y condiciones"
+                      </li>
+                      <li className="flex items-center gap-2 text-gray-600">
+                        <CheckCircleIcon className="w-5 h-5 text-primary" />
+                        Nuestras "Políticas de privacidad"
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="h-1/6 flex justify-between items-center">
+
+            <ContinueAndBackButtons
+              isFirstStep={isFirstStep}
+              onBack={onBack}
+              loading={loading}
+              form={form}
+            />
+            {/* <div className="h-1/6 flex justify-between items-center">
               {!isFirstStep && (
                 <Button
                   type="button"
@@ -250,9 +255,18 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
                   onNext();
                 }}
               >
-                Continuar <ArrowRightIcon className="w-4 h-4" />
+                {isValidatingCode ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    Verificando...
+                  </>
+                ) : (
+                  <>
+                    Continuar <ArrowRightIcon className="w-4 h-4" />
+                  </>
+                )}
               </Button>
-            </div>
+            </div> */}
           </form>
         </FormProvider>
       </section>

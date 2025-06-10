@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { create as createStore } from "zustand";
-import { BulkUploadResponse } from "../../debtors/types";
+import { BulkUploadResponse } from "../../../debtors/types";
 import { create, getAll, remove, update } from "../services";
 import { Movement, MovementRequest } from "../services/types";
 
