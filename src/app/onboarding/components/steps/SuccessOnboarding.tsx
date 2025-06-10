@@ -54,9 +54,6 @@ const SuccessOnboarding: React.FC<OnboardingStepProps> = ({
               <p className="text-sm text-gray-500 mt-3">
                 Ahora estás listo para ingresar a la plataforma.
               </p>
-              <Link href="/dashboard">
-                <Button className="mt-3">Ingresar a la plataforma</Button>
-              </Link>
             </div>
           </div>
         </div>
