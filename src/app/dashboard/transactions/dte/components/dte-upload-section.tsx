@@ -10,7 +10,6 @@ import CreateManual from "../../../components/create-manual";
 import { bulkData } from "../services";
 import { useDTEStore } from "../store";
 import { BulkUploadResponse } from "../types";
-import FormDTE from "./form-dte";
 
 interface DTEUploadSectionProps {}
 
@@ -106,7 +105,8 @@ const DTEUploadSection = () => {
             </>
           }
           description="Completa el formulario con los datos del DTE que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuestas con un archivo para importar."
-          buttonComponent={<FormDTE />}
+          buttonText="Crear DTE"
+          buttonLink="/dashboard/transactions/dte/create"
         />
       </div>
       <div className="w-[37.5%] h-full">

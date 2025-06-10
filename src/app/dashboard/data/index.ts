@@ -5,6 +5,7 @@ import {
   IconUsers,
 } from "@tabler/icons-react";
 import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
+import { Bank } from "../banks/components/bank-form";
 import { TopNavItem } from "../interfaces";
 
 export const topNav: TopNavItem[] = [
@@ -302,4 +303,93 @@ export const currencies = [
   //   code: "JPY",
   //   symbol: "¥",
   // },
+];
+
+export const BANK_LIST: Bank[] = [
+  { name: "Banco de Chile", sbifCode: "001" },
+  { name: "Banco Internacional", sbifCode: "009" },
+  { name: "Scotiabank Chile", sbifCode: "014" },
+  { name: "Banco de Crédito e Inversiones", sbifCode: "016" },
+  { name: "Banco BICE", sbifCode: "028" },
+  { name: "HSBC Bank (Chile)", sbifCode: "031" },
+  { name: "Banco Santander-Chile", sbifCode: "037" },
+  { name: "Banco Itaú Chile", sbifCode: "039" },
+  { name: "JP Morgan Chase Bank, N. A.", sbifCode: "041" },
+  { name: "Banco Security", sbifCode: "049" },
+  { name: "Banco Falabella", sbifCode: "051" },
+  { name: "Banco Ripley", sbifCode: "053" },
+  { name: "Banco Consorcio", sbifCode: "055" },
+  { name: "Banco BTG Pactual Chile", sbifCode: "059" },
+  { name: "China Construction Bank, Agencia en Chile", sbifCode: "060" },
+  { name: "Bank of China, Agencia en Chile", sbifCode: "061" },
+  { name: "Tanner Banco Digital", sbifCode: "062" },
+  { name: "Banco Estado", sbifCode: "012" },
+];
+
+export enum DocumentType {
+  CHECK = "Cheque",
+  DEPOSIT = "Depósito",
+  CASH = "Efectivo",
+  SIGHT_DRAFT = "Vale Vista",
+  BILL_OF_EXCHANGE = "Letra",
+  PROMISSORY_NOTE = "Pagaré",
+  APPLICATION = "Aplicación",
+  ADJUSTMENT = "Ajuste",
+  TRANSFER = "Transferencia",
+  CREDIT_CARD = "Tarjeta Crédito",
+  DEBIT_CARD = "Tarjeta Debito",
+  TAX_WITHHOLDING = "Retencion Impto",
+  BANK_EXPENSE = "Gasto Bancaria",
+  POST_DATED_CHECK = "Cheque A Fecha",
+  DEBT_COLLECTION = "Cobro Deuda",
+  INTEREST = "Intereses",
+  CREDIT_NOTE = "Abono",
+}
+
+export const INVOICE_TYPES = [
+  {
+    country: "CL",
+    types: [
+      {
+        label: "Factura Electrónica",
+        value: "INVOICE",
+      },
+      {
+        label: "Factura No Afecta o Exenta Electrónica",
+        value: "EXEMPT_INVOICE",
+      },
+      {
+        label: "Factura de Compra Electrónica",
+        value: "PURCHASE_INVOICE",
+      },
+      {
+        label: "Liquidación Factura Electrónica",
+        value: "SETTLEMENT_INVOICE",
+      },
+      {
+        label: "Nota de Débito Electrónica",
+        value: "DEBIT_NOTE",
+      },
+      {
+        label: "Nota de Crédito Electrónica",
+        value: "CREDIT_NOTE",
+      },
+      {
+        label: "Guía de Despacho Electrónica",
+        value: "DISPATCH_GUIDE",
+      },
+      {
+        label: "Factura de Exportación Electrónica",
+        value: "EXPORT_INVOICE",
+      },
+      {
+        label: "Nota de Crédito de Exportación Electrónica",
+        value: "EXPORT_CREDIT_NOTE",
+      },
+      {
+        label: "Nota de Débito de Exportación Electrónica",
+        value: "EXPORT_DEBIT_NOTE",
+      },
+    ],
+  },
 ];

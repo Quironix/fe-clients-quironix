@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
+import { BANK_LIST } from "../../data";
 import { BankFormValues } from "./bank-dialog";
 
 interface BankFormProps {
@@ -24,31 +25,10 @@ interface BankFormProps {
   isLoading: boolean;
 }
 
-interface Bank {
+export interface Bank {
   name: string;
   sbifCode: string;
 }
-
-export const BANK_LIST: Bank[] = [
-  { name: "Banco de Chile", sbifCode: "001" },
-  { name: "Banco Internacional", sbifCode: "009" },
-  { name: "Scotiabank Chile", sbifCode: "014" },
-  { name: "Banco de Crédito e Inversiones", sbifCode: "016" },
-  { name: "Banco BICE", sbifCode: "028" },
-  { name: "HSBC Bank (Chile)", sbifCode: "031" },
-  { name: "Banco Santander-Chile", sbifCode: "037" },
-  { name: "Banco Itaú Chile", sbifCode: "039" },
-  { name: "JP Morgan Chase Bank, N. A.", sbifCode: "041" },
-  { name: "Banco Security", sbifCode: "049" },
-  { name: "Banco Falabella", sbifCode: "051" },
-  { name: "Banco Ripley", sbifCode: "053" },
-  { name: "Banco Consorcio", sbifCode: "055" },
-  { name: "Banco BTG Pactual Chile", sbifCode: "059" },
-  { name: "China Construction Bank, Agencia en Chile", sbifCode: "060" },
-  { name: "Bank of China, Agencia en Chile", sbifCode: "061" },
-  { name: "Tanner Banco Digital", sbifCode: "062" },
-  { name: "Banco Estado", sbifCode: "012" },
-];
 
 const BankForm: React.FC<BankFormProps> = ({ form, isLoading }) => {
   return (

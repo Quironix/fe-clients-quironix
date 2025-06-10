@@ -1,21 +1,31 @@
 export interface DTE {
   id?: string;
-  type: string;
-  number: string;
-  external_number: string;
-  amount: number;
-  order_number: string;
-  issue_date: string;
-  due_date: string;
+  type: string; //TipoDocumento
+  number: string; //NnumeroDocumento
+  external_number: string; //NumreoDocumentoSistExterno
+  amount: number; //Monto
+  order_number: string; //OrdenDeCompra
+  issue_date: string; //FechaEmision
+  due_date: string; //FechaVencimiento
   operation_date: string;
   reception_date: string;
-  folio: boolean;
-  number_of_installments: string;
-  ref_1: string;
-  ref_2: string;
-  ref_3: string;
-  ref_4: string;
-  debtor_id: string;
+  folio: string; //Ficticia
+  balance: number; //Balance
+  litigation_balance: number; //BalanceLitigio
+  is_internal_document: boolean;
+  observations: string; //Observacion
+  number_of_installments: string; //NroCuota
+  order_code: string;
+  reference: string; //Referencia
+  ref_1: string; //Ref1
+  ref_2: string; //Ref2
+  ref_3: string; //Ref3
+  ref_4: string; //Ref4
+  debtor_id: string; //Codigodeudor
+  debtor?: {
+    id?: string;
+    name?: string;
+  };
 }
 
 export enum BulkSchema {

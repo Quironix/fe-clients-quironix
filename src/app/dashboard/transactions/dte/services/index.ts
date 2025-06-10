@@ -35,3 +35,62 @@ export const getDTEs = async (accessToken: string, clientId: string) => {
   }
   return response.json();
 };
+
+export const createDTE = async (
+  accessToken: string,
+  clientId: string,
+  data: any
+) => {
+  const response = await fetch(`${API_URL}/v2/clients/${clientId}/invoices`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return response.json();
+};
+
+export const getDTEById = async (
+  accessToken: string,
+  clientId: string,
+  dteId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/invoices/${dteId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch DTE");
+  }
+  return response.json();
+};
+
+export const updateDTE = async (
+  accessToken: string,
+  clientId: string,
+  dteId: string,
+  data: any
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/invoices/${dteId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to update DTE");
+  }
+  return response.json();
+};

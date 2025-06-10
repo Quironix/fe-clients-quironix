@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getDTEs } from "../services";
+import { getDTEById, getDTEs } from "../services";
 import { BulkUploadResponse, DTE } from "../types";
 
 interface DTEStore {
@@ -8,6 +8,11 @@ interface DTEStore {
   loading: boolean;
   error: string | null;
   fetchDTE: (accessToken: string, clientId: string) => Promise<void>;
+  fetchDTEById: (
+    accessToken: string,
+    clientId: string,
+    dteId: string
+  ) => Promise<void>;
   deleteDTE: (
     accessToken: string,
     clientId: string,
@@ -46,6 +51,21 @@ export const useDTEStore = create<DTEStore>((set, get) => ({
     try {
       // Simulación de eliminación
       console.log("Eliminando DTE:", dteId);
+    } catch (error: any) {
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
+    }
+  },
+  fetchDTEById: async (
+    accessToken: string,
+    clientId: string,
+    dteId: string
+  ) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await getDTEById(accessToken, clientId, dteId);
+      set({ dte: response.data });
     } catch (error: any) {
       set({ error: error.message });
     } finally {

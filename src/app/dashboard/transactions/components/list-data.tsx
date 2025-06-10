@@ -67,7 +67,7 @@ const ListDataDTE = () => {
         icon: <Edit />,
         onClick: (dte) => {
           console.log("Editar DTE:", dte);
-          router.push(`/dashboard/transactions/dte/create?id=${dte.number}`);
+          router.push(`/dashboard/transactions/dte/create?id=${dte.id}`);
         },
         className: "hover:bg-amber-500 hover:text-white text-primary",
       },
@@ -103,7 +103,7 @@ const ListDataDTE = () => {
   const handleDelete = async (dte: DTE) => {
     if (session?.token && profile?.client?.id) {
       try {
-        await deleteDTE(session.token, profile.client.id, dte.number);
+        await deleteDTE(session.token, profile.client.id, dte.id || "");
         toast.success("DTE eliminado correctamente");
         fetchDTE(session.token, profile.client.id);
       } catch (error) {
