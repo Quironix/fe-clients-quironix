@@ -1,24 +1,13 @@
 "use client";
 import Stepper from "@/components/Stepper";
-import { StepProps } from "../../types";
-import StepLayout from "../StepLayout";
-import { Button } from "@/components/ui/button";
 import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  Loader,
-  Mail,
-  Phone,
-  Trash,
-  Plus,
-  Banknote,
-  ChartLine,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { FormProvider, useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import TitleStep from "../title-step";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   FormControl,
   FormField,
@@ -27,28 +16,32 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { updateDataClient } from "../../services";
-import { useProfileContext } from "@/context/ProfileContext";
-import { toast } from "sonner";
+import InputNumberCart from "@/components/ui/input-number-cart";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { useProfileContext } from "@/context/ProfileContext";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { E164Number } from "libphonenumber-js/core";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Checkbox } from "@/components/ui/checkbox";
-import InputNumberCart from "@/components/ui/input-number-cart";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  Banknote,
+  ChartLine,
+  Loader,
+  Mail,
+  Plus,
+  Trash,
+  X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { getAll as getUsersService } from "../../../users/services";
 import { User } from "../../../users/services/types";
+import { updateDataClient } from "../../services";
+import { StepProps } from "../../types";
+import StepLayout from "../StepLayout";
+import TitleStep from "../title-step";
 
 const StepContacts: React.FC<StepProps> = ({
   onNext,
@@ -65,6 +58,7 @@ const StepContacts: React.FC<StepProps> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const { session, refreshProfile } = useProfileContext();
+  const [approvingUsers, setApprovingUsers] = useState<string[]>([]);
 
   // Cargar usuarios cuando el componente se monta
   useEffect(() => {
@@ -149,7 +143,7 @@ const StepContacts: React.FC<StepProps> = ({
       extension_request_period: z.number().min(0, "Campo requerido"),
       annual_extensions_per_debtor: z.number().min(0, "Campo requerido"),
       maximum_extension_period: z.number().min(0, "Campo requerido"),
-      approving_users: z.string().min(1, "Debe seleccionar un aprobador"),
+      approving_users: z.array(z.string()).optional(),
       country_id: z.string().optional(),
       currency: z.string().optional(),
       tax_id: z.string().optional(),
@@ -184,11 +178,12 @@ const StepContacts: React.FC<StepProps> = ({
         approving_users: (() => {
           const approvingUsers = (profile?.client?.operational as any)
             ?.approving_users;
-          // Si es un array, tomar el primer elemento, si es string mantenerlo, si no existe usar ""
+
+          // Si es un array, mantenerlo, si es string convertirlo a array, si no existe usar array vacío
           if (Array.isArray(approvingUsers)) {
-            return approvingUsers[0] || "";
+            return approvingUsers;
           }
-          return approvingUsers || "";
+          return approvingUsers ? [approvingUsers] : [];
         })(),
       },
     },
@@ -205,6 +200,11 @@ const StepContacts: React.FC<StepProps> = ({
   // Actualizar valores cuando el perfil cambie
   useEffect(() => {
     if (profile?.client) {
+      if (profile.client.operational) {
+        setApprovingUsers(
+          (profile.client.operational as any).approving_users || []
+        );
+      }
       const newValues: ContactsFormType = {
         contacts: profile.client.contacts?.length
           ? profile.client.contacts.map((contact) => ({
@@ -235,15 +235,7 @@ const StepContacts: React.FC<StepProps> = ({
             0,
           maximum_extension_period:
             (profile.client.operational as any)?.maximum_extension_period ?? 0,
-          approving_users: (() => {
-            const approvingUsers = (profile.client.operational as any)
-              ?.approving_users;
-            // Si es un array, tomar el primer elemento, si es string mantenerlo, si no existe usar ""
-            if (Array.isArray(approvingUsers)) {
-              return approvingUsers[0] || "";
-            }
-            return approvingUsers || "";
-          })(),
+          approving_users: approvingUsers,
         },
       };
       form.reset(newValues);
@@ -283,17 +275,17 @@ const StepContacts: React.FC<StepProps> = ({
     }
   };
 
-  // Verificar si hay cambios en el formulario
-  const hasFormChanges = () => {
-    const currentValues = form.getValues();
-    const initialValues = {
-      contacts: profile?.client?.contacts || [],
-    };
-    return JSON.stringify(currentValues) !== JSON.stringify(initialValues);
-  };
-
   // Manejar envío del formulario
   const handleSubmit = async (data: ContactsFormType) => {
+    // Validación personalizada para approving_users
+    if (
+      !data.operational.approving_users ||
+      data.operational.approving_users.length === 0
+    ) {
+      toast.error("Debe seleccionar al menos un aprobador");
+      return;
+    }
+
     setLoading(true);
     try {
       if (!session?.token || !profile?.client?.id) {
@@ -311,7 +303,9 @@ const StepContacts: React.FC<StepProps> = ({
           annual_extensions_per_debtor:
             data.operational.annual_extensions_per_debtor,
           maximum_extension_period: data.operational.maximum_extension_period,
-          approving_users: data.operational.approving_users,
+          approving_users: Array.isArray(data.operational.approving_users)
+            ? data.operational.approving_users
+            : [data.operational.approving_users].filter(Boolean),
         },
       };
 
@@ -618,6 +612,7 @@ const StepContacts: React.FC<StepProps> = ({
                           </FormItem>
                         )}
                       />
+
                       <FormField
                         control={form.control}
                         name="operational.approving_users"
@@ -625,64 +620,92 @@ const StepContacts: React.FC<StepProps> = ({
                           <FormItem>
                             <FormLabel>Aprobadores</FormLabel>
                             <FormControl>
-                              <Select
-                                value={field.value || ""}
-                                onValueChange={(value) => {
-                                  field.onChange(value);
-                                }}
-                                disabled={loadingUsers}
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue
-                                    placeholder={
-                                      loadingUsers
-                                        ? "Cargando usuarios..."
-                                        : "Seleccionar aprobador"
-                                    }
-                                  />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {users.map((user) => (
-                                    <SelectItem key={user.id} value={user.id!}>
-                                      {user.first_name} {user.last_name} (
-                                      {user.email})
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <div className="space-y-2">
+                                {loadingUsers ? (
+                                  <div className="text-sm text-gray-500">
+                                    Cargando usuarios...
+                                  </div>
+                                ) : (
+                                  users.map((user) => (
+                                    <div
+                                      key={user.id}
+                                      className="flex items-center space-x-2"
+                                    >
+                                      <Checkbox
+                                        checked={field.value?.includes(
+                                          user.id!
+                                        )}
+                                        onCheckedChange={(checked) => {
+                                          if (checked) {
+                                            setApprovingUsers([
+                                              ...approvingUsers,
+                                              user.id!,
+                                            ]);
+                                            field.onChange([user.id!]);
+                                          } else {
+                                            setApprovingUsers(
+                                              approvingUsers.filter(
+                                                (id) => id !== user.id
+                                              )
+                                            );
+                                            field.onChange([]);
+                                          }
+                                        }}
+                                      />
+                                      <label className="text-sm font-normal">
+                                        {user.first_name} {user.last_name}
+                                      </label>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
                             </FormControl>
-                            {field.value && (
+                            {field.value && field.value.length > 0 && (
                               <div className="mt-2">
                                 <span className="text-sm text-gray-600">
-                                  Usuario seleccionado:
+                                  Usuarios seleccionados:
                                 </span>
-                                <div className="mt-1">
-                                  {(() => {
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {field.value.map((userId) => {
                                     const user = users.find(
-                                      (u) => u.id === field.value
+                                      (u) => u.id === userId
                                     );
                                     if (!user) return null;
                                     return (
-                                      <div className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs w-fit">
+                                      <div
+                                        key={userId}
+                                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs"
+                                      >
                                         <span>
                                           {user.first_name} {user.last_name}
                                         </span>
                                         <button
                                           type="button"
                                           onClick={() => {
-                                            field.onChange("");
+                                            const currentValue =
+                                              field.value || [];
+                                            field.onChange(
+                                              currentValue.filter(
+                                                (id) => id !== userId
+                                              )
+                                            );
                                           }}
                                           className="text-blue-600 hover:text-blue-800"
                                         >
-                                          ×
+                                          <X className="w-3 h-3" />
                                         </button>
                                       </div>
                                     );
-                                  })()}
+                                  })}
                                 </div>
                               </div>
                             )}
                             <FormMessage />
+                            {(!field.value || field.value.length === 0) && (
+                              <p className="text-sm text-red-600">
+                                Debe seleccionar al menos un aprobador
+                              </p>
+                            )}
                           </FormItem>
                         )}
                       />
@@ -756,11 +779,7 @@ const StepContacts: React.FC<StepProps> = ({
                 </Button>
               )}
               <div className={isFirstStep ? "ml-auto" : ""}>
-                <Button
-                  type="submit"
-                  className="px-6 py-2"
-                  disabled={loading || !form.formState.isValid}
-                >
+                <Button type="submit" className="px-6 py-2" disabled={loading}>
                   {loading ? (
                     <div className="flex items-center gap-2">
                       <Loader className="w-4 h-4 animate-spin" /> Cargando
