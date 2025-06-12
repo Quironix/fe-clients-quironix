@@ -113,7 +113,7 @@ const FormPayments = () => {
     console.log("🔍 id exists:", !!id);
     console.log("🔍 isLoadingPayment:", isLoadingPayment);
 
-    if (payment && Object.keys(payment).length > 0) {
+    if (payment && Object.keys(payment).length > 0 && id) {
       console.log("✅ Resetting form with payment data:", payment);
 
       // Asegurarse de que las fechas estén en el formato correcto

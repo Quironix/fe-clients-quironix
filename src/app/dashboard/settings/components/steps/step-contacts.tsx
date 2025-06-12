@@ -191,6 +191,8 @@ const StepContacts: React.FC<StepProps> = ({
     reValidateMode: "onChange",
   });
 
+  // console.log("profile?.client?.operational", form.getValues());
+
   // useFieldArray para manejar contactos dinámicamente
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -235,7 +237,10 @@ const StepContacts: React.FC<StepProps> = ({
             0,
           maximum_extension_period:
             (profile.client.operational as any)?.maximum_extension_period ?? 0,
-          approving_users: approvingUsers,
+          approving_users:
+            (profile.client.operational as any).approving_users.map(
+              (user: any) => user.id
+            ) || [],
         },
       };
       form.reset(newValues);
