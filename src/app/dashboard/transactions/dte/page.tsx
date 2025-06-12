@@ -44,7 +44,7 @@ const PageDTE = () => {
         <div className="mt-5 border border-gray-200 rounded-md p-3">
           <DataTable
             columns={columns}
-            data={dtes}
+            data={dtes as any}
             isLoading={loading}
             loadingComponent={<LoaderTable cols={7} />}
             emptyMessage="No se encontraron movimientos"

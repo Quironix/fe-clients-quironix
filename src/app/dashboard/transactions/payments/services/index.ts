@@ -9,7 +9,7 @@ export const getPayments = async (
   startDate: string,
   endDate: string
 ) => {
-  let params: Record<string, string> = {};
+  const params: Record<string, string> = {};
   if (startDate) {
     params.startDate = startDate;
   }
