@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
-import { CheckCircle, FileDown, FileUp } from "lucide-react";
+import { FileDown, FileUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -130,15 +130,6 @@ const BulkDebtors = () => {
         >
           <FileUp /> {isUploading ? "Subiendo archivo..." : "Subir archivo"}
         </Button>
-
-        {uploadResult && uploadResult.invalidCount === 0 && (
-          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span className="text-sm text-green-700">
-              ¡Éxito! {uploadResult.validCount} deudores cargados correctamente
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -76,6 +76,7 @@ export const sidebarData: any = {
               url: "/dashboard/settings",
             },
             {
+              disabled: true,
               title: "Integraciones",
               url: "/dashboard/integrations",
             },
@@ -98,6 +99,7 @@ export const sidebarData: any = {
               url: "/dashboard/roles",
             },
             {
+              disabled: true,
               title: "Historial de acciones",
               url: "/dashboard/actions-history",
             },
@@ -111,20 +113,23 @@ export const sidebarData: any = {
               title: "Creación de deudores",
               url: "/dashboard/debtors",
             },
-
             {
+              disabled: true,
               title: "Periodo mensual y cierre",
               url: "/dashboard/monthly-period",
             },
             {
+              disabled: true,
               title: "Flujo de caja",
               url: "/dashboard/cash-flow",
             },
             {
+              disabled: true,
               title: "Comunicaciones",
               url: "/dashboard/communications",
             },
             {
+              disabled: true,
               title: "Configuración de indicadores",
               url: "/dashboard/indicators",
             },
@@ -140,7 +145,7 @@ export const sidebarData: any = {
             },
             {
               title: "Ingreso pago",
-              url: "/dashboard/transactions/payment",
+              url: "/dashboard/transactions/payments",
             },
             {
               title: "Carga de cartolas",
