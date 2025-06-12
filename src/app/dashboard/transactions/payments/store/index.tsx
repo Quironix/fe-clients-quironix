@@ -1,5 +1,11 @@
 import { create } from "zustand";
-import { getBankInformation, getPaymentById, getPayments } from "../services";
+import {
+  createPayment,
+  deletePayment,
+  getBankInformation,
+  getPaymentById,
+  getPayments,
+} from "../services";
 import { BulkUploadResponse, Payments } from "../types";
 
 interface PaymentStore {
@@ -31,6 +37,12 @@ interface PaymentStore {
     clientId: string
   ) => Promise<void>;
   bankInformation: any;
+  createPayment: (
+    accessToken: string,
+    clientId: string,
+    payment: Payments
+  ) => Promise<void>;
+  responseSuccess: any;
 }
 
 export const usePaymentStore = create<PaymentStore>((set, get) => ({
@@ -40,6 +52,22 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
   error: null,
   bulkUploadErrors: null,
   bankInformation: [],
+  responseSuccess: {} as any,
+  createPayment: async (
+    accessToken: string,
+    clientId: string,
+    payment: Payments
+  ) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await createPayment(accessToken, clientId, payment);
+      set({ responseSuccess: response });
+    } catch (error: any) {
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
+    }
+  },
   fetchPayments: async (
     accessToken: string,
     clientId: string,
@@ -72,6 +100,8 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     try {
       // Simulación de eliminación
       console.log("Eliminando pago:", id);
+      const response = await deletePayment(accessToken, clientId, id);
+      set({ responseSuccess: response });
     } catch (error: any) {
       set({ error: error.message });
     } finally {

@@ -51,9 +51,9 @@ const PaymentUploadSection = () => {
 
       if (response.invalidCount === 0) {
         toast.success(
-          `Archivo cargado exitosamente. ${response.validCount} deudores procesados correctamente.`
+          `Archivo cargado exitosamente. ${response.validCount} pagos procesados correctamente.`
         );
-        // Refrescar la lista de deudores
+        // Refrescar la lista de pagos
         await fetch;
       } else {
         // Almacenar errores en el store
@@ -89,7 +89,7 @@ const PaymentUploadSection = () => {
       <div className="w-[25%] h-full">
         <Image
           src="/img/debtors-image.svg"
-          alt="Deudores"
+          alt="Pagos"
           className="w-full h-full object-cover rounded-md"
           width={100}
           height={100}

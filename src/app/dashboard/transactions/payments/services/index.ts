@@ -84,7 +84,7 @@ export const createPayment = async (
     body: JSON.stringify(payment),
   });
 
-  if (!response.ok) {
+  if (!response) {
     throw new Error("Failed to create payment");
   }
 
@@ -135,5 +135,25 @@ export const bulkData = async (
       body: formData,
     }
   );
+  return response.json();
+};
+
+export const deletePayment = async (
+  accessToken: string,
+  clientId: string,
+  id: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/payments/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: "DELETE",
+    }
+  );
+  if (!response) {
+    throw new Error("Failed to delete payment");
+  }
   return response.json();
 };

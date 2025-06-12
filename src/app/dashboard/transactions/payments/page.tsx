@@ -11,7 +11,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { useEffect } from "react";
 import { DataTable } from "../../components/data-table";
 import LoaderTable from "../../components/loader-table";
-import { columns } from "../dte/components/columns";
+import { columns } from "./components/columns";
 import PaymentUploadSection from "./components/payments-upload-section";
 import { usePaymentStore } from "./store";
 import { Payments } from "./types";
