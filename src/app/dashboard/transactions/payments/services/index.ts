@@ -54,20 +54,56 @@ export const getPaymentById = async (
   clientId: string,
   id: string
 ) => {
-  const response = await fetch(
-    `${API_URL}/v2/clients/${clientId}/payments/${id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  const url = `${API_URL}/v2/clients/${clientId}/payments/${id}`;
+  console.log("🌐 Fetching payment from URL:", url);
+  console.log("🔑 Token exists:", !!token);
+  console.log("🏢 Client ID:", clientId);
+  console.log("🆔 Payment ID:", id);
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  console.log("📊 Response status:", response.status);
+  console.log("📊 Response ok:", response.ok);
+  console.log(
+    "📊 Response headers:",
+    Object.fromEntries(response.headers.entries())
   );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch payment");
+    const errorText = await response.text();
+    console.error("❌ Response error:", errorText);
+    throw new Error(
+      `Failed to fetch payment: ${response.status} - ${errorText}`
+    );
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log("🔍 Raw API response:", data);
+
+  // Verificar diferentes estructuras posibles de respuesta
+  if (data) {
+    // Si la respuesta tiene la estructura { data: {...} }
+    if (data.data) {
+      console.log("✅ Response has data property:", data.data);
+      return data;
+    }
+    // Si la respuesta es directamente el objeto del pago
+    else if (data.id || data.payment_number) {
+      console.log("✅ Response is direct payment object:", data);
+      return { data: data };
+    }
+    // Si no tiene ninguna de las estructuras esperadas
+    else {
+      console.log("⚠️ Unexpected response structure:", data);
+      return { data: data };
+    }
+  }
+
+  throw new Error("Invalid response format");
 };
 
 export const createPayment = async (
@@ -94,11 +130,13 @@ export const createPayment = async (
 export const updatePayment = async (
   token: string,
   clientId: string,
-  id: string,
   payment: Payments
 ) => {
+  if (!payment?.id) {
+    throw new Error("Payment ID is required");
+  }
   const response = await fetch(
-    `${API_URL}/v2/clients/${clientId}/payments/${id}`,
+    `${API_URL}/v2/clients/${clientId}/payments/${payment?.id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -109,7 +147,7 @@ export const updatePayment = async (
     }
   );
 
-  if (!response.ok) {
+  if (!response) {
     throw new Error("Failed to update payment");
   }
 

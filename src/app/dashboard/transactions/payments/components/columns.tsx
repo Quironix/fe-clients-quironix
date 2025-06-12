@@ -21,7 +21,7 @@ const AcctionsCellComponent = ({ row }: { row: Row<Payments> }) => {
       await deletePayment(
         session?.token || "",
         profile?.client?.id || "",
-        payment.id || ""
+        payment?.id as string
       );
       toast.success("Pago eliminado correctamente");
     } catch (error) {

@@ -5,6 +5,7 @@ import {
   getBankInformation,
   getPaymentById,
   getPayments,
+  updatePayment,
 } from "../services";
 import { BulkUploadResponse, Payments } from "../types";
 
@@ -32,6 +33,7 @@ interface PaymentStore {
   bulkUploadErrors: BulkUploadResponse | null;
   setBulkUploadErrors: (errors: BulkUploadResponse) => void;
   clearBulkUploadErrors: () => void;
+  clearPayment: () => void;
   fetchBankInformation: (
     accessToken: string,
     clientId: string
@@ -43,12 +45,17 @@ interface PaymentStore {
     payment: Payments
   ) => Promise<void>;
   responseSuccess: any;
+  updatePayment: (
+    accessToken: string,
+    clientId: string,
+    payment: Payments
+  ) => Promise<void>;
 }
 
 export const usePaymentStore = create<PaymentStore>((set, get) => ({
   payment: {} as Payments,
   payments: [] as Payments[],
-  loading: false,
+  loading: true,
   error: null,
   bulkUploadErrors: null,
   bankInformation: [],
@@ -58,10 +65,28 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     clientId: string,
     payment: Payments
   ) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, payments: [] });
     try {
       const response = await createPayment(accessToken, clientId, payment);
       set({ responseSuccess: response });
+    } catch (error: any) {
+      set({ error: error.message });
+    } finally {
+      get().fetchPayments(accessToken, clientId);
+      set({ loading: false });
+    }
+  },
+  updatePayment: async (
+    accessToken: string,
+    clientId: string,
+    payment: Payments
+  ) => {
+    set({ loading: true, error: null, payments: [] });
+    try {
+      debugger;
+      const response = await updatePayment(accessToken, clientId, payment);
+      set({ responseSuccess: response });
+      get().fetchPayments(accessToken, clientId);
     } catch (error: any) {
       set({ error: error.message });
     } finally {
@@ -74,7 +99,7 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     startDate?: string,
     endDate?: string
   ) => {
-    set({ loading: true, error: null, payment: {} as Payments });
+    set({ loading: true, error: null });
     try {
       const response = await getPayments(
         accessToken,
@@ -98,14 +123,15 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
   deletePayment: async (accessToken: string, clientId: string, id: string) => {
     set({ loading: true, error: null });
     try {
-      // Simulación de eliminación
       console.log("Eliminando pago:", id);
       const response = await deletePayment(accessToken, clientId, id);
+      debugger;
       set({ responseSuccess: response });
     } catch (error: any) {
       set({ error: error.message });
     } finally {
       set({ loading: false });
+      get().fetchPayments(accessToken, clientId);
     }
   },
   fetchPaymentById: async (
@@ -113,12 +139,39 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     clientId: string,
     dteId: string
   ) => {
+    console.log("🚀 fetchPaymentById called with:", {
+      accessToken: !!accessToken,
+      clientId,
+      dteId,
+    });
     set({ loading: true, error: null });
     try {
       const response = await getPaymentById(accessToken, clientId, dteId);
-      set({ payment: response.data });
+      console.log("📡 API response:", response);
+
+      if (response && response.data) {
+        // Asegurarse de que los valores numéricos sean números
+        const formattedPayment = {
+          ...response.data,
+          amount: Number(response.data.amount) || 0,
+          balance: Number(response.data.balance) || 0,
+        };
+        console.log("✅ Setting formatted payment:", formattedPayment);
+        set({ payment: formattedPayment });
+      } else {
+        console.log("❌ Invalid response format:", response);
+        set({
+          error: "No se encontró el pago o formato de respuesta inválido",
+        });
+      }
     } catch (error: any) {
-      set({ error: error.message });
+      console.error("💥 Error in fetchPaymentById:", error);
+      console.error("💥 Error details:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
+      set({ error: `Error al cargar el pago: ${error.message}` });
     } finally {
       set({ loading: false });
     }
@@ -139,5 +192,8 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+  clearPayment: () => {
+    set({ payment: {} as Payments });
   },
 }));
