@@ -1,22 +1,6 @@
 "use client";
 import Stepper from "@/components/Stepper";
-import { StepProps } from "../../types";
-import StepLayout from "../StepLayout";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  Calculator,
-  Cog,
-  Loader,
-  Settings2,
-  ShieldAlert,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import TitleStep from "../title-step";
 import {
   FormControl,
   FormField,
@@ -25,11 +9,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import InputNumberCart from "@/components/ui/input-number-cart";
-import { updateDataClient } from "../../services";
+import { Switch } from "@/components/ui/switch";
 import { useProfileContext } from "@/context/ProfileContext";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  Calculator,
+  Loader,
+  Settings2,
+  ShieldAlert,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import { updateDataClient } from "../../services";
+import { StepProps } from "../../types";
+import StepLayout from "../StepLayout";
+import TitleStep from "../title-step";
 
 const StepDebtors: React.FC<StepProps> = ({
   onNext,
@@ -278,6 +277,13 @@ const StepDebtors: React.FC<StepProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.handleSubmit(handleSubmit)();
+    }
+  };
+
   if (isLoadingProfile) {
     return (
       <StepLayout>
@@ -296,6 +302,7 @@ const StepDebtors: React.FC<StepProps> = ({
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
+          onKeyDown={handleKeyDown}
           className="h-full w-full space-y-6"
           autoComplete="off"
         >

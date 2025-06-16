@@ -1,18 +1,13 @@
 "use client";
-import Stepper from "@/components/Stepper";
-import { StepProps } from "../../types";
-import StepLayout from "../StepLayout";
-import { Button } from "@/components/ui/button";
 import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  Cog,
-  ImagePlus,
-  Loader,
-  TrashIcon,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import TitleStep from "../title-step";
+  categories,
+  currencies,
+  languages,
+  typeDocuments,
+} from "@/app/dashboard/data";
+import { getCountries } from "@/app/services";
+import Stepper from "@/components/Stepper";
+import { Button } from "@/components/ui/button";
 import {
   FormControl,
   FormField,
@@ -21,23 +16,28 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { z } from "zod";
-import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import ImageUploader from "./image-uploader";
-import { useSettingsImageStore } from "../../store";
-import Image from "next/image";
-import {
-  categories,
-  currencies,
-  languages,
-  typeDocuments,
-} from "@/app/dashboard/data";
-import { getCountries } from "@/app/services";
-import { useProfileContext } from "@/context/ProfileContext";
 import { SearchInput } from "@/components/ui/search-input";
-import { updateDataClient } from "../../services";
+import { useProfileContext } from "@/context/ProfileContext";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  Cog,
+  ImagePlus,
+  Loader,
+  TrashIcon,
+} from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import { updateDataClient } from "../../services";
+import { useSettingsImageStore } from "../../store";
+import { StepProps } from "../../types";
+import StepLayout from "../StepLayout";
+import TitleStep from "../title-step";
+import ImageUploader from "./image-uploader";
 
 const StepEntity: React.FC<StepProps> = ({
   onNext,
@@ -175,6 +175,13 @@ const StepEntity: React.FC<StepProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.handleSubmit(handleSubmit)();
+    }
+  };
+
   useEffect(() => {
     const fetchCountries = async () => {
       const countries = await getCountries(session?.token);
@@ -188,6 +195,7 @@ const StepEntity: React.FC<StepProps> = ({
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
+          onKeyDown={handleKeyDown}
           className="h-full  w-full space-y-6"
           autoComplete="off"
         >
