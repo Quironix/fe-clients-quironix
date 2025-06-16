@@ -1,18 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { categories, channels, typeDocuments } from "@/app/dashboard/data";
+import TitleStep from "@/app/dashboard/settings/components/title-step";
+import { StepProps } from "@/app/dashboard/settings/types";
+import { getCountries } from "@/app/services";
+import Stepper from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FormProvider, useForm } from "react-hook-form";
 import {
-  FormMessage,
   FormControl,
-  FormLabel,
   FormField,
   FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { Input } from "@/components/ui/input";
+import InputNumberCart from "@/components/ui/input-number-cart";
+import Required from "@/components/ui/required";
+import { SearchInput } from "@/components/ui/search-input";
 import {
   Select,
   SelectContent,
@@ -20,21 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import TitleStep from "@/app/dashboard/settings/components/title-step";
-import { StepProps } from "@/app/dashboard/settings/types";
-import Stepper from "@/components/Stepper";
-import { FileText, Plus, Minus, ArrowLeft, ArrowRight } from "lucide-react";
-import { Debtor } from "@/app/dashboard/debtors/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { getCountries } from "@/app/services";
 import { useProfileContext } from "@/context/ProfileContext";
-import { categories, channels, typeDocuments } from "@/app/dashboard/data";
-import InputNumberCart from "@/components/ui/input-number-cart";
-import Required from "@/components/ui/required";
-import { DialogClose } from "@/components/ui/dialog";
-import { SearchInput } from "@/components/ui/search-input";
-import { useDebtorsStore } from "../../../../store";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowRight, FileText } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
+import { useDebtorsStore } from "../../../../store";
 
 const debtorFormSchema = z.object({
   name: z.string().min(1, "Campo requerido"),
@@ -303,15 +300,15 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   };
 
   return (
-    <section className="h-full">
-      <div className="h-1/6">
+    <section className="space-y-6">
+      <div className="mb-6">
         <Stepper
           steps={steps}
           currentStep={currentStep}
           onStepChange={onStepChange}
         />
       </div>
-      <div className="h-5/6 space-y-4 border border-gray-200 rounded-md p-5 overflow-y-auto">
+      <div className="space-y-4 border border-gray-200 rounded-md p-5">
         <TitleStep title="Ingreso deudores" icon={<FileText size={16} />} />
         <FormProvider {...form}>
           <form

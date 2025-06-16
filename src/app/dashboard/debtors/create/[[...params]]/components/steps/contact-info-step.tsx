@@ -1,9 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FormProvider, useForm } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -11,15 +8,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import * as z from "zod";
 
+import { functionsContact } from "@/app/dashboard/data";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
-import Stepper from "@/components/Stepper";
-import { ArrowLeft, ArrowRight, Mail, Save } from "lucide-react";
 import { getCountries } from "@/app/services";
-import { useProfileContext } from "@/context/ProfileContext";
+import Stepper from "@/components/Stepper";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   Select,
   SelectContent,
@@ -27,13 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PhoneInput } from "@/components/ui/phone-input";
+import { useProfileContext } from "@/context/ProfileContext";
 import type { E164Number } from "libphonenumber-js/core";
-import FormPopover from "@/components/ui/form-popover";
-import { useDebtorsStore } from "../../../../store";
-import { functionsContact } from "@/app/dashboard/data";
-import { toast } from "sonner";
+import { ArrowLeft, Mail, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useDebtorsStore } from "../../../../store";
 
 const debtorFormSchema = z.object({
   contact_info: z.array(
@@ -129,15 +128,15 @@ const ContactInfoStep: React.FC<StepProps> = ({
   };
 
   return (
-    <section className="h-full">
-      <div className="h-1/6">
+    <section className="space-y-6">
+      <div className="mb-6">
         <Stepper
           steps={steps}
           currentStep={currentStep}
           onStepChange={onStepChange}
         />
       </div>
-      <div className="h-5/6 space-y-4 border border-gray-200 rounded-md p-5 overflow-y-auto">
+      <div className="space-y-4 border border-gray-200 rounded-md p-5">
         <TitleStep title="Información de contacto" icon={<Mail size={16} />} />
 
         <FormProvider {...form}>
