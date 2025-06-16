@@ -14,10 +14,10 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import useLogin from "@/hooks/useLogin";
 import { cn } from "@/lib/utils";
+import { useAuthLayout } from "@/stores/authLayout";
+import { Loader2 } from "lucide-react";
 import { HTMLAttributes } from "react";
 import AuthLayout from "../AuthLayout";
-import { Loader } from "lucide-react";
-import { useAuthLayout } from "@/stores/authLayout";
 
 type UserAuthFormProps = HTMLAttributes<HTMLDivElement>;
 
@@ -29,7 +29,9 @@ export default function Login({ className, ...props }: UserAuthFormProps) {
     <AuthLayout>
       <div className={cn("grid gap-3 space-y-1", className)} {...props}>
         <div className="flex flex-col space-y-2 text-left">
-          <h1 className="text-2xl font-semibold tracking-tight">Bienvenidos/as</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Bienvenidos/as
+          </h1>
           <p className="text-sm text-muted-foreground">
             Por favor, completa los datos para ingresar.
           </p>
@@ -42,7 +44,7 @@ export default function Login({ className, ...props }: UserAuthFormProps) {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="space-y-1">
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Correo electrónico</FormLabel>
                     <FormControl>
                       <Input placeholder="jhon@doe.com" {...field} />
                     </FormControl>
@@ -56,7 +58,7 @@ export default function Login({ className, ...props }: UserAuthFormProps) {
                 render={({ field }) => (
                   <FormItem className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Contraseña</FormLabel>
                       {/* <Link
                       href="/forgot-password"
                       className="text-sm font-medium text-muted-foreground hover:opacity-75"
@@ -79,11 +81,14 @@ export default function Login({ className, ...props }: UserAuthFormProps) {
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
-              <Button className="bg-primary hover:bg-primary/80 text-white" disabled={isLoading}>
+              <Button
+                className="bg-primary hover:bg-primary/80 text-white"
+                disabled={isLoading}
+              >
                 {isLoadingAuthLayout ? (
                   <span className="flex items-center gap-2">
-                    <Loader className="animate-spin" />
-                    Iniciando sesión...
+                    <Loader2 className="animate-spin" />
+                    Iniciando
                   </span>
                 ) : (
                   "Iniciar sesión"

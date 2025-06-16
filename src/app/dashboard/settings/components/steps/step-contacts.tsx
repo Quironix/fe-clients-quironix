@@ -23,15 +23,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { E164Number } from "libphonenumber-js/core";
 import {
   ArrowLeftIcon,
-  ArrowRightIcon,
   Banknote,
   ChartLine,
   Loader,
   Mail,
   Plus,
+  Save,
   Trash,
   X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -59,6 +60,7 @@ const StepContacts: React.FC<StepProps> = ({
   const [loadingUsers, setLoadingUsers] = useState(false);
   const { session, refreshProfile } = useProfileContext();
   const [approvingUsers, setApprovingUsers] = useState<string[]>([]);
+  const router = useRouter();
 
   // Cargar usuarios cuando el componente se monta
   useEffect(() => {
@@ -317,7 +319,17 @@ const StepContacts: React.FC<StepProps> = ({
       await updateDataClient(updateData, profile.client.id, session?.token);
       await refreshProfile();
       toast.success("Información de contacto actualizada correctamente");
-      onNext();
+
+      // Regresar al step 1
+      onStepChange(0);
+
+      // Limpiar caché y refrescar la página
+      if (typeof window !== "undefined") {
+        // Forzar recarga completa con limpieza de caché
+        window.location.href = window.location.href;
+      } else {
+        router.refresh(); // Fallback para SSR
+      }
     } catch (error) {
       console.error("Error al actualizar contactos:", error);
       toast.error("Error al actualizar la información de contacto");
@@ -791,7 +803,7 @@ const StepContacts: React.FC<StepProps> = ({
                     </div>
                   ) : (
                     <>
-                      Continuar <ArrowRightIcon className="w-4 h-4" />
+                      Finalizar <Save className="w-4 h-4" />
                     </>
                   )}
                 </Button>

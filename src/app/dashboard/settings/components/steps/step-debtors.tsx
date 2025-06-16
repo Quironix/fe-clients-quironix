@@ -1,22 +1,6 @@
 "use client";
 import Stepper from "@/components/Stepper";
-import { StepProps } from "../../types";
-import StepLayout from "../StepLayout";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  Calculator,
-  Cog,
-  Loader,
-  Settings2,
-  ShieldAlert,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import TitleStep from "../title-step";
 import {
   FormControl,
   FormField,
@@ -25,11 +9,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import InputNumberCart from "@/components/ui/input-number-cart";
-import { updateDataClient } from "../../services";
+import { Switch } from "@/components/ui/switch";
 import { useProfileContext } from "@/context/ProfileContext";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  Calculator,
+  Loader,
+  Settings2,
+  ShieldAlert,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import { updateDataClient } from "../../services";
+import { StepProps } from "../../types";
+import StepLayout from "../StepLayout";
+import TitleStep from "../title-step";
 
 const StepDebtors: React.FC<StepProps> = ({
   onNext,
@@ -592,17 +591,6 @@ const StepDebtors: React.FC<StepProps> = ({
             <div
               className={`h-1/6 flex items-center mt-6 ${isFirstStep ? "justify-end" : "justify-between"}`}
             >
-              {!isFirstStep && (
-                <Button
-                  type="button"
-                  onClick={onBack}
-                  variant="outline"
-                  className="px-6 py-2"
-                >
-                  <ArrowLeftIcon className="w-4 h-4" /> Volver
-                </Button>
-              )}
-
               <Button
                 type="submit"
                 className="px-6 py-2"
@@ -620,6 +608,17 @@ const StepDebtors: React.FC<StepProps> = ({
                   </>
                 )}
               </Button>
+
+              {!isFirstStep && (
+                <Button
+                  type="button"
+                  onClick={onBack}
+                  variant="outline"
+                  className="px-6 py-2 order-first"
+                >
+                  <ArrowLeftIcon className="w-4 h-4" /> Volver
+                </Button>
+              )}
             </div>
           </section>
         </form>
