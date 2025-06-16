@@ -1,14 +1,19 @@
 "use client";
 import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
+import { INVOICE_TYPES } from "@/app/dashboard/data";
 import { Button } from "@/components/ui/button";
+import { useProfileContext } from "@/context/ProfileContext";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Payments } from "../../payments/types";
+import { useDTEStore } from "../store";
+import { DTE } from "../types";
 
-const AcctionsCellComponent = ({ row }: { row: Row<Payments> }) => {
+const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
   const router = useRouter();
+  const { deleteDTE } = useDTEStore();
+  const { session, profile } = useProfileContext();
 
   return (
     <div className="flex justify-center gap-1">
@@ -27,7 +32,7 @@ const AcctionsCellComponent = ({ row }: { row: Row<Payments> }) => {
       </Button>
       <DialogConfirm
         title="¿Eliminar deudor?"
-        description={`¿Estás seguro que deseas eliminar el pago "${row.original.payment_number}"? Esta acción no se puede deshacer.`}
+        description={`¿Estás seguro que deseas eliminar el DTE "${row.original.number}"? Esta acción no se puede deshacer.`}
         triggerButton={
           <Button
             variant="ghost"
@@ -40,44 +45,51 @@ const AcctionsCellComponent = ({ row }: { row: Row<Payments> }) => {
         }
         cancelButtonText="Cancelar"
         confirmButtonText="Sí, eliminar"
-        onConfirm={() => console.log(row)}
+        onConfirm={() => {
+          if (session?.token && profile?.client?.id) {
+            deleteDTE(session.token, profile.client.id, row.original.id!);
+          }
+        }}
         type="danger"
       />
     </div>
   );
 };
 
-export const columns: ColumnDef<Payments>[] = [
+export const columns: ColumnDef<DTE>[] = [
   {
-    accessorKey: "payment_number",
+    accessorKey: "number",
     header: "Número de Documento",
     cell: ({ row }) => {
-      const number = row.getValue("payment_number") as string;
+      const number = row.getValue("number") as string;
       return <div className="font-medium">{number || "-"}</div>;
     },
   },
   {
-    accessorKey: "document_type",
+    accessorKey: "type",
     header: "Tipo de Documento",
     cell: ({ row }) => {
-      const type = row.getValue("document_type") as string;
-      return <div>{type || "-"}</div>;
+      const type = row.getValue("type") as string;
+      const typeLabel = INVOICE_TYPES.find((t) =>
+        t.types.find((t) => t.value === type)
+      )?.types.find((t) => t.value === type)?.label;
+      return <div>{typeLabel || "-"}</div>;
     },
   },
   {
-    accessorKey: "received_at",
+    accessorKey: "issue_date",
     header: "Fecha de Emisión",
     cell: ({ row }) => {
-      const date = row.getValue("received_at") as string;
+      const date = row.getValue("issue_date") as string;
       if (!date) return <div>-</div>;
       return <div>{format(new Date(date), "dd/MM/yyyy")}</div>;
     },
   },
   {
-    accessorKey: "deposit_at",
+    accessorKey: "due_date",
     header: "Fecha de Vencimiento",
     cell: ({ row }) => {
-      const date = row.getValue("deposit_at") as string;
+      const date = row.getValue("due_date") as string;
       if (!date) return <div>-</div>;
       return <div>{format(new Date(date), "dd/MM/yyyy")}</div>;
     },

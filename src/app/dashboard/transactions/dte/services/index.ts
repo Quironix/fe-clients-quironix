@@ -94,3 +94,21 @@ export const updateDTE = async (
   }
   return response.json();
 };
+
+export const deleteDTE = async (
+  accessToken: string,
+  clientId: string,
+  dteId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/invoices/${dteId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      method: "DELETE",
+    }
+  );
+  return response.json();
+};

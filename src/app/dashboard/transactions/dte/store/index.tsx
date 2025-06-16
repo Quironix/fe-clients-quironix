@@ -1,5 +1,6 @@
+import { toast } from "sonner";
 import { create } from "zustand";
-import { getDTEById, getDTEs } from "../services";
+import { deleteDTE, getDTEById, getDTEs } from "../services";
 import { BulkUploadResponse, DTE } from "../types";
 
 interface DTEStore {
@@ -36,7 +37,6 @@ export const useDTEStore = create<DTEStore>((set, get) => ({
       const dtesData = response.data || response.dtes || response || [];
       set({ dtes: Array.isArray(dtesData) ? dtesData : [] });
     } catch (error: any) {
-      console.error("Error en fetchDTEs:", error);
       const errorMessage =
         error?.message ||
         error?.toString() ||
@@ -49,12 +49,15 @@ export const useDTEStore = create<DTEStore>((set, get) => ({
   deleteDTE: async (accessToken: string, clientId: string, dteId: string) => {
     set({ loading: true, error: null });
     try {
-      // Simulación de eliminación
-      console.log("Eliminando DTE:", dteId);
+      set({ loading: true });
+      await deleteDTE(accessToken, clientId, dteId);
+      set({ loading: false });
+      toast.success("DTE eliminado exitosamente");
     } catch (error: any) {
       set({ error: error.message });
+      toast.error("Error al eliminar el DTE");
     } finally {
-      set({ loading: false });
+      get().fetchDTE(accessToken, clientId);
     }
   },
   fetchDTEById: async (
@@ -64,8 +67,9 @@ export const useDTEStore = create<DTEStore>((set, get) => ({
   ) => {
     set({ loading: true, error: null });
     try {
+      set({ dte: {} as DTE, loading: true });
       const response = await getDTEById(accessToken, clientId, dteId);
-      set({ dte: response.data });
+      set({ dte: response });
     } catch (error: any) {
       set({ error: error.message });
     } finally {
