@@ -1,5 +1,6 @@
 "use client";
 
+import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-buttons";
 import { useDebtorsStore } from "@/app/dashboard/debtors/store";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
@@ -31,13 +32,7 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarClock,
-  Check,
-  ChevronsUpDown,
-} from "lucide-react";
+import { CalendarClock, Check, ChevronsUpDown } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -150,13 +145,6 @@ const AttentionStep: React.FC<StepProps> = ({
     );
 
     try {
-      console.log("Datos del deudor:", data);
-
-      if (Object.keys(form.formState.errors).length > 0) {
-        console.error("Hay errores en el formulario:", form.formState.errors);
-        return;
-      }
-
       if (data.attention_days_hours.length > 0 && dataDebtor?.id) {
         setDataDebtor({
           ...dataDebtor,
@@ -433,27 +421,16 @@ const AttentionStep: React.FC<StepProps> = ({
                   </div>
                 )}
 
-              <Button
-                type="button"
-                className="bg-white border-2 border-primary text-black hover:bg-white hover:text-gray-500"
-                onClick={() => onBack()}
-              >
-                <ArrowLeft className="w-4 h-4 text-primary" /> Volver
-              </Button>
-              <Button
-                type="submit"
-                className="bg-blue-700 text-white"
-                disabled={form.formState.isSubmitting}
-                onClick={() => {
-                  // Esto permite que se muestren los errores al hacer clic en el botón
+              <NextBackButtons
+                loading={form.formState.isSubmitting}
+                currentStep={currentStep}
+                onBack={onBack}
+                onNext={() => {
                   if (Object.keys(form.formState.errors).length > 0) {
                     setSubmitAttempted(true);
                   }
                 }}
-              >
-                {form.formState.isSubmitting ? "Guardando..." : "Continuar"}{" "}
-                <ArrowRight className="w-4 h-4 text-white" />
-              </Button>
+              />
             </div>
           </form>
         </FormProvider>

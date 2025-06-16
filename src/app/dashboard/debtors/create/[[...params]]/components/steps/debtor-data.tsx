@@ -1,11 +1,11 @@
 "use client";
 
 import { categories, channels, typeDocuments } from "@/app/dashboard/data";
+import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-buttons";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
 import { getCountries } from "@/app/services";
 import Stepper from "@/components/Stepper";
-import { Button } from "@/components/ui/button";
 import {
   FormControl,
   FormField,
@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -71,6 +71,8 @@ const debtorFormSchema = z.object({
       role: z.string().optional(),
       email: z.string().optional(),
       phone: z.string().optional(),
+      channel: z.string().optional(),
+      function: z.string().optional(),
     })
   ),
   category: z.string().min(1, "Campo requerido"),
@@ -153,6 +155,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           role: "",
           email: "",
           phone: "",
+          channel: "EMAIL",
+          function: "",
         },
       ],
       category: "",
@@ -230,6 +234,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             role: dataDebtor.contacts?.[0]?.role || "",
             email: dataDebtor.contacts?.[0]?.email || "",
             phone: dataDebtor.contacts?.[0]?.phone || "",
+            channel: dataDebtor.contacts?.[0]?.channel || "EMAIL",
+            function: dataDebtor.contacts?.[0]?.function || "",
           },
         ],
         category: dataDebtor.category || "",
@@ -258,16 +264,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
     setSubmitAttempted(true);
     try {
-      if (Object.keys(form.formState.errors).length > 0) {
-        console.error("Hay errores en el formulario:", form.formState.errors);
-        return;
-      }
-
-      data.contacts[0].email = profile?.email;
-      data.contacts[0].phone = profile?.phone_number;
-      data.contacts[0].name = profile?.first_name + " " + profile?.last_name;
-      data.contacts[0].role = profile?.roles[0]?.name;
-
       if (dataDebtor?.id) {
         const updatedData = {
           ...dataDebtor,
@@ -697,20 +693,16 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   </div>
                 )}
 
-              <Button
-                type="submit"
-                className="bg-blue-700 text-white"
-                disabled={form.formState.isSubmitting}
-                onClick={() => {
-                  // Esto permite que se muestren los errores al hacer clic en el botón
+              <NextBackButtons
+                loading={form.formState.isSubmitting}
+                currentStep={currentStep}
+                onBack={onBack}
+                onNext={() => {
                   if (Object.keys(form.formState.errors).length > 0) {
                     setSubmitAttempted(true);
                   }
                 }}
-              >
-                {form.formState.isSubmitting ? "Guardando..." : "Continuar"}
-                <ArrowRight className="w-4 h-4 text-white" />
-              </Button>
+              />
             </div>
           </form>
         </FormProvider>

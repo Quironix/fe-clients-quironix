@@ -1,5 +1,24 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
+import Loader from "@/components/Loader";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -9,32 +28,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-  PaginationEllipsis,
-} from "@/components/ui/pagination";
-import { Edit, Trash2, UserPlus, SearchIcon, Plus } from "lucide-react";
-import { useDebtorsStore } from "../store";
 import { useProfileContext } from "@/context/ProfileContext";
-import Loader from "@/components/Loader";
-import { Debtors } from "./types";
-import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
-import { toast } from "sonner";
+import { Edit, SearchIcon, Trash2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useDebtorsStore } from "../store";
+import { Debtors } from "./types";
 
 const ListDebtors = () => {
   const router = useRouter();
@@ -57,9 +57,7 @@ const ListDebtors = () => {
   };
 
   const handleEdit = (debtor: Debtors) => {
-    console.log("Editar deudor:", debtor);
     router.push(`/dashboard/debtors/create?id=${debtor.id}`);
-    // Aquí iría la lógica para editar
   };
 
   const handleDelete = async (debtor: Debtors) => {
