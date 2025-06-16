@@ -1,20 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import Header from "@/app/dashboard/components/header";
-import { Button } from "@/components/ui/button";
 import { Main } from "@/app/dashboard/components/main";
 import TitleSection from "@/app/dashboard/components/title-section";
-import { FileCog } from "lucide-react";
-import { useProfileContext } from "@/context/ProfileContext";
 import { Step } from "@/components/Stepper/types";
-import DebtorsDataStep from "./components/steps/debtor-data";
+import Language from "@/components/ui/language";
+import { useProfileContext } from "@/context/ProfileContext";
+import { FileCog } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useDebtorsStore } from "../../store";
 import AttentionStep from "./components/steps/attention-step";
 import ContactInfoStep from "./components/steps/contact-info-step";
-import Language from "@/components/ui/language";
-import { useParams, useSearchParams } from "next/navigation";
-import { useDebtorsStore } from "../../store";
-import { Debtor } from "../../types";
+import DebtorsDataStep from "./components/steps/debtor-data";
 const steps: Step[] = [
   { id: 1, label: "Configuración de la entidad", completed: false },
   { id: 2, label: "Configuración de deudores", completed: false },
@@ -91,7 +89,7 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
           icon={<FileCog color="white" />}
           subDescription="Configuración de la cartera"
         />
-        <div className="h-screen bg-white rounded-md p-4 px-8 border border-gray-200">
+        <div className="bg-white rounded-md p-4 px-8 border border-gray-200">
           {renderStep()}
         </div>
       </Main>

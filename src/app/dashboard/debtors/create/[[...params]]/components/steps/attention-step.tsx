@@ -1,32 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FormProvider, useForm } from "react-hook-form";
-import { FormControl, FormField, FormItem } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useDebtorsStore } from "@/app/dashboard/debtors/store";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
-import Stepper from "@/components/Stepper";
-import {
-  CalendarClock,
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  ChevronsUpDown,
-} from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { getCountries } from "@/app/services";
-import { useProfileContext } from "@/context/ProfileContext";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Stepper from "@/components/Stepper";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Command,
   CommandEmpty,
@@ -34,22 +14,34 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
+import { FormControl, FormField, FormItem } from "@/components/ui/form";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import {
   Table,
-  TableHead,
-  TableHeader,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useDebtorsStore } from "@/app/dashboard/debtors/store";
+import { useProfileContext } from "@/context/ProfileContext";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarClock,
+  Check,
+  ChevronsUpDown,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 
 const debtorFormSchema = z.object({
   attention_days_hours: z.array(
@@ -185,15 +177,15 @@ const AttentionStep: React.FC<StepProps> = ({
   };
 
   return (
-    <section className="h-full">
-      <div className="h-1/6">
+    <section className="space-y-6">
+      <div className="mb-6">
         <Stepper
           steps={steps}
           currentStep={currentStep}
           onStepChange={onStepChange}
         />
       </div>
-      <div className="h-5/6 space-y-4 border border-gray-200 rounded-md p-5 overflow-y-auto">
+      <div className="space-y-4 border border-gray-200 rounded-md p-5">
         <TitleStep title="Atención" icon={<CalendarClock size={16} />} />
         <FormProvider {...form}>
           <form
