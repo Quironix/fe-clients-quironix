@@ -83,7 +83,6 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
   ) => {
     set({ loading: true, error: null, payments: [] });
     try {
-      debugger;
       const response = await updatePayment(accessToken, clientId, payment);
       set({ responseSuccess: response });
       get().fetchPayments(accessToken, clientId);
@@ -123,7 +122,6 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
   deletePayment: async (accessToken: string, clientId: string, id: string) => {
     set({ loading: true, error: null });
     try {
-      console.log("Eliminando pago:", id);
       const response = await deletePayment(accessToken, clientId, id);
       debugger;
       set({ responseSuccess: response });
@@ -139,15 +137,9 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     clientId: string,
     dteId: string
   ) => {
-    console.log("🚀 fetchPaymentById called with:", {
-      accessToken: !!accessToken,
-      clientId,
-      dteId,
-    });
     set({ loading: true, error: null });
     try {
       const response = await getPaymentById(accessToken, clientId, dteId);
-      console.log("📡 API response:", response);
 
       if (response && response.data) {
         // Asegurarse de que los valores numéricos sean números
@@ -156,21 +148,13 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
           amount: Number(response.data.amount) || 0,
           balance: Number(response.data.balance) || 0,
         };
-        console.log("✅ Setting formatted payment:", formattedPayment);
         set({ payment: formattedPayment });
       } else {
-        console.log("❌ Invalid response format:", response);
         set({
           error: "No se encontró el pago o formato de respuesta inválido",
         });
       }
     } catch (error: any) {
-      console.error("💥 Error in fetchPaymentById:", error);
-      console.error("💥 Error details:", {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      });
       set({ error: `Error al cargar el pago: ${error.message}` });
     } finally {
       set({ loading: false });

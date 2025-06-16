@@ -54,7 +54,7 @@ export default function DatePickerFormItem({
               {field.value ? (
                 format(field.value, "PPP", { locale: es })
               ) : (
-                <span></span>
+                <span>Selecciona una fecha</span>
               )}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
@@ -68,7 +68,7 @@ export default function DatePickerFormItem({
               if (onChange) {
                 onChange(field, date);
               } else {
-                field.onChange(date);
+                field.onChange(date?.toISOString());
               }
               setIsOpen(false);
             }}

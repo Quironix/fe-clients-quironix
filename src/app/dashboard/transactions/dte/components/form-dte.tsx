@@ -70,10 +70,6 @@ const formSchema = z.object({
   ref_4: z.string().optional(),
 });
 
-const handleChangeDate = (field: any, value: any) => {
-  field.onChange(value.toISOString());
-};
-
 const FormDTE = () => {
   const { profile, session } = useProfileContext();
   const { dte, fetchDTEById, loading } = useDTEStore();
@@ -354,7 +350,6 @@ const FormDTE = () => {
                     field={field}
                     title="Fecha de recepción"
                     required
-                    onChange={handleChangeDate}
                   />
                 )}
               />
@@ -367,7 +362,6 @@ const FormDTE = () => {
                     field={field}
                     title="Fecha de emisión"
                     required
-                    onChange={handleChangeDate}
                   />
                 )}
               />
@@ -380,7 +374,6 @@ const FormDTE = () => {
                     field={field}
                     title="Fecha de operación"
                     required
-                    onChange={handleChangeDate}
                   />
                 )}
               />
@@ -393,7 +386,6 @@ const FormDTE = () => {
                     field={field}
                     title="Fecha de vencimiento"
                     required
-                    onChange={handleChangeDate}
                   />
                 )}
               />

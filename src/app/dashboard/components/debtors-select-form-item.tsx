@@ -40,10 +40,17 @@ export default function DebtorsSelectFormItem({
         onValueChange={field.onChange}
         value={field.value}
         key={field.value}
+        disabled={debtors.length === 0}
       >
         <FormControl>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Selecciona una opción" />
+            <SelectValue
+              placeholder={
+                debtors.length === 0
+                  ? "Cargando deudores..."
+                  : "Selecciona una opción"
+              }
+            />
           </SelectTrigger>
         </FormControl>
         <SelectContent>

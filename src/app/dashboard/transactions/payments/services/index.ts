@@ -55,10 +55,6 @@ export const getPaymentById = async (
   id: string
 ) => {
   const url = `${API_URL}/v2/clients/${clientId}/payments/${id}`;
-  console.log("🌐 Fetching payment from URL:", url);
-  console.log("🔑 Token exists:", !!token);
-  console.log("🏢 Client ID:", clientId);
-  console.log("🆔 Payment ID:", id);
 
   const response = await fetch(url, {
     headers: {
@@ -66,39 +62,27 @@ export const getPaymentById = async (
     },
   });
 
-  console.log("📊 Response status:", response.status);
-  console.log("📊 Response ok:", response.ok);
-  console.log(
-    "📊 Response headers:",
-    Object.fromEntries(response.headers.entries())
-  );
-
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("❌ Response error:", errorText);
     throw new Error(
       `Failed to fetch payment: ${response.status} - ${errorText}`
     );
   }
 
   const data = await response.json();
-  console.log("🔍 Raw API response:", data);
 
   // Verificar diferentes estructuras posibles de respuesta
   if (data) {
     // Si la respuesta tiene la estructura { data: {...} }
     if (data.data) {
-      console.log("✅ Response has data property:", data.data);
       return data;
     }
     // Si la respuesta es directamente el objeto del pago
     else if (data.id || data.payment_number) {
-      console.log("✅ Response is direct payment object:", data);
       return { data: data };
     }
     // Si no tiene ninguna de las estructuras esperadas
     else {
-      console.log("⚠️ Unexpected response structure:", data);
       return { data: data };
     }
   }

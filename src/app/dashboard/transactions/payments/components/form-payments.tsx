@@ -1,5 +1,9 @@
-import { BANK_LIST, DocumentType } from "@/app/dashboard/data";
-import { useDebtorsStore } from "@/app/dashboard/debtors/store";
+import BankInformationSelectFormItem from "@/app/dashboard/components/bank-information-select-form-item";
+import BankListSelectFormItem from "@/app/dashboard/components/bank-list-select-form-item";
+import DatePickerFormItem from "@/app/dashboard/components/date-picker-form-item";
+import DebtorsSelectFormItem from "@/app/dashboard/components/debtors-select-form-item";
+import Loader from "@/app/dashboard/components/loader";
+import { DocumentType } from "@/app/dashboard/data";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, FileText, Loader2 } from "lucide-react";
+import { Calendar, FileText } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -38,30 +42,25 @@ const FormPayments = () => {
   const {
     payment,
     fetchPaymentById,
-    fetchBankInformation,
-    bankInformation,
     loading,
     createPayment,
     responseSuccess,
     clearPayment,
     updatePayment,
   } = usePaymentStore();
-  const { debtors, fetchDebtors } = useDebtorsStore();
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const [isFormLoading, setIsFormLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (session?.token && profile?.client?.id) {
-      fetchDebtors(session.token, profile.client.id);
-      fetchBankInformation(session.token, profile.client.id);
       if (id) {
         setIsLoadingPayment(true);
         fetchPaymentById(session.token, profile.client.id, id).finally(() => {
           setIsLoadingPayment(false);
         });
       } else {
-        // Limpiar el payment cuando no hay ID (modo creación)
         clearPayment();
       }
     }
@@ -106,21 +105,11 @@ const FormPayments = () => {
     },
   });
 
-  // Efecto para actualizar el formulario cuando se cargan los datos del DTE
   useEffect(() => {
-    console.log("🔍 useEffect payment:", payment);
-    console.log("🔍 payment keys length:", Object.keys(payment || {}).length);
-    console.log("🔍 id exists:", !!id);
-    console.log("🔍 isLoadingPayment:", isLoadingPayment);
-
     if (payment && Object.keys(payment).length > 0 && id) {
-      console.log("✅ Resetting form with payment data:", payment);
-
-      // Asegurarse de que las fechas estén en el formato correcto
       const formatDate = (date: string | null): string | undefined => {
         if (!date) return undefined;
         try {
-          // Intentar parsear la fecha y formatearla
           const parsedDate = new Date(date);
           if (isNaN(parsedDate.getTime())) {
             console.warn("Invalid date:", date);
@@ -151,15 +140,13 @@ const FormPayments = () => {
         deposit_at: formatDate(payment?.deposit_at),
       };
 
-      console.log("📝 Form data to reset:", formData);
       form.reset(formData);
     } else {
-      console.log("❌ Payment data not available or empty");
     }
   }, [payment, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    setIsFormLoading(true);
     if (!profile?.client?.id) {
       toast.error("No se encontró el cliente");
       return;
@@ -168,8 +155,6 @@ const FormPayments = () => {
     try {
       let response;
       if (id) {
-        // Modo edición - incluir el id
-        debugger;
         const paymentData = {
           id: values?.id || undefined,
           debtor_id: values?.debtor_id || "",
@@ -202,8 +187,6 @@ const FormPayments = () => {
           );
         }
       } else {
-        // Modo creación - excluir el id
-        debugger;
         const paymentData = {
           debtor_id: values?.debtor_id || "",
           bank_movement_id: null,
@@ -214,7 +197,7 @@ const FormPayments = () => {
           amount: values?.amount || 0,
           received_at: values?.received_at || "",
           due_at: values?.due_at || null,
-          balance: values?.balance || 0,
+          balance: values?.amount || 0,
           square: values?.square || "",
           bank_received: values?.bank_received || "",
           notes: values?.notes || "",
@@ -240,6 +223,8 @@ const FormPayments = () => {
         id ? "Error al actualizar el pago" : "Error al crear el pago"
       );
       console.error("Error en onSubmit:", error);
+    } finally {
+      setIsFormLoading(false);
     }
   };
 
@@ -347,31 +332,6 @@ const FormPayments = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="ingress_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Tipo de ingreso <Required />
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={"MANUAL"}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona una opción" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="MANUAL">Manual</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <FormField
                   control={form.control}
@@ -395,100 +355,27 @@ const FormPayments = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="balance"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Balance <Required />
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value) || 0)
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <FormField
                   control={form.control}
                   name="bank_id"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Banco que recibe <Required />
-                      </FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          disabled={
-                            !bankInformation || bankInformation.length === 0
-                          }
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue
-                              placeholder={
-                                !bankInformation || bankInformation.length === 0
-                                  ? "Cargando bancos..."
-                                  : "Selecciona un banco"
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {bankInformation && bankInformation.length > 0 ? (
-                              bankInformation.map((bank: any) => (
-                                <SelectItem key={bank.id} value={bank.id}>
-                                  {bank.bank} ({bank.account_number})
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                No hay bancos disponibles
-                              </div>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <BankInformationSelectFormItem
+                      field={field}
+                      title="Banco que recibe"
+                      required
+                    />
                   )}
                 />
                 <FormField
                   control={form.control}
                   name="bank_received"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Banco de origen <Required />
-                      </FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un banco" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {BANK_LIST.map((bank) => (
-                              <SelectItem key={bank.name} value={bank.name}>
-                                {bank.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <BankListSelectFormItem
+                      field={field}
+                      title="Banco de origen"
+                      required
+                    />
                   )}
                 />
                 <FormField
@@ -510,43 +397,11 @@ const FormPayments = () => {
                   control={form.control}
                   name="debtor_id"
                   render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>
-                        Deudor <Required />
-                      </FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          disabled={!debtors || debtors.length === 0}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue
-                              placeholder={
-                                !debtors || debtors.length === 0
-                                  ? "Cargando deudores..."
-                                  : "Selecciona un deudor"
-                              }
-                            />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            {debtors && debtors.length > 0 ? (
-                              debtors.map((debtor) => (
-                                <SelectItem key={debtor.id} value={debtor.id}>
-                                  {debtor.name}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                No hay deudores disponibles
-                              </div>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <DebtorsSelectFormItem
+                      field={field}
+                      title="Deudor"
+                      required
+                    />
                   )}
                 />
               </div>
@@ -562,49 +417,33 @@ const FormPayments = () => {
                   control={form.control}
                   name="received_at"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Fecha de recepción <Required />
-                      </FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <DatePickerFormItem
+                      field={field}
+                      title="Fecha de recepción"
+                      required
+                    />
                   )}
                 />
                 <FormField
                   control={form.control}
                   name="due_at"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Fecha de vencimiento <Required />
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <DatePickerFormItem
+                      field={field}
+                      title="Fecha de vencimiento"
+                      required
+                    />
                   )}
                 />
                 <FormField
                   control={form.control}
                   name="deposit_at"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Fecha de depósito <Required />
-                      </FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <DatePickerFormItem
+                      field={field}
+                      title="Fecha de depósito"
+                      required
+                    />
                   )}
                 />
               </div>
@@ -632,11 +471,11 @@ const FormPayments = () => {
             <div className="flex justify-center items-center">
               <Button
                 type="submit"
-                className="w-xs"
-                disabled={!form.formState.isValid || loading}
+                className="w-xs h-10"
+                disabled={isFormLoading}
               >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                {isFormLoading ? (
+                  <Loader text="Guardando..." />
                 ) : id ? (
                   "Actualizar"
                 ) : (
