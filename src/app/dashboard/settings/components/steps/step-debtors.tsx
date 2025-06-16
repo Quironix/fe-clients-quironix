@@ -277,6 +277,13 @@ const StepDebtors: React.FC<StepProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.handleSubmit(handleSubmit)();
+    }
+  };
+
   if (isLoadingProfile) {
     return (
       <StepLayout>
@@ -295,6 +302,7 @@ const StepDebtors: React.FC<StepProps> = ({
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
+          onKeyDown={handleKeyDown}
           className="h-full w-full space-y-6"
           autoComplete="off"
         >
@@ -591,6 +599,17 @@ const StepDebtors: React.FC<StepProps> = ({
             <div
               className={`h-1/6 flex items-center mt-6 ${isFirstStep ? "justify-end" : "justify-between"}`}
             >
+              {!isFirstStep && (
+                <Button
+                  type="button"
+                  onClick={onBack}
+                  variant="outline"
+                  className="px-6 py-2"
+                >
+                  <ArrowLeftIcon className="w-4 h-4" /> Volver
+                </Button>
+              )}
+
               <Button
                 type="submit"
                 className="px-6 py-2"
@@ -608,17 +627,6 @@ const StepDebtors: React.FC<StepProps> = ({
                   </>
                 )}
               </Button>
-
-              {!isFirstStep && (
-                <Button
-                  type="button"
-                  onClick={onBack}
-                  variant="outline"
-                  className="px-6 py-2 order-first"
-                >
-                  <ArrowLeftIcon className="w-4 h-4" /> Volver
-                </Button>
-              )}
             </div>
           </section>
         </form>

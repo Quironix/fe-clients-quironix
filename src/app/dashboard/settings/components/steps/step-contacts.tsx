@@ -338,9 +338,19 @@ const StepContacts: React.FC<StepProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.handleSubmit(handleSubmit)();
+    }
+  };
+
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        onKeyDown={handleKeyDown}
+      >
         <StepLayout>
           <section className="min-h-screen">
             <div className="mb-6">
