@@ -8,7 +8,7 @@ const DASHBOARD_PATHS = ["/dashboard"];
 // Mapeo de rutas a scopes requeridos
 const ROUTE_SCOPE_MAP: Record<string, string> = {
   "/dashboard/overview": "client.dashboard",
-  "/dashboard/settings": "client.onboarding.setting",
+  "/dashboard/settings": "client.onboarding.settings",
   "/dashboard/integrations": "client.onboarding.integrations",
   "/dashboard/banks": "client.onboarding.banks",
   "/dashboard/users": "client.users.users",
