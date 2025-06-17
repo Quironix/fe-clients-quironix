@@ -129,7 +129,7 @@ const AccessDeniedPage = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Acceso Denegado"
+          title="Acceso denegado"
           description="No tienes permisos suficientes para acceder a la página solicitada."
           icon={<ShieldX color="white" />}
           subDescription="Error 403"
@@ -145,7 +145,7 @@ const AccessDeniedPage = () => {
                   </div>
                 </div>
                 <CardTitle className="text-xl text-red-800">
-                  Permisos Insuficientes
+                  Permisos insuficientes
                 </CardTitle>
                 <CardDescription className="text-red-600">
                   Tu usuario no tiene los permisos necesarios para acceder a
@@ -161,20 +161,20 @@ const AccessDeniedPage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Home className="w-5 h-5 text-blue-600" />
-                    Acciones Disponibles
+                    Acciones disponibles
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button
                     onClick={() => router.back()}
                     variant="outline"
-                    className="w-full justify-start"
+                    className="w-full justify-start py-6"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Volver a la página anterior
                   </Button>
                   <Link href="/dashboard/overview">
-                    <Button className="w-full justify-start bg-primary hover:bg-primary/90">
+                    <Button className="w-full justify-start bg-primary hover:bg-primary/90 py-6">
                       <Home className="w-4 h-4 mr-2" />
                       Ir al Dashboard Principal
                     </Button>
@@ -187,7 +187,7 @@ const AccessDeniedPage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="w-5 h-5 text-green-600" />
-                    ¿Necesitas Acceso?
+                    ¿Necesitas acceso?
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

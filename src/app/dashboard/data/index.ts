@@ -78,7 +78,7 @@ export const sidebarData: any = {
             {
               title: "Configuración cliente",
               url: "/dashboard/settings",
-              scope: "client.onboarding.setting",
+              scope: "client.onboarding.settings",
             },
             {
               disabled: true,
