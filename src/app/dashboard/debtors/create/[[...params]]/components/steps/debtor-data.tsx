@@ -1,10 +1,10 @@
 "use client";
 
+import CountriesSelectFormItem from "@/app/dashboard/components/countries-select-form-item";
 import { categories, channels, typeDocuments } from "@/app/dashboard/data";
 import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-buttons";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
-import { getCountries } from "@/app/services";
 import Stepper from "@/components/Stepper";
 import {
   FormControl,
@@ -94,9 +94,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   const { createDebtor, setDataDebtor, dataDebtor, updateDebtor } =
     useDebtorsStore();
   const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [countries, setCountries] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
+
   const { session } = useProfileContext();
 
   const form = useForm<DebtorFormValues>({
@@ -124,8 +122,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       },
       metadata: [
         {
-          value: 0,
-          type: "PAYMENT_TERMS",
+          value: "0",
+          type: "DBT_DEBTOR",
         },
         {
           value: 0,
@@ -188,10 +186,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         },
         metadata: [
           {
-            value:
-              dataDebtor.metadata?.find((meta) => meta.type === "PAYMENT_TERMS")
-                ?.value || 0,
-            type: "PAYMENT_TERMS",
+            value: Number(
+              dataDebtor.metadata?.find((meta) => meta.type === "DBT_DEBTOR")
+                ?.value
+            ),
+            type: "DBT_DEBTOR",
           },
           {
             value:
@@ -202,8 +201,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           },
           {
             value:
-              dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
-                ?.value || 0,
+              Number(
+                dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
+                  ?.value
+              ) || 0,
             type: "CREDIT_LINE",
           },
           {
@@ -241,25 +242,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         category: dataDebtor.category || "",
         economic_activities: dataDebtor.economic_activities || [""],
       };
-
       form.reset(formData);
     }
   }, [dataDebtor?.id, form]);
-
-  useEffect(() => {
-    const fetchCountries = async () => {
-      if (!session?.token) return;
-
-      try {
-        const countriesData = await getCountries(session.token);
-        setCountries(countriesData || []);
-      } catch (error) {
-        console.error("Error al cargar países:", error);
-      }
-    };
-
-    fetchCountries();
-  }, [session?.token]);
 
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
     setSubmitAttempted(true);
@@ -294,6 +279,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       toast.error("Error al guardar el deudor");
     }
   };
+
+  // console.log("FORM", form.getValues());
+  // console.log("DATADEBTOR", dataDebtor);
 
   return (
     <section className="space-y-6">
@@ -437,29 +425,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   control={form.control}
                   name="addresses.0.country"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        País <Required />
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un país" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {countries.map((country) => (
-                            <SelectItem key={country.id} value={country.id}>
-                              {country.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
+                    <CountriesSelectFormItem
+                      field={field}
+                      title="País"
+                      required
+                    />
                   )}
                 />
                 <FormField
@@ -562,22 +532,24 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                 <FormField
                   control={form.control}
                   name="metadata.0.value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        DBT <Required />
-                      </FormLabel>
-                      <FormControl>
-                        <InputNumberCart
-                          value={Number(field.value) ?? 0}
-                          onChange={(val) => field.onChange(val)}
-                          placeholder="Ej: 5000"
-                          min={0}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    return (
+                      <FormItem>
+                        <FormLabel>
+                          DBT <Required />
+                        </FormLabel>
+                        <FormControl>
+                          <InputNumberCart
+                            value={Number(field.value) ?? 0}
+                            onChange={(val) => field.onChange(val)}
+                            placeholder="Ej: 5000"
+                            min={0}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                 <FormField
                   control={form.control}

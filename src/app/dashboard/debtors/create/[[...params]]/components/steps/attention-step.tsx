@@ -4,7 +4,6 @@ import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-bu
 import { useDebtorsStore } from "@/app/dashboard/debtors/store";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
-import { getCountries } from "@/app/services";
 import Stepper from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,7 +32,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarClock, Check, ChevronsUpDown } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -96,9 +95,6 @@ const AttentionStep: React.FC<StepProps> = ({
   profile,
 }) => {
   const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [countries, setCountries] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
   const [openStartTimePopovers, setOpenStartTimePopovers] = useState<{
     [key: number]: boolean;
   }>({});
@@ -119,22 +115,6 @@ const AttentionStep: React.FC<StepProps> = ({
         : [],
     },
   });
-
-  // Cargar países cuando el componente se monta
-  useEffect(() => {
-    const fetchCountries = async () => {
-      if (!session?.token) return;
-
-      try {
-        const countriesData = await getCountries(session.token);
-        setCountries(countriesData || []);
-      } catch (error) {
-        console.error("Error al cargar países:", error);
-      }
-    };
-
-    fetchCountries();
-  }, [session?.token]);
 
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
     setSubmitAttempted(true);
