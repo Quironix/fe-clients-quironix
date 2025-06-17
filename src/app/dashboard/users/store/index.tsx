@@ -1,11 +1,5 @@
 import { create } from "zustand";
-import {
-  getAll,
-  create as createUser,
-  update,
-  deleteUser,
-  reinviteUser,
-} from "../services";
+import { create as createUser, deleteUser, getAll, update } from "../services";
 import { User } from "../services/types";
 interface UserStore {
   users: User[];
@@ -46,13 +40,22 @@ export const useUserStore = create<UserStore>((set, get) => ({
   setSearchTerm: (term) => set({ searchTerm: term }),
 
   fetchUsers: async (accessToken: string, clientId: string) => {
-    set({ loading: true, error: null, users: [] });
+    set({ loading: true, error: null });
     try {
-      const users = (await getAll(accessToken, clientId)) || [];
+      const response = await getAll(accessToken, clientId);
+      // Asegurar que users siempre sea un array
+      let users = [];
+      if (Array.isArray(response)) {
+        users = response;
+      } else if (response && Array.isArray(response.data)) {
+        users = response.data;
+      } else if (response && Array.isArray(response.users)) {
+        users = response.users;
+      }
       set({ users, loading: false });
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
-      set({ error: "Error al obtener usuarios", loading: false });
+      set({ error: "Error al obtener usuarios", loading: false, users: [] });
     }
   },
 

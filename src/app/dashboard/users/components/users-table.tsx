@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,15 +9,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { User } from "../services/types";
+import { Edit, Share2, Trash2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import DialogConfirm from "../../components/dialog-confirm";
-import { useUserStore } from "../store";
 import LoaderTable from "../../components/loader-table";
+import { User } from "../services/types";
+import { useUserStore } from "../store";
 interface UsersTableProps {
   users: User[];
   onEdit: (user: User) => void;
@@ -34,7 +34,10 @@ const UsersTable = ({
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("search")?.toLowerCase() || "";
 
-  const filteredUsers = users.filter((user) => {
+  // Asegurar que users sea un array antes de filtrar
+  const usersArray = Array.isArray(users) ? users : [];
+
+  const filteredUsers = usersArray.filter((user) => {
     if (!searchTerm) return true;
     return (
       user.first_name.toLowerCase().includes(searchTerm) ||

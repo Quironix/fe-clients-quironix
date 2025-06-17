@@ -66,90 +66,114 @@ export const sidebarData: any = {
           title: "Dashboard",
           url: "/dashboard/overview",
           icon: IconLayoutDashboard,
+          scope: "client.dashboard",
+          is_parent: true,
         },
         {
           title: "Onboarding",
           icon: IconCreditCard,
+          scope: "client.onboarding",
+          is_parent: true,
           items: [
             {
               title: "Configuración cliente",
               url: "/dashboard/settings",
+              scope: "client.onboarding.setting",
             },
             {
               disabled: true,
               title: "Integraciones",
               url: "/dashboard/integrations",
+              scope: "client.onboarding.integrations",
             },
             {
               title: "Bancos y cuentas",
               url: "/dashboard/banks",
+              scope: "client.onboarding.banks",
             },
           ],
         },
         {
           title: "Usuarios",
           icon: IconUsers,
+          scope: "client.users",
+          is_parent: true,
           items: [
             {
               title: "Usuarios",
               url: "/dashboard/users",
+              scope: "client.users.users",
             },
             {
               title: "Roles",
               url: "/dashboard/roles",
+              scope: "client.users.roles",
             },
             {
               disabled: true,
               title: "Historial de acciones",
               url: "/dashboard/actions-history",
+              scope: "client.users.actions_history",
             },
           ],
         },
         {
           title: "Config. de la cartera",
           icon: IconHeartHandshake,
+          scope: "client.settings_account",
+          is_parent: true,
           items: [
             {
               title: "Creación de deudores",
               url: "/dashboard/debtors",
+              scope: "client.settings_account.debtors",
             },
             {
               disabled: true,
               title: "Periodo mensual y cierre",
               url: "/dashboard/monthly-period",
+              scope: "client.settings_account.monthly_period",
             },
             {
               disabled: true,
               title: "Flujo de caja",
               url: "/dashboard/cash-flow",
+              scope: "client.settings_account.cash_flow",
             },
             {
               disabled: true,
               title: "Comunicaciones",
               url: "/dashboard/communications",
+              scope: "client.settings_account.communications",
             },
             {
               disabled: true,
               title: "Configuración de indicadores",
               url: "/dashboard/indicators",
+              scope: "client.settings_account.indicators",
             },
           ],
         },
         {
           title: "Transacciones",
           icon: IconHeartHandshake,
+          scope: "client.transactions",
+          is_parent: true,
           items: [
             {
               title: "Ingreso DTE",
               url: "/dashboard/transactions/dte",
+              scope: "client.transactions.dte",
             },
             {
               title: "Ingreso pago",
               url: "/dashboard/transactions/payments",
+              scope: "client.transactions.payments",
             },
             {
               title: "Carga de cartolas",
               url: "/dashboard/transactions/movements",
+              scope: "client.transactions.movements",
             },
           ],
         },
