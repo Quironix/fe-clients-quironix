@@ -5,6 +5,61 @@ import { UserProfile } from "./app/onboarding/types";
 const PUBLIC_PATHS = ["/sign-in", "/onboarding"];
 const DASHBOARD_PATHS = ["/dashboard"];
 
+// Mapeo de rutas a scopes requeridos
+const ROUTE_SCOPE_MAP: Record<string, string> = {
+  "/dashboard/overview": "client.dashboard",
+  "/dashboard/settings": "client.onboarding.settings",
+  "/dashboard/integrations": "client.onboarding.integrations",
+  "/dashboard/banks": "client.onboarding.banks",
+  "/dashboard/users": "client.users.users",
+  "/dashboard/roles": "client.users.roles",
+  "/dashboard/actions-history": "client.users.actions_history",
+  "/dashboard/debtors": "client.settings_account.debtors",
+  "/dashboard/monthly-period": "client.settings_account.monthly_period",
+  "/dashboard/cash-flow": "client.settings_account.cash_flow",
+  "/dashboard/communications": "client.settings_account.communications",
+  "/dashboard/indicators": "client.settings_account.indicators",
+  "/dashboard/transactions/dte": "client.transactions.dte",
+  "/dashboard/transactions/payments": "client.transactions.payments",
+  "/dashboard/transactions/movements": "client.transactions.movements",
+};
+
+// Función para validar si el usuario tiene acceso a una ruta basándose en sus scopes
+const hasAccessToRoute = (routePath: string, userScopes: string[]): boolean => {
+  // Obtener el scope requerido para la ruta
+  let requiredScope = ROUTE_SCOPE_MAP[routePath];
+
+  // Si no se encuentra una coincidencia exacta, buscar por patrones de rutas padre
+  if (!requiredScope) {
+    // Buscar rutas padre que puedan coincidir
+    const matchingRoute = Object.keys(ROUTE_SCOPE_MAP).find((route) => {
+      // Verificar si la ruta actual empieza con alguna ruta definida
+      return routePath.startsWith(route);
+    });
+
+    if (matchingRoute) {
+      requiredScope = ROUTE_SCOPE_MAP[matchingRoute];
+    }
+  }
+
+  // Si no hay scope definido para la ruta, permitir acceso por defecto
+  if (!requiredScope) return true;
+
+  // Si el usuario no tiene scopes, denegar acceso
+  if (!userScopes || userScopes.length === 0) return false;
+
+  // Verificar si algún scope del usuario coincide o es más específico que el scope requerido
+  return userScopes.some((userScope) => {
+    // Remover la parte de acción (:read, :edit, :delete) del scope del usuario
+    const baseScopeUser = userScope.split(":")[0];
+    // El usuario tiene acceso si su scope base coincide o es más específico que el requerido
+    return (
+      baseScopeUser === requiredScope ||
+      baseScopeUser.startsWith(requiredScope + ".")
+    );
+  });
+};
+
 const fetchProfile = async (token: string) => {
   return await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v2/auth/profile`, {
     headers: {
@@ -100,6 +155,39 @@ export default auth(async (req) => {
         return NextResponse.redirect(
           new URL("/dashboard/overview", req.nextUrl.origin)
         );
+      }
+
+      // Validar scopes para rutas del dashboard
+      if (currentPath.startsWith("/dashboard")) {
+        // Permitir acceso a la página de acceso denegado sin validar scopes
+        if (currentPath === "/dashboard/access-denied") {
+          return NextResponse.next();
+        }
+
+        // Obtener todos los scopes del usuario desde sus roles
+        const userScopes =
+          profile?.roles?.flatMap((role: any) => role.scopes || []) || [];
+
+        // Verificar si el usuario tiene acceso a la ruta actual
+        if (!hasAccessToRoute(currentPath, userScopes)) {
+          console.log(
+            `Acceso denegado a ${currentPath} para usuario con scopes:`,
+            userScopes
+          );
+
+          // Agregar información adicional sobre el intento de acceso para logging
+          console.log(`Usuario: ${profile?.email || "Desconocido"}`);
+          console.log(`Ruta solicitada: ${currentPath}`);
+          console.log(`Scopes disponibles: ${userScopes.join(", ")}`);
+
+          // Redirigir a la página de acceso denegado con la ruta solicitada como parámetro
+          const redirectUrl = new URL(
+            "/dashboard/access-denied",
+            req.nextUrl.origin
+          );
+          redirectUrl.searchParams.set("route", currentPath);
+          return NextResponse.redirect(redirectUrl);
+        }
       }
     }
 

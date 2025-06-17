@@ -1,12 +1,12 @@
 // import { signIn } from '@/services/auth';
 
+import { useAuthLayout } from "@/stores/authLayout";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn, SignInResponse } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useAuthLayout } from "@/stores/authLayout";
 const formSchema = z.object({
   email: z
     .string()
@@ -33,9 +33,17 @@ const useLogin = () => {
     },
   });
 
+  // Limpiar caché al iniciar sesión
+  const clearCache = () => {
+    if (typeof window !== "undefined") {
+      localStorage.clear();
+      sessionStorage.clear();
+    }
+  };
+
   const onSubmit = async (data: any) => {
     setIsLoading(true);
-
+    clearCache();
     try {
       const result = (await signIn("credentials", {
         redirectTo: "/dashboard/overview",

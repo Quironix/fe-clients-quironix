@@ -1,13 +1,14 @@
 "use client";
 
-import React, {
+import { useSession } from "next-auth/react";
+import {
   createContext,
+  ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
-  ReactNode,
 } from "react";
-import { useSession } from "next-auth/react";
 
 type ProfileType = any; // Puedes tipar mejor según tu modelo
 type SessionType = any;
@@ -30,7 +31,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!session?.token) return;
     setIsLoading(true);
     setError(null);
@@ -54,7 +55,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [session?.token]);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -66,8 +67,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     if (session?.token) {
       fetchProfile();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, session?.token]);
+  }, [status, session?.token, fetchProfile]);
 
   return (
     <ProfileContext.Provider

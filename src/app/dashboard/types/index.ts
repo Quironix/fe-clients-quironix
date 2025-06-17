@@ -14,6 +14,8 @@ interface BaseNavItem {
   title: string;
   badge?: string;
   icon?: React.ElementType;
+  scope?: string;
+  disabled?: boolean;
 }
 
 type NavLink = BaseNavItem & {
@@ -22,7 +24,7 @@ type NavLink = BaseNavItem & {
 };
 
 type NavCollapsible = BaseNavItem & {
-  items: (BaseNavItem & { url: string })[];
+  items: (BaseNavItem & { url: string; scope?: string })[];
   url?: never;
 };
 
@@ -39,4 +41,4 @@ interface SidebarData {
   navGroups: NavGroup[];
 }
 
-export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink };
+export type { NavCollapsible, NavGroup, NavItem, NavLink, SidebarData };
