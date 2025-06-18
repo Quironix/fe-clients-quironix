@@ -422,3 +422,26 @@ export const INVOICE_TYPES = [
     ],
   },
 ];
+
+export const DEBTOR_PAYMENT_METHODS = [
+  {
+    label: "Depósito o Transferencia",
+    value: "DEPOSIT_OR_TRANSFER",
+  },
+  {
+    label: "Cheque",
+    value: "CHECK",
+  },
+  {
+    label: "Cheque posfechado",
+    value: "POST_DATED_CHECK",
+  },
+  {
+    label: "Tarjeta",
+    value: "CREDIT_CARD",
+  },
+  {
+    label: "Vale Vista",
+    value: "VIEW_CARD",
+  },
+];

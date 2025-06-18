@@ -1,7 +1,13 @@
 "use client";
 
 import CountriesSelectFormItem from "@/app/dashboard/components/countries-select-form-item";
-import { categories, channels, typeDocuments } from "@/app/dashboard/data";
+import PaymentMethodSelectFormItem from "@/app/dashboard/components/payment-method-select-form-item";
+import {
+  categories,
+  channels,
+  DEBTOR_PAYMENT_METHODS,
+  typeDocuments,
+} from "@/app/dashboard/data";
 import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-buttons";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
@@ -41,6 +47,15 @@ const debtorFormSchema = z.object({
       errorMap: () => ({ message: "Debe seleccionar un valor" }),
     }
   ),
+  payment_method: z.enum(
+    DEBTOR_PAYMENT_METHODS.map((paymentMethod) => paymentMethod.value) as [
+      string,
+      ...string[],
+    ],
+    {
+      errorMap: () => ({ message: "Debe seleccionar un valor" }),
+    }
+  ),
   debtor_code: z.string().min(1, "Campo requerido"),
   addresses: z.array(
     z.object({
@@ -52,6 +67,7 @@ const debtorFormSchema = z.object({
       is_primary: z.boolean(),
     })
   ),
+  sales_person: z.string().min(1, "Campo requerido"),
   dni: z.object({
     type: z.string().min(1, "Campo requerido"),
     dni: z.string().min(1, "Campo requerido"),
@@ -104,6 +120,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       name: "",
       channel: "EMAIL",
       debtor_code: "",
+      payment_method: dataDebtor?.payment_method || "",
+      sales_person: "",
       addresses: [
         {
           street: "",
@@ -145,6 +163,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           value: "Vigente",
           type: "CREDIT_STATUS",
         },
+        {
+          value: "30 días",
+          type: "PAYMENT_TERMS",
+        },
       ],
       currency: "CLP",
       contacts: [
@@ -168,6 +190,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         name: dataDebtor.name || "",
         channel: dataDebtor.channel || "EMAIL",
         debtor_code: dataDebtor.debtor_code || "",
+        payment_method: dataDebtor.payment_method,
+        sales_person: dataDebtor.sales_person || "",
         addresses: [
           {
             street: dataDebtor.addresses?.[0]?.street || "",
@@ -227,6 +251,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                 ?.value || "Vigente",
             type: "CREDIT_STATUS",
           },
+          {
+            value:
+              dataDebtor.metadata?.find((meta) => meta.type === "PAYMENT_TERMS")
+                ?.value || "30 días",
+            type: "PAYMENT_TERMS",
+          },
         ],
         currency: dataDebtor.currency || "CLP",
         contacts: [
@@ -242,9 +272,16 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         category: dataDebtor.category || "",
         economic_activities: dataDebtor.economic_activities || [""],
       };
+
       form.reset(formData);
     }
-  }, [dataDebtor?.id, form]);
+  }, [dataDebtor?.id]);
+
+  useEffect(() => {
+    if (dataDebtor?.payment_method) {
+      form.setValue("payment_method", dataDebtor.payment_method);
+    }
+  }, [dataDebtor?.payment_method]);
 
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
     setSubmitAttempted(true);
@@ -279,9 +316,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       toast.error("Error al guardar el deudor");
     }
   };
-
-  // console.log("FORM", form.getValues());
-  // console.log("DATADEBTOR", dataDebtor);
 
   return (
     <section className="space-y-6">
@@ -649,6 +683,70 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                             <SelectItem value="Retenido">Retenido</SelectItem>
                           </SelectContent>
                         </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="metadata.6.value"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Plazo de pago <Required />
+                      </FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue("metadata.6.type", "PAYMENT_TERMS");
+                          }}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecciona un estado" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="30 días">30 días</SelectItem>
+                            <SelectItem value="60 días">60 días</SelectItem>
+                            <SelectItem value="90 días">90 días</SelectItem>
+                            <SelectItem value="120 días">120 días</SelectItem>
+                            <SelectItem value="180 días">180 días</SelectItem>
+                            <SelectItem value="360 días">360 días</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="payment_method"
+                  render={({ field }) => (
+                    <PaymentMethodSelectFormItem
+                      field={field}
+                      title="Método de pago"
+                      required
+                    />
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="sales_person"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Vendedor <Required />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -9,13 +9,13 @@ export interface Debtor {
   currency: string;
   email: string;
   phone: string;
+  payment_method: string;
   contacts: Contact[];
   category: string;
   economic_activities: string[];
   sales_person: string;
   attention_days_hours: string;
 }
-
 export interface Contact {
   name: string;
   role: string;
