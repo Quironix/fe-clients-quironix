@@ -5,14 +5,20 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useProfileContext } from "@/context/ProfileContext";
+import Image from "next/image";
 import React from "react";
-import { sidebarData } from "../data";
+import { getSidebarData } from "../data";
 import { NavGroup } from "./nav-group";
 import { ProfileDropdown } from "./profile-dropdown";
-import Image from "next/image";
 
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   const { state } = useSidebar();
+  const { profile } = useProfileContext();
+
+  // Obtener la configuración del sidebar basada en el perfil del usuario
+  const sidebarData = getSidebarData(profile);
+
   return (
     <Sidebar collapsible="icon" variant="floating" {...props}>
       <SidebarHeader className="bg-primary text-white rounded-md rounded-b-none border-none">
