@@ -8,6 +8,7 @@ const DASHBOARD_PATHS = ["/dashboard"];
 // Mapeo de rutas a scopes requeridos
 const ROUTE_SCOPE_MAP: Record<string, string> = {
   "/dashboard/overview": "client.dashboard",
+  "/dashboard/companies": "client.onboarding.companies",
   "/dashboard/settings": "client.onboarding.settings",
   "/dashboard/integrations": "client.onboarding.integrations",
   "/dashboard/banks": "client.onboarding.banks",
@@ -162,6 +163,24 @@ export default auth(async (req) => {
         // Permitir acceso a la página de acceso denegado sin validar scopes
         if (currentPath === "/dashboard/access-denied") {
           return NextResponse.next();
+        }
+
+        // Validación específica para la ruta de companies - solo para clientes FACTORING
+        if (currentPath.startsWith("/dashboard/companies")) {
+          const clientType = profile?.client?.type;
+          if (clientType !== "FACTORING") {
+            console.log(
+              `Acceso denegado a ${currentPath} - cliente tipo ${clientType} no es FACTORING`
+            );
+
+            const redirectUrl = new URL(
+              "/dashboard/access-denied",
+              req.nextUrl.origin
+            );
+            redirectUrl.searchParams.set("route", currentPath);
+            redirectUrl.searchParams.set("reason", "client_type_not_factoring");
+            return NextResponse.redirect(redirectUrl);
+          }
         }
 
         // Obtener todos los scopes del usuario desde sus roles
