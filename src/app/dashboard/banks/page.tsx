@@ -239,7 +239,7 @@ const BanksContent = () => {
               </div>
             </Card>
           </div>
-        </div>{" "}
+        </div>
       </Main>
     </>
   );

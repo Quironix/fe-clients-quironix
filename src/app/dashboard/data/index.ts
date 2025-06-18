@@ -76,6 +76,11 @@ export const sidebarData: any = {
           is_parent: true,
           items: [
             {
+              title: "Compañías",
+              url: "/dashboard/companies",
+              scope: "client.onboarding.companies",
+            },
+            {
               title: "Configuración cliente",
               url: "/dashboard/settings",
               scope: "client.onboarding.settings",
@@ -420,5 +425,28 @@ export const INVOICE_TYPES = [
         value: "EXPORT_DEBIT_NOTE",
       },
     ],
+  },
+];
+
+export const DEBTOR_PAYMENT_METHODS = [
+  {
+    label: "Depósito o Transferencia",
+    value: "DEPOSIT_OR_TRANSFER",
+  },
+  {
+    label: "Cheque",
+    value: "CHECK",
+  },
+  {
+    label: "Cheque posfechado",
+    value: "POST_DATED_CHECK",
+  },
+  {
+    label: "Tarjeta",
+    value: "CREDIT_CARD",
+  },
+  {
+    label: "Vale Vista",
+    value: "VIEW_CARD",
   },
 ];

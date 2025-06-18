@@ -1,25 +1,20 @@
 "use client";
-import React, { useEffect, useState, Suspense } from "react";
-import Header from "../components/header";
-import TopNav from "../components/topnav";
-import { topNav } from "../data";
-import { useDashboard } from "@/stores/dashboard/dashboardStore";
-import { Main } from "../components/main";
 import { Button } from "@/components/ui/button";
-import TitleSection from "../components/title-section";
-import { UsersIcon, Loader } from "lucide-react";
-import { useUserStore } from "./store";
-import Search from "./components/search";
-import UsersTable from "./components/users-table";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import DialogForm from "../components/dialog-form";
-import UserForm from "./components/user-form";
-import DialogConfirm from "../components/dialog-confirm";
-import { toast } from "sonner";
-import { User } from "./services/types";
-import { useProfileContext } from "@/context/ProfileContext";
 import Language from "@/components/ui/language";
+import { useProfileContext } from "@/context/ProfileContext";
+import { UsersIcon } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
+import DialogForm from "../components/dialog-form";
+import Header from "../components/header";
+import { Main } from "../components/main";
+import TitleSection from "../components/title-section";
+import Search from "./components/search";
+import UserForm from "./components/user-form";
+import UsersTable from "./components/users-table";
+import { User } from "./services/types";
+import { useUserStore } from "./store";
 
 const UsersContent = () => {
   const { profile, session, isLoading, error } = useProfileContext();
@@ -75,7 +70,6 @@ const UsersContent = () => {
 
   const handleDelete = async (user: any) => {
     try {
-      debugger;
       await deleteUser(user.id, session?.token, profile?.client?.id);
       toast.success("Éxito", {
         description: "El usuario se ha eliminado correctamente.",

@@ -1,39 +1,17 @@
 "use client";
-import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
 import Loader from "@/components/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useProfileContext } from "@/context/ProfileContext";
-import { Edit, SearchIcon, Trash2, UserPlus } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { DataTable } from "../../components/data-table";
+import LoaderTable from "../../components/loader-table";
+import { columns } from "../create/[[...params]]/components/steps/columns";
 import { useDebtorsStore } from "../store";
+import { Debtor } from "../types";
 import { Debtors } from "./types";
 
 const ListDebtors = () => {
@@ -205,172 +183,15 @@ const ListDebtors = () => {
           </div>
         </div>
       </div>
-
-      {/* Tabla */}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-primary">DNI</TableHead>
-            <TableHead className="text-primary">Nombre</TableHead>
-            <TableHead className="text-primary">Email</TableHead>
-            <TableHead className="text-primary text-center">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentDebtors.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={4}
-                className="text-center text-muted-foreground py-8"
-              >
-                {searchTerm
-                  ? "No se encontraron deudores que coincidan con la búsqueda"
-                  : "No hay deudores disponibles"}
-              </TableCell>
-            </TableRow>
-          ) : (
-            currentDebtors?.map((debtor) => (
-              <TableRow key={debtor.id}>
-                <TableCell>{debtor.dni?.dni || "-"}</TableCell>
-                <TableCell>{debtor.name || "-"}</TableCell>
-                <TableCell>{debtor.email || "-"}</TableCell>
-                <TableCell className="text-center">
-                  <div className="flex justify-center gap-1">
-                    <Button
-                      disabled={true}
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleAssignUser(debtor)}
-                      title="Asignar usuario"
-                      className="hover:bg-blue-500 hover:text-white text-primary"
-                    >
-                      <UserPlus />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEdit(debtor)}
-                      title="Editar"
-                      className="hover:bg-amber-500 hover:text-white text-primary"
-                    >
-                      <Edit />
-                    </Button>
-                    <DialogConfirm
-                      title="¿Eliminar deudor?"
-                      description={`¿Estás seguro que deseas eliminar el deudor "${debtor.name}"? Esta acción no se puede deshacer.`}
-                      triggerButton={
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Eliminar"
-                          className="hover:bg-red-500 hover:text-white text-primary"
-                        >
-                          <Trash2 />
-                        </Button>
-                      }
-                      cancelButtonText="Cancelar"
-                      confirmButtonText="Sí, eliminar"
-                      onConfirm={() => handleDelete(debtor)}
-                      type="danger"
-                    />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-        <TableFooter className="w-full">
-          <TableRow>
-            <TableCell colSpan={4}>
-              <div className="flex justify-between items-center w-full">
-                <div className="text-sm">
-                  Mostrando {currentDebtors.length} de {totalItems}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">Registros por página:</span>
-                  <Select
-                    value={itemsPerPage.toString()}
-                    onValueChange={(value) => setItemsPerPage(Number(value))}
-                  >
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5</SelectItem>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="20">20</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
-
-      {/* Paginación */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 w-full">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) {
-                      setCurrentPage(currentPage - 1);
-                    }
-                  }}
-                  className={
-                    currentPage <= 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-
-              {getVisiblePages().map((page, index) => (
-                <PaginationItem key={index}>
-                  {page === "..." ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setCurrentPage(Number(page));
-                      }}
-                      isActive={currentPage === Number(page)}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  )}
-                </PaginationItem>
-              ))}
-
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages) {
-                      setCurrentPage(currentPage + 1);
-                    }
-                  }}
-                  className={
-                    currentPage >= totalPages
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={debtors as Debtor[]}
+        isLoading={loading}
+        loadingComponent={<LoaderTable cols={7} />}
+        emptyMessage="No se encontraron deudores"
+        pageSize={15}
+        pageSizeOptions={[15, 20, 25, 30, 40, 50]}
+      />
     </div>
   );
 };

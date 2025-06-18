@@ -38,7 +38,7 @@ const MovementsContent = () => {
           subDescription="Transacciones"
         />
         <div className="flex justify-between items-start gap-5 p-3 border border-gray-200 rounded-md h-[320px]">
-          <div className="w-[25%] h-full">
+          <div className="w-1/3 h-full">
             <Image
               src="/img/debtors-image.svg"
               alt="Deudores"
@@ -47,7 +47,7 @@ const MovementsContent = () => {
               height={100}
             />
           </div>
-          <div className="w-[100%] h-full">
+          <div className="w-2/3 h-full">
             <BulkMovements />
           </div>
         </div>

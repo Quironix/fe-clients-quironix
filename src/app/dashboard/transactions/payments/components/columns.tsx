@@ -16,7 +16,6 @@ const AcctionsCellComponent = ({ row }: { row: Row<Payments> }) => {
   const { deletePayment } = usePaymentStore();
 
   const handleDelete = async (payment: Payments) => {
-    console.log(payment);
     try {
       await deletePayment(
         session?.token || "",

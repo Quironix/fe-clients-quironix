@@ -1,16 +1,18 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Loader2 } from "lucide-react";
 
 const LoaderTable = ({ cols }: { cols: number }) => {
-  return (
-    <TableRow>
-      <TableCell className="text-center h-full pt-5" colSpan={cols}>
-        <div className="flex justify-center items-center gap-2">
-          <Loader2 className="w-6 h-6 animate-spin" /> Cargando...
-        </div>
-      </TableCell>
+  const skeletonRows = Array.from({ length: 3 }, (_, index) => (
+    <TableRow key={index}>
+      {Array.from({ length: cols }, (_, colIndex) => (
+        <TableCell key={colIndex} className="p-4">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+      ))}
     </TableRow>
-  );
+  ));
+
+  return <>{skeletonRows}</>;
 };
 
 export default LoaderTable;

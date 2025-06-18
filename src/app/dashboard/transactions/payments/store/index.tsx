@@ -123,7 +123,6 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const response = await deletePayment(accessToken, clientId, id);
-      debugger;
       set({ responseSuccess: response });
     } catch (error: any) {
       set({ error: error.message });

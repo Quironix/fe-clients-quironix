@@ -66,7 +66,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-4 bg-white ${className}`}>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -138,7 +138,7 @@ export function DataTable<TData, TValue>({
 
       {/* Controles de paginación */}
       {showPagination && (
-        <div className="flex items-center justify-between px-2">
+        <div className="flex items-center justify-between px-2 py-1 ">
           <div className="text-sm text-muted-foreground">
             Mostrando{" "}
             {table.getState().pagination.pageIndex *
