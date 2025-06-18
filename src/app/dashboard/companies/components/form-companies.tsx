@@ -27,6 +27,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
+import CountriesSelectFormItem from "../../components/countries-select-form-item";
 import { categories, typeDocuments } from "../../data";
 import TitleStep from "../../settings/components/title-step";
 import { useCompaniesStore } from "../store";
@@ -404,7 +405,7 @@ const CompanyForm = ({
                   onClick={addAddress}
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white"
+                  className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white w-45 h-11 rounded-sm"
                 >
                   <Plus className="w-4 h-4 text-orange-500" />
                   Agregar dirección
@@ -517,28 +518,11 @@ const CompanyForm = ({
                           control={form.control}
                           name={`address.${index}.country`}
                           render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>
-                                País<span className="text-orange-500">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <SearchInput
-                                  value={field.value}
-                                  onValueChange={(value) =>
-                                    form.setValue(
-                                      `address.${index}.country`,
-                                      value
-                                    )
-                                  }
-                                  options={countries.map((country) => ({
-                                    value: country.id,
-                                    label: country.name,
-                                  }))}
-                                  placeholder="Ej: Chile"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
+                            <CountriesSelectFormItem
+                              field={field}
+                              title="País"
+                              required
+                            />
                           )}
                         />
 
@@ -584,7 +568,7 @@ const CompanyForm = ({
                   onClick={addContact}
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white"
+                  className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white w-45 h-11 rounded-sm"
                 >
                   <Plus className="w-4 h-4 text-orange-500" />
                   Agregar contacto
@@ -737,7 +721,11 @@ const CompanyForm = ({
                 Cancelar
               </Button>
             </DialogClose> */}
-            <Button type="submit" disabled={isLoading}>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-45 h-11 rounded-sm"
+            >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {id ? "Actualizar" : "Crear"} empresa
             </Button>

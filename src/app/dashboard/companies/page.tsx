@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import CreateManual from "../components/create-manual";
 import { DataTable } from "../components/data-table";
 import Header from "../components/header";
+import LoaderTable from "../components/loader-table";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import { columns } from "./components/columns";
@@ -44,7 +45,7 @@ const CompaniesPage = () => {
               height={100}
             />
           </div>
-          <div className="w-1/3  h-full">
+          <div className="w-2/3  h-full">
             <CreateManual
               title={
                 <span>
@@ -60,7 +61,15 @@ const CompaniesPage = () => {
           {/* <div className="w-[37.5%] h-full"><BulkDebtors /></div> */}
         </div>
         <div className="mt-5 border border-gray-200 rounded-md p-3">
-          <DataTable columns={columns} data={companies} isLoading={loading} />
+          <DataTable
+            columns={columns}
+            data={companies}
+            isLoading={loading}
+            loadingComponent={<LoaderTable cols={6} />}
+            emptyMessage="No se encontraron compañías"
+            pageSize={15}
+            pageSizeOptions={[15, 20, 25, 30, 40, 50]}
+          />
         </div>
       </Main>
     </>
