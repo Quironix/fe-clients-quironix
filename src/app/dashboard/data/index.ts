@@ -76,6 +76,11 @@ export const sidebarData: any = {
           is_parent: true,
           items: [
             {
+              title: "Compañías",
+              url: "/dashboard/companies",
+              scope: "client.onboarding.companies",
+            },
+            {
               title: "Configuración cliente",
               url: "/dashboard/settings",
               scope: "client.onboarding.settings",

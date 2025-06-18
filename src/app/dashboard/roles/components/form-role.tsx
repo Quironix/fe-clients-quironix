@@ -1,24 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { FormProvider, useForm } from "react-hook-form";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DialogClose } from "@/components/ui/dialog";
 import {
-  FormMessage,
   FormControl,
-  FormLabel,
   FormField,
   FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Role, Scope } from "../services/types";
-import { getResources } from "../services";
-import { useSession } from "next-auth/react";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -27,9 +20,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DialogClose } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import * as z from "zod";
+import { Role } from "../services/types";
 
 const roleFormSchema = z.object({
   id: z.string().optional(),
@@ -265,50 +264,52 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {resources.map((resource) => (
-                    <TableRow key={resource.id}>
-                      <TableCell>{resource.name}</TableCell>
-                      <TableCell className="text-center">
-                        <Checkbox
-                          id={`edit-${resource.id}`}
-                          checked={isChecked(resource.id, "can_edit")}
-                          onCheckedChange={(checked) =>
-                            handleCheckboxChange(
-                              resource.id,
-                              "can_edit",
-                              checked === true
-                            )
-                          }
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Checkbox
-                          id={`view-${resource.id}`}
-                          checked={isChecked(resource.id, "can_view")}
-                          onCheckedChange={(checked) =>
-                            handleCheckboxChange(
-                              resource.id,
-                              "can_view",
-                              checked === true
-                            )
-                          }
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Checkbox
-                          id={`delete-${resource.id}`}
-                          checked={isChecked(resource.id, "can_delete")}
-                          onCheckedChange={(checked) =>
-                            handleCheckboxChange(
-                              resource.id,
-                              "can_delete",
-                              checked === true
-                            )
-                          }
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {resources
+                    .sort((a: any, b: any) => a.name.localeCompare(b.name))
+                    .map((resource) => (
+                      <TableRow key={resource.id}>
+                        <TableCell>{resource.name}</TableCell>
+                        <TableCell className="text-center">
+                          <Checkbox
+                            id={`edit-${resource.id}`}
+                            checked={isChecked(resource.id, "can_edit")}
+                            onCheckedChange={(checked) =>
+                              handleCheckboxChange(
+                                resource.id,
+                                "can_edit",
+                                checked === true
+                              )
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Checkbox
+                            id={`view-${resource.id}`}
+                            checked={isChecked(resource.id, "can_view")}
+                            onCheckedChange={(checked) =>
+                              handleCheckboxChange(
+                                resource.id,
+                                "can_view",
+                                checked === true
+                              )
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Checkbox
+                            id={`delete-${resource.id}`}
+                            checked={isChecked(resource.id, "can_delete")}
+                            onCheckedChange={(checked) =>
+                              handleCheckboxChange(
+                                resource.id,
+                                "can_delete",
+                                checked === true
+                              )
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </div>
