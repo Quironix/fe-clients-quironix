@@ -1,3 +1,5 @@
+import { Company } from "../types";
+
 export const getCompanies = async (accessToken: string, clientId: string) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/companies`,

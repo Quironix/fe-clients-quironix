@@ -11,7 +11,7 @@ import FormCompanies from "../../components/form-companies";
 import { useCompaniesStore } from "../../store";
 import { Company } from "../../types";
 
-const page = () => {
+const Page = () => {
   const { session, profile } = useProfileContext();
   const { createCompany, updateCompany, loading, error } = useCompaniesStore();
   const router = useRouter();
@@ -52,4 +52,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
