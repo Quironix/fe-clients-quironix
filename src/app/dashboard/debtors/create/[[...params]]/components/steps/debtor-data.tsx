@@ -4,8 +4,11 @@ import CountriesSelectFormItem from "@/app/dashboard/components/countries-select
 import PaymentMethodSelectFormItem from "@/app/dashboard/components/payment-method-select-form-item";
 import {
   categories,
-  channels,
+  CREDIT_STATUS,
   DEBTOR_PAYMENT_METHODS,
+  PAYMENT_TERMS,
+  PREFERRED_CHANNELS,
+  RISK_CLASSIFICATION,
   typeDocuments,
 } from "@/app/dashboard/data";
 import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-buttons";
@@ -42,7 +45,7 @@ import { useDebtorsStore } from "../../../../store";
 const debtorFormSchema = z.object({
   name: z.string().min(1, "Campo requerido"),
   channel: z.enum(
-    channels.map((channel) => channel.value) as [string, ...string[]],
+    PREFERRED_CHANNELS.map((channel) => channel.code) as [string, ...string[]],
     {
       errorMap: () => ({ message: "Debe seleccionar un valor" }),
     }
@@ -547,10 +550,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           </SelectTrigger>
 
                           <SelectContent>
-                            {channels.map((channel: any) => (
+                            {PREFERRED_CHANNELS.map((channel: any) => (
                               <SelectItem
-                                key={channel.value}
-                                value={channel.value}
+                                key={channel.code}
+                                value={channel.code}
                               >
                                 {channel.name}
                               </SelectItem>
@@ -594,12 +597,23 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         Clasificación de riesgo <Required />
                       </FormLabel>
                       <FormControl>
-                        <InputNumberCart
-                          value={Number(field.value) ?? 0}
-                          onChange={(val) => field.onChange(val)}
-                          placeholder="Ej: 5000"
-                          min={0}
-                        />
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecciona un estado" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {RISK_CLASSIFICATION.map((status: any) => (
+                              <SelectItem key={status.code} value={status.code}>
+                                {status.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -679,8 +693,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Vigente">Vigente</SelectItem>
-                            <SelectItem value="Retenido">Retenido</SelectItem>
+                            {CREDIT_STATUS.map((status: any) => (
+                              <SelectItem key={status.code} value={status.code}>
+                                {status.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -711,12 +728,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="30 días">30 días</SelectItem>
-                            <SelectItem value="60 días">60 días</SelectItem>
-                            <SelectItem value="90 días">90 días</SelectItem>
-                            <SelectItem value="120 días">120 días</SelectItem>
-                            <SelectItem value="180 días">180 días</SelectItem>
-                            <SelectItem value="360 días">360 días</SelectItem>
+                            {PAYMENT_TERMS.map((term: any) => (
+                              <SelectItem key={term.code} value={term.code}>
+                                {term.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </FormControl>

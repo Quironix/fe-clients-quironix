@@ -603,7 +603,7 @@ export const DEBTOR_PAYMENT_METHODS = [
   },
   {
     label: "Cheque posfechado",
-    value: "POST_DATED_CHECK",
+    value: "CHECK_POSTDATED",
   },
   {
     label: "Tarjeta",
@@ -613,4 +613,44 @@ export const DEBTOR_PAYMENT_METHODS = [
     label: "Vale Vista",
     value: "VIEW_CARD",
   },
+];
+
+export const CREDIT_STATUS = [
+  { name: "Vigente", code: "ACTIVE" },
+  { name: "Retenido", code: "INACTIVE" },
+];
+
+export const DOCUMENT_TYPE = [
+  {
+    name: "RUC",
+    code: "RUC",
+  },
+  {
+    name: "RUT",
+    code: "RUT",
+  },
+];
+
+export const PAYMENT_TERMS = [
+  { name: "30 días", code: "30_DAYS" },
+  { name: "60 días", code: "60_DAYS" },
+  { name: "90 días", code: "90_DAYS" },
+  { name: "120 días", code: "120_DAYS" },
+  { name: "180 días", code: "180_DAYS" },
+  { name: "360 días", code: "360_DAYS" },
+];
+
+export const PREFERRED_CHANNELS = [
+  { code: "EMAIL", name: "Correo electrónico" },
+  { code: "PHONE", name: "Teléfono" },
+  { code: "MAIL", name: "Correo postal" },
+  { code: "IN_PERSON", name: "Presencial" },
+  { code: "WHATSAPP", name: "WhatsApp" },
+  { code: "SMS", name: "SMS" },
+];
+
+export const RISK_CLASSIFICATION = [
+  { code: "HIGH", name: "Alto" },
+  { code: "MEDIUM", name: "Medio" },
+  { code: "LOW", name: "Bajo" },
 ];
