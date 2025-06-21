@@ -40,15 +40,7 @@ export const getSidebarData = (profile: any) => {
 
   const onboardingItems = [
     // Solo incluir "Compañías" si el cliente es de tipo FACTORING
-    ...(isFactoringClient
-      ? [
-          {
-            title: "Compañías",
-            url: "/dashboard/companies",
-            scope: "client.onboarding.companies",
-          },
-        ]
-      : []),
+
     {
       title: "Configuración cliente",
       url: "/dashboard/settings",
@@ -65,6 +57,15 @@ export const getSidebarData = (profile: any) => {
       url: "/dashboard/banks",
       scope: "client.onboarding.banks",
     },
+    ...(isFactoringClient
+      ? [
+          {
+            title: "Compañías",
+            url: "/dashboard/companies",
+            scope: "client.onboarding.companies",
+          },
+        ]
+      : []),
   ];
 
   return {
