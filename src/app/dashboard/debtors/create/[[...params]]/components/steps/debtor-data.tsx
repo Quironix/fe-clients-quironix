@@ -1,7 +1,9 @@
 "use client";
 
+import { useCompaniesStore } from "@/app/dashboard/companies/store";
 import CountriesSelectFormItem from "@/app/dashboard/components/countries-select-form-item";
 import PaymentMethodSelectFormItem from "@/app/dashboard/components/payment-method-select-form-item";
+import SelectClient from "@/app/dashboard/components/select-client";
 import {
   categories,
   CREDIT_STATUS,
@@ -42,63 +44,68 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { useDebtorsStore } from "../../../../store";
 
-const debtorFormSchema = z.object({
-  name: z.string().min(1, "Campo requerido"),
-  channel: z.enum(
-    PREFERRED_CHANNELS.map((channel) => channel.code) as [string, ...string[]],
-    {
-      errorMap: () => ({ message: "Debe seleccionar un valor" }),
-    }
-  ),
-  payment_method: z.enum(
-    DEBTOR_PAYMENT_METHODS.map((paymentMethod) => paymentMethod.value) as [
-      string,
-      ...string[],
-    ],
-    {
-      errorMap: () => ({ message: "Debe seleccionar un valor" }),
-    }
-  ),
-  debtor_code: z.string().min(1, "Campo requerido"),
-  addresses: z.array(
-    z.object({
-      street: z.string().min(1, "Campo requerido"),
-      city: z.string().min(1, "Campo requerido"),
-      state: z.string().min(1, "Campo requerido"),
-      country: z.string().min(1, "Campo requerido"),
-      postal_code: z.string().min(1, "Campo requerido"),
-      is_primary: z.boolean(),
-    })
-  ),
-  sales_person: z.string().min(1, "Campo requerido"),
-  dni: z.object({
-    type: z.string().min(1, "Campo requerido"),
-    dni: z.string().min(1, "Campo requerido"),
-    emit_date: z.string().optional(),
-    expiration_date: z.string().optional(),
-  }),
-  metadata: z.array(
-    z.object({
-      value: z.any(),
+const createDebtorFormSchema = (isFactoring: boolean) =>
+  z.object({
+    name: z.string().min(1, "Campo requerido"),
+    company_id: isFactoring
+      ? z.string().min(1, "Campo requerido")
+      : z.string().optional(),
+    channel: z.enum(
+      PREFERRED_CHANNELS.map((channel) => channel.code) as [
+        string,
+        ...string[],
+      ],
+      {
+        errorMap: () => ({ message: "Debe seleccionar un valor" }),
+      }
+    ),
+    payment_method: z.enum(
+      DEBTOR_PAYMENT_METHODS.map((paymentMethod) => paymentMethod.value) as [
+        string,
+        ...string[],
+      ],
+      {
+        errorMap: () => ({ message: "Debe seleccionar un valor" }),
+      }
+    ),
+    debtor_code: z.string().min(1, "Campo requerido"),
+    addresses: z.array(
+      z.object({
+        street: z.string().min(1, "Campo requerido"),
+        city: z.string().min(1, "Campo requerido"),
+        state: z.string().min(1, "Campo requerido"),
+        country: z.string().min(1, "Campo requerido"),
+        postal_code: z.string().min(1, "Campo requerido"),
+        is_primary: z.boolean(),
+      })
+    ),
+    sales_person: z.string().min(1, "Campo requerido"),
+    dni: z.object({
       type: z.string().min(1, "Campo requerido"),
-    })
-  ),
-  currency: z.string().min(1, "Campo requerido"),
-  contacts: z.array(
-    z.object({
-      name: z.string().optional(),
-      role: z.string().optional(),
-      email: z.string().optional(),
-      phone: z.string().optional(),
-      channel: z.string().optional(),
-      function: z.string().optional(),
-    })
-  ),
-  category: z.string().min(1, "Campo requerido"),
-  economic_activities: z.array(z.string()).min(1, "Campo requerido"),
-});
-
-type DebtorFormValues = z.infer<typeof debtorFormSchema>;
+      dni: z.string().min(1, "Campo requerido"),
+      emit_date: z.string().optional(),
+      expiration_date: z.string().optional(),
+    }),
+    metadata: z.array(
+      z.object({
+        value: z.any(),
+        type: z.string().min(1, "Campo requerido"),
+      })
+    ),
+    currency: z.string().min(1, "Campo requerido"),
+    contacts: z.array(
+      z.object({
+        name: z.string().optional(),
+        role: z.string().optional(),
+        email: z.string().optional(),
+        phone: z.string().optional(),
+        channel: z.string().optional(),
+        function: z.string().optional(),
+      })
+    ),
+    category: z.string().min(1, "Campo requerido"),
+    economic_activities: z.array(z.string()).min(1, "Campo requerido"),
+  });
 
 const DebtorsDataStep: React.FC<StepProps> = ({
   onNext,
@@ -115,12 +122,18 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const { session } = useProfileContext();
+  const { getCompanies } = useCompaniesStore();
+
+  const isFactoring = profile?.client?.type === "FACTORING";
+  const debtorFormSchema = createDebtorFormSchema(isFactoring);
+  type DebtorFormValues = z.infer<typeof debtorFormSchema>;
 
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
     defaultValues: {
       name: "",
+      company_id: "",
       channel: "EMAIL",
       debtor_code: "",
       payment_method: dataDebtor?.payment_method || "",
@@ -191,6 +204,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     if (dataDebtor?.id) {
       const formData: DebtorFormValues = {
         name: dataDebtor.name || "",
+        company_id: dataDebtor.company_id || "",
         channel: dataDebtor.channel || "EMAIL",
         debtor_code: dataDebtor.debtor_code || "",
         payment_method: dataDebtor.payment_method,
@@ -281,6 +295,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   }, [dataDebtor?.id]);
 
   useEffect(() => {
+    if (session?.token && profile?.client?.id) {
+      getCompanies(session?.token, profile?.client?.id);
+    }
+  }, [session?.token, profile?.client?.id]);
+
+  useEffect(() => {
     if (dataDebtor?.payment_method) {
       form.setValue("payment_method", dataDebtor.payment_method);
     }
@@ -339,6 +359,16 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           >
             <div className="grid gap-6">
               <div className="grid grid-cols-3 gap-6">
+                {profile?.client?.type === "FACTORING" && (
+                  <FormField
+                    control={form.control}
+                    name="company_id"
+                    render={({ field }) => (
+                      <SelectClient field={field} title="Compañía" required />
+                    )}
+                  />
+                )}
+
                 <FormField
                   control={form.control}
                   name="name"

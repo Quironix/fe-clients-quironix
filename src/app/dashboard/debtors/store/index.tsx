@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { create } from "zustand";
 import {
   createDebtor,
@@ -7,7 +8,6 @@ import {
   updateDebtor,
 } from "../services";
 import { BulkUploadResponse, Debtor } from "../types";
-import { toast } from "sonner";
 
 interface DebtorsStore {
   dataDebtor: Debtor;

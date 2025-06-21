@@ -1,6 +1,7 @@
 export interface Debtor {
   id?: string;
   name: string;
+  company_id?: string;
   channel: string;
   debtor_code: string;
   addresses: Address[];
