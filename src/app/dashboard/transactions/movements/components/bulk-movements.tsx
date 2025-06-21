@@ -77,7 +77,7 @@ const BulkDebtors = () => {
         );
 
         // Redirigir a la página de errores incompletos
-        router.push("/dashboard/movements/incomplete");
+        router.push("/dashboard/transactions/movements/incomplete");
       }
     } catch (error: any) {
       console.error("Error al cargar archivo:", error);
