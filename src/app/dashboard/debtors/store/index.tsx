@@ -16,6 +16,8 @@ interface DebtorsStore {
   loading: boolean;
   error: string | null;
   bulkUploadErrors: BulkUploadResponse | null;
+  isFetchingDebtor: boolean;
+  setIsFetchingDebtor: (isFetching: boolean) => void;
   fetchDebtors: (accessToken: string, clientId: string) => Promise<void>;
   fetchDebtorById: (
     accessToken: string,
@@ -47,6 +49,9 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   debtors: [],
   loading: false,
   error: null,
+  isFetchingDebtor: false,
+  setIsFetchingDebtor: (isFetching: boolean) =>
+    set({ isFetchingDebtor: isFetching }),
   bulkUploadErrors: null,
   fetchDebtors: async (accessToken: string, clientId: string) => {
     set({ loading: true, error: null, dataDebtor: {} as Debtor });
@@ -70,7 +75,12 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
     clientId: string,
     debtorId: string
   ) => {
-    set({ loading: true, error: null, dataDebtor: {} as Debtor });
+    set({
+      loading: true,
+      isFetchingDebtor: true,
+      error: null,
+      dataDebtor: {} as Debtor,
+    });
     try {
       const response = await getDebtorById(accessToken, clientId, debtorId);
 
@@ -87,7 +97,7 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
         "Error desconocido al obtener el deudor";
       set({ error: errorMessage });
     } finally {
-      set({ loading: false });
+      set({ loading: false, isFetchingDebtor: false });
     }
   },
   createDebtor: async (accessToken: string, clientId: string, debtor: any) => {

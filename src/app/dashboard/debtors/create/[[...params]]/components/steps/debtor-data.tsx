@@ -120,9 +120,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   const { createDebtor, setDataDebtor, dataDebtor, updateDebtor } =
     useDebtorsStore();
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const { companies } = useCompaniesStore();
 
   const { session } = useProfileContext();
-  const { getCompanies } = useCompaniesStore();
 
   const isFactoring = profile?.client?.type === "FACTORING";
   const debtorFormSchema = createDebtorFormSchema(isFactoring);
@@ -201,7 +201,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   });
 
   useEffect(() => {
-    if (dataDebtor?.id) {
+    if (dataDebtor?.id && (companies.length > 0 || !isFactoring)) {
       const formData: DebtorFormValues = {
         name: dataDebtor.name || "",
         company_id: dataDebtor.company_id || "",
@@ -234,10 +234,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             type: "DBT_DEBTOR",
           },
           {
-            value:
-              dataDebtor.metadata?.find(
-                (meta) => meta.type === "RISK_CLASSIFICATION"
-              )?.value || 0,
+            value: dataDebtor.metadata?.find(
+              (meta) => meta.type === "RISK_CLASSIFICATION"
+            )?.value,
             type: "RISK_CLASSIFICATION",
           },
           {
@@ -293,12 +292,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       form.reset(formData);
     }
   }, [dataDebtor?.id]);
-
-  useEffect(() => {
-    if (session?.token && profile?.client?.id) {
-      getCompanies(session?.token, profile?.client?.id);
-    }
-  }, [session?.token, profile?.client?.id]);
 
   useEffect(() => {
     if (dataDebtor?.payment_method) {

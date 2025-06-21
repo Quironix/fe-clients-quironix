@@ -23,7 +23,7 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
   const { profile, session } = useProfileContext();
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
-  const { fetchDebtorById, setDataDebtor } = useDebtorsStore();
+  const { fetchDebtorById } = useDebtorsStore();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 

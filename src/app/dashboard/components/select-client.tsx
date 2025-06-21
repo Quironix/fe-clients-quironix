@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useProfileContext } from "@/context/ProfileContext";
+import { useEffect } from "react";
 import { useCompaniesStore } from "../companies/store";
 
 const SelectClient = ({
@@ -23,14 +25,26 @@ const SelectClient = ({
   title: string;
   required?: boolean;
 }) => {
-  const { companies } = useCompaniesStore();
+  const { companies, getCompanies } = useCompaniesStore();
+  const { session, profile } = useProfileContext();
+
+  useEffect(() => {
+    if (session?.token && profile?.client?.id && companies.length === 0) {
+      getCompanies(session?.token, profile?.client?.id);
+    }
+  }, [getCompanies, profile?.client?.id, session?.token]);
 
   return (
     <FormItem>
       <FormLabel>
         {title} {required && <Required />}
       </FormLabel>
-      <Select onValueChange={field.onChange} defaultValue={field.value}>
+      <Select
+        onValueChange={field.onChange}
+        value={field.value}
+        key={field.value}
+        disabled={companies.length === 0}
+      >
         <FormControl>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Selecciona una compañía" />
