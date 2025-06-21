@@ -3,6 +3,7 @@ import BankListSelectFormItem from "@/app/dashboard/components/bank-list-select-
 import DatePickerFormItem from "@/app/dashboard/components/date-picker-form-item";
 import DebtorsSelectFormItem from "@/app/dashboard/components/debtors-select-form-item";
 import Loader from "@/app/dashboard/components/loader";
+import SelectClient from "@/app/dashboard/components/select-client";
 import { DocumentType } from "@/app/dashboard/data";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,7 @@ const FormPayments = () => {
 
   const formSchema = z.object({
     id: z.string().optional(),
+    company_id: z.string().optional(),
     debtor_id: z.string().min(1, "El deudor es requerido"),
     bank_movement_id: z.string().optional().nullable(),
     bank_id: z.string().min(1, "El banco es requerido"),
@@ -88,6 +90,7 @@ const FormPayments = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       id: "",
+      company_id: "",
       debtor_id: "",
       bank_movement_id: null,
       bank_id: "",
@@ -124,6 +127,7 @@ const FormPayments = () => {
 
       const formData = {
         id: payment?.id || "",
+        company_id: payment?.company_id || "",
         debtor_id: payment?.debtor_id || "",
         bank_movement_id: payment?.bank_movement_id || null,
         bank_id: payment?.bank_id || "",
@@ -157,6 +161,9 @@ const FormPayments = () => {
       if (id) {
         const paymentData = {
           id: values?.id || undefined,
+          ...(profile?.client?.type === "FACTORING" && {
+            company_id: values?.company_id || "",
+          }),
           debtor_id: values?.debtor_id || "",
           bank_movement_id: null,
           bank_id: values?.bank_id || "",
@@ -188,6 +195,9 @@ const FormPayments = () => {
         }
       } else {
         const paymentData = {
+          ...(profile?.client?.type === "FACTORING" && {
+            company_id: values?.company_id || "",
+          }),
           debtor_id: values?.debtor_id || "",
           bank_movement_id: null,
           bank_id: values?.bank_id || "",
@@ -288,6 +298,15 @@ const FormPayments = () => {
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {profile?.client?.type === "FACTORING" && (
+                  <FormField
+                    control={form.control}
+                    name="company_id"
+                    render={({ field }) => (
+                      <SelectClient field={field} title="Compañía" required />
+                    )}
+                  />
+                )}
                 <FormField
                   control={form.control}
                   name="document_type"

@@ -3,6 +3,7 @@ import { DocumentType } from "@/app/dashboard/data";
 export interface Payments {
   id?: string;
   debtor_id: string;
+  company_id?: string;
   bank_movement_id?: string | null;
   bank_id: string;
   ingress_type: string;
