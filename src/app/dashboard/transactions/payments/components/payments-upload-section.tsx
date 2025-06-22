@@ -27,8 +27,11 @@ const PaymentUploadSection = () => {
     if (!file) return;
 
     // Validar que sea un archivo CSV
-    if (!file.name.toLowerCase().endsWith(".csv")) {
-      toast.error("Por favor selecciona un archivo CSV válido");
+    if (
+      !file.name.toLowerCase().endsWith(".csv") &&
+      !file.name.toLowerCase().endsWith(".xlsx")
+    ) {
+      toast.error("Por favor selecciona un archivo CSV o XLSX válido");
       return;
     }
 
@@ -131,7 +134,6 @@ const PaymentUploadSection = () => {
               <b>"Subir archivo"</b> para importarlo al sistema.
             </>
           }
-          acceptedFileTypes=".csv"
           customSuccessMessage={(result) =>
             `¡Éxito! ${result.validCount} documentos de pagos procesados correctamente`
           }

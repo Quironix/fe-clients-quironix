@@ -5,6 +5,7 @@ import { Main } from "@/app/dashboard/components/main";
 import TitleSection from "@/app/dashboard/components/title-section";
 import { Step } from "@/components/Stepper/types";
 import Language from "@/components/ui/language";
+import { SkeletonFormDebtor } from "@/components/ui/skeleton-form-debtor";
 import { useProfileContext } from "@/context/ProfileContext";
 import { FileCog } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -23,7 +24,7 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
   const { profile, session } = useProfileContext();
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
-  const { fetchDebtorById } = useDebtorsStore();
+  const { fetchDebtorById, isFetchingDebtor } = useDebtorsStore();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
@@ -66,7 +67,15 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
 
     switch (currentStep) {
       case 0:
-        return <DebtorsDataStep {...stepProps} />;
+        return (
+          <>
+            {isFetchingDebtor ? (
+              <SkeletonFormDebtor />
+            ) : (
+              <DebtorsDataStep {...stepProps} />
+            )}
+          </>
+        );
       case 1:
         return <AttentionStep {...stepProps} />;
       case 2:

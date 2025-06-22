@@ -117,8 +117,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   onStepChange,
   profile,
 }) => {
-  const { createDebtor, setDataDebtor, dataDebtor, updateDebtor } =
-    useDebtorsStore();
+  const {
+    createDebtor,
+    setDataDebtor,
+    dataDebtor,
+    updateDebtor,
+    isFetchingDebtor,
+  } = useDebtorsStore();
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const { companies } = useCompaniesStore();
 
@@ -160,7 +165,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           type: "DBT_DEBTOR",
         },
         {
-          value: 0,
+          value: "LOW",
           type: "RISK_CLASSIFICATION",
         },
         {
@@ -176,11 +181,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           type: "CREDIT_LINE_TOLERANCE",
         },
         {
-          value: "Vigente",
+          value: "",
           type: "CREDIT_STATUS",
         },
         {
-          value: "30 días",
+          value: "",
           type: "PAYMENT_TERMS",
         },
       ],
@@ -234,9 +239,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             type: "DBT_DEBTOR",
           },
           {
-            value: dataDebtor.metadata?.find(
-              (meta) => meta.type === "RISK_CLASSIFICATION"
-            )?.value,
+            value:
+              dataDebtor.metadata?.find(
+                (meta) => meta.type === "RISK_CLASSIFICATION"
+              )?.value || "",
             type: "RISK_CLASSIFICATION",
           },
           {
@@ -291,7 +297,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
       form.reset(formData);
     }
-  }, [dataDebtor?.id]);
+  }, [dataDebtor?.id, companies.length]);
 
   useEffect(() => {
     if (dataDebtor?.payment_method) {
@@ -567,6 +573,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          defaultValue={field.value}
+                          key={field.value}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un canal" />
@@ -623,6 +631,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          defaultValue={field.value}
+                          key={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -709,6 +719,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          defaultValue={field.value}
+                          key={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -744,6 +756,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                             form.setValue("metadata.6.type", "PAYMENT_TERMS");
                           }}
                           value={field.value}
+                          defaultValue={field.value}
+                          key={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">

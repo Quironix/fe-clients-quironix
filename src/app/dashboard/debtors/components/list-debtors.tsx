@@ -1,40 +1,22 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { DataTable } from "../../components/data-table";
 import LoaderTable from "../../components/loader-table";
 import { columns } from "../create/[[...params]]/components/steps/columns";
 import { useDebtorsStore } from "../store";
 import { Debtor } from "../types";
-import { Debtors } from "./types";
 
 const ListDebtors = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const { session, profile } = useProfileContext();
-  const { debtors, loading, error, fetchDebtors, deleteDebtor } =
-    useDebtorsStore();
+  const { debtors, loading, error, fetchDebtors } = useDebtorsStore();
 
   useEffect(() => {
     if (session?.token && profile?.client?.id) {
       fetchDebtors(session?.token, profile?.client?.id);
     }
   }, [session?.token, profile?.client?.id, fetchDebtors]);
-
-  // Filtrar deudores basado en el término de búsqueda
-  const filteredDebtors = useMemo(() => {
-    if (!debtors) return [];
-
-    return debtors.filter((debtor: Debtors) => {
-      if (!searchTerm) return true;
-      const searchTermLower = searchTerm.toLowerCase();
-      return (
-        debtor.dni?.dni?.toLowerCase().includes(searchTermLower) ||
-        debtor.name?.toLowerCase().includes(searchTermLower) ||
-        debtor.email?.toLowerCase().includes(searchTermLower)
-      );
-    });
-  }, [debtors, searchTerm]);
 
   // Mostrar error si ocurre algún problema
   if (error) {

@@ -1,15 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
-import AlertIncomplete from "../components/alert-incomplete";
-import { FileCog, ArrowLeft, AlertTriangle } from "lucide-react";
-import TitleSection from "../../components/title-section";
-import { Main } from "../../components/main";
-import Header from "../../components/header";
 import Language from "@/components/ui/language";
-import Image from "next/image";
-import CreateManualDebtor from "../components/create-manual-debtor";
-import BulkDebtors from "../components/bulk-debtors";
 import {
   Table,
   TableBody,
@@ -18,26 +9,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useDebtorsStore } from "../store";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import Header from "../../components/header";
+import { Main } from "../../components/main";
+import { useGetErrorMessage } from "../../transactions/hooks/use-get-error-message";
+import AlertIncomplete from "../components/alert-incomplete";
+import BulkDebtors from "../components/bulk-debtors";
+import { useDebtorsStore } from "../store";
 
 const IncompletePage = () => {
   const { bulkUploadErrors, clearBulkUploadErrors } = useDebtorsStore();
+  const { getErrorMessage } = useGetErrorMessage();
   const router = useRouter();
-
-  const getErrorMessage = (errorCode: string): string => {
-    const errorMessages: { [key: string]: string } = {
-      IS_REQUIRED: "Campo requerido",
-      INVALID_FORMAT: "Formato inválido",
-      INVALID_EMAIL: "Email inválido",
-      INVALID_PHONE: "Teléfono inválido",
-      DUPLICATE_VALUE: "Valor duplicado",
-      INVALID_LENGTH: "Longitud inválida",
-    };
-    return errorMessages[errorCode] || errorCode;
-  };
 
   const handleGoBack = () => {
     clearBulkUploadErrors();

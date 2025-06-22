@@ -14,24 +14,14 @@ import {
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useGetErrorMessage } from "../../hooks/use-get-error-message";
 import PaymentsUploadSection from "../components/payments-upload-section";
 import { usePaymentStore } from "../store";
 
 const IncompletePage = () => {
   const { bulkUploadErrors, clearBulkUploadErrors } = usePaymentStore();
+  const { getErrorMessage } = useGetErrorMessage();
   const router = useRouter();
-
-  const getErrorMessage = (errorCode: string): string => {
-    const errorMessages: { [key: string]: string } = {
-      IS_REQUIRED: "Campo requerido",
-      INVALID_FORMAT: "Formato inválido",
-      INVALID_EMAIL: "Email inválido",
-      INVALID_PHONE: "Teléfono inválido",
-      DUPLICATE_VALUE: "Valor duplicado",
-      INVALID_LENGTH: "Longitud inválida",
-    };
-    return errorMessages[errorCode] || errorCode;
-  };
 
   // Si no hay errores, redirigir de vuelta
   useEffect(() => {

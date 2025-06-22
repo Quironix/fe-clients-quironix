@@ -40,8 +40,11 @@ const BulkDebtors = () => {
     if (!file) return;
 
     // Validar que sea un archivo CSV
-    if (!file.name.toLowerCase().endsWith(".csv")) {
-      toast.error("Por favor selecciona un archivo CSV válido");
+    if (
+      !file.name.toLowerCase().endsWith(".csv") &&
+      !file.name.toLowerCase().endsWith(".xlsx")
+    ) {
+      toast.error("Por favor selecciona un archivo CSV o XLSX válido");
       return;
     }
 
@@ -135,7 +138,7 @@ const BulkDebtors = () => {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".csv"
+          accept=".csv, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
           onChange={handleFileUpload}
           className="hidden"
         />

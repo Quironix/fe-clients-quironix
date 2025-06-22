@@ -15,26 +15,14 @@ import { useEffect } from "react";
 import Header from "../../../components/header";
 import { Main } from "../../../components/main";
 import AlertIncomplete from "../../../debtors/components/alert-incomplete";
+import { useGetErrorMessage } from "../../hooks/use-get-error-message";
 import BulkMovements from "../components/bulk-movements";
 import { useMovementStore } from "../store";
 
 const IncompletePage = () => {
   const { bulkUploadErrors, clearBulkUploadErrors } = useMovementStore();
+  const { getErrorMessage } = useGetErrorMessage();
   const router = useRouter();
-
-  const getErrorMessage = (errorCode: string): string => {
-    const errorMessages: { [key: string]: string } = {
-      IS_REQUIRED: "Campo requerido",
-      INVALID_FORMAT: "Formato inválido",
-      INVALID_EMAIL: "Email inválido",
-      INVALID_PHONE: "Teléfono inválido",
-      DUPLICATE_VALUE: "Valor duplicado",
-      INVALID_LENGTH: "Longitud inválida",
-      BANK_NOT_FOUND: "Banco inválido",
-      BANK_ACCOUNT_NOT_FOUND: "Cuenta inválida",
-    };
-    return errorMessages[errorCode] || errorCode;
-  };
 
   const handleGoBack = () => {
     clearBulkUploadErrors();

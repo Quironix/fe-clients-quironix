@@ -42,7 +42,7 @@ const BulkData = ({
   uploadText = "Subir archivo",
   uploadingText = "Subiendo archivo...",
   instructionText = 'Una vez que hayas completado el documento, selecciona "Subir archivo" para importarlo al sistema.',
-  acceptedFileTypes = ".csv",
+  acceptedFileTypes = ".csv, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel",
   showDownloadButton = true,
   customSuccessMessage,
   customErrorMessage,
