@@ -41,3 +41,37 @@ export const getUserProfile = async (token: string) => {
 
   return response.json();
 };
+
+// Función para solicitar recuperación de contraseña
+export const requestPasswordReset = async (email: string) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/v2/auth/reset-password`,
+      {
+        method: "PUT",
+        headers: {
+          front: "web",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const errorMessage =
+        data.message || "Error al solicitar recuperación de contraseña";
+      throw new Error(errorMessage);
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(
+      "Error desconocido al solicitar recuperación de contraseña"
+    );
+  }
+};
