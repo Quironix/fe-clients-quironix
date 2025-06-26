@@ -79,8 +79,10 @@ const BanksContent = () => {
           setIsFintocProccessOpen(false);
         },
 
-        onExit: () =>
-          toast.error("Has cancelado la conexión para conectar tu banco"),
+        onExit: () => {
+          setIsFintocProccessOpen(false);
+          toast.error("Has cancelado la conexión para conectar tu banco");
+        },
       };
 
       const widget = Fintoc?.create(options);
