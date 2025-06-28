@@ -57,7 +57,9 @@ const formSchema = z.object({
   due_date: z.string().min(1, "La fecha de vencimiento es requerida"),
   litigation_balance: z
     .number()
-    .min(0, "El saldo de litigio debe ser mayor a 0"),
+    .min(0, "El saldo de litigio debe ser mayor a 0")
+    .optional()
+    .nullable(),
   is_internal_document: z.boolean(),
   observations: z.string().min(1, "Las observaciones son requeridas"),
   order_code: z.string().min(1, "El número de pedido es requerido"),
@@ -387,27 +389,6 @@ const FormDTE = () => {
                     title="Fecha de vencimiento"
                     required
                   />
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="litigation_balance"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Saldo de litigio <Required />
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="0"
-                        type="number"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
                 )}
               />
 

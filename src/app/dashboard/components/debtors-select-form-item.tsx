@@ -1,18 +1,15 @@
-import { SelectItem } from "@/components/ui/select";
-
-import { SelectContent } from "@/components/ui/select";
-
 import { FormControl, FormMessage } from "@/components/ui/form";
 
 import { FormItem, FormLabel } from "@/components/ui/form";
 import Required from "@/components/ui/required";
-import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchInput } from "@/components/ui/search-input";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useEffect } from "react";
+import { FieldValues } from "react-hook-form";
 import { useDebtorsStore } from "../debtors/store";
 
 export interface DebtorsSelectFormItemProps {
-  field: any;
+  field: FieldValues;
   title: string;
   required?: boolean;
 }
@@ -36,40 +33,17 @@ export default function DebtorsSelectFormItem({
       <FormLabel>
         {title} {required && <Required />}
       </FormLabel>
-      <Select
-        onValueChange={field.onChange}
-        value={field.value}
-        key={field.value}
-        disabled={debtors.length === 0}
-      >
-        <FormControl>
-          <SelectTrigger className="w-full">
-            <SelectValue
-              placeholder={
-                debtors.length === 0
-                  ? "Cargando deudores..."
-                  : "Selecciona una opción"
-              }
-            />
-          </SelectTrigger>
-        </FormControl>
-        <SelectContent>
-          {debtors
-            .filter(
-              (debtor) =>
-                debtor.name &&
-                debtor.name.trim() !== "" &&
-                debtor.id &&
-                typeof debtor.id === "string" &&
-                debtor.id.trim() !== ""
-            )
-            .map((debtor) => (
-              <SelectItem key={debtor.id!} value={debtor.id}>
-                {debtor.name}
-              </SelectItem>
-            ))}
-        </SelectContent>
-      </Select>
+      <FormControl className="w-full">
+        <SearchInput
+          value={field.value}
+          onValueChange={(value: string) => field.onChange(value)}
+          options={debtors.map((debtor: any) => ({
+            value: debtor.id,
+            label: debtor.name,
+          }))}
+          placeholder="Selecciona un deudor"
+        />
+      </FormControl>
       <FormMessage />
     </FormItem>
   );
