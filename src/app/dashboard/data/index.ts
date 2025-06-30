@@ -1,5 +1,6 @@
 import {
   IconCreditCard,
+  IconFileInvoice,
   IconHeartHandshake,
   IconLayoutDashboard,
   IconUsers,
@@ -140,7 +141,7 @@ export const getSidebarData = (profile: any) => {
             is_parent: true,
             items: [
               {
-                title: "Creación de deudores",
+                title: "Deudores",
                 url: "/dashboard/debtors",
                 scope: "client.settings_account.debtors",
               },
@@ -172,7 +173,7 @@ export const getSidebarData = (profile: any) => {
           },
           {
             title: "Transacciones",
-            icon: IconHeartHandshake,
+            icon: IconFileInvoice,
             scope: "client.transactions",
             is_parent: true,
             items: [
@@ -326,7 +327,7 @@ export const sidebarData: any = {
         },
         {
           title: "Transacciones",
-          icon: IconHeartHandshake,
+          icon: IconFileInvoice,
           scope: "client.transactions",
           is_parent: true,
           items: [

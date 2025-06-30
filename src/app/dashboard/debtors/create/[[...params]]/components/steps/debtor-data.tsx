@@ -52,7 +52,7 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
           .array(
             z.object({
               id: z.string().min(1, "Campo requerido"),
-              debtor_code: z.string().optional(),
+              debtor_code: z.string().nullable(),
             })
           )
           .min(1, "Campo requerido")
@@ -144,71 +144,33 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
     defaultValues: {
-      name: "Empresa Demo S.A.",
+      name: "",
       companies: [],
-      channel: "EMAIL",
-      debtor_code: "DEB001",
-      payment_method: dataDebtor?.payment_method || "TRANSFER",
-      sales_person: "Juan Pérez",
+      channel: "",
+      debtor_code: "",
+      payment_method: dataDebtor?.payment_method || "",
+      sales_person: "",
       addresses: [
         {
-          street: "Av. Providencia 1234",
-          city: "Santiago",
-          state: "Providencia",
-          country: "CL",
-          postal_code: "7500000",
+          street: "",
+          city: "",
+          state: "",
+          country: "",
+          postal_code: "",
           is_primary: true,
         },
       ],
       dni: {
-        type: "RUT",
-        dni: "12345678-9",
+        type: "",
+        dni: "",
         emit_date: "",
         expiration_date: "",
       },
-      metadata: [
-        {
-          value: "1000",
-          type: "DBT_DEBTOR",
-        },
-        {
-          value: "LOW",
-          type: "RISK_CLASSIFICATION",
-        },
-        {
-          value: 5000000,
-          type: "CREDIT_LINE",
-        },
-        {
-          value: 2000000,
-          type: "CREDIT_LINE_AMOUNT",
-        },
-        {
-          value: "10%",
-          type: "CREDIT_LINE_TOLERANCE",
-        },
-        {
-          value: "VIGENTE",
-          type: "CREDIT_STATUS",
-        },
-        {
-          value: "30_DAYS",
-          type: "PAYMENT_TERMS",
-        },
-      ],
-      currency: "CLP",
-      contacts: [
-        {
-          name: "María González",
-          role: "Gerente Comercial",
-          email: "maria.gonzalez@empresademo.cl",
-          phone: "+56912345678",
-          channel: "EMAIL",
-          function: "COMMERCIAL",
-        },
-      ],
-      category: "Tecnología",
-      economic_activities: ["Desarrollo de software", "Consultoría IT"],
+      metadata: [],
+      currency: "",
+      contacts: [],
+      category: "",
+      economic_activities: [],
     },
   });
 
@@ -221,11 +183,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             dataDebtor.debtorCompanies
             ? dataDebtor.debtorCompanies.map((debtorCompany) => ({
                 id: debtorCompany.company_id,
-                debtor_code: debtorCompany.debtor_code || undefined,
+                debtor_code: null,
               }))
             : (dataDebtor.companies || []).map((company) => ({
                 id: company.id,
-                debtor_code: company.debtor_code || undefined,
+                debtor_code: null,
               }))
           : [],
         channel: dataDebtor.channel || "EMAIL",
@@ -347,6 +309,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
               debtor_id: dataDebtor.id,
               company_id: company.id,
               debtor_code: company.debtor_code || null,
+              client_id: profile?.client?.id,
               created_at: existingRelation?.created_at || undefined,
               updated_at: existingRelation?.updated_at || undefined,
             };
