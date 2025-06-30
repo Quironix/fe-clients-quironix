@@ -47,9 +47,16 @@ import { useDebtorsStore } from "../../../../store";
 const createDebtorFormSchema = (isFactoring: boolean) =>
   z.object({
     name: z.string().min(1, "Campo requerido"),
-    company_id: isFactoring
-      ? z.string().min(1, "Campo requerido")
-      : z.string().optional(),
+    companies: isFactoring
+      ? z
+          .array(
+            z.object({
+              id: z.string().min(1, "Campo requerido"),
+              debtor_code: z.string().optional(),
+            })
+          )
+          .min(1, "Campo requerido")
+      : z.null(),
     channel: z.enum(
       PREFERRED_CHANNELS.map((channel) => channel.code) as [
         string,
@@ -137,31 +144,31 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
     defaultValues: {
-      name: "",
-      company_id: "",
+      name: "Empresa Demo S.A.",
+      companies: [],
       channel: "EMAIL",
-      debtor_code: "",
-      payment_method: dataDebtor?.payment_method || "",
-      sales_person: "",
+      debtor_code: "DEB001",
+      payment_method: dataDebtor?.payment_method || "TRANSFER",
+      sales_person: "Juan Pérez",
       addresses: [
         {
-          street: "",
-          city: "",
-          state: "",
-          country: "",
-          postal_code: "",
+          street: "Av. Providencia 1234",
+          city: "Santiago",
+          state: "Providencia",
+          country: "CL",
+          postal_code: "7500000",
           is_primary: true,
         },
       ],
       dni: {
         type: "RUT",
-        dni: "",
+        dni: "12345678-9",
         emit_date: "",
         expiration_date: "",
       },
       metadata: [
         {
-          value: "0",
+          value: "1000",
           type: "DBT_DEBTOR",
         },
         {
@@ -169,39 +176,39 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           type: "RISK_CLASSIFICATION",
         },
         {
-          value: 0,
+          value: 5000000,
           type: "CREDIT_LINE",
         },
         {
-          value: 0,
+          value: 2000000,
           type: "CREDIT_LINE_AMOUNT",
         },
         {
-          value: "",
+          value: "10%",
           type: "CREDIT_LINE_TOLERANCE",
         },
         {
-          value: "",
+          value: "VIGENTE",
           type: "CREDIT_STATUS",
         },
         {
-          value: "",
+          value: "30_DAYS",
           type: "PAYMENT_TERMS",
         },
       ],
       currency: "CLP",
       contacts: [
         {
-          name: "",
-          role: "",
-          email: "",
-          phone: "",
+          name: "María González",
+          role: "Gerente Comercial",
+          email: "maria.gonzalez@empresademo.cl",
+          phone: "+56912345678",
           channel: "EMAIL",
-          function: "",
+          function: "COMMERCIAL",
         },
       ],
-      category: "",
-      economic_activities: [""],
+      category: "Tecnología",
+      economic_activities: ["Desarrollo de software", "Consultoría IT"],
     },
   });
 
@@ -209,7 +216,18 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     if (dataDebtor?.id && (companies.length > 0 || !isFactoring)) {
       const formData: DebtorFormValues = {
         name: dataDebtor.name || "",
-        company_id: dataDebtor.company_id || "",
+        companies: isFactoring
+          ? // Para edición: mapear debtorCompanies si existe, sino companies
+            dataDebtor.debtorCompanies
+            ? dataDebtor.debtorCompanies.map((debtorCompany) => ({
+                id: debtorCompany.company_id,
+                debtor_code: debtorCompany.debtor_code || undefined,
+              }))
+            : (dataDebtor.companies || []).map((company) => ({
+                id: company.id,
+                debtor_code: company.debtor_code || undefined,
+              }))
+          : [],
         channel: dataDebtor.channel || "EMAIL",
         debtor_code: dataDebtor.debtor_code || "",
         payment_method: dataDebtor.payment_method,
@@ -309,25 +327,75 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     setSubmitAttempted(true);
     try {
       if (dataDebtor?.id) {
+        // Para edición: transformar companies a debtorCompanies
         const updatedData = {
           ...dataDebtor,
           ...data,
           id: dataDebtor.id,
         };
 
-        const hasChanges = Object.keys(data).some((key) => {
-          const formValue = data[key as keyof typeof data];
-          const storeValue = dataDebtor[key as keyof typeof dataDebtor];
+        // Si es factoring y hay companies, convertir a debtorCompanies para edición
+        if (isFactoring && data.companies && data.companies.length > 0) {
+          const debtorCompanies = data.companies.map((company) => {
+            // Buscar si ya existe una relación existente
+            const existingRelation = dataDebtor.debtorCompanies?.find(
+              (dc) => dc.company_id === company.id
+            );
 
-          return JSON.stringify(formValue) !== JSON.stringify(storeValue);
-        });
+            return {
+              id: existingRelation?.id || undefined, // ID de la relación si existe
+              debtor_id: dataDebtor.id,
+              company_id: company.id,
+              debtor_code: company.debtor_code || null,
+              created_at: existingRelation?.created_at || undefined,
+              updated_at: existingRelation?.updated_at || undefined,
+            };
+          });
 
-        setDataDebtor(updatedData);
+          // Reemplazar companies con debtorCompanies para el payload de edición
+          const editPayload = {
+            ...updatedData,
+            debtorCompanies,
+            companies: undefined, // Remover companies del payload
+          };
 
-        if (hasChanges) {
-          await updateDebtor(session?.token, profile?.client?.id, updatedData);
+          const hasChanges = Object.keys(data).some((key) => {
+            const formValue = data[key as keyof typeof data];
+            const storeValue = dataDebtor[key as keyof typeof dataDebtor];
+
+            return JSON.stringify(formValue) !== JSON.stringify(storeValue);
+          });
+
+          setDataDebtor(editPayload);
+
+          if (hasChanges) {
+            await updateDebtor(
+              session?.token,
+              profile?.client?.id,
+              editPayload
+            );
+          }
+        } else {
+          // Para casos sin companies o no factoring
+          const hasChanges = Object.keys(data).some((key) => {
+            const formValue = data[key as keyof typeof data];
+            const storeValue = dataDebtor[key as keyof typeof dataDebtor];
+
+            return JSON.stringify(formValue) !== JSON.stringify(storeValue);
+          });
+
+          setDataDebtor(updatedData);
+
+          if (hasChanges) {
+            await updateDebtor(
+              session?.token,
+              profile?.client?.id,
+              updatedData
+            );
+          }
         }
       } else {
+        // Para creación: usar companies normal
         setDataDebtor(data);
         await createDebtor(session?.token, profile?.client?.id, data);
       }
@@ -361,7 +429,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                 {profile?.client?.type === "FACTORING" && (
                   <FormField
                     control={form.control}
-                    name="company_id"
+                    name="companies"
                     render={({ field }) => (
                       <SelectClient field={field} title="Compañía" required />
                     )}
