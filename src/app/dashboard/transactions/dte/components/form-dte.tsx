@@ -486,7 +486,11 @@ const FormDTE = () => {
                       Referencia <Required />
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Completa" {...field} />
+                      <Input
+                        placeholder="Completa"
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
