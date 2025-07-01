@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { functionsContact } from "@/app/dashboard/data";
@@ -28,12 +28,19 @@ import {
 } from "@/components/ui/select";
 import { useProfileContext } from "@/context/ProfileContext";
 import type { E164Number } from "libphonenumber-js/core";
-import { Mail } from "lucide-react";
+import { Mail, Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useDebtorsStore } from "../../../../store";
 
 import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-buttons";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 const debtorFormSchema = z.object({
   contact_info: z.array(
     z.object({
@@ -66,6 +73,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
   profile,
 }) => {
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [activeAccordion, setActiveAccordion] = useState("item-0");
   const [countries, setCountries] = useState<
     Array<{ id: string; name: string }>
   >([]);
@@ -77,19 +85,47 @@ const ContactInfoStep: React.FC<StepProps> = ({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
     defaultValues: {
-      contact_info: [
-        {
-          name: dataDebtor?.contacts?.[0]?.name || "",
-          role: dataDebtor?.contacts?.[0]?.role || "",
-          function: dataDebtor?.contacts?.[0]?.function || "",
-          email: dataDebtor?.contacts?.[0]?.email || "",
-          phone: dataDebtor?.contacts?.[0]?.phone || "",
-          channel: dataDebtor?.contacts?.[0]?.channel || "",
-        },
-      ],
+      contact_info:
+        dataDebtor?.contacts?.length > 0
+          ? dataDebtor?.contacts
+          : [
+              {
+                name: dataDebtor?.contacts?.[0]?.name || "",
+                role: dataDebtor?.contacts?.[0]?.role || "",
+                function: dataDebtor?.contacts?.[0]?.function || "",
+                email: dataDebtor?.contacts?.[0]?.email || "",
+                phone: dataDebtor?.contacts?.[0]?.phone || "",
+                channel: dataDebtor?.contacts?.[0]?.channel || "",
+              },
+            ],
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "contact_info",
+  });
+
+  const addContact = () => {
+    const newIndex = fields.length;
+    append({
+      name: "",
+      role: "",
+      function: "",
+      email: "",
+      phone: "",
+      channel: "",
+    });
+    // Abrir automáticamente el accordion del nuevo contacto
+    setActiveAccordion(`item-${newIndex}`);
+  };
+  const removeContact = (index: number) => {
+    if (fields.length > 1) {
+      remove(index);
+    } else {
+      toast.error("Debe mantener al menos un contacto");
+    }
+  };
   // Cargar países cuando el componente se monta
   useEffect(() => {
     const fetchCountries = async () => {
@@ -107,12 +143,12 @@ const ContactInfoStep: React.FC<StepProps> = ({
   }, [session?.token]);
 
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
+    debugger;
     setSubmitAttempted(true);
     try {
       if (data.contact_info.length > 0 && dataDebtor?.id) {
-        dataDebtor.contacts[0] = data.contact_info[0];
-        dataDebtor.email = data.contact_info[0].email;
-        dataDebtor.phone = data.contact_info[0].phone;
+        debugger;
+        dataDebtor.contacts = data.contact_info;
         await updateDebtor(session?.token, profile?.client?.id, dataDebtor);
       }
       toast.success("Deudor guardado correctamente");
@@ -133,7 +169,22 @@ const ContactInfoStep: React.FC<StepProps> = ({
         />
       </div>
       <div className="space-y-4 border border-gray-200 rounded-md p-5">
-        <TitleStep title="Información de contacto" icon={<Mail size={16} />} />
+        <div className="flex justify-between items-center">
+          <TitleStep
+            title="Información de contacto"
+            icon={<Mail size={16} />}
+          />
+          <Button
+            type="button"
+            onClick={addContact}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white"
+          >
+            <Plus className="w-4 h-4 text-orange-500" />
+            Agregar contacto
+          </Button>
+        </div>
 
         <FormProvider {...form}>
           <form
@@ -141,124 +192,170 @@ const ContactInfoStep: React.FC<StepProps> = ({
             className="w-full space-y-6"
             autoComplete="off"
           >
-            <div className="grid gap-6">
-              <div className="grid grid-cols-3 gap-6">
-                <FormField
-                  control={form.control}
-                  name="contact_info.0.name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Contacto </FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="contact_info.0.role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Rol</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="contact_info.0.function"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Función</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona una función" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {functionsContact.map((func) => (
-                              <SelectItem key={func.value} value={func.value}>
-                                {func.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="contact_info.0.channel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Canal preferente de comunicación</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un canal" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="phone">Teléfono</SelectItem>
-                            <SelectItem value="whatsapp">Whatsapp</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="contact_info.0.email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`contact_info.0.phone`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Teléfono</FormLabel>
-                      <FormControl>
-                        <PhoneInput
-                          placeholder="Ej: +56 9 9891 8080"
-                          defaultCountry="CL"
-                          value={field.value as E164Number}
-                          onChange={(value: E164Number | undefined) =>
-                            field.onChange(value || "")
-                          }
-                          error={
-                            !!form.formState.errors.contact_info?.[0]?.phone
-                          }
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full space-y-3"
+              value={activeAccordion}
+              onValueChange={setActiveAccordion}
+            >
+              {fields.map((field, index) => (
+                <AccordionItem
+                  key={field.id}
+                  value={`item-${index}`}
+                  className="border border-gray-200 rounded-md px-3 py-1 mb-1"
+                >
+                  <div className="grid grid-cols-[96%_4%] items-center gap-2 min-h-[48px]">
+                    <AccordionTrigger className="flex items-center justify-between h-full">
+                      <span>Contacto {index + 1}</span>
+                    </AccordionTrigger>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeContact(index);
+                      }}
+                      disabled={fields.length === 1}
+                      className="bg-red-500 text-white hover:bg-red-600 hover:text-white flex items-center justify-center h-8 w-8"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <AccordionContent className="flex flex-col gap-4 text-balance">
+                    <div className="grid gap-6">
+                      <div className="grid grid-cols-3 gap-6">
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.name`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nombre </FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.role`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Rol</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.function`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Función</FormLabel>
+                              <FormControl>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Selecciona una función" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {functionsContact.map((func) => (
+                                      <SelectItem
+                                        key={func.value}
+                                        value={func.value}
+                                      >
+                                        {func.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.channel`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Canal preferente de comunicación
+                              </FormLabel>
+                              <FormControl>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Selecciona un canal" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="email">Email</SelectItem>
+                                    <SelectItem value="phone">
+                                      Teléfono
+                                    </SelectItem>
+                                    <SelectItem value="whatsapp">
+                                      Whatsapp
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.email`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.phone`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Teléfono</FormLabel>
+                              <FormControl>
+                                <PhoneInput
+                                  placeholder="Ej: +56 9 9891 8080"
+                                  defaultCountry="CL"
+                                  value={field.value as E164Number}
+                                  onChange={(value: E164Number | undefined) =>
+                                    field.onChange(value || "")
+                                  }
+                                  error={
+                                    !!form.formState.errors.contact_info?.[0]
+                                      ?.phone
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
 
             <div className="flex justify-end gap-2">
               {submitAttempted &&
