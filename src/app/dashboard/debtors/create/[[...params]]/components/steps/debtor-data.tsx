@@ -17,6 +17,15 @@ import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-bu
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
 import Stepper from "@/components/Stepper";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   FormControl,
   FormField,
@@ -26,8 +35,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import InputNumberCart from "@/components/ui/input-number-cart";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import Required from "@/components/ui/required";
-import { SearchInput } from "@/components/ui/search-input";
 import {
   Select,
   SelectContent,
@@ -36,8 +49,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProfileContext } from "@/context/ProfileContext";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FileText } from "lucide-react";
+import { Check, ChevronsUpDown, FileText } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -562,21 +576,64 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Rubro
-                        <Required />
+                        Rubro <Required />
                       </FormLabel>
                       <FormControl>
-                        <SearchInput
-                          value={field.value}
-                          onValueChange={(value: string) =>
-                            form.setValue("category", value)
-                          }
-                          options={categories.map((category: any) => ({
-                            value: category,
-                            label: category,
-                          }))}
-                          placeholder="Selecciona un rubro"
-                        />
+                        <Popover>
+                          <div className="relative">
+                            <Input
+                              {...field}
+                              placeholder="Escribe o selecciona un rubro"
+                              autoComplete="off"
+                            />
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
+                                type="button"
+                              >
+                                <ChevronsUpDown className="h-3 w-3" />
+                              </Button>
+                            </PopoverTrigger>
+                          </div>
+                          <PopoverContent className="w-80 p-0" align="start">
+                            <Command>
+                              <CommandInput
+                                placeholder="Buscar rubro..."
+                                className="h-9"
+                              />
+                              <CommandList>
+                                <CommandEmpty>
+                                  No se encontró el rubro
+                                </CommandEmpty>
+                                <CommandGroup>
+                                  {categories.map((category: any) => (
+                                    <CommandItem
+                                      key={category}
+                                      value={category}
+                                      onSelect={(value) => {
+                                        field.onChange(value);
+                                      }}
+                                    >
+                                      <span className="truncate">
+                                        {category}
+                                      </span>
+                                      <Check
+                                        className={cn(
+                                          "ml-auto h-4 w-4 flex-shrink-0",
+                                          category === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
