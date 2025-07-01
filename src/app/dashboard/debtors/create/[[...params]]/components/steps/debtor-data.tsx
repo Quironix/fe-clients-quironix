@@ -136,6 +136,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
   const { session } = useProfileContext();
 
+  // Función helper para manejar valores numéricos seguros
+  const safeNumber = (value: any, defaultValue = 0): number => {
+    const num = Number(value);
+    return isNaN(num) ? defaultValue : num;
+  };
+
   const isFactoring = profile?.client?.type === "FACTORING";
   const debtorFormSchema = createDebtorFormSchema(isFactoring);
   type DebtorFormValues = z.infer<typeof debtorFormSchema>;
@@ -212,9 +218,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         },
         metadata: [
           {
-            value: Number(
+            value: safeNumber(
               dataDebtor.metadata?.find((meta) => meta.type === "DBT_DEBTOR")
-                ?.value
+                ?.value,
+              0
             ),
             type: "DBT_DEBTOR",
           },
@@ -226,18 +233,20 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             type: "RISK_CLASSIFICATION",
           },
           {
-            value:
-              Number(
-                dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
-                  ?.value
-              ) || 0,
+            value: safeNumber(
+              dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
+                ?.value,
+              0
+            ),
             type: "CREDIT_LINE",
           },
           {
-            value:
+            value: safeNumber(
               dataDebtor.metadata?.find(
                 (meta) => meta.type === "CREDIT_LINE_AMOUNT"
-              )?.value || 0,
+              )?.value,
+              0
+            ),
             type: "CREDIT_LINE_AMOUNT",
           },
           {
@@ -641,8 +650,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         </FormLabel>
                         <FormControl>
                           <InputNumberCart
-                            value={Number(field.value) ?? 0}
-                            onChange={(val) => field.onChange(val)}
+                            value={safeNumber(field.value, 0)}
+                            onChange={(val) =>
+                              field.onChange(safeNumber(val, 0))
+                            }
                             placeholder="Ej: 5000"
                             min={0}
                           />
@@ -695,8 +706,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                       </FormLabel>
                       <FormControl>
                         <InputNumberCart
-                          value={Number(field.value) ?? 0}
-                          onChange={(val) => field.onChange(val)}
+                          value={safeNumber(field.value, 0)}
+                          onChange={(val) => field.onChange(safeNumber(val, 0))}
                           placeholder="Ej: 5000"
                           min={0}
                         />
@@ -715,8 +726,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                       </FormLabel>
                       <FormControl>
                         <InputNumberCart
-                          value={Number(field.value) || 0}
-                          onChange={(val) => field.onChange(val)}
+                          value={safeNumber(field.value, 0)}
+                          onChange={(val) => field.onChange(safeNumber(val, 0))}
                           placeholder="Ej: 5000"
                           min={0}
                         />
