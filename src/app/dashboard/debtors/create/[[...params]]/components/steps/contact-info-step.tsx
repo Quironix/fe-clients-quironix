@@ -52,6 +52,11 @@ const debtorFormSchema = z.object({
         .string()
         .min(8, "Campo requerido")
         .max(15, "Máximo 15 caracteres")
+        .transform((value) => {
+          // Normalizar el número agregando + si no lo tiene
+          if (!value) return value;
+          return value.startsWith("+") ? value : `+${value}`;
+        })
         .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
           message: "Número de teléfono inválido",
         }),
@@ -81,21 +86,46 @@ const ContactInfoStep: React.FC<StepProps> = ({
   const { dataDebtor, updateDebtor, setDataDebtor } = useDebtorsStore();
   const router = useRouter();
 
+  // Función para normalizar el número de teléfono
+  const normalizePhoneNumber = (phone: string): string => {
+    if (!phone) return "";
+
+    // Si el teléfono ya tiene el símbolo +, lo dejamos tal como está
+    if (phone.startsWith("+")) {
+      return phone;
+    }
+
+    // Si no tiene el símbolo +, se lo agregamos
+    return `+${phone}`;
+  };
+
+  // Función para procesar los contactos y normalizar los teléfonos
+  const processContacts = (contacts: any[]) => {
+    return contacts.map((contact) => ({
+      name: contact?.name || "",
+      role: contact?.role || "",
+      function: contact?.function || "",
+      email: contact?.email || "",
+      phone: normalizePhoneNumber(contact?.phone || ""),
+      channel: contact?.channel || "",
+    }));
+  };
+
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema),
     mode: "onChange",
     defaultValues: {
       contact_info:
-        dataDebtor?.contacts?.length > 0
-          ? dataDebtor?.contacts
+        dataDebtor?.contacts && dataDebtor.contacts.length > 0
+          ? processContacts(dataDebtor.contacts)
           : [
               {
-                name: dataDebtor?.contacts?.[0]?.name || "",
-                role: dataDebtor?.contacts?.[0]?.role || "",
-                function: dataDebtor?.contacts?.[0]?.function || "",
-                email: dataDebtor?.contacts?.[0]?.email || "",
-                phone: dataDebtor?.contacts?.[0]?.phone || "",
-                channel: dataDebtor?.contacts?.[0]?.channel || "",
+                name: "",
+                role: "",
+                function: "",
+                email: "",
+                phone: "",
+                channel: "",
               },
             ],
     },
@@ -146,7 +176,13 @@ const ContactInfoStep: React.FC<StepProps> = ({
     setSubmitAttempted(true);
     try {
       if (data.contact_info.length > 0 && dataDebtor?.id) {
-        dataDebtor.contacts = data.contact_info;
+        // Normalizar los números de teléfono antes de guardar
+        const normalizedContacts = data.contact_info.map((contact) => ({
+          ...contact,
+          phone: normalizePhoneNumber(contact.phone),
+        }));
+
+        dataDebtor.contacts = normalizedContacts;
         await updateDebtor(session?.token, profile?.client?.id, dataDebtor);
       }
       toast.success("Deudor guardado correctamente");
