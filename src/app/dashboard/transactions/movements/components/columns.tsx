@@ -1,6 +1,6 @@
 "use client";
+import { formatDate } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import { Movement } from "../services/types";
 
 export const columns: ColumnDef<Movement>[] = [
@@ -34,8 +34,9 @@ export const columns: ColumnDef<Movement>[] = [
     accessorKey: "movement_date",
     header: "Fecha",
     cell: ({ row }) => {
-      const date = row.getValue("movement_date") as Date;
-      return <div>{format(new Date(date), "dd/MM/yyyy")}</div>;
+      const date = row.getValue("movement_date") as string;
+      if (!date) return <div>-</div>;
+      return <div>{formatDate(date)}</div>;
     },
   },
   {
