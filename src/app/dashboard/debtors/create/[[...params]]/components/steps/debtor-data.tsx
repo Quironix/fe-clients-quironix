@@ -426,6 +426,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          defaultValue={field.value}
+                          key={field.value}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un tipo de documento" />
