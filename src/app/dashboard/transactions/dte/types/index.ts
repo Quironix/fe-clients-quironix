@@ -13,14 +13,14 @@ export interface DTE {
   balance: number; //Balance
   litigation_balance: number; //BalanceLitigio
   is_internal_document: boolean;
-  observations: string; //Observacion
+  observations?: string | null; //Observacion
   number_of_installments: string; //NroCuota
-  order_code: string;
+  order_code?: string | null;
   reference: string; //Referencia
-  ref_1: string; //Ref1
-  ref_2: string; //Ref2
-  ref_3: string; //Ref3
-  ref_4: string; //Ref4
+  ref_1?: string | null; //Ref1
+  ref_2?: string | null; //Ref2
+  ref_3?: string | null; //Ref3
+  ref_4?: string | null; //Ref4
   debtor_id: string; //Codigodeudor
   debtor?: {
     id?: string;

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
+import { formatDate, toISOString } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ListOrdered, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -53,7 +54,7 @@ const formSchema = z.object({
   order_number: z.string().min(1, "La orden de compra es requerida"),
   reception_date: z.string().min(1, "La fecha de recepción es requerida"),
   issue_date: z.string().min(1, "La fecha de emisión es requerida"),
-  operation_date: z.string().min(1, "La fecha de operación es requerida"),
+  operation_date: z.string().optional().nullable(),
   due_date: z.string().min(1, "La fecha de vencimiento es requerida"),
   litigation_balance: z
     .number()
@@ -61,15 +62,15 @@ const formSchema = z.object({
     .optional()
     .nullable(),
   is_internal_document: z.boolean(),
-  observations: z.string().min(1, "Las observaciones son requeridas"),
-  order_code: z.string().min(1, "El número de pedido es requerido"),
+  observations: z.string().optional().nullable(),
+  order_code: z.string().optional().nullable(),
   number_of_installments: z.number().min(0, "El número de cuota es requerido"),
-  reference: z.string().min(1, "La referencia es requerida"),
+  reference: z.string().optional().nullable(),
   debtor_id: z.string().min(1, "El deudor es requerido"),
-  ref_1: z.string().optional(),
-  ref_2: z.string().optional(),
-  ref_3: z.string().optional(),
-  ref_4: z.string().optional(),
+  ref_1: z.string().optional().nullable(),
+  ref_2: z.string().optional().nullable(),
+  ref_3: z.string().optional().nullable(),
+  ref_4: z.string().optional().nullable(),
 });
 
 const FormDTE = () => {
@@ -100,9 +101,13 @@ const FormDTE = () => {
       amount: Number(dte?.amount) || 0,
       order_number: dte?.order_number || "",
       reception_date: dte?.reception_date || "",
-      issue_date: dte?.issue_date || "",
-      operation_date: dte?.operation_date || "",
-      due_date: dte?.due_date || "",
+      issue_date:
+        formatDate(dte?.issue_date || (new Date() as unknown as string)) || "",
+      operation_date:
+        formatDate(dte?.operation_date || (new Date() as unknown as string)) ||
+        "",
+      due_date:
+        formatDate(dte?.due_date || (new Date() as unknown as string)) || "",
       litigation_balance: Number(dte?.litigation_balance) || 0,
       is_internal_document: dte?.is_internal_document || false,
       observations: dte?.observations || "", // Cambiado de observations a observation
@@ -130,9 +135,13 @@ const FormDTE = () => {
         amount: Number(dte.amount) || 0,
         order_number: dte.order_number || "",
         reception_date: dte.reception_date || "",
-        issue_date: dte.issue_date || "",
-        operation_date: dte.operation_date || "",
-        due_date: dte.due_date || "",
+        issue_date:
+          formatDate(dte.issue_date || (new Date() as unknown as string)) || "",
+        operation_date:
+          formatDate(dte.operation_date || (new Date() as unknown as string)) ||
+          "",
+        due_date:
+          formatDate(dte.due_date || (new Date() as unknown as string)) || "",
         litigation_balance: Number(dte.litigation_balance) || 0,
         is_internal_document: dte.is_internal_document || false,
         observations: dte.observations || "",
@@ -155,6 +164,21 @@ const FormDTE = () => {
     }
     values.client_code = profile?.client?.id;
     values.debtor_id = values.debtor_id;
+
+    // Convertir todas las fechas a ISO String usando la función helper
+    // Solo convertir si el campo tiene valor, mantener null/undefined para campos opcionales
+    if (values.operation_date) {
+      values.operation_date = toISOString(values.operation_date) || null;
+    }
+    if (values.issue_date) {
+      values.issue_date = toISOString(values.issue_date);
+    }
+    if (values.due_date) {
+      values.due_date = toISOString(values.due_date);
+    }
+    if (values.reception_date) {
+      values.reception_date = toISOString(values.reception_date);
+    }
 
     try {
       let response;
@@ -370,18 +394,6 @@ const FormDTE = () => {
 
               <FormField
                 control={form.control}
-                name="operation_date"
-                render={({ field }) => (
-                  <DatePickerFormItem
-                    field={field}
-                    title="Fecha de operación"
-                    required
-                  />
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="due_date"
                 render={({ field }) => (
                   <DatePickerFormItem
@@ -431,11 +443,13 @@ const FormDTE = () => {
                 name="order_code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      N° pedido <Required />
-                    </FormLabel>
+                    <FormLabel>N° pedido</FormLabel>
                     <FormControl>
-                      <Input placeholder="Completa" {...field} />
+                      <Input
+                        placeholder="Completa"
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -486,11 +500,13 @@ const FormDTE = () => {
                 name="observations"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Observación <Required />
-                    </FormLabel>
+                    <FormLabel>Observación</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Completa" {...field} />
+                      <Textarea
+                        placeholder="Completa"
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -510,7 +526,11 @@ const FormDTE = () => {
                     <FormItem>
                       <FormLabel>Referencia 1</FormLabel>
                       <FormControl>
-                        <Input placeholder="Completa" {...field} />
+                        <Input
+                          placeholder="Completa"
+                          {...field}
+                          value={field.value || ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -524,7 +544,11 @@ const FormDTE = () => {
                     <FormItem>
                       <FormLabel>Referencia 2</FormLabel>
                       <FormControl>
-                        <Input placeholder="Completa" {...field} />
+                        <Input
+                          placeholder="Completa"
+                          {...field}
+                          value={field.value || ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -538,7 +562,11 @@ const FormDTE = () => {
                     <FormItem>
                       <FormLabel>Referencia 3</FormLabel>
                       <FormControl>
-                        <Input placeholder="Completa" {...field} />
+                        <Input
+                          placeholder="Completa"
+                          {...field}
+                          value={field.value || ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -552,7 +580,11 @@ const FormDTE = () => {
                     <FormItem>
                       <FormLabel>Referencia 4</FormLabel>
                       <FormControl>
-                        <Input placeholder="Completa" {...field} />
+                        <Input
+                          placeholder="Completa"
+                          {...field}
+                          value={field.value || ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
