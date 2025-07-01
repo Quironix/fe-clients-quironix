@@ -6,10 +6,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import Required from "@/components/ui/required";
 import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
 import { useProfileContext } from "@/context/ProfileContext";
-import { X } from "lucide-react";
+import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCompaniesStore } from "../companies/store";
 
@@ -30,12 +31,18 @@ const SelectClient = ({
   const { companies, getCompanies } = useCompaniesStore();
   const { session, profile } = useProfileContext();
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (session?.token && profile?.client?.id && companies.length === 0) {
       getCompanies(session?.token, profile?.client?.id);
     }
   }, [getCompanies, profile?.client?.id, session?.token]);
+
+  // Filtrar compañías basado en la búsqueda
+  const filteredCompanies = companies.filter((company) =>
+    company.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Asegurar que el valor siempre sea un array de objetos
   const selectedValues: CompanySelection[] = Array.isArray(field.value)
@@ -73,12 +80,19 @@ const SelectClient = ({
     return selectedValues.some((item) => item.id === companyId);
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      setSearchQuery(""); // Limpiar búsqueda al cerrar
+    }
+  };
+
   return (
     <FormItem>
       <FormLabel>
         {title} {required && <Required />}
       </FormLabel>
-      <Select open={open} onOpenChange={setOpen}>
+      <Select open={open} onOpenChange={handleOpenChange}>
         <FormControl>
           <SelectTrigger
             className="w-full min-h-10"
@@ -93,19 +107,12 @@ const SelectClient = ({
                       <Badge
                         key={item.id}
                         variant="secondary"
-                        className="flex items-center gap-1 text-xs px-2 py-1"
+                        className="flex items-center gap-1 text-[0.6rem] px-1 py-0.5"
                         onClick={(e) => {
                           e.stopPropagation();
                         }}
                       >
                         {company.name}
-                        <X
-                          className="h-3 w-3 cursor-pointer hover:text-red-500"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeValue(item.id);
-                          }}
-                        />
                       </Badge>
                     ) : null;
                   })}
@@ -124,76 +131,56 @@ const SelectClient = ({
           </SelectTrigger>
         </FormControl>
         <SelectContent>
-          {companies.length > 0 ? (
-            companies.map((company) => (
-              <div
-                key={company.id}
-                className="flex items-center space-x-2 px-2 py-2 hover:bg-accent cursor-pointer"
-                onClick={() => {
-                  const isSelected = isCompanySelected(company.id || "");
-                  handleValueChange(company.id || "", !isSelected);
-                }}
-              >
-                <Checkbox
-                  checked={isCompanySelected(company.id || "")}
-                  onChange={() => {}} // Manejado por el onClick del div
-                />
-                <div className="flex-1">
-                  <div className="font-medium">{company.name}</div>
-                  {company.client_code && (
-                    <div className="text-xs text-muted-foreground">
-                      Código: {company.client_code}
-                    </div>
-                  )}
+          {/* Campo de búsqueda */}
+          <div className="flex items-center border-b px-3 py-2">
+            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+            <Input
+              placeholder="Buscar compañías..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="border-0 px-0 py-1 h-8 focus-visible:ring-0 focus-visible:ring-offset-0"
+              autoFocus
+            />
+          </div>
+
+          {/* Lista de compañías filtradas */}
+          <div className="max-h-60 overflow-auto">
+            {filteredCompanies.length > 0 ? (
+              filteredCompanies.map((company) => (
+                <div
+                  key={company.id}
+                  className="flex items-center space-x-2 px-2 py-2 hover:bg-accent cursor-pointer"
+                  onClick={() => {
+                    const isSelected = isCompanySelected(company.id || "");
+                    handleValueChange(company.id || "", !isSelected);
+                  }}
+                >
+                  <Checkbox
+                    checked={isCompanySelected(company.id || "")}
+                    onChange={() => {}} // Manejado por el onClick del div
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">{company.name}</div>
+                    {company.client_code && (
+                      <div className="text-xs text-muted-foreground">
+                        Código: {company.client_code}
+                      </div>
+                    )}
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                {companies.length === 0
+                  ? "Cargando compañías..."
+                  : searchQuery
+                    ? "No se encontraron compañías que coincidan con la búsqueda"
+                    : "No hay compañías disponibles"}
               </div>
-            ))
-          ) : (
-            <div className="px-2 py-1.5 text-sm text-muted-foreground">
-              {companies.length === 0
-                ? "Cargando compañías..."
-                : "No hay compañías disponibles"}
-            </div>
-          )}
+            )}
+          </div>
         </SelectContent>
       </Select>
-
-      {/* Mostrar compañías seleccionadas de forma simplificada
-      {selectedValues.length > 0 && (
-        <div className="mt-3 space-y-2">
-          <div className="text-sm font-medium text-gray-700">
-            Compañías seleccionadas:
-          </div>
-          {selectedValues.map((item) => {
-            const company = companies.find((c) => c.id === item.id);
-            return company ? (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-2 border rounded-md bg-gray-50"
-              >
-                <div className="flex-1">
-                  <div className="font-medium text-sm">{company.name}</div>
-                  {item.debtor_code && (
-                    <div className="text-xs text-muted-foreground">
-                      Código de deudor: {item.debtor_code}
-                    </div>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeValue(item.id)}
-                  className="h-8 w-8 p-0 hover:bg-red-100"
-                >
-                  <X className="h-4 w-4 text-red-500" />
-                </Button>
-              </div>
-            ) : null;
-          })}
-        </div>
-      )} */}
-
       <FormMessage />
     </FormItem>
   );
