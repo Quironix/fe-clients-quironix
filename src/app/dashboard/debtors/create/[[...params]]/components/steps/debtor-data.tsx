@@ -271,14 +271,14 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         ],
         currency: dataDebtor.currency || "CLP",
         contacts: [
-          {
-            name: dataDebtor.contacts?.[0]?.name || "",
-            role: dataDebtor.contacts?.[0]?.role || "",
-            email: dataDebtor.contacts?.[0]?.email || "",
-            phone: dataDebtor.contacts?.[0]?.phone || "",
-            channel: dataDebtor.contacts?.[0]?.channel || "EMAIL",
-            function: dataDebtor.contacts?.[0]?.function || "",
-          },
+          ...(dataDebtor.contacts || []).map((contact) => ({
+            name: contact.name || "",
+            role: contact.role || "",
+            email: contact.email || "",
+            phone: contact.phone || "",
+            channel: contact.channel || "EMAIL",
+            function: contact.function || "",
+          })),
         ],
         category: dataDebtor.category || "",
         economic_activities: dataDebtor.economic_activities || [""],
@@ -745,7 +745,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         Tolerancia línea de crédito <Required />
                       </FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input
+                          {...field}
+                          value={safeNumber(field.value, 0)}
+                          onChange={(e) =>
+                            field.onChange(safeNumber(e.target.value, 0))
+                          }
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

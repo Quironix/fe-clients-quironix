@@ -143,11 +143,9 @@ const ContactInfoStep: React.FC<StepProps> = ({
   }, [session?.token]);
 
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
-    debugger;
     setSubmitAttempted(true);
     try {
       if (data.contact_info.length > 0 && dataDebtor?.id) {
-        debugger;
         dataDebtor.contacts = data.contact_info;
         await updateDebtor(session?.token, profile?.client?.id, dataDebtor);
       }
