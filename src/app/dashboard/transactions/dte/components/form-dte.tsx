@@ -482,9 +482,7 @@ const FormDTE = () => {
                 name="reference"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Referencia <Required />
-                    </FormLabel>
+                    <FormLabel>Referencia</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Completa"
