@@ -13,9 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import Required from "@/components/ui/required";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { cn, formatDate } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -52,7 +50,7 @@ export default function DatePickerFormItem({
               )}
             >
               {field.value ? (
-                format(field.value, "PPP", { locale: es })
+                formatDate(field.value || (new Date() as unknown as string))
               ) : (
                 <span>Selecciona una fecha</span>
               )}

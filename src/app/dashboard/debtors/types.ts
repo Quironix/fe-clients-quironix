@@ -1,7 +1,8 @@
 export interface Debtor {
   id?: string;
   name: string;
-  company_id?: string;
+  companies?: CompanyDebtor[] | null;
+  debtorCompanies?: DebtorCompany[];
   channel: string;
   debtor_code: string;
   addresses: Address[];
@@ -17,6 +18,12 @@ export interface Debtor {
   sales_person: string;
   attention_days_hours: string;
 }
+
+interface CompanyDebtor {
+  id: string;
+  debtor_code?: string | null;
+}
+
 export interface Contact {
   name: string;
   role: string;
@@ -73,4 +80,13 @@ export interface BulkUploadResponse {
   schema: string;
   success?: boolean;
   message?: string;
+}
+
+export interface DebtorCompany {
+  id?: string;
+  debtor_id: string;
+  company_id: string;
+  debtor_code: string | null;
+  created_at?: string;
+  updated_at?: string;
 }

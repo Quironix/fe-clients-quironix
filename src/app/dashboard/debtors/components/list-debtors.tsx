@@ -18,6 +18,25 @@ const ListDebtors = () => {
     }
   }, [session?.token, profile?.client?.id, fetchDebtors]);
 
+  const customSearchFunction = (row: any, columnId: string, value: string) => {
+    const searchTerm = value.toLowerCase();
+    const rowData = row.original; // Acceder a los datos originales
+
+    // Buscar en DNI
+    const dni = rowData?.dni?.dni;
+    if (dni && dni.toLowerCase().includes(searchTerm)) return true;
+
+    // Buscar en nombre
+    const name = rowData?.name;
+    if (name && name.toLowerCase().includes(searchTerm)) return true;
+
+    // Buscar en email
+    const email = rowData?.contacts?.[0]?.email;
+    if (email && email.toLowerCase().includes(searchTerm)) return true;
+
+    return false;
+  };
+
   // Mostrar error si ocurre algún problema
   if (error) {
     return (
@@ -60,7 +79,8 @@ const ListDebtors = () => {
         emptyMessage="No se encontraron deudores"
         enableGlobalFilter={true}
         searchPlaceholder="Buscar por DNI, nombre o email..."
-        searchableColumns={["dni", "name", "email"]}
+        searchableColumns={["dni.dni", "name", "contacts.0.email"]}
+        globalFilterFunction={customSearchFunction}
         pageSize={15}
         pageSizeOptions={[15, 20, 25, 30, 40, 50]}
       />

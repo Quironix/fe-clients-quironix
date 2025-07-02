@@ -2,6 +2,7 @@ export interface Debtors {
   id: string;
   name: string;
   company_id: null;
+  companies?: Company[] | null;
   client_id: string;
   channel: string;
   debtor_code: null;
@@ -20,7 +21,11 @@ export interface Debtors {
   executive: Executive;
   created_at: string;
   updated_at: string;
-  companies: any[];
+}
+
+interface Company {
+  id: string;
+  debtor_code?: string;
 }
 
 interface Executive {

@@ -17,6 +17,15 @@ import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-bu
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
 import Stepper from "@/components/Stepper";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   FormControl,
   FormField,
@@ -26,8 +35,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import InputNumberCart from "@/components/ui/input-number-cart";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import Required from "@/components/ui/required";
-import { SearchInput } from "@/components/ui/search-input";
 import {
   Select,
   SelectContent,
@@ -36,8 +49,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProfileContext } from "@/context/ProfileContext";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FileText } from "lucide-react";
+import { Check, ChevronsUpDown, FileText } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -47,9 +61,16 @@ import { useDebtorsStore } from "../../../../store";
 const createDebtorFormSchema = (isFactoring: boolean) =>
   z.object({
     name: z.string().min(1, "Campo requerido"),
-    company_id: isFactoring
-      ? z.string().min(1, "Campo requerido")
-      : z.string().optional(),
+    companies: isFactoring
+      ? z
+          .array(
+            z.object({
+              id: z.string().min(1, "Campo requerido"),
+              debtor_code: z.string().nullable(),
+            })
+          )
+          .min(1, "Campo requerido")
+      : z.null(),
     channel: z.enum(
       PREFERRED_CHANNELS.map((channel) => channel.code) as [
         string,
@@ -129,6 +150,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
   const { session } = useProfileContext();
 
+  // Función helper para manejar valores numéricos seguros
+  const safeNumber = (value: any, defaultValue = 0): number => {
+    const num = Number(value);
+    return isNaN(num) ? defaultValue : num;
+  };
+
   const isFactoring = profile?.client?.type === "FACTORING";
   const debtorFormSchema = createDebtorFormSchema(isFactoring);
   type DebtorFormValues = z.infer<typeof debtorFormSchema>;
@@ -138,8 +165,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     mode: "onChange",
     defaultValues: {
       name: "",
-      company_id: "",
-      channel: "EMAIL",
+      companies: [],
+      channel: "",
       debtor_code: "",
       payment_method: dataDebtor?.payment_method || "",
       sales_person: "",
@@ -154,54 +181,16 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         },
       ],
       dni: {
-        type: "RUT",
+        type: "",
         dni: "",
         emit_date: "",
         expiration_date: "",
       },
-      metadata: [
-        {
-          value: "0",
-          type: "DBT_DEBTOR",
-        },
-        {
-          value: "LOW",
-          type: "RISK_CLASSIFICATION",
-        },
-        {
-          value: 0,
-          type: "CREDIT_LINE",
-        },
-        {
-          value: 0,
-          type: "CREDIT_LINE_AMOUNT",
-        },
-        {
-          value: "",
-          type: "CREDIT_LINE_TOLERANCE",
-        },
-        {
-          value: "",
-          type: "CREDIT_STATUS",
-        },
-        {
-          value: "",
-          type: "PAYMENT_TERMS",
-        },
-      ],
-      currency: "CLP",
-      contacts: [
-        {
-          name: "",
-          role: "",
-          email: "",
-          phone: "",
-          channel: "EMAIL",
-          function: "",
-        },
-      ],
+      metadata: [],
+      currency: "",
+      contacts: [],
       category: "",
-      economic_activities: [""],
+      economic_activities: [],
     },
   });
 
@@ -209,7 +198,18 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     if (dataDebtor?.id && (companies.length > 0 || !isFactoring)) {
       const formData: DebtorFormValues = {
         name: dataDebtor.name || "",
-        company_id: dataDebtor.company_id || "",
+        companies: isFactoring
+          ? // Para edición: mapear debtorCompanies si existe, sino companies
+            dataDebtor.debtorCompanies
+            ? dataDebtor.debtorCompanies.map((debtorCompany) => ({
+                id: debtorCompany.company_id,
+                debtor_code: null,
+              }))
+            : (dataDebtor.companies || []).map((company) => ({
+                id: company.id,
+                debtor_code: null,
+              }))
+          : [],
         channel: dataDebtor.channel || "EMAIL",
         debtor_code: dataDebtor.debtor_code || "",
         payment_method: dataDebtor.payment_method,
@@ -232,9 +232,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         },
         metadata: [
           {
-            value: Number(
+            value: safeNumber(
               dataDebtor.metadata?.find((meta) => meta.type === "DBT_DEBTOR")
-                ?.value
+                ?.value,
+              0
             ),
             type: "DBT_DEBTOR",
           },
@@ -246,18 +247,20 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             type: "RISK_CLASSIFICATION",
           },
           {
-            value:
-              Number(
-                dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
-                  ?.value
-              ) || 0,
+            value: safeNumber(
+              dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
+                ?.value,
+              0
+            ),
             type: "CREDIT_LINE",
           },
           {
-            value:
+            value: safeNumber(
               dataDebtor.metadata?.find(
                 (meta) => meta.type === "CREDIT_LINE_AMOUNT"
-              )?.value || 0,
+              )?.value,
+              0
+            ),
             type: "CREDIT_LINE_AMOUNT",
           },
           {
@@ -282,14 +285,14 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         ],
         currency: dataDebtor.currency || "CLP",
         contacts: [
-          {
-            name: dataDebtor.contacts?.[0]?.name || "",
-            role: dataDebtor.contacts?.[0]?.role || "",
-            email: dataDebtor.contacts?.[0]?.email || "",
-            phone: dataDebtor.contacts?.[0]?.phone || "",
-            channel: dataDebtor.contacts?.[0]?.channel || "EMAIL",
-            function: dataDebtor.contacts?.[0]?.function || "",
-          },
+          ...(dataDebtor.contacts || []).map((contact) => ({
+            name: contact.name || "",
+            role: contact.role || "",
+            email: contact.email || "",
+            phone: contact.phone || "",
+            channel: contact.channel || "EMAIL",
+            function: contact.function || "",
+          })),
         ],
         category: dataDebtor.category || "",
         economic_activities: dataDebtor.economic_activities || [""],
@@ -309,25 +312,76 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     setSubmitAttempted(true);
     try {
       if (dataDebtor?.id) {
+        // Para edición: transformar companies a debtorCompanies
         const updatedData = {
           ...dataDebtor,
           ...data,
           id: dataDebtor.id,
         };
 
-        const hasChanges = Object.keys(data).some((key) => {
-          const formValue = data[key as keyof typeof data];
-          const storeValue = dataDebtor[key as keyof typeof dataDebtor];
+        // Si es factoring y hay companies, convertir a debtorCompanies para edición
+        if (isFactoring && data.companies && data.companies.length > 0) {
+          const debtorCompanies = data.companies.map((company) => {
+            // Buscar si ya existe una relación existente
+            const existingRelation = dataDebtor.debtorCompanies?.find(
+              (dc) => dc.company_id === company.id
+            );
 
-          return JSON.stringify(formValue) !== JSON.stringify(storeValue);
-        });
+            return {
+              id: existingRelation?.id || undefined, // ID de la relación si existe
+              debtor_id: dataDebtor.id,
+              company_id: company.id,
+              debtor_code: company.debtor_code || null,
+              client_id: profile?.client?.id,
+              created_at: existingRelation?.created_at || undefined,
+              updated_at: existingRelation?.updated_at || undefined,
+            };
+          });
 
-        setDataDebtor(updatedData);
+          // Reemplazar companies con debtorCompanies para el payload de edición
+          const editPayload = {
+            ...updatedData,
+            debtorCompanies,
+            companies: undefined, // Remover companies del payload
+          };
 
-        if (hasChanges) {
-          await updateDebtor(session?.token, profile?.client?.id, updatedData);
+          const hasChanges = Object.keys(data).some((key) => {
+            const formValue = data[key as keyof typeof data];
+            const storeValue = dataDebtor[key as keyof typeof dataDebtor];
+
+            return JSON.stringify(formValue) !== JSON.stringify(storeValue);
+          });
+
+          setDataDebtor(editPayload);
+
+          if (hasChanges) {
+            await updateDebtor(
+              session?.token,
+              profile?.client?.id,
+              editPayload
+            );
+          }
+        } else {
+          // Para casos sin companies o no factoring
+          const hasChanges = Object.keys(data).some((key) => {
+            const formValue = data[key as keyof typeof data];
+            const storeValue = dataDebtor[key as keyof typeof dataDebtor];
+
+            return JSON.stringify(formValue) !== JSON.stringify(storeValue);
+          });
+
+          setDataDebtor(updatedData);
+
+          if (hasChanges) {
+            await updateDebtor(
+              session?.token,
+              profile?.client?.id,
+              updatedData
+            );
+          }
         }
       } else {
+        // Para creación: usar companies normal
         setDataDebtor(data);
         await createDebtor(session?.token, profile?.client?.id, data);
       }
@@ -361,7 +415,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                 {profile?.client?.type === "FACTORING" && (
                   <FormField
                     control={form.control}
-                    name="company_id"
+                    name="companies"
                     render={({ field }) => (
                       <SelectClient field={field} title="Compañía" required />
                     )}
@@ -395,6 +449,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          defaultValue={field.value}
+                          key={field.value}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un tipo de documento" />
@@ -520,21 +576,64 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Rubro
-                        <Required />
+                        Rubro <Required />
                       </FormLabel>
                       <FormControl>
-                        <SearchInput
-                          value={field.value}
-                          onValueChange={(value: string) =>
-                            form.setValue("category", value)
-                          }
-                          options={categories.map((category: any) => ({
-                            value: category,
-                            label: category,
-                          }))}
-                          placeholder="Selecciona un rubro"
-                        />
+                        <Popover>
+                          <div className="relative">
+                            <Input
+                              {...field}
+                              placeholder="Escribe o selecciona un rubro"
+                              autoComplete="off"
+                            />
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
+                                type="button"
+                              >
+                                <ChevronsUpDown className="h-3 w-3" />
+                              </Button>
+                            </PopoverTrigger>
+                          </div>
+                          <PopoverContent className="w-80 p-0" align="start">
+                            <Command>
+                              <CommandInput
+                                placeholder="Buscar rubro..."
+                                className="h-9"
+                              />
+                              <CommandList>
+                                <CommandEmpty>
+                                  No se encontró el rubro
+                                </CommandEmpty>
+                                <CommandGroup>
+                                  {categories.map((category: any) => (
+                                    <CommandItem
+                                      key={category}
+                                      value={category}
+                                      onSelect={(value) => {
+                                        field.onChange(value);
+                                      }}
+                                    >
+                                      <span className="truncate">
+                                        {category}
+                                      </span>
+                                      <Check
+                                        className={cn(
+                                          "ml-auto h-4 w-4 flex-shrink-0",
+                                          category === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -608,8 +707,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         </FormLabel>
                         <FormControl>
                           <InputNumberCart
-                            value={Number(field.value) ?? 0}
-                            onChange={(val) => field.onChange(val)}
+                            value={safeNumber(field.value, 0)}
+                            onChange={(val) =>
+                              field.onChange(safeNumber(val, 0))
+                            }
                             placeholder="Ej: 5000"
                             min={0}
                           />
@@ -662,8 +763,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                       </FormLabel>
                       <FormControl>
                         <InputNumberCart
-                          value={Number(field.value) ?? 0}
-                          onChange={(val) => field.onChange(val)}
+                          value={safeNumber(field.value, 0)}
+                          onChange={(val) => field.onChange(safeNumber(val, 0))}
                           placeholder="Ej: 5000"
                           min={0}
                         />
@@ -682,8 +783,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                       </FormLabel>
                       <FormControl>
                         <InputNumberCart
-                          value={Number(field.value) || 0}
-                          onChange={(val) => field.onChange(val)}
+                          value={safeNumber(field.value, 0)}
+                          onChange={(val) => field.onChange(safeNumber(val, 0))}
                           placeholder="Ej: 5000"
                           min={0}
                         />
@@ -701,7 +802,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         Tolerancia línea de crédito <Required />
                       </FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input
+                          {...field}
+                          value={safeNumber(field.value, 0)}
+                          onChange={(e) =>
+                            field.onChange(safeNumber(e.target.value, 0))
+                          }
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
