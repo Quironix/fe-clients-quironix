@@ -113,7 +113,7 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
         type: z.string().min(1, "Campo requerido"),
       })
     ),
-    currency: z.string().min(1, "Campo requerido"),
+    currency: z.string().optional(),
     contacts: z.array(
       z.object({
         name: z.string().optional(),
@@ -186,8 +186,37 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         emit_date: "",
         expiration_date: "",
       },
-      metadata: [],
-      currency: "",
+      metadata: [
+        {
+          value: 0,
+          type: "DBT_DEBTOR",
+        },
+        {
+          value: "",
+          type: "RISK_CLASSIFICATION",
+        },
+        {
+          value: 0,
+          type: "CREDIT_LINE",
+        },
+        {
+          value: 0,
+          type: "CREDIT_LINE_AMOUNT",
+        },
+        {
+          value: 0,
+          type: "CREDIT_LINE_TOLERANCE",
+        },
+        {
+          value: "Vigente",
+          type: "CREDIT_STATUS",
+        },
+        {
+          value: "30 días",
+          type: "PAYMENT_TERMS",
+        },
+      ],
+      currency: "CLP",
       contacts: [],
       category: "",
       economic_activities: [],
