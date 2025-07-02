@@ -2,8 +2,8 @@
 import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
 import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
+import { formatDate } from "@/lib/utils";
 import { ColumnDef, Row } from "@tanstack/react-table";
-import { format } from "date-fns";
 import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -89,7 +89,7 @@ export const columns: ColumnDef<Payments>[] = [
     cell: ({ row }) => {
       const date = row.getValue("deposit_at") as string;
       if (!date) return <div>-</div>;
-      return <div>{format(new Date(date), "dd/MM/yyyy")}</div>;
+      return <div>{formatDate(date)}</div>;
     },
   },
   {
