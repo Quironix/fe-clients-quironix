@@ -70,7 +70,7 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
             })
           )
           .min(1, "Campo requerido")
-      : z.null(),
+      : z.null().optional(),
     channel: z.enum(
       PREFERRED_CHANNELS.map((channel) => channel.code) as [
         string,
@@ -165,7 +165,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     mode: "onChange",
     defaultValues: {
       name: "",
-      companies: [],
+      companies: isFactoring ? [] : null,
       channel: "",
       debtor_code: "",
       payment_method: dataDebtor?.payment_method || "",
@@ -238,7 +238,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                 id: company.id,
                 debtor_code: null,
               }))
-          : [],
+          : null,
         channel: dataDebtor.channel || "EMAIL",
         debtor_code: dataDebtor.debtor_code || "",
         payment_method: dataDebtor.payment_method,
