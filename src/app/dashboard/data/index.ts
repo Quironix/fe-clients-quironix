@@ -1,5 +1,7 @@
 import {
   IconCreditCard,
+  IconCurrencyDollar,
+  IconFileCheck,
   IconFileInvoice,
   IconHeartHandshake,
   IconLayoutDashboard,
@@ -173,7 +175,7 @@ export const getSidebarData = (profile: any) => {
           },
           {
             title: "Transacciones",
-            icon: IconFileInvoice,
+            icon: IconCurrencyDollar,
             scope: "client.transactions",
             is_parent: true,
             items: [
@@ -193,6 +195,13 @@ export const getSidebarData = (profile: any) => {
                 scope: "client.transactions.movements",
               },
             ],
+          },
+          {
+            title: "Compensación de pagos",
+            url: "/dashboard/payment-netting",
+            icon: IconFileCheck,
+            scope: "client.payment_netting",
+            is_parent: true,
           },
         ],
       },
