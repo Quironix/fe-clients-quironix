@@ -1,5 +1,4 @@
 "use client";
-import { TruncatedTextTooltip } from "@/app/dashboard/components/truncated-text-tooltip";
 import { ColumnsByClientType } from "@/app/dashboard/hooks/use-data-table-by-client-type";
 import { formatDate } from "@/lib/utils";
 import { Movement } from "../services/types";
@@ -50,15 +49,16 @@ export const columns: ColumnsByClientType<Movement>[] = [
     clientType: "ANY",
     cell: ({ row }) => {
       const description = row.getValue("description") as string | null;
-      return (
-        <div className="text-center">
-          <TruncatedTextTooltip
-            text={description || "-"}
-            maxLength={30}
-            className="text-center"
-          />
-        </div>
-      );
+      return <div className="text-center">{description || "-"}</div>;
+      // return (
+      //   <div className="text-center">
+      //     <TruncatedTextTooltip
+      //       text={description || "-"}
+      //       maxLength={30}
+      //       className="text-center"
+      //     />
+      //   </div>
+      // );
     },
   },
   {
