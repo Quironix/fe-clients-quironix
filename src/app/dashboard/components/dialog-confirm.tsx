@@ -9,18 +9,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AlertCircle, Share2, Trash2, X } from "lucide-react";
+import { AlertCircle, Trash2, X } from "lucide-react";
 import React from "react";
 
 interface DialogConfirmProps {
   title: string;
   description: string;
-  triggerButton: React.ReactNode;
+  triggerButton?: React.ReactNode;
   cancelButtonText?: string;
   confirmButtonText?: string;
   onConfirm: () => void;
   onCancel?: () => void;
   type?: "danger" | "warning";
+  isOpen?: boolean;
+  setIsOpen?: (isOpen: boolean) => void;
 }
 
 const DialogConfirm: React.FC<DialogConfirmProps> = ({
@@ -32,10 +34,14 @@ const DialogConfirm: React.FC<DialogConfirmProps> = ({
   onConfirm,
   onCancel,
   type = "warning",
+  isOpen = false,
+  setIsOpen,
 }) => {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{triggerButton}</AlertDialogTrigger>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+      {triggerButton && (
+        <AlertDialogTrigger asChild>{triggerButton}</AlertDialogTrigger>
+      )}
       <AlertDialogContent className="max-w-[90%] min-w-1/2 gap-0">
         <div className="absolute right-4 top-4">
           <AlertDialogCancel className="p-0 m-0 h-auto w-auto border-none hover:bg-transparent">

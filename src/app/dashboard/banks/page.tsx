@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import Language from "@/components/ui/language";
 import {
   Table,
@@ -12,12 +13,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useProfileContext } from "@/context/ProfileContext";
+import { cn } from "@/lib/utils";
 import { getFintoc } from "@fintoc/fintoc-js";
-import { FileText, Link, Loader2, Trash2 } from "lucide-react";
+import { Edit, FileText, Link, Loader2, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import BulletMenu, { BulletMenuItem } from "../components/bullet-menu";
 import DialogConfirm from "../components/dialog-confirm";
 import Header from "../components/header";
 import LoaderTable from "../components/loader-table";
@@ -29,11 +32,18 @@ import {
   createFintocLinkIntent,
   exchangeDataFintoc,
 } from "./services/fintoc.service";
+import { BankInformation } from "./services/types";
 import { useBankInformationStore } from "./store";
 
 const BanksContent = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+  const [selectedBank, setSelectedBank] = useState<BankInformation | null>(
+    null
+  );
+  const [selectDeleteBank, setSelectDeleteBank] =
+    useState<BankInformation | null>(null);
   const [isFintocProccessOpen, setIsFintocProccessOpen] =
     useState<boolean>(false);
   const { data: session }: any = useSession();
@@ -100,6 +110,101 @@ const BanksContent = () => {
     }
   };
 
+  const handleOpenEditDialog = (bank: BankInformation) => {
+    setSelectedBank(bank);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+    setSelectedBank(null);
+  };
+
+  const handleOpenDeleteDialog = (bank: BankInformation) => {
+    setSelectDeleteBank(bank);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const createMenuItems = (bank: BankInformation): BulletMenuItem[] => {
+    const items: BulletMenuItem[] = [
+      {
+        id: "edit",
+        label: "Editar cuenta",
+        icon: Edit,
+        component: (
+          <DropdownMenuItem
+            key={bank.id}
+            onClick={() => {
+              handleOpenEditDialog(bank);
+            }}
+            disabled={false}
+            className={cn(
+              "flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm",
+              "text-primary focus:text-primary focus:bg-primary/10 dark:focus:bg-primary/20"
+            )}
+          >
+            <Edit className="h-4 w-4 text-primary flex-shrink-0" />
+            <span className="whitespace-nowrap">Editar cuenta</span>
+          </DropdownMenuItem>
+        ),
+      },
+      {
+        id: "delete",
+        label: "Eliminar",
+        component: (
+          <DropdownMenuItem
+            key={bank.id}
+            onClick={() => {
+              handleOpenDeleteDialog(bank);
+            }}
+            disabled={false}
+            className={cn(
+              "flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm",
+              "text-primary focus:text-primary focus:bg-primary/10 dark:focus:bg-primary/20"
+            )}
+          >
+            <Trash2 className="h-4 w-4 text-primary flex-shrink-0" />
+            <span className="whitespace-nowrap">Eliminar</span>
+          </DropdownMenuItem>
+          // <DialogConfirm
+          //   title="¿Eliminar cuenta bancaria?"
+          //   description={`¿Estás seguro que deseas eliminar la cuenta bancaria "${bank.bank} - ${bank.account_number}"? Esta acción no se puede deshacer.`}
+          //   triggerButton={
+          //     <DropdownMenuItem className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm text-destructive focus:text-destructive focus:bg-destructive/10">
+          //       <Trash2 className="h-4 w-4 text-primary flex-shrink-0" />
+          //       <span className="whitespace-nowrap">Eliminar</span>
+          //     </DropdownMenuItem>
+          //   }
+          //   cancelButtonText="Cancelar"
+          //   confirmButtonText="Sí, eliminar"
+          //   onConfirm={() => {
+          //     if (session?.token && profile?.client?.id) {
+          //       deleteBankInformation(
+          //         session.token,
+          //         bank.id || "",
+          //         profile.client.id
+          //       );
+          //     }
+          //   }}
+          //   type="danger"
+          // />
+        ),
+      },
+    ];
+
+    if (bank.bank_provider) {
+      items.unshift({
+        id: "linked",
+        label: "Cuenta conectada",
+        icon: Link,
+        disabled: true,
+        onClick: () => {},
+      });
+    }
+
+    return items;
+  };
+
   return (
     <>
       <Header fixed>
@@ -150,6 +255,7 @@ const BanksContent = () => {
                         isBankDialogOpen={isCreateDialogOpen}
                         setIsBankDialogOpen={setIsCreateDialogOpen}
                         clientId={profile?.client?.id}
+                        showButton={true}
                       />
                     </div>
                   </div>
@@ -164,7 +270,7 @@ const BanksContent = () => {
                           <TableHead className="text-primary">
                             Cuenta contable
                           </TableHead>
-                          <TableHead className="text-primary text-right">
+                          <TableHead className="text-primary text-center">
                             Acciones
                           </TableHead>
                         </TableRow>
@@ -183,54 +289,20 @@ const BanksContent = () => {
                                 </TableCell>
                               </TableRow>
                             ) : (
-                              banksInformations.map((bank) => (
-                                <TableRow key={bank.id}>
-                                  <TableCell>{bank.bank}</TableCell>
-                                  <TableCell>{bank.account_number}</TableCell>
-                                  <TableCell>{bank.ledger_account}</TableCell>
-                                  <TableCell className="flex justify-end gap-2">
-                                    {bank.bank_provider ? (
-                                      <Button
-                                        disabled
-                                        className="hover:bg-orange-500 hover:text-white text-primary"
-                                        variant="ghost"
-                                      >
-                                        <Link />
-                                      </Button>
-                                    ) : (
-                                      <BankDialog
-                                        isBankDialogOpen={isEditDialogOpen}
-                                        setIsBankDialogOpen={
-                                          setIsEditDialogOpen
-                                        }
-                                        clientId={profile?.client?.id}
-                                        defaultValues={bank}
+                              banksInformations.map((bank) => {
+                                return (
+                                  <TableRow key={bank.id}>
+                                    <TableCell>{bank.bank}</TableCell>
+                                    <TableCell>{bank.account_number}</TableCell>
+                                    <TableCell>{bank.ledger_account}</TableCell>
+                                    <TableCell className="text-center">
+                                      <BulletMenu
+                                        items={createMenuItems(bank)}
                                       />
-                                    )}
-
-                                    <DialogConfirm
-                                      title="¿Estas seguro que deseas eliminar esta cuenta de banco?"
-                                      description="Esta acción no se puede deshacer."
-                                      triggerButton={
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="hover:bg-red-500 hover:text-white text-primary"
-                                        >
-                                          <Trash2 />
-                                        </Button>
-                                      }
-                                      onConfirm={() =>
-                                        deleteBankInformation(
-                                          session?.token,
-                                          bank.id || "",
-                                          profile?.client?.id
-                                        )
-                                      }
-                                    />
-                                  </TableCell>
-                                </TableRow>
-                              ))
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })
                             )}
                           </>
                         )}
@@ -243,6 +315,31 @@ const BanksContent = () => {
           </div>
         </div>
       </Main>
+      <BankDialog
+        isBankDialogOpen={isEditDialogOpen}
+        setIsBankDialogOpen={setIsEditDialogOpen}
+        clientId={profile?.client?.id || ""}
+        defaultValues={selectedBank || undefined}
+        showButton={false}
+      />
+      <DialogConfirm
+        title="¿Eliminar cuenta bancaria?"
+        description={`¿Estás seguro que deseas eliminar la cuenta bancaria "${selectDeleteBank?.bank} - ${selectDeleteBank?.account_number}"? Esta acción no se puede deshacer.`}
+        isOpen={isDeleteDialogOpen}
+        setIsOpen={setIsDeleteDialogOpen}
+        cancelButtonText="Cancelar"
+        confirmButtonText="Sí, eliminar"
+        onConfirm={() => {
+          if (session?.token && profile?.client?.id) {
+            deleteBankInformation(
+              session.token,
+              selectDeleteBank?.id || "",
+              profile.client.id
+            );
+          }
+        }}
+        type="danger"
+      />
     </>
   );
 };
