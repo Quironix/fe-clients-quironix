@@ -68,6 +68,10 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     set({ loading: true, error: null, payments: [] });
     try {
       const response = await createPayment(accessToken, clientId, payment);
+      console.log("response", response);
+      if (response.statusCode !== 201) {
+        throw new Error(response.message);
+      }
       set({ responseSuccess: response });
     } catch (error: any) {
       set({ error: error.message });

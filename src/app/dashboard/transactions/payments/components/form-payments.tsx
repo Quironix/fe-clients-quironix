@@ -28,13 +28,40 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { usePaymentStore } from "../store";
+
+const paymentFormSchema = (isFactoring: boolean) => {
+  return z.object({
+    id: z.string().optional(),
+    company_id: isFactoring
+      ? z.string().min(1, "La compañía es requerida")
+      : z.null().optional(),
+    debtor_id: z.string().min(1, "El deudor es requerido"),
+    bank_movement_id: z.string().optional().nullable(),
+    bank_id: z.string().optional().nullable(),
+    sender_account: z.string().optional().nullable(),
+    accounting_at: z
+      .string()
+      .min(1, "La fecha de contabilización es requerida"),
+    ingress_type: z.string().min(1, "El tipo de ingreso es requerido"),
+    document_type: z.nativeEnum(DocumentType),
+    payment_number: z.string().min(1, "El número de documento es requerido"),
+    amount: z.number().min(0.01, "El monto debe ser mayor a 0"),
+    received_at: z.string().min(1, "La fecha de recepción es requerida"),
+    due_at: z.string().optional().nullable(),
+    balance: z.number().min(0, "El saldo debe ser mayor o igual a 0"),
+    square: z.string().optional().nullable(),
+    bank_received: z.string().optional().nullable(),
+    notes: z.string().optional().nullable(),
+    deposit_at: z.string().optional(),
+  });
+};
 
 const FormPayments = () => {
   const { profile, session } = useProfileContext();
@@ -54,6 +81,9 @@ const FormPayments = () => {
   const id = searchParams.get("id");
   const [isFormLoading, setIsFormLoading] = useState<boolean>(false);
 
+  const isFactoring = profile?.client?.type === "FACTORING";
+  const paymentSchema = paymentFormSchema(isFactoring);
+  type PaymentFormValues = z.infer<typeof paymentSchema>;
   useEffect(() => {
     if (session?.token && profile?.client?.id) {
       if (id) {
@@ -67,43 +97,26 @@ const FormPayments = () => {
     }
   }, [session?.token, profile?.client?.id, fetchPaymentById, id, clearPayment]);
 
-  const formSchema = z.object({
-    id: z.string().optional(),
-    company_id: z.string().optional(),
-    debtor_id: z.string().min(1, "El deudor es requerido"),
-    bank_movement_id: z.string().optional().nullable(),
-    bank_id: z.string().min(1, "El banco es requerido"),
-    ingress_type: z.string().min(1, "El tipo de ingreso es requerido"),
-    document_type: z.nativeEnum(DocumentType),
-    payment_number: z.string().min(1, "El número de documento es requerido"),
-    amount: z.number().min(0.01, "El monto debe ser mayor a 0"),
-    received_at: z.string().min(1, "La fecha de recepción es requerida"),
-    due_at: z.string().optional().nullable(),
-    balance: z.number().min(0, "El saldo debe ser mayor o igual a 0"),
-    square: z.string().min(1, "La plaza es requerida"),
-    bank_received: z.string().min(1, "El banco que recibe es requerido"),
-    notes: z.string().optional(),
-    deposit_at: z.string().optional(),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentSchema),
     defaultValues: {
       id: "",
       company_id: "",
       debtor_id: "",
       bank_movement_id: null,
-      bank_id: "",
+      bank_id: null,
       ingress_type: "MANUAL",
       document_type: DocumentType.DEPOSIT,
       payment_number: "",
+      sender_account: null,
+      accounting_at: "",
       amount: 0,
       received_at: "",
-      due_at: null,
+      due_at: "",
       balance: 0,
-      square: "",
+      square: null,
       bank_received: "",
-      notes: "",
+      notes: null,
       deposit_at: "",
     },
   });
@@ -130,10 +143,12 @@ const FormPayments = () => {
         company_id: payment?.company_id || "",
         debtor_id: payment?.debtor_id || "",
         bank_movement_id: payment?.bank_movement_id || null,
-        bank_id: payment?.bank_id || "",
+        bank_id: payment?.bank_id || null,
         ingress_type: payment?.ingress_type || "MANUAL",
         document_type: payment?.document_type || DocumentType.DEPOSIT,
         payment_number: payment?.payment_number || "",
+        sender_account: payment?.sender_account || "",
+        accounting_at: payment?.accounting_at || "",
         amount: Number(payment?.amount) || 0,
         received_at: formatDate(payment?.received_at) || "",
         due_at: formatDate(payment?.due_at),
@@ -149,7 +164,7 @@ const FormPayments = () => {
     }
   }, [payment, form]);
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: PaymentFormValues) => {
     setIsFormLoading(true);
     if (!profile?.client?.id) {
       toast.error("No se encontró el cliente");
@@ -166,10 +181,12 @@ const FormPayments = () => {
           }),
           debtor_id: values?.debtor_id || "",
           bank_movement_id: null,
-          bank_id: values?.bank_id || "",
+          bank_id: values?.bank_id || null,
           ingress_type: values?.ingress_type || "MANUAL",
           document_type: values?.document_type || null,
           payment_number: values?.payment_number || "",
+          sender_account: values?.sender_account || "",
+          accounting_at: values?.accounting_at || "",
           amount: values?.amount || 0,
           received_at: values?.received_at || "",
           due_at: values?.due_at || null,
@@ -200,10 +217,12 @@ const FormPayments = () => {
           }),
           debtor_id: values?.debtor_id || "",
           bank_movement_id: null,
-          bank_id: values?.bank_id || "",
+          bank_id: values?.bank_id || null,
           ingress_type: values?.ingress_type || "MANUAL",
           document_type: values?.document_type || null,
           payment_number: values?.payment_number || "",
+          sender_account: values?.sender_account || "",
+          accounting_at: values?.accounting_at || "",
           amount: values?.amount || 0,
           received_at: values?.received_at || "",
           due_at: values?.due_at || null,
@@ -303,10 +322,26 @@ const FormPayments = () => {
                     control={form.control}
                     name="company_id"
                     render={({ field }) => (
-                      <SelectClient field={field} title="Compañía" required />
+                      <SelectClient
+                        field={field}
+                        title="Compañía"
+                        required
+                        singleClient
+                      />
                     )}
                   />
                 )}
+                <FormField
+                  control={form.control}
+                  name="debtor_id"
+                  render={({ field }) => (
+                    <DebtorsSelectFormItem
+                      field={field}
+                      title="Deudor"
+                      required
+                    />
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="document_type"
@@ -342,13 +377,81 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        N° de documento <Required />
+                        Número de documento <Required />
                       </FormLabel>
                       <FormControl>
                         <Input placeholder="Ingresa el número" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="bank_received"
+                  render={({ field }) => (
+                    <BankListSelectFormItem
+                      field={field}
+                      title="Banco de origen"
+                    />
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="sender_account"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cuenta corriente de origen</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ingresa la cuenta corriente de origen"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="square"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Plaza</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ingresa la plaza"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="received_at"
+                  render={({ field }) => (
+                    <DatePickerFormItem
+                      field={field}
+                      title="Fecha de pago"
+                      required
+                    />
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="accounting_at"
+                  render={({ field }) => (
+                    <DatePickerFormItem
+                      field={field}
+                      title="Fecha de contabilización"
+                      required
+                    />
                   )}
                 />
 
@@ -381,76 +484,7 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <BankInformationSelectFormItem
                       field={field}
-                      title="Banco que recibe"
-                      required
-                    />
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="bank_received"
-                  render={({ field }) => (
-                    <BankListSelectFormItem
-                      field={field}
-                      title="Banco de origen"
-                      required
-                    />
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="square"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Plaza <Required />
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ingresa la plaza" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="debtor_id"
-                  render={({ field }) => (
-                    <DebtorsSelectFormItem
-                      field={field}
-                      title="Deudor"
-                      required
-                    />
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Cuarta fila - Fechas adicionales */}
-            <div className="p-5 border border-gray-200 rounded-md">
-              <div className="w-full mb-5">
-                <TitleStep title="Fechas" icon={<Calendar size={16} />} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <FormField
-                  control={form.control}
-                  name="received_at"
-                  render={({ field }) => (
-                    <DatePickerFormItem
-                      field={field}
-                      title="Fecha de recepción"
-                      required
-                    />
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="due_at"
-                  render={({ field }) => (
-                    <DatePickerFormItem
-                      field={field}
-                      title="Fecha de vencimiento"
-                      required
+                      title="Banco receptor"
                     />
                   )}
                 />
@@ -461,12 +495,12 @@ const FormPayments = () => {
                     <DatePickerFormItem
                       field={field}
                       title="Fecha de depósito"
-                      required
                     />
                   )}
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-1 gap-6 p-5 border border-gray-200 rounded-md">
               <FormField
                 control={form.control}
@@ -479,6 +513,7 @@ const FormPayments = () => {
                         className="h-32"
                         placeholder="Observaciones adicionales..."
                         {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
