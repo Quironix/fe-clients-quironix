@@ -117,14 +117,14 @@ export const getSidebarData = (profile: any) => {
             is_parent: true,
             items: [
               {
-                title: "Usuarios",
-                url: "/dashboard/users",
-                scope: "client.users.users",
-              },
-              {
                 title: "Roles",
                 url: "/dashboard/roles",
                 scope: "client.users.roles",
+              },
+              {
+                title: "Usuarios",
+                url: "/dashboard/users",
+                scope: "client.users.users",
               },
               {
                 disabled: true,

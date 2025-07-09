@@ -317,7 +317,7 @@ const StepDebtors: React.FC<StepProps> = ({
             <div className="h-4/6 overflow-y-auto space-y-4">
               <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                 <TitleStep
-                  title="Criterios de segmentación de deudores"
+                  title="Políticas de segmentación de deudores"
                   icon={<Calculator size={16} />}
                 />
                 <span className="text-sm font-bold">Facturación</span>
@@ -472,7 +472,7 @@ const StepDebtors: React.FC<StepProps> = ({
               </div>
               <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                 <TitleStep
-                  title="Criterios para ajustes automáticos"
+                  title="Políticas para ajustes automáticos"
                   icon={<Settings2 size={16} />}
                 />
                 <div className="space-y-2 w-full mt-1">
@@ -511,6 +511,7 @@ const StepDebtors: React.FC<StepProps> = ({
                               onChange={(val) => field.onChange(val)}
                               placeholder="Ej: 5000"
                               min={0}
+                              step={1000}
                             />
                           </FormControl>
                           <FormMessage />
@@ -532,6 +533,7 @@ const StepDebtors: React.FC<StepProps> = ({
                               onChange={(val) => field.onChange(val)}
                               placeholder="Ej: 5000"
                               min={0}
+                              step={1000}
                             />
                           </FormControl>
                           <FormMessage />
@@ -544,7 +546,7 @@ const StepDebtors: React.FC<StepProps> = ({
 
               <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                 <TitleStep
-                  title="Criterios de incumplimiento"
+                  title="Políticas de incumplimiento"
                   icon={<ShieldAlert size={16} />}
                 />
                 <div className="space-y-2 w-full mt-1">
@@ -565,6 +567,7 @@ const StepDebtors: React.FC<StepProps> = ({
                               placeholder="Ej: 20%"
                               min={0}
                               max={100}
+                              step={1}
                             />
                           </FormControl>
                           <FormMessage />
@@ -586,6 +589,7 @@ const StepDebtors: React.FC<StepProps> = ({
                               onChange={(val) => field.onChange(val)}
                               placeholder="Ej: 100000"
                               min={0}
+                              step={1}
                             />
                           </FormControl>
                           <FormMessage />
