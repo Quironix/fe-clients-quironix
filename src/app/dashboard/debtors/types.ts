@@ -4,6 +4,7 @@ export interface Debtor {
   companies?: CompanyDebtor[] | null;
   debtorCompanies?: DebtorCompany[];
   channel: string;
+  channel_communication: string;
   debtor_code: string;
   addresses: Address[];
   dni: Dni;

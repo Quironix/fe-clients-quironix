@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useState, useEffect } from "react";
 
 interface InputNumberCartProps {
   value: number;
@@ -20,22 +20,52 @@ const InputNumberCart = ({
   disabled = false,
   step = 1,
 }: InputNumberCartProps) => {
+  const [displayValue, setDisplayValue] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+
+  const formatNumber = (num: number) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  const parseNumber = (str: string) => {
+    return Number(str.replace(/\./g, ""));
+  };
+
+  useEffect(() => {
+    if (!isFocused) {
+      setDisplayValue(formatNumber(value));
+    }
+  }, [value, isFocused]);
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const val = Number(e.target.value);
+    const inputValue = e.target.value;
+    setDisplayValue(inputValue);
+    
+    const val = parseNumber(inputValue);
     if (!isNaN(val) && (max === undefined || val <= max) && val >= min) {
       onChange(val);
     }
   };
 
+  const handleFocus = () => {
+    setIsFocused(true);
+    setDisplayValue(value.toString());
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    setDisplayValue(formatNumber(value));
+  };
+
   const handleDecrease = () => {
     if (value > min) {
-      onChange(value - 1);
+      onChange(value - step);
     }
   };
 
   const handleIncrease = () => {
     if (max === undefined || value < max) {
-      onChange(value + 1);
+      onChange(value + step);
     }
   };
 
@@ -51,15 +81,14 @@ const InputNumberCart = ({
         –
       </button>
       <Input
-        type="number"
+        type="text"
         className="text-center w-full h-10 text-lg border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         placeholder={placeholder}
-        value={value}
+        value={displayValue}
         onChange={handleInputChange}
-        min={min}
-        max={max}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         disabled={disabled}
-        step={step}
       />
       <button
         type="button"
