@@ -38,7 +38,9 @@ const DialogConfirm: React.FC<DialogConfirmProps> = ({
   setIsOpen,
 }) => {
   return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+    <AlertDialog
+      {...(isOpen && setIsOpen && { open: isOpen, onOpenChange: setIsOpen })}
+    >
       {triggerButton && (
         <AlertDialogTrigger asChild>{triggerButton}</AlertDialogTrigger>
       )}
