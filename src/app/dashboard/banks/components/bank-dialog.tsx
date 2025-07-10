@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit, Landmark, Loader2, X } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { BankInformation } from "../services/types";
@@ -23,6 +24,7 @@ interface BankDialogProps {
   setIsBankDialogOpen: (open: boolean) => void;
   clientId: string;
   defaultValues?: BankInformation;
+  showButton?: boolean;
 }
 const bankFormSchema = z.object({
   bank: z.string().min(1, "Debe seleccionar un banco"),
@@ -40,6 +42,7 @@ const BankDialog = ({
   setIsBankDialogOpen,
   clientId,
   defaultValues,
+  showButton = false,
 }: BankDialogProps) => {
   const { data: session }: any = useSession();
   const form = useForm<BankFormValues>({
@@ -73,6 +76,13 @@ const BankDialog = ({
     }
     setIsBankDialogOpen(false);
   };
+
+  useEffect(() => {
+    if (defaultValues) {
+      form.reset(defaultValues);
+    }
+  }, [defaultValues]);
+
   return (
     <AlertDialog
       open={isBankDialogOpen}
@@ -82,18 +92,13 @@ const BankDialog = ({
       }}
     >
       <AlertDialogTrigger asChild>
-        {defaultValues ? (
-          <Button
-            className="hover:bg-orange-500 hover:text-white text-primary"
-            variant="ghost"
-          >
-            <Edit />
+        {!showButton ? null : !defaultValues ? ( // No mostrar trigger
+          <Button className="bg-orange-500 text-white hover:bg-orange-400">
+            <Landmark /> Agregar cuenta bancaria
           </Button>
         ) : (
           <Button className="bg-orange-500 text-white hover:bg-orange-400">
-            <div className="flex items-center gap-2">
-              <Landmark /> Agregar cuenta bancaria
-            </div>
+            <Edit /> Editar cuenta
           </Button>
         )}
       </AlertDialogTrigger>
@@ -120,7 +125,11 @@ const BankDialog = ({
               </AlertDialogHeader>
             </div>
 
-            <BankForm form={form} isLoading={isCreateDialogLoading} />
+            <BankForm
+              form={form}
+              isLoading={isCreateDialogLoading}
+              isLinkedAccount={!!defaultValues?.bank_provider}
+            />
 
             <AlertDialogFooter className="flex gap-3 mt-6 border-t border-orange-500 pt-4">
               <div className="w-full flex justify-center items-center">

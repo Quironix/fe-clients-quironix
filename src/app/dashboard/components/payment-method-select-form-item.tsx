@@ -31,13 +31,17 @@ export default function PaymentMethodSelectFormItem({
       <FormLabel>
         {title} {required && <Required />}
       </FormLabel>
-      <Select onValueChange={field.onChange} value={field.value}>
+      <Select 
+        onValueChange={(value) => field.onChange(value === "__none__" ? null : value)}
+        value={field.value || "__none__"}
+      >
         <FormControl>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Selecciona un banco" />
           </SelectTrigger>
         </FormControl>
         <SelectContent>
+          <SelectItem value="__none__">-- Selecciona un método de pago --</SelectItem>
           {DEBTOR_PAYMENT_METHODS.map((paymentMethod) => (
             <SelectItem key={paymentMethod.value} value={paymentMethod.value}>
               {paymentMethod.label}

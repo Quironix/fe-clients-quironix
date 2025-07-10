@@ -6,6 +6,7 @@ import PaymentMethodSelectFormItem from "@/app/dashboard/components/payment-meth
 import SelectClient from "@/app/dashboard/components/select-client";
 import {
   categories,
+  COMMUNICATION_CHANNEL,
   CREDIT_STATUS,
   DEBTOR_PAYMENT_METHODS,
   PAYMENT_TERMS,
@@ -48,10 +49,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useProfileContext } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronsUpDown, FileText } from "lucide-react";
+import { Check, FileText, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -69,70 +75,86 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
               debtor_code: z.string().nullable(),
             })
           )
-          .min(1, "Campo requerido")
-      : z.null().optional(),
-    channel: z.enum(
-      PREFERRED_CHANNELS.map((channel) => channel.code) as [
-        string,
-        ...string[],
-      ],
-      {
-        errorMap: () => ({ message: "Debe seleccionar un valor" }),
-      }
-    ),
-    payment_method: z.enum(
-      DEBTOR_PAYMENT_METHODS.map((paymentMethod) => paymentMethod.value) as [
-        string,
-        ...string[],
-      ],
-      {
-        errorMap: () => ({ message: "Debe seleccionar un valor" }),
-      }
-    ),
+          .min(1, "Debes seleccionar al menos una compañía")
+      : z.null(),
+    channel: z
+      .union([
+        z.enum(
+          PREFERRED_CHANNELS.map((channel) => channel.code) as [
+            string,
+            ...string[],
+          ]
+        ),
+        z.literal("__none__"),
+        z.null(),
+      ])
+      .optional()
+      .nullable()
+      .default(null),
+    channel_communication: z
+      .union([
+        z.enum(
+          COMMUNICATION_CHANNEL.map((channel) => channel.code) as [
+            string,
+            ...string[],
+          ]
+        ),
+        z.literal("__none__"),
+        z.null(),
+      ])
+      .optional()
+      .nullable()
+      .default(null),
+    payment_method: z
+      .union([
+        z.enum(
+          DEBTOR_PAYMENT_METHODS.map(
+            (paymentMethod) => paymentMethod.value
+          ) as [string, ...string[]]
+        ),
+        z.literal("__none__"),
+        z.null(),
+      ])
+      .optional()
+      .nullable()
+      .default(null),
     debtor_code: z.string().min(1, "Campo requerido"),
-    addresses: z.array(
-      z.object({
-        street: z.string().min(1, "Campo requerido"),
-        city: z.string().min(1, "Campo requerido"),
-        state: z.string().min(1, "Campo requerido"),
-        country: z.string().min(1, "Campo requerido"),
-        postal_code: z.string().min(1, "Campo requerido"),
-        is_primary: z.boolean(),
-      })
-    ),
-    sales_person: z.string().min(1, "Campo requerido"),
+    addresses: z
+      .array(
+        z.object({
+          street: z.string().optional().nullable(),
+          city: z.string().optional().nullable(),
+          state: z.string().optional().nullable(),
+          country: z.string().optional().nullable(),
+          postal_code: z.string().optional().nullable(),
+          is_primary: z.boolean().optional().nullable(),
+        })
+      )
+      .optional()
+      .nullable(),
+    sales_person: z.string().optional(),
     dni: z.object({
       type: z.string().min(1, "Campo requerido"),
       dni: z.string().min(1, "Campo requerido"),
       emit_date: z.string().optional(),
       expiration_date: z.string().optional(),
     }),
-    metadata: z.array(
-      z.object({
-        value: z.any(),
-        type: z.string().min(1, "Campo requerido"),
-      })
-    ),
+    metadata: z
+      .array(
+        z.object({
+          value: z.any().optional(),
+          type: z.string().optional(),
+        })
+      )
+      .optional(),
     currency: z.string().optional(),
-    contacts: z.array(
-      z.object({
-        name: z.string().optional(),
-        role: z.string().optional(),
-        email: z.string().optional(),
-        phone: z.string().optional(),
-        channel: z.string().optional(),
-        function: z.string().optional(),
-      })
-    ),
-    category: z.string().min(1, "Campo requerido"),
-    economic_activities: z.array(z.string()).min(1, "Campo requerido"),
+    category: z.string().optional(),
+    economic_activities: z.array(z.string()).optional(),
   });
 
 const DebtorsDataStep: React.FC<StepProps> = ({
   onNext,
   onBack,
-  isFirstStep,
-  isLastStep,
   currentStep,
   steps,
   onStepChange,
@@ -143,11 +165,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     setDataDebtor,
     dataDebtor,
     updateDebtor,
-    isFetchingDebtor,
+    error: errorDebtor,
   } = useDebtorsStore();
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { companies } = useCompaniesStore();
-
+  const [open, setOpen] = useState(false);
   const { session } = useProfileContext();
 
   // Función helper para manejar valores numéricos seguros
@@ -161,22 +185,23 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   type DebtorFormValues = z.infer<typeof debtorFormSchema>;
 
   const form = useForm<DebtorFormValues>({
-    resolver: zodResolver(debtorFormSchema),
+    resolver: zodResolver(debtorFormSchema) as any,
     mode: "onChange",
     defaultValues: {
       name: "",
       companies: isFactoring ? [] : null,
-      channel: "",
+      channel: null,
+      channel_communication: null,
       debtor_code: "",
-      payment_method: dataDebtor?.payment_method || "",
+      payment_method: dataDebtor?.payment_method || null,
       sales_person: "",
       addresses: [
         {
-          street: "",
-          city: "",
-          state: "",
-          country: "",
-          postal_code: "",
+          street: null,
+          city: null,
+          state: null,
+          country: null,
+          postal_code: null,
           is_primary: true,
         },
       ],
@@ -188,15 +213,15 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       },
       metadata: [
         {
-          value: 0,
+          value: null,
           type: "DBT_DEBTOR",
         },
         {
-          value: "",
+          value: null,
           type: "RISK_CLASSIFICATION",
         },
         {
-          value: 0,
+          value: "false",
           type: "CREDIT_LINE",
         },
         {
@@ -208,16 +233,15 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           type: "CREDIT_LINE_TOLERANCE",
         },
         {
-          value: "Vigente",
+          value: null,
           type: "CREDIT_STATUS",
         },
         {
-          value: "30 días",
+          value: "30_DAYS",
           type: "PAYMENT_TERMS",
         },
       ],
       currency: "CLP",
-      contacts: [],
       category: "",
       economic_activities: [],
     },
@@ -239,17 +263,18 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                 debtor_code: null,
               }))
           : null,
-        channel: dataDebtor.channel || "EMAIL",
+        channel: dataDebtor.channel || null,
+        channel_communication: dataDebtor.channel_communication || null,
         debtor_code: dataDebtor.debtor_code || "",
-        payment_method: dataDebtor.payment_method,
+        payment_method: dataDebtor.payment_method || null,
         sales_person: dataDebtor.sales_person || "",
         addresses: [
           {
-            street: dataDebtor.addresses?.[0]?.street || "",
-            city: dataDebtor.addresses?.[0]?.city || "",
-            state: dataDebtor.addresses?.[0]?.state || "",
-            country: dataDebtor.addresses?.[0]?.country || "",
-            postal_code: dataDebtor.addresses?.[0]?.postal_code || "",
+            street: dataDebtor.addresses?.[0]?.street || null,
+            city: dataDebtor.addresses?.[0]?.city || null,
+            state: dataDebtor.addresses?.[0]?.state || null,
+            country: dataDebtor.addresses?.[0]?.country || null,
+            postal_code: dataDebtor.addresses?.[0]?.postal_code || null,
             is_primary: dataDebtor.addresses?.[0]?.is_primary || true,
           },
         ],
@@ -261,18 +286,16 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         },
         metadata: [
           {
-            value: safeNumber(
+            value:
               dataDebtor.metadata?.find((meta) => meta.type === "DBT_DEBTOR")
-                ?.value,
-              0
-            ),
+                ?.value || null,
             type: "DBT_DEBTOR",
           },
           {
             value:
               dataDebtor.metadata?.find(
                 (meta) => meta.type === "RISK_CLASSIFICATION"
-              )?.value || "",
+              )?.value || null,
             type: "RISK_CLASSIFICATION",
           },
           {
@@ -308,21 +331,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           {
             value:
               dataDebtor.metadata?.find((meta) => meta.type === "PAYMENT_TERMS")
-                ?.value || "30 días",
+                ?.value || "30_DAYS",
             type: "PAYMENT_TERMS",
           },
         ],
         currency: dataDebtor.currency || "CLP",
-        contacts: [
-          ...(dataDebtor.contacts || []).map((contact) => ({
-            name: contact.name || "",
-            role: contact.role || "",
-            email: contact.email || "",
-            phone: contact.phone || "",
-            channel: contact.channel || "EMAIL",
-            function: contact.function || "",
-          })),
-        ],
         category: dataDebtor.category || "",
         economic_activities: dataDebtor.economic_activities || [""],
       };
@@ -337,14 +350,62 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     }
   }, [dataDebtor?.payment_method]);
 
+  // Limpiar error cuando el usuario edita el formulario
+  useEffect(() => {
+    if (submitError) {
+      const subscription = form.watch(() => {
+        setSubmitError(null);
+      });
+      return () => subscription.unsubscribe();
+    }
+  }, [submitError, form]);
+
+  // Función para manejar el click del botón Next
+  const handleNextClick = async () => {
+    setSubmitAttempted(true);
+
+    // Validar el formulario primero
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast.error("Por favor, completa todos los campos requeridos");
+      return;
+    }
+
+    // Si el formulario es válido, ejecutar handleSubmit
+    const formData = form.getValues();
+    await handleSubmit(formData);
+  };
+
   const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
     setSubmitAttempted(true);
+    setIsSubmitting(true);
+    setSubmitError(null); // Limpiar errores previos
+
+    // Validar que no haya errores del formulario antes de continuar
+    if (Object.keys(form.formState.errors).length > 0) {
+      setIsSubmitting(false);
+      toast.error("Por favor, completa todos los campos requeridos");
+      return;
+    }
+
     try {
       if (dataDebtor?.id) {
-        // Para edición: transformar companies a debtorCompanies
+        // Para edición: transformar companies a debtorCompanies y limpiar campos vacíos
+        const cleanedData = {
+          ...data,
+          addresses: data.addresses?.map(address => ({
+            ...address,
+            street: address.street === "" ? null : address.street,
+            city: address.city === "" ? null : address.city,
+            state: address.state === "" ? null : address.state,
+            country: address.country === "" ? null : address.country,
+            postal_code: address.postal_code === "" ? null : address.postal_code,
+          }))
+        };
+        
         const updatedData = {
           ...dataDebtor,
-          ...data,
+          ...cleanedData,
           id: dataDebtor.id,
         };
 
@@ -410,15 +471,60 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           }
         }
       } else {
-        // Para creación: usar companies normal
-        setDataDebtor(data);
-        await createDebtor(session?.token, profile?.client?.id, data);
+        // Para creación: usar companies normal y limpiar campos vacíos de addresses
+        const cleanedData = {
+          ...data,
+          addresses: data.addresses?.map(address => ({
+            ...address,
+            street: address.street === "" ? null : address.street,
+            city: address.city === "" ? null : address.city,
+            state: address.state === "" ? null : address.state,
+            country: address.country === "" ? null : address.country,
+            postal_code: address.postal_code === "" ? null : address.postal_code,
+          }))
+        };
+        setDataDebtor(cleanedData);
+        await createDebtor(session?.token, profile?.client?.id, cleanedData);
       }
-      if (onNext) {
+
+      // Solo avanzar al siguiente paso si llegamos aquí sin errores
+      if (!errorDebtor) {
         onNext();
       }
-    } catch (error) {
-      toast.error("Error al guardar el deudor");
+    } catch (error: any) {
+      console.error("Error al guardar el deudor:", error);
+      console.error("Error response:", error?.response);
+      console.error("Error data:", error?.response?.data);
+
+      // Manejo de errores más específico
+      let errorMessage = "Error al guardar el deudor";
+
+      // Verificar la estructura específica del error que mencionas
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error?.response?.data?.errors) {
+        // Si hay errores de validación específicos
+        const validationErrors = error.response.data.errors;
+        if (Array.isArray(validationErrors)) {
+          errorMessage = validationErrors.join(", ");
+        } else if (typeof validationErrors === "object") {
+          errorMessage = Object.values(validationErrors).flat().join(", ");
+        }
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      // Mostrar el error específico
+      toast.error(errorMessage);
+      setSubmitError(errorMessage);
+
+      // IMPORTANTE: No re-lanzar el error para evitar que se propague
+      // El error ya se manejó mostrando el toast y estableciendo submitError
+      // No ejecutar onNext() - simplemente retornar
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -477,9 +583,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
-                          value={field.value}
-                          defaultValue={field.value}
-                          key={field.value}
+                          value={field.value || ""}
+                          defaultValue={field.value || ""}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un tipo de documento" />
@@ -532,11 +637,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="addresses.0.street"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Dirección <Required />
-                      </FormLabel>
+                      <FormLabel>Dirección</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input 
+                          {...field} 
+                          value={field.value || ""} 
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -547,11 +654,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="addresses.0.state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Comuna/Municipio <Required />
-                      </FormLabel>
+                      <FormLabel>Comuna/Municipio</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input 
+                          {...field} 
+                          value={field.value || ""} 
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -562,11 +671,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="addresses.0.city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Ciudad <Required />
-                      </FormLabel>
+                      <FormLabel>Ciudad</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input 
+                          {...field} 
+                          value={field.value || ""} 
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -576,11 +687,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   control={form.control}
                   name="addresses.0.country"
                   render={({ field }) => (
-                    <CountriesSelectFormItem
-                      field={field}
-                      title="País"
-                      required
-                    />
+                    <CountriesSelectFormItem field={field} title="País" />
                   )}
                 />
                 <FormField
@@ -588,11 +695,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="addresses.0.postal_code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Código postal <Required />
-                      </FormLabel>
+                      <FormLabel>Código postal</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input 
+                          {...field} 
+                          value={field.value || ""} 
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -604,25 +713,27 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Rubro <Required />
-                      </FormLabel>
+                      <FormLabel>Rubro</FormLabel>
                       <FormControl>
-                        <Popover>
-                          <div className="relative">
+                        <Popover open={open} onOpenChange={setOpen}>
+                          <div className="relative space-x-2">
                             <Input
                               {...field}
                               placeholder="Escribe o selecciona un rubro"
                               autoComplete="off"
+                              className="pr-12"
                             />
-                            <PopoverTrigger asChild>
+                            <PopoverTrigger
+                              asChild
+                              onClick={() => setOpen(true)}
+                            >
                               <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
+                                className="absolute right-1 top-1/2 -translate-y-1/2"
                                 type="button"
                               >
-                                <ChevronsUpDown className="h-3 w-3" />
+                                <Search className="h-3 w-3" />
                               </Button>
                             </PopoverTrigger>
                           </div>
@@ -643,11 +754,18 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                                       value={category}
                                       onSelect={(value) => {
                                         field.onChange(value);
+                                        setOpen(false);
                                       }}
                                     >
-                                      <span className="truncate">
-                                        {category}
-                                      </span>
+                                      <Tooltip>
+                                        <TooltipTrigger className="truncate">
+                                          {category}
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left">
+                                          {category}
+                                        </TooltipContent>
+                                      </Tooltip>
+
                                       <Check
                                         className={cn(
                                           "ml-auto h-4 w-4 flex-shrink-0",
@@ -673,13 +791,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="economic_activities"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Actividades económicas <Required />
-                      </FormLabel>
+                      <FormLabel>Actividades económicas</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
-                          value={field.value.join(", ")}
+                          value={field?.value?.join(", ") || ""}
                           onChange={(e) =>
                             field.onChange(e.target.value.split(", "))
                           }
@@ -694,22 +810,62 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="channel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Canal <Required />
-                      </FormLabel>
+                      <FormLabel>Canal</FormLabel>
                       <FormControl>
                         <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          defaultValue={field.value}
-                          key={field.value}
+                          onValueChange={(value) =>
+                            field.onChange(value === "__none__" ? null : value)
+                          }
+                          value={field.value || "__none__"}
+                          defaultValue={field.value || "__none__"}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un canal" />
                           </SelectTrigger>
 
                           <SelectContent>
+                            <SelectItem value="__none__">
+                              -- Selecciona un canal --
+                            </SelectItem>
                             {PREFERRED_CHANNELS.map((channel: any) => (
+                              <SelectItem
+                                key={channel.code}
+                                value={channel.code}
+                              >
+                                {channel.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="channel_communication"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Canal de comunicación</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={(value) =>
+                            field.onChange(value === "__none__" ? null : value)
+                          }
+                          value={field.value || "__none__"}
+                          defaultValue={field.value || "__none__"}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona un canal" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            <SelectItem value="__none__">
+                              -- Selecciona un canal --
+                            </SelectItem>
+                            {COMMUNICATION_CHANNEL.map((channel: any) => (
                               <SelectItem
                                 key={channel.code}
                                 value={channel.code}
@@ -731,9 +887,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => {
                     return (
                       <FormItem>
-                        <FormLabel>
-                          DBT <Required />
-                        </FormLabel>
+                        <FormLabel>DBT</FormLabel>
                         <FormControl>
                           <InputNumberCart
                             value={safeNumber(field.value, 0)}
@@ -754,21 +908,16 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.1.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Clasificación de riesgo <Required />
-                      </FormLabel>
+                      <FormLabel>Clasificación de riesgo</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
-                          value={field.value}
-                          defaultValue={field.value}
-                          key={field.value}
+                          value={field.value || ""}
+                          defaultValue={field.value || ""}
                         >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona un estado" />
-                            </SelectTrigger>
-                          </FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona un estado" />
+                          </SelectTrigger>
                           <SelectContent>
                             {RISK_CLASSIFICATION.map((status: any) => (
                               <SelectItem key={status.code} value={status.code}>
@@ -791,12 +940,19 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                         Línea de crédito <Required />
                       </FormLabel>
                       <FormControl>
-                        <InputNumberCart
-                          value={safeNumber(field.value, 0)}
-                          onChange={(val) => field.onChange(safeNumber(val, 0))}
-                          placeholder="Ej: 5000"
-                          min={0}
-                        />
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value || ""}
+                          defaultValue={field.value || ""}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona una línea de crédito" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Si</SelectItem>
+                            <SelectItem value="false">No</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -807,15 +963,14 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.3.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Monto línea de crédito <Required />
-                      </FormLabel>
+                      <FormLabel>Monto línea de crédito</FormLabel>
                       <FormControl>
                         <InputNumberCart
                           value={safeNumber(field.value, 0)}
                           onChange={(val) => field.onChange(safeNumber(val, 0))}
                           placeholder="Ej: 5000"
                           min={0}
+                          step={100000}
                         />
                       </FormControl>
                       <FormMessage />
@@ -827,9 +982,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.4.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Tolerancia línea de crédito <Required />
-                      </FormLabel>
+                      <FormLabel>Tolerancia línea de crédito</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -848,21 +1001,16 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.5.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Estado crediticio <Required />
-                      </FormLabel>
+                      <FormLabel>Estado crediticio</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
-                          value={field.value}
-                          defaultValue={field.value}
-                          key={field.value}
+                          value={field.value || ""}
+                          defaultValue={field.value || ""}
                         >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona un estado" />
-                            </SelectTrigger>
-                          </FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona un estado" />
+                          </SelectTrigger>
                           <SelectContent>
                             {CREDIT_STATUS.map((status: any) => (
                               <SelectItem key={status.code} value={status.code}>
@@ -882,9 +1030,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.6.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Plazo de pago <Required />
-                      </FormLabel>
+                      <FormLabel>Condiciones de pago</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={(value) => {
@@ -895,11 +1041,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           defaultValue={field.value}
                           key={field.value}
                         >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona un estado" />
-                            </SelectTrigger>
-                          </FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona un estado" />
+                          </SelectTrigger>
                           <SelectContent>
                             {PAYMENT_TERMS.map((term: any) => (
                               <SelectItem key={term.code} value={term.code}>
@@ -921,7 +1065,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                     <PaymentMethodSelectFormItem
                       field={field}
                       title="Método de pago"
-                      required
                     />
                   )}
                 />
@@ -931,9 +1074,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="sales_person"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Vendedor <Required />
-                      </FormLabel>
+                      <FormLabel>Vendedor</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -952,15 +1093,17 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   </div>
                 )}
 
+              {submitError && (
+                <div className="text-red-500 text-xs self-center mr-2">
+                  {submitError}
+                </div>
+              )}
+
               <NextBackButtons
-                loading={form.formState.isSubmitting}
+                loading={isSubmitting || form.formState.isSubmitting}
                 currentStep={currentStep}
                 onBack={onBack}
-                onNext={() => {
-                  if (Object.keys(form.formState.errors).length > 0) {
-                    setSubmitAttempted(true);
-                  }
-                }}
+                onNext={handleNextClick}
               />
             </div>
           </form>

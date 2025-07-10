@@ -44,7 +44,7 @@ const formSchema = z.object({
       required_error: "El tipo de documento es requerido",
     }
   ),
-  folio: z.string().min(1, "El folio es requerido"),
+  // folio: z.string().min(1, "El folio es requerido"),
   number: z.string().min(1, "El número de documento es requerido"),
   external_number: z
     .string()
@@ -94,7 +94,7 @@ const FormDTE = () => {
     defaultValues: {
       client_code: profile?.client?.id || "",
       type: "INVOICE",
-      folio: dte?.folio || "",
+      // folio: dte?.folio || "",
       number: dte?.number || "",
       external_number: dte?.external_number || "",
       balance: Number(dte?.balance) || 0,
@@ -128,7 +128,7 @@ const FormDTE = () => {
       form.reset({
         client_code: profile?.client?.id || "",
         type: dte.type || "INVOICE",
-        folio: dte.folio || "",
+        // folio: dte.folio || "",
         number: dte.number || "",
         external_number: dte.external_number || "",
         balance: Number(dte.balance) || 0,
@@ -279,7 +279,7 @@ const FormDTE = () => {
                   </FormItem>
                 )}
               />
-
+              {/* 
               <FormField
                 control={form.control}
                 name="folio"
@@ -294,7 +294,7 @@ const FormDTE = () => {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <FormField
                 control={form.control}
@@ -354,9 +354,7 @@ const FormDTE = () => {
                 name="order_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Orden de compra <Required />
-                    </FormLabel>
+                    <FormLabel>Orden de compra</FormLabel>
                     <FormControl>
                       <Input placeholder="Completa" {...field} />
                     </FormControl>

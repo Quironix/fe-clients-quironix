@@ -20,6 +20,12 @@ export interface Movement {
   description: string;
   amount: number;
   comment: null;
+  company?: {
+    client_code: string;
+    dni_number: string;
+    dni_type: string;
+    name: string;
+  };
   sender_bank: string;
   movement_number: null;
   sender_name: string;

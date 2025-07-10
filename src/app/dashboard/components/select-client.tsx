@@ -23,10 +23,12 @@ const SelectClient = ({
   field,
   title,
   required,
+  singleClient = false,
 }: {
   field: any;
   title: string;
   required?: boolean;
+  singleClient?: boolean;
 }) => {
   const { companies, getCompanies } = useCompaniesStore();
   const { session, profile } = useProfileContext();
@@ -44,36 +46,61 @@ const SelectClient = ({
     company.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Asegurar que el valor siempre sea un array de objetos
-  const selectedValues: CompanySelection[] = Array.isArray(field.value)
-    ? field.value.map((item: any) =>
-        typeof item === "string"
-          ? { id: item }
-          : { id: item.id, debtor_code: item.debtor_code }
-      )
-    : field.value
+  // Manejar valores según el tipo de selección
+  const selectedValues: CompanySelection[] = singleClient
+    ? // Para selección única, convertir a array para uso interno
+      field.value
       ? [typeof field.value === "string" ? { id: field.value } : field.value]
-      : [];
+      : []
+    : // Para selección múltiple, comportamiento original
+      Array.isArray(field.value)
+      ? field.value.map((item: any) =>
+          typeof item === "string"
+            ? { id: item }
+            : { id: item.id, debtor_code: item.debtor_code }
+        )
+      : field.value
+        ? [typeof field.value === "string" ? { id: field.value } : field.value]
+        : [];
 
   const handleValueChange = (companyId: string, checked: boolean) => {
-    let newValues: CompanySelection[];
-    if (checked) {
-      // Buscar la company y usar su client_code como debtor_code
-      const company = companies.find((c) => c.id === companyId);
-      const companyData: CompanySelection = {
-        id: companyId,
-        ...(company?.client_code && { debtor_code: company.client_code }),
-      };
-      newValues = [...selectedValues, companyData];
+    if (singleClient) {
+      // Para selección única
+      if (checked) {
+        const company = companies.find((c) => c.id === companyId);
+        const companyData: CompanySelection = {
+          id: companyId,
+          ...(company?.client_code && { debtor_code: company.client_code }),
+        };
+        field.onChange(companyData.id); // Enviar objeto único
+        setOpen(false); // Cerrar el selector después de seleccionar
+      } else {
+        field.onChange(null); // Limpiar selección
+      }
     } else {
-      newValues = selectedValues.filter((item) => item.id !== companyId);
+      // Para selección múltiple (comportamiento original)
+      let newValues: CompanySelection[];
+      if (checked) {
+        const company = companies.find((c) => c.id === companyId);
+        const companyData: CompanySelection = {
+          id: companyId,
+          ...(company?.client_code && { debtor_code: company.client_code }),
+        };
+        newValues = [...selectedValues, companyData];
+      } else {
+        newValues = selectedValues.filter((item) => item.id !== companyId);
+      }
+      field.onChange(newValues); // Enviar array
     }
-    field.onChange(newValues);
   };
 
   const removeValue = (companyId: string) => {
-    const newValues = selectedValues.filter((item) => item.id !== companyId);
-    field.onChange(newValues);
+    if (singleClient) {
+      field.onChange(null);
+    } else {
+      const newValues = selectedValues.filter((item) => item.id !== companyId);
+      field.onChange(newValues);
+    }
   };
 
   const isCompanySelected = (companyId: string) => {
@@ -101,30 +128,56 @@ const SelectClient = ({
             <div className="flex flex-wrap gap-1 items-center w-full">
               {selectedValues.length > 0 ? (
                 <>
-                  {selectedValues.slice(0, 2).map((item) => {
-                    const company = companies.find((c) => c.id === item.id);
-                    return company ? (
-                      <Badge
-                        key={item.id}
-                        variant="secondary"
-                        className="flex items-center gap-1 text-[0.6rem] px-1 py-0.5"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                      >
-                        {company.name}
-                      </Badge>
-                    ) : null;
-                  })}
-                  {selectedValues.length > 2 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{selectedValues.length - 2} más
-                    </Badge>
+                  {singleClient ? (
+                    // Para selección única, mostrar solo el elemento seleccionado
+                    (() => {
+                      const company = companies.find(
+                        (c) => c.id === selectedValues[0].id
+                      );
+                      return company ? (
+                        <Badge
+                          key={selectedValues[0].id}
+                          variant="secondary"
+                          className="flex items-center gap-1 text-[0.6rem] px-1 py-0.5"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          {company.name}
+                        </Badge>
+                      ) : null;
+                    })()
+                  ) : (
+                    // Para selección múltiple, comportamiento original
+                    <>
+                      {selectedValues.slice(0, 2).map((item) => {
+                        const company = companies.find((c) => c.id === item.id);
+                        return company ? (
+                          <Badge
+                            key={item.id}
+                            variant="secondary"
+                            className="flex items-center gap-1 text-[0.6rem] px-1 py-0.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            {company.name}
+                          </Badge>
+                        ) : null;
+                      })}
+                      {selectedValues.length > 2 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{selectedValues.length - 2} más
+                        </Badge>
+                      )}
+                    </>
                   )}
                 </>
               ) : (
                 <span className="text-muted-foreground">
-                  Selecciona una o más compañías
+                  {singleClient
+                    ? "Selecciona una compañía"
+                    : "Selecciona una o más compañías"}
                 </span>
               )}
             </div>
