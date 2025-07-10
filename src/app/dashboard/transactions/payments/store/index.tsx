@@ -68,12 +68,12 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     set({ loading: true, error: null, payments: [] });
     try {
       const response = await createPayment(accessToken, clientId, payment);
-      console.log("response", response);
       if (response.statusCode !== 201) {
         throw new Error(response.message);
       }
       set({ responseSuccess: response });
     } catch (error: any) {
+      console.log("error", error);
       set({ error: error.message });
     } finally {
       get().fetchPayments(accessToken, clientId);
@@ -88,10 +88,15 @@ export const usePaymentStore = create<PaymentStore>((set, get) => ({
     set({ loading: true, error: null, payments: [] });
     try {
       const response = await updatePayment(accessToken, clientId, payment);
+      if (response.statusCode !== 200) {
+        throw new Error("Error al actualizar el pago");
+      }
       set({ responseSuccess: response });
       get().fetchPayments(accessToken, clientId);
+      return response;
     } catch (error: any) {
-      set({ error: error.message });
+      console.log("error", error);
+      set({ error: "ERROR" });
     } finally {
       set({ loading: false });
     }

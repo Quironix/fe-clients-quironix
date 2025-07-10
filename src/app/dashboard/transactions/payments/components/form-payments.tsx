@@ -101,7 +101,7 @@ const FormPayments = () => {
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       id: "",
-      company_id: "",
+      company_id: isFactoring ? "" : null,
       debtor_id: "",
       bank_movement_id: null,
       bank_id: null,
@@ -140,7 +140,7 @@ const FormPayments = () => {
 
       const formData = {
         id: payment?.id || "",
-        company_id: payment?.company_id || "",
+        company_id: payment?.company_id || null,
         debtor_id: payment?.debtor_id || "",
         bank_movement_id: payment?.bank_movement_id || null,
         bank_id: payment?.bank_id || null,
@@ -177,7 +177,7 @@ const FormPayments = () => {
         const paymentData = {
           id: values?.id || undefined,
           ...(profile?.client?.type === "FACTORING" && {
-            company_id: values?.company_id || "",
+            company_id: values?.company_id || null,
           }),
           debtor_id: values?.debtor_id || "",
           bank_movement_id: null,
@@ -202,6 +202,7 @@ const FormPayments = () => {
           profile?.client?.id,
           paymentData
         );
+
         if (responseSuccess) {
           toast.success("Pago actualizado correctamente");
           router.push("/dashboard/transactions/payments");
@@ -213,7 +214,7 @@ const FormPayments = () => {
       } else {
         const paymentData = {
           ...(profile?.client?.type === "FACTORING" && {
-            company_id: values?.company_id || "",
+            company_id: values?.company_id || null,
           }),
           debtor_id: values?.debtor_id || "",
           bank_movement_id: null,
