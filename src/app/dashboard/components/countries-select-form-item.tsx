@@ -39,8 +39,8 @@ export default function CountriesSelectFormItem({
         {title} {required && <Required />}
       </FormLabel>
       <Select
-        onValueChange={field.onChange}
-        value={field.value}
+        onValueChange={(value) => field.onChange(value === "__none__" ? null : value)}
+        value={field.value !== null && field.value !== undefined ? field.value : "__none__"}
         key={field.value}
         disabled={isLoading}
       >
@@ -50,6 +50,7 @@ export default function CountriesSelectFormItem({
           </SelectTrigger>
         </FormControl>
         <SelectContent>
+          <SelectItem value="__none__">-- Selecciona un país --</SelectItem>
           {countries.length > 0 ? (
             countries.map((country: any) => (
               <SelectItem key={country.id} value={country.id}>
@@ -58,7 +59,7 @@ export default function CountriesSelectFormItem({
             ))
           ) : (
             <div className="px-2 py-1.5 text-sm text-muted-foreground">
-              No hay bancos disponibles
+              No hay países disponibles
             </div>
           )}
         </SelectContent>

@@ -23,6 +23,7 @@ import { BankFormValues } from "./bank-dialog";
 interface BankFormProps {
   form: UseFormReturn<BankFormValues>;
   isLoading: boolean;
+  isLinkedAccount?: boolean;
 }
 
 export interface Bank {
@@ -30,7 +31,11 @@ export interface Bank {
   sbifCode: string;
 }
 
-const BankForm: React.FC<BankFormProps> = ({ form, isLoading }) => {
+const BankForm: React.FC<BankFormProps> = ({
+  form,
+  isLoading,
+  isLinkedAccount = false,
+}) => {
   return (
     <div className="grid gap-4">
       <FormField
@@ -48,7 +53,7 @@ const BankForm: React.FC<BankFormProps> = ({ form, isLoading }) => {
               disabled={isLoading}
             >
               <FormControl>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full" disabled={isLinkedAccount}>
                   <SelectValue placeholder="Selecciona una opción" />
                 </SelectTrigger>
               </FormControl>
@@ -68,7 +73,7 @@ const BankForm: React.FC<BankFormProps> = ({ form, isLoading }) => {
       <FormField
         control={form.control}
         name="account_number"
-        disabled={isLoading}
+        disabled={isLoading || isLinkedAccount}
         render={({ field }) => (
           <FormItem>
             <FormLabel>

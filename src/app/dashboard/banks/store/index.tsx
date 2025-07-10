@@ -118,14 +118,14 @@ export const useBankInformationStore = createStore<BankInformationStore>(
       clientId: string
     ) => {
       try {
-        set({ isLoading: true });
+        set({ isCreateDialogLoading: true });
         await update(accessToken, bankInfoId, bankInfo, clientId);
 
-        set({ isLoading: false, editBankInformation: null });
+        set({ isCreateDialogLoading: false, editBankInformation: null });
         get().getAllBanksInformations(accessToken, clientId);
         toast.success("Cuenta bancaria actualizada exitosamente");
       } catch (error) {
-        set({ isLoading: false });
+        set({ isCreateDialogLoading: false });
         toast.error("Error", {
           description:
             "No se pudo actualizar la cuenta bancaria. Por favor, intente nuevamente.",

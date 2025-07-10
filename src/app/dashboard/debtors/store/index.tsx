@@ -14,7 +14,7 @@ interface DebtorsStore {
   setDataDebtor: (debtor: any) => void;
   debtors: any[];
   loading: boolean;
-  error: string | null;
+  error: any;
   bulkUploadErrors: BulkUploadResponse | null;
   isFetchingDebtor: boolean;
   setIsFetchingDebtor: (isFetching: boolean) => void;
@@ -109,6 +109,7 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
       // get().fetchDebtors(accessToken, clientId);
     } catch (error: any) {
       console.error("Error en createDebtor:", error);
+      debugger;
       const errorMessage =
         error?.message ||
         error?.toString() ||

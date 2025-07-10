@@ -10,6 +10,7 @@ import Header from "../../components/header";
 import LoaderTable from "../../components/loader-table";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
+import { useDataTableByClientType } from "../../hooks/use-data-table-by-client-type";
 import BulkMovements from "./components/bulk-movements";
 import { columns } from "./components/columns";
 import { useMovementStore } from "./store";
@@ -24,6 +25,8 @@ const MovementsContent = () => {
       getAllMovements(session.token, profile.client.id);
     }
   }, [session?.token, profile?.client?.id]);
+
+  const columnsByClientType = useDataTableByClientType(columns);
 
   return (
     <>
@@ -53,7 +56,7 @@ const MovementsContent = () => {
         </div>
         <div className="mt-5">
           <DataTable
-            columns={columns}
+            columns={columnsByClientType}
             data={movements}
             isLoading={isLoading}
             loadingComponent={<LoaderTable cols={7} />}

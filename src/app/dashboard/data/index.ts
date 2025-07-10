@@ -119,14 +119,14 @@ export const getSidebarData = (profile: any) => {
             is_parent: true,
             items: [
               {
-                title: "Usuarios",
-                url: "/dashboard/users",
-                scope: "client.users.users",
-              },
-              {
                 title: "Roles",
                 url: "/dashboard/roles",
                 scope: "client.users.roles",
+              },
+              {
+                title: "Usuarios",
+                url: "/dashboard/users",
+                scope: "client.users.users",
               },
               {
                 disabled: true,
@@ -652,16 +652,26 @@ export const PAYMENT_TERMS = [
 ];
 
 export const PREFERRED_CHANNELS = [
-  { code: "EMAIL", name: "Correo electrónico" },
-  { code: "PHONE", name: "Teléfono" },
-  { code: "MAIL", name: "Correo postal" },
-  { code: "IN_PERSON", name: "Presencial" },
-  { code: "WHATSAPP", name: "WhatsApp" },
-  { code: "SMS", name: "SMS" },
+  { code: "WHOLESALE", name: "Mayorista" },
+  { code: "RETAIL", name: "Minorista" },
+  { code: "GOVERNMENT", name: "Gobierno" },
+  { code: "DISTRIBUTOR", name: "Distribuidor" },
+  { code: "ONLINE", name: "Canal online" },
+  { code: "DIRECT", name: "Venta directa" },
+  { code: "OTHER", name: "Otro/no clasificado" },
 ];
 
 export const RISK_CLASSIFICATION = [
   { code: "HIGH", name: "Alto" },
   { code: "MEDIUM", name: "Medio" },
   { code: "LOW", name: "Bajo" },
+];
+
+export const COMMUNICATION_CHANNEL = [
+  { code: "EMAIL", name: "Correo electrónico" },
+  { code: "PHONE", name: "Teléfono" },
+  { code: "MAIL", name: "Correo postal" },
+  { code: "IN_PERSON", name: "Presencial" },
+  { code: "WHATSAPP", name: "WhatsApp" },
+  { code: "SMS", name: "SMS" },
 ];

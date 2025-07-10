@@ -9,7 +9,7 @@ export interface DTE {
   due_date: string; //FechaVencimiento
   operation_date: string;
   reception_date: string;
-  folio: string; //Ficticia
+  folio?: string; //Ficticia
   balance: number; //Balance
   litigation_balance: number; //BalanceLitigio
   is_internal_document: boolean;

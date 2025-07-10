@@ -3,9 +3,9 @@ import { DocumentType } from "@/app/dashboard/data";
 export interface Payments {
   id?: string;
   debtor_id: string;
-  company_id?: string;
+  company_id?: string | null;
   bank_movement_id?: string | null;
-  bank_id: string;
+  bank_id?: string | null;
   ingress_type: string;
   document_type: DocumentType | null;
   payment_number: string;
@@ -14,6 +14,8 @@ export interface Payments {
   due_at: string | null;
   balance: number;
   square: string;
+  sender_account?: string;
+  accounting_at?: string;
   bank_received: string;
   notes: string;
   deposit_at: string | null;

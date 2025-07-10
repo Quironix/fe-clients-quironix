@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import Required from "@/components/ui/required";
 import { SearchInput } from "@/components/ui/search-input";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -218,7 +219,7 @@ const StepEntity: React.FC<StepProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Nombre<span className="text-orange-500">*</span>
+                      Razón social <Required />
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="Ej: Juan López" {...field} />
