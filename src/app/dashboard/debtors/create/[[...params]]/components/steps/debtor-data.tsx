@@ -134,7 +134,7 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
       .nullable(),
     sales_person: z.string().optional(),
     dni: z.object({
-      type: z.string().min(1, "Campo requerido"),
+      type: z.enum(typeDocuments.map((doc) => doc) as [string, ...string[]]),
       dni: z.string().min(1, "Campo requerido"),
       emit_date: z.string().optional(),
       expiration_date: z.string().optional(),
@@ -217,7 +217,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           type: "DBT_DEBTOR",
         },
         {
-          value: null,
+          value: "LOW",
           type: "RISK_CLASSIFICATION",
         },
         {
@@ -279,7 +279,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           },
         ],
         dni: {
-          type: dataDebtor.dni?.type || "RUT",
+          type: dataDebtor?.dni?.type || "",
           dni: dataDebtor.dni?.dni || "",
           emit_date: dataDebtor.dni?.emit_date || "",
           expiration_date: dataDebtor.dni?.expiration_date || "",
@@ -299,11 +299,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             type: "RISK_CLASSIFICATION",
           },
           {
-            value: safeNumber(
+            value:
               dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
-                ?.value,
-              0
-            ),
+                ?.value || "false",
             type: "CREDIT_LINE",
           },
           {
@@ -325,7 +323,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           {
             value:
               dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_STATUS")
-                ?.value || "Vigente",
+                ?.value || "ACTIVE",
             type: "CREDIT_STATUS",
           },
           {
@@ -342,7 +340,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
       form.reset(formData);
     }
-  }, [dataDebtor?.id, companies.length]);
+  }, [dataDebtor.id, companies.length, currentStep]);
 
   useEffect(() => {
     if (dataDebtor?.payment_method) {
@@ -393,16 +391,17 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         // Para edición: transformar companies a debtorCompanies y limpiar campos vacíos
         const cleanedData = {
           ...data,
-          addresses: data.addresses?.map(address => ({
+          addresses: data.addresses?.map((address) => ({
             ...address,
             street: address.street === "" ? null : address.street,
             city: address.city === "" ? null : address.city,
             state: address.state === "" ? null : address.state,
             country: address.country === "" ? null : address.country,
-            postal_code: address.postal_code === "" ? null : address.postal_code,
-          }))
+            postal_code:
+              address.postal_code === "" ? null : address.postal_code,
+          })),
         };
-        
+
         const updatedData = {
           ...dataDebtor,
           ...cleanedData,
@@ -474,14 +473,15 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         // Para creación: usar companies normal y limpiar campos vacíos de addresses
         const cleanedData = {
           ...data,
-          addresses: data.addresses?.map(address => ({
+          addresses: data.addresses?.map((address) => ({
             ...address,
             street: address.street === "" ? null : address.street,
             city: address.city === "" ? null : address.city,
             state: address.state === "" ? null : address.state,
             country: address.country === "" ? null : address.country,
-            postal_code: address.postal_code === "" ? null : address.postal_code,
-          }))
+            postal_code:
+              address.postal_code === "" ? null : address.postal_code,
+          })),
         };
         setDataDebtor(cleanedData);
         await createDebtor(session?.token, profile?.client?.id, cleanedData);
@@ -583,8 +583,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
-                          value={field.value || ""}
-                          defaultValue={field.value || ""}
+                          value={field.value || "RUT"}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un tipo de documento" />
@@ -639,10 +638,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                     <FormItem>
                       <FormLabel>Dirección</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          value={field.value || ""} 
-                          onChange={(e) => field.onChange(e.target.value || null)}
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(e.target.value || null)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -656,10 +657,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                     <FormItem>
                       <FormLabel>Comuna/Municipio</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          value={field.value || ""} 
-                          onChange={(e) => field.onChange(e.target.value || null)}
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(e.target.value || null)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -673,10 +676,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                     <FormItem>
                       <FormLabel>Ciudad</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          value={field.value || ""} 
-                          onChange={(e) => field.onChange(e.target.value || null)}
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(e.target.value || null)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -697,10 +702,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                     <FormItem>
                       <FormLabel>Código postal</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          value={field.value || ""} 
-                          onChange={(e) => field.onChange(e.target.value || null)}
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(e.target.value || null)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -912,8 +919,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
-                          value={field.value || ""}
-                          defaultValue={field.value || ""}
+                          value={field.value || null}
+                          defaultValue={field.value || null}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un estado" />
@@ -1005,8 +1012,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
-                          value={field.value || ""}
-                          defaultValue={field.value || ""}
+                          value={field.value || "ACTIVE"}
+                          defaultValue={field.value || "ACTIVE"}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un estado" />
