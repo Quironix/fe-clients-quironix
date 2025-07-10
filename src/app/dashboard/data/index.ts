@@ -658,7 +658,7 @@ export const RISK_CLASSIFICATION = [
   { code: "LOW", name: "Bajo" },
 ];
 
-export const CLASSIFICATION_CHANNEL = [
+export const COMMUNICATION_CHANNEL = [
   { code: "EMAIL", name: "Correo electrónico" },
   { code: "PHONE", name: "Teléfono" },
   { code: "MAIL", name: "Correo postal" },

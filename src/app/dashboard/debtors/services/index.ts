@@ -45,6 +45,7 @@ export const createDebtor = async (
   clientId: string,
   debtor: any
 ) => {
+  // añade validacion de errores de la respuesta
   const response = await fetch(`${API_URL}/v2/clients/${clientId}/debtors`, {
     method: "POST",
     headers: {
@@ -53,6 +54,10 @@ export const createDebtor = async (
     },
     body: JSON.stringify(debtor),
   });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Error al crear el deudor");
+  }
   return response.json();
 };
 

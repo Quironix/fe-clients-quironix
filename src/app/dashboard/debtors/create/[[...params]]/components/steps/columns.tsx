@@ -61,7 +61,7 @@ const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
       </Button>
       <DialogConfirm
         title="¿Eliminar deudor?"
-        description={`¿Estás seguro que deseas eliminar el deudor "${row.original.name}"? Esta acción no se puede deshacer.`}
+        description={`¿Estás seguro que deseas eliminar el deudor "${row.original?.name || ""}"? Esta acción no se puede deshacer.`}
         triggerButton={
           <Button
             variant="ghost"

@@ -354,9 +354,7 @@ const FormDTE = () => {
                 name="order_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Orden de compra <Required />
-                    </FormLabel>
+                    <FormLabel>Orden de compra</FormLabel>
                     <FormControl>
                       <Input placeholder="Completa" {...field} />
                     </FormControl>

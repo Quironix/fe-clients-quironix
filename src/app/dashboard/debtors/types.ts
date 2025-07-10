@@ -3,8 +3,8 @@ export interface Debtor {
   name: string;
   companies?: CompanyDebtor[] | null;
   debtorCompanies?: DebtorCompany[];
-  channel: string;
-  channel_communication: string;
+  channel: string | null;
+  channel_communication: string | null;
   debtor_code: string;
   addresses: Address[];
   dni: Dni;
@@ -12,7 +12,7 @@ export interface Debtor {
   currency: string;
   email: string;
   phone: string;
-  payment_method: string;
+  payment_method: string | null;
   contacts: Contact[];
   category: string;
   economic_activities: string[];
