@@ -40,7 +40,8 @@ export default function CountriesSelectFormItem({
       </FormLabel>
       <Select
         onValueChange={(value) => field.onChange(value === "__none__" ? null : value)}
-        value={field.value || "__none__"}
+        value={field.value !== null && field.value !== undefined ? field.value : "__none__"}
+        key={field.value}
         disabled={isLoading}
       >
         <FormControl>

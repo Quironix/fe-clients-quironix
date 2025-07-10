@@ -248,7 +248,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   });
 
   useEffect(() => {
-    if (dataDebtor?.id && (companies.length > 0 || !isFactoring)) {
+    if (dataDebtor?.id) {
+      
+
       const formData: DebtorFormValues = {
         name: dataDebtor.name || "",
         companies: isFactoring
@@ -263,8 +265,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                 debtor_code: null,
               }))
           : null,
-        channel: dataDebtor.channel || null,
-        channel_communication: dataDebtor.channel_communication || null,
+        channel: dataDebtor.channel !== undefined ? dataDebtor.channel : null,
+        channel_communication:
+          dataDebtor.communication_channel !== undefined
+            ? dataDebtor.communication_channel
+            : null,
         debtor_code: dataDebtor.debtor_code || "",
         payment_method: dataDebtor.payment_method || null,
         sales_person: dataDebtor.sales_person || "",
@@ -273,7 +278,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             street: dataDebtor.addresses?.[0]?.street || null,
             city: dataDebtor.addresses?.[0]?.city || null,
             state: dataDebtor.addresses?.[0]?.state || null,
-            country: dataDebtor.addresses?.[0]?.country || null,
+            country: dataDebtor.addresses?.[0]?.country !== undefined ? dataDebtor.addresses?.[0]?.country : null,
             postal_code: dataDebtor.addresses?.[0]?.postal_code || null,
             is_primary: dataDebtor.addresses?.[0]?.is_primary || true,
           },
@@ -295,13 +300,21 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             value:
               dataDebtor.metadata?.find(
                 (meta) => meta.type === "RISK_CLASSIFICATION"
-              )?.value || null,
+              )?.value !== undefined
+                ? dataDebtor.metadata?.find(
+                    (meta) => meta.type === "RISK_CLASSIFICATION"
+                  )?.value
+                : "LOW",
             type: "RISK_CLASSIFICATION",
           },
           {
             value:
               dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
-                ?.value || "false",
+                ?.value !== undefined
+                ? dataDebtor.metadata?.find(
+                    (meta) => meta.type === "CREDIT_LINE"
+                  )?.value
+                : "false",
             type: "CREDIT_LINE",
           },
           {
@@ -337,16 +350,83 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         category: dataDebtor.category || "",
         economic_activities: dataDebtor.economic_activities || [""],
       };
-
       form.reset(formData);
-    }
-  }, [dataDebtor.id, companies.length, currentStep]);
 
-  useEffect(() => {
-    if (dataDebtor?.payment_method) {
-      form.setValue("payment_method", dataDebtor.payment_method);
+      // Establecer valores manualmente después del reset para asegurar que se mantengan
+      setTimeout(() => {
+        if (formData.channel !== null && formData.channel !== undefined) {
+          form.setValue("channel", formData.channel);
+        }
+        if (
+          formData.channel_communication !== null &&
+          formData.channel_communication !== undefined
+        ) {
+          form.setValue(
+            "channel_communication",
+            formData.channel_communication
+          );
+        }
+        if (
+          formData.payment_method !== null &&
+          formData.payment_method !== undefined
+        ) {
+          form.setValue("payment_method", formData.payment_method);
+        }
+
+        // Establecer valores de metadata manualmente
+        if (
+          formData.metadata?.[1]?.value !== undefined &&
+          formData.metadata?.[1]?.value !== null
+        ) {
+          form.setValue("metadata.1.value", formData.metadata[1].value);
+        }
+
+        if (
+          formData.metadata?.[2]?.value !== undefined &&
+          formData.metadata?.[2]?.value !== null
+        ) {
+          form.setValue("metadata.2.value", formData.metadata[2].value);
+        }
+        
+        // Establecer country manualmente
+        if (formData.addresses?.[0]?.country !== null && formData.addresses?.[0]?.country !== undefined) {
+          form.setValue("addresses.0.country", formData.addresses[0].country);
+        }
+
+        
+        // Segundo intento para los Select después de un delay más largo
+        setTimeout(() => {
+          if (formData.channel !== null && formData.channel !== undefined) {
+            form.setValue("channel", formData.channel, { shouldValidate: true });
+          }
+          
+          // Lógica especial para channel_communication
+          let channelCommValue = formData.channel_communication;
+          
+          // Si channel_communication es null/undefined, intentar establecer un valor por defecto válido
+          if (channelCommValue === null || channelCommValue === undefined) {
+            // Verificar si WHOLESALE está disponible en COMMUNICATION_CHANNEL
+            const wholesaleAvailable = COMMUNICATION_CHANNEL.find(c => c.code === 'WHOLESALE');
+            if (wholesaleAvailable) {
+              channelCommValue = 'WHOLESALE';
+            } else if (COMMUNICATION_CHANNEL.length > 0) {
+              // Si WHOLESALE no está disponible, usar el primer canal disponible
+              channelCommValue = COMMUNICATION_CHANNEL[0].code;
+            }
+          }
+          
+          if (channelCommValue !== null && channelCommValue !== undefined) {
+            form.setValue("channel_communication", channelCommValue, { shouldValidate: true });
+          }
+          
+          // Segundo intento para country
+          if (formData.addresses?.[0]?.country !== null && formData.addresses?.[0]?.country !== undefined) {
+            form.setValue("addresses.0.country", formData.addresses[0].country, { shouldValidate: true });
+          }
+        }, 300);
+      }, 100);
     }
-  }, [dataDebtor?.payment_method]);
+  }, [dataDebtor.id, companies.length, currentStep, isFactoring]);
 
   // Limpiar error cuando el usuario edita el formulario
   useEffect(() => {
@@ -406,6 +486,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           ...dataDebtor,
           ...cleanedData,
           id: dataDebtor.id,
+          // Mapear channel_communication a communication_channel para el backend
+          communication_channel: cleanedData.channel_communication,
         };
 
         // Si es factoring y hay companies, convertir a debtorCompanies para edición
@@ -436,9 +518,15 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
           const hasChanges = Object.keys(data).some((key) => {
             const formValue = data[key as keyof typeof data];
-            const storeValue = dataDebtor[key as keyof typeof dataDebtor];
+            let storeValue = dataDebtor[key as keyof typeof dataDebtor];
+            
+            // Mapeo especial para channel_communication
+            if (key === 'channel_communication') {
+              storeValue = dataDebtor.communication_channel;
+            }
 
-            return JSON.stringify(formValue) !== JSON.stringify(storeValue);
+            const hasChange = JSON.stringify(formValue) !== JSON.stringify(storeValue);
+            return hasChange;
           });
 
           setDataDebtor(editPayload);
@@ -454,9 +542,15 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           // Para casos sin companies o no factoring
           const hasChanges = Object.keys(data).some((key) => {
             const formValue = data[key as keyof typeof data];
-            const storeValue = dataDebtor[key as keyof typeof dataDebtor];
+            let storeValue = dataDebtor[key as keyof typeof dataDebtor];
+            
+            // Mapeo especial para channel_communication
+            if (key === 'channel_communication') {
+              storeValue = dataDebtor.communication_channel;
+            }
 
-            return JSON.stringify(formValue) !== JSON.stringify(storeValue);
+            const hasChange = JSON.stringify(formValue) !== JSON.stringify(storeValue);
+            return hasChange;
           });
 
           setDataDebtor(updatedData);
@@ -527,6 +621,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <section className="space-y-6">
@@ -815,39 +910,43 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                 <FormField
                   control={form.control}
                   name="channel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Canal</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={(value) =>
-                            field.onChange(value === "__none__" ? null : value)
-                          }
-                          value={field.value || "__none__"}
-                          defaultValue={field.value || "__none__"}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un canal" />
-                          </SelectTrigger>
+                  render={({ field }) => {
+                    return (
+                      <FormItem>
+                        <FormLabel>Canal</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={(value) =>
+                              field.onChange(
+                                value === "__none__" ? null : value
+                              )
+                            }
+                            value={field.value !== null && field.value !== undefined ? field.value : "__none__"}
+                            key={field.value}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecciona un canal" />
+                            </SelectTrigger>
 
-                          <SelectContent>
-                            <SelectItem value="__none__">
-                              -- Selecciona un canal --
-                            </SelectItem>
-                            {PREFERRED_CHANNELS.map((channel: any) => (
-                              <SelectItem
-                                key={channel.code}
-                                value={channel.code}
-                              >
-                                {channel.name}
+                            <SelectContent>
+                              <SelectItem value="__none__">
+                                -- Selecciona un canal --
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                              {PREFERRED_CHANNELS.map((channel: any) => (
+                                <SelectItem
+                                  key={channel.code}
+                                  value={channel.code}
+                                >
+                                  {channel.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
@@ -861,8 +960,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           onValueChange={(value) =>
                             field.onChange(value === "__none__" ? null : value)
                           }
-                          value={field.value || "__none__"}
-                          defaultValue={field.value || "__none__"}
+                          value={field.value !== null && field.value !== undefined ? field.value : "__none__"}
+                          key={field.value}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona un canal" />
