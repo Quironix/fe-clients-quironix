@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export const getPaymentNetting = async ({
   accessToken,
   clientId,
@@ -18,8 +18,25 @@ export const getPaymentNetting = async ({
   createdAtTo: string;
 }) => {
   try {
+    // Convertir fechas a formato ISO
+    const fromISO = new Date(createdAtToFrom + 'T00:00:00.000Z').toISOString();
+    const toISO = new Date(createdAtTo + 'T23:59:59.999Z').toISOString();
+
+    // Construir parámetros de consulta dinámicamente
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      createdAtFrom: fromISO,
+      createdAtTo: toISO,
+    });
+
+    // Agregar filtro de status solo si no es vacío o "ALL"
+    if (status && status !== "ALL") {
+      queryParams.append("status", status);
+    }
+
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/reconciliation/movements?page=${page}&limit=${limit}&status=${status}&createdAtFrom=${createdAtToFrom}&createdAtTo=${createdAtTo}`,
+      `${API_URL}/v2/clients/${clientId}/reconciliation/movements?${queryParams.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

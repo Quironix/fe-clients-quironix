@@ -6,7 +6,7 @@ interface PaymentNetting {
   data: Datum[];
 }
 
-interface Datum {
+export interface Datum {
   id: string;
   client_id: string;
   client: Client;
@@ -109,7 +109,7 @@ interface Contact {
 
 interface PaymentNettingStore {
   paymentNetting: PaymentNetting;
-  paymentNettings: PaymentNetting[];
+  paymentNettings: Datum[];
   loading: boolean;
   error: string | null;
   fetchPaymentNetting: (
@@ -161,13 +161,13 @@ export const usePaymentNettingStore = create<PaymentNettingStore>(
         clientId,
         ...filters,
       });
-      set({ paymentNettings: response.data });
+      set({ paymentNettings: response.data || [] });
       set({ loading: false });
     },
     filters: {
       page: 1,
       limit: 10,
-      status: "PENDING",
+      status: "ALL",
       createdAtToFrom: format(new Date(), "yyyy-MM-dd"),
       createdAtTo: format(new Date(), "yyyy-MM-dd"),
     },

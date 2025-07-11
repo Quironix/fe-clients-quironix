@@ -4,33 +4,23 @@ import { Button } from "@/components/ui/button";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import {
-  ColumnDef,
   ColumnOrderState,
   RowSelectionState,
   VisibilityState,
 } from "@tanstack/react-table";
-import { format, subDays } from "date-fns";
-import { Eye, FileCheck2, PanelsTopLeft, Pencil } from "lucide-react";
+import { format, subDays, subDays as subDaysHelper } from "date-fns";
+import { FileCheck2, PanelsTopLeft } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { ColumnSettingsSheet } from "../components/column-settings-sheet";
 import { DataTable } from "../components/data-table";
+import { createPaymentNettingFilterConfig } from "../components/filter-configs/payment-netting-filters";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
-import { usePaymentNettingStore } from "./store";
-
-// Ejemplo de datos
-type PaymentData = {
-  id: string;
-  estado: string;
-  importe: number;
-  banco: string;
-  numeroCuenta: string;
-  codigo: string;
-  fecha: string;
-  descripcion: string;
-  comentario: string;
-};
+import { columns } from "./components/columns";
+import { Datum, usePaymentNettingStore } from "./store";
+import { PaymentData } from "./types";
 
 const sampleData: PaymentData[] = [
   {
@@ -113,8 +103,10 @@ const sampleData: PaymentData[] = [
 ];
 
 const Page = () => {
-  const { session, profile } = useProfileContext();
-  const { fetchPaymentNetting, filters, setFilters } = usePaymentNettingStore();
+  const { data: session }: any = useSession();
+  const { profile } = useProfileContext();
+  const { fetchPaymentNetting, filters, setFilters, paymentNettings } =
+    usePaymentNettingStore();
   // Estado para la visibilidad de columnas
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     estado: true,
@@ -135,105 +127,6 @@ const Page = () => {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   // Definir columnas en el orden solicitado
-  const columns: ColumnDef<PaymentData>[] = [
-    {
-      accessorKey: "estado",
-      header: "Estado",
-      meta: { displayName: "Estado" },
-      cell: ({ row }) => {
-        const status = row.getValue("estado") as string;
-        return (
-          <span
-            className={`px-2 py-1 rounded-full text-xs ${
-              status === "Conciliado"
-                ? "bg-green-100 text-green-800"
-                : status === "Pendiente"
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-red-100 text-red-800"
-            }`}
-          >
-            {status}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: "importe",
-      header: "Importe",
-      meta: { displayName: "Importe" },
-      cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("importe"));
-        const formatted = new Intl.NumberFormat("es-CL", {
-          style: "currency",
-          currency: "CLP",
-        }).format(amount);
-        return <div className="font-medium">{formatted}</div>;
-      },
-    },
-    {
-      accessorKey: "banco",
-      header: "Banco",
-      meta: { displayName: "Banco" },
-    },
-    {
-      accessorKey: "numeroCuenta",
-      header: "Nº de cuenta",
-      meta: { displayName: "Nº de cuenta" },
-    },
-    {
-      accessorKey: "codigo",
-      header: "Código",
-      meta: { displayName: "Código" },
-      cell: ({ row }) => {
-        const code = row.getValue("codigo") as string;
-        if (code === "No encontrado") {
-          return (
-            <div className="flex items-center">
-              <span className="text-orange-600 mr-2">⚠️</span>
-              <span className="text-orange-600">{code}</span>
-            </div>
-          );
-        }
-        return <span>{code}</span>;
-      },
-    },
-    {
-      accessorKey: "fecha",
-      header: "Fecha",
-      meta: { displayName: "Fecha" },
-    },
-    {
-      accessorKey: "descripcion",
-      header: "Descripción",
-      meta: { displayName: "Descripción" },
-    },
-    {
-      accessorKey: "comentario",
-      header: "Comentario",
-      meta: { displayName: "Comentario" },
-    },
-    {
-      id: "action",
-      header: "Acción",
-      meta: { displayName: "Acción" },
-      cell: () => {
-        return (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">Editar</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Eye className="h-4 w-4" />
-              <span className="sr-only">Ver</span>
-            </Button>
-          </div>
-        );
-      },
-      enableSorting: false,
-      enableHiding: false,
-    },
-  ];
 
   // Orden predeterminado de columnas según especificación
   const defaultColumnOrder = [
@@ -265,19 +158,84 @@ const Page = () => {
     // Aquí puedes hacer lo que necesites con las filas seleccionadas
   };
 
-  // Función para cargar configuración de columnas
-  const loadColumnSettings = async () => {
-    if (session?.accessToken && profile?.id) {
-      setFilters({
+  // Función para transformar los datos de la API al formato de la UI
+  const transformApiDataToUI = (apiData: Datum[]): PaymentData[] => {
+    return apiData.map((item) => ({
+      id: item.id,
+      estado: item.status,
+      importe: parseFloat(item.amount),
+      banco: item.bank_information?.bank || "N/A",
+      numeroCuenta: item.bank_information?.account_number || "N/A",
+      codigo: item.movement_number || "No encontrado",
+      fecha: item.movement_date,
+      descripcion: item.description,
+      comentario: item.comment || "---",
+    }));
+  };
+
+  // Función para manejar cambios en filtros
+  const handleFiltersChange = async (newFilters: Record<string, any>) => {
+    if (session?.token && profile?.client?.id) {
+      const filterPayload = {
+        page: newFilters.page || 1,
+        limit: parseInt(newFilters.limit) || 10,
+        status: newFilters.status || "ALL",
+        createdAtToFrom: newFilters.dateFrom
+          ? format(newFilters.dateFrom, "yyyy-MM-dd")
+          : format(subDaysHelper(new Date(), 30), "yyyy-MM-dd"),
+        createdAtTo: newFilters.dateTo
+          ? format(newFilters.dateTo, "yyyy-MM-dd")
+          : format(new Date(), "yyyy-MM-dd"),
+      };
+
+      setFilters(filterPayload);
+      await fetchPaymentNetting(
+        session.token,
+        profile.client.id,
+        filterPayload
+      );
+    }
+  };
+
+  // Función para resetear filtros
+  const handleFiltersReset = async () => {
+    if (session?.token && profile?.client?.id) {
+      const defaultFilters = {
         page: 1,
         limit: 10,
-        status: "PENDING",
+        status: "ALL",
+        createdAtToFrom: format(subDaysHelper(new Date(), 30), "yyyy-MM-dd"),
+        createdAtTo: format(new Date(), "yyyy-MM-dd"),
+      };
+
+      setFilters(defaultFilters);
+      await fetchPaymentNetting(
+        session.token,
+        profile.client.id,
+        defaultFilters
+      );
+    }
+  };
+
+  // Función para cargar configuración de columnas
+  const loadColumnSettings = async () => {
+    if (session?.token && profile?.client?.id) {
+      const newFilters = {
+        page: 1,
+        limit: 10,
+        status: "ALL",
         createdAtToFrom: format(subDays(new Date(), 30), "yyyy-MM-dd"),
         createdAtTo: format(new Date(), "yyyy-MM-dd"),
-      });
+      };
+      setFilters(newFilters);
       // Aquí es donde harías la llamada a tu API para cargar la configuración
       console.log("Cargando configuración de columnas desde API");
-      await fetchPaymentNetting(session?.accessToken, profile?.id, filters);
+
+      await fetchPaymentNetting(
+        session?.token,
+        profile?.client?.id,
+        newFilters
+      );
     }
     // Ejemplo: const saved = await api.getColumnSettings('payment-netting');
     // if (saved) {
@@ -294,7 +252,7 @@ const Page = () => {
   // Cargar configuración al montar el componente
   useEffect(() => {
     loadColumnSettings();
-  }, []);
+  }, [session?.token, profile?.id]);
 
   // Manejar cambios en la visibilidad de columnas
   const handleColumnVisibilityChange = (
@@ -343,7 +301,7 @@ const Page = () => {
             enableRowSelection={true}
             hideDefaultControls={true}
             columns={columns}
-            data={sampleData}
+            data={transformApiDataToUI(paymentNettings || [])}
             columnVisibility={columnVisibility}
             onColumnVisibilityChange={handleColumnVisibilityChange}
             columnOrder={columnOrder}
@@ -361,6 +319,10 @@ const Page = () => {
                   onColumnVisibilityChange={handleColumnVisibilityChange}
                   columnOrder={columnOrder}
                   onColumnOrderChange={handleColumnOrderChange}
+                  filterConfig={createPaymentNettingFilterConfig(
+                    handleFiltersChange,
+                    handleFiltersReset
+                  )}
                   trigger={
                     <Button
                       variant="outline"

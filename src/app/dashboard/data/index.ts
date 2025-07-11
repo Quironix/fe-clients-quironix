@@ -357,6 +357,13 @@ export const sidebarData: any = {
             },
           ],
         },
+        {
+          title: "Conciliación de pagos",
+          url: "/dashboard/payment-netting",
+          icon: IconFileCheck,
+          scope: "client.payment_netting",
+          is_parent: true,
+        },
       ],
     },
   ],
