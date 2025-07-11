@@ -85,7 +85,7 @@ const BulkDebtors = () => {
     } catch (error: any) {
       console.error("Error al cargar archivo:", error);
       toast.error(
-        error?.message ||
+        JSON.parse(error.message).message ||
           "Error al cargar el archivo. Por favor intenta nuevamente."
       );
     } finally {

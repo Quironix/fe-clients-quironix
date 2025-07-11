@@ -157,6 +157,15 @@ export const bulkData = async (
       body: formData,
     }
   );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      JSON.stringify({
+        message: error.message || "Error al cargar el archivo",
+        code: "ERROR_BULK_PAYMENTS",
+      })
+    );
+  }
   return response.json();
 };
 
