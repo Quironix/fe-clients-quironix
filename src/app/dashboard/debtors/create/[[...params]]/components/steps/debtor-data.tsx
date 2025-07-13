@@ -213,7 +213,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       },
       metadata: [
         {
-          value: null,
+          value: 0,
           type: "DBT_DEBTOR",
         },
         {
@@ -249,8 +249,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
   useEffect(() => {
     if (dataDebtor?.id) {
-      
-
       const formData: DebtorFormValues = {
         name: dataDebtor.name || "",
         companies: isFactoring
@@ -278,7 +276,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             street: dataDebtor.addresses?.[0]?.street || null,
             city: dataDebtor.addresses?.[0]?.city || null,
             state: dataDebtor.addresses?.[0]?.state || null,
-            country: dataDebtor.addresses?.[0]?.country !== undefined ? dataDebtor.addresses?.[0]?.country : null,
+            country:
+              dataDebtor.addresses?.[0]?.country !== undefined
+                ? dataDebtor.addresses?.[0]?.country
+                : null,
             postal_code: dataDebtor.addresses?.[0]?.postal_code || null,
             is_primary: dataDebtor.addresses?.[0]?.is_primary || true,
           },
@@ -293,7 +294,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           {
             value:
               dataDebtor.metadata?.find((meta) => meta.type === "DBT_DEBTOR")
-                ?.value || null,
+                ?.value || 0,
             type: "DBT_DEBTOR",
           },
           {
@@ -387,41 +388,56 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         ) {
           form.setValue("metadata.2.value", formData.metadata[2].value);
         }
-        
+
         // Establecer country manualmente
-        if (formData.addresses?.[0]?.country !== null && formData.addresses?.[0]?.country !== undefined) {
+        if (
+          formData.addresses?.[0]?.country !== null &&
+          formData.addresses?.[0]?.country !== undefined
+        ) {
           form.setValue("addresses.0.country", formData.addresses[0].country);
         }
 
-        
         // Segundo intento para los Select después de un delay más largo
         setTimeout(() => {
           if (formData.channel !== null && formData.channel !== undefined) {
-            form.setValue("channel", formData.channel, { shouldValidate: true });
+            form.setValue("channel", formData.channel, {
+              shouldValidate: true,
+            });
           }
-          
+
           // Lógica especial para channel_communication
           let channelCommValue = formData.channel_communication;
-          
+
           // Si channel_communication es null/undefined, intentar establecer un valor por defecto válido
           if (channelCommValue === null || channelCommValue === undefined) {
             // Verificar si WHOLESALE está disponible en COMMUNICATION_CHANNEL
-            const wholesaleAvailable = COMMUNICATION_CHANNEL.find(c => c.code === 'WHOLESALE');
+            const wholesaleAvailable = COMMUNICATION_CHANNEL.find(
+              (c) => c.code === "WHOLESALE"
+            );
             if (wholesaleAvailable) {
-              channelCommValue = 'WHOLESALE';
+              channelCommValue = "WHOLESALE";
             } else if (COMMUNICATION_CHANNEL.length > 0) {
               // Si WHOLESALE no está disponible, usar el primer canal disponible
               channelCommValue = COMMUNICATION_CHANNEL[0].code;
             }
           }
-          
+
           if (channelCommValue !== null && channelCommValue !== undefined) {
-            form.setValue("channel_communication", channelCommValue, { shouldValidate: true });
+            form.setValue("channel_communication", channelCommValue, {
+              shouldValidate: true,
+            });
           }
-          
+
           // Segundo intento para country
-          if (formData.addresses?.[0]?.country !== null && formData.addresses?.[0]?.country !== undefined) {
-            form.setValue("addresses.0.country", formData.addresses[0].country, { shouldValidate: true });
+          if (
+            formData.addresses?.[0]?.country !== null &&
+            formData.addresses?.[0]?.country !== undefined
+          ) {
+            form.setValue(
+              "addresses.0.country",
+              formData.addresses[0].country,
+              { shouldValidate: true }
+            );
           }
         }, 300);
       }, 100);
@@ -519,13 +535,14 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           const hasChanges = Object.keys(data).some((key) => {
             const formValue = data[key as keyof typeof data];
             let storeValue = dataDebtor[key as keyof typeof dataDebtor];
-            
+
             // Mapeo especial para channel_communication
-            if (key === 'channel_communication') {
+            if (key === "channel_communication") {
               storeValue = dataDebtor.communication_channel;
             }
 
-            const hasChange = JSON.stringify(formValue) !== JSON.stringify(storeValue);
+            const hasChange =
+              JSON.stringify(formValue) !== JSON.stringify(storeValue);
             return hasChange;
           });
 
@@ -543,13 +560,14 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           const hasChanges = Object.keys(data).some((key) => {
             const formValue = data[key as keyof typeof data];
             let storeValue = dataDebtor[key as keyof typeof dataDebtor];
-            
+
             // Mapeo especial para channel_communication
-            if (key === 'channel_communication') {
+            if (key === "channel_communication") {
               storeValue = dataDebtor.communication_channel;
             }
 
-            const hasChange = JSON.stringify(formValue) !== JSON.stringify(storeValue);
+            const hasChange =
+              JSON.stringify(formValue) !== JSON.stringify(storeValue);
             return hasChange;
           });
 
@@ -621,7 +639,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <section className="space-y-6">
@@ -921,7 +938,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                                 value === "__none__" ? null : value
                               )
                             }
-                            value={field.value !== null && field.value !== undefined ? field.value : "__none__"}
+                            value={
+                              field.value !== null && field.value !== undefined
+                                ? field.value
+                                : "__none__"
+                            }
                             key={field.value}
                           >
                             <SelectTrigger className="w-full">
@@ -960,7 +981,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           onValueChange={(value) =>
                             field.onChange(value === "__none__" ? null : value)
                           }
-                          value={field.value !== null && field.value !== undefined ? field.value : "__none__"}
+                          value={
+                            field.value !== null && field.value !== undefined
+                              ? field.value
+                              : "__none__"
+                          }
                           key={field.value}
                         >
                           <SelectTrigger className="w-full">
