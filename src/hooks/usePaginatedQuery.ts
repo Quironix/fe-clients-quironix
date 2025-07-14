@@ -12,6 +12,7 @@ interface UsePaginatedQueryParams<T> {
   enabled?: boolean;
   initialPage?: number;
   initialLimit?: number;
+  initialSearch?: string;
   staleTime?: number;
   gcTime?: number;
   refetchOnWindowFocus?: boolean;
@@ -35,9 +36,12 @@ interface UsePaginatedQueryReturn<T> {
   currentPage: number;
   currentLimit: number;
   currentSearch: string;
+  debouncedSearch: string;
   // Funciones auxiliares
   invalidateQuery: () => void;
   prefetchNextPage: () => void;
+  // Estados derivados
+  isSearching: boolean;
 }
 
 export const usePaginatedQuery = <T = any>({
@@ -46,20 +50,21 @@ export const usePaginatedQuery = <T = any>({
   enabled = true,
   initialPage = DEFAULT_PAGINATION_PARAMS.page,
   initialLimit = DEFAULT_PAGINATION_PARAMS.limit,
+  initialSearch = "",
   staleTime = 2 * 60 * 1000, // 2 minutos
   gcTime = 5 * 60 * 1000, // 5 minutos
   refetchOnWindowFocus = false,
   retry = 3,
   enablePrefetch = true,
-  searchDebounceMs = 500,
+  searchDebounceMs = 300,
 }: UsePaginatedQueryParams<T>): UsePaginatedQueryReturn<T> => {
   const queryClient = useQueryClient();
 
   // Estados locales para paginación y búsqueda
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [currentLimit, setCurrentLimit] = useState(initialLimit);
-  const [currentSearch, setCurrentSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentSearch, setCurrentSearch] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
 
   // Debounce para la búsqueda
   useEffect(() => {
@@ -153,7 +158,10 @@ export const usePaginatedQuery = <T = any>({
     currentPage,
     currentLimit,
     currentSearch,
+    debouncedSearch,
     invalidateQuery,
     prefetchNextPage,
+    isSearching:
+      currentSearch !== debouncedSearch || (!!debouncedSearch && isLoading),
   };
 };

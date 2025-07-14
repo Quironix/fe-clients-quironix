@@ -9,14 +9,11 @@ import { Main } from "@/app/dashboard/components/main";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useEffect } from "react";
-import { DataTable } from "../../components/data-table";
+import DataTableNormal from "../../components/data-table-normal";
 import LoaderTable from "../../components/loader-table";
 import { columns } from "./components/columns";
 import DTEUploadSection from "./components/dte-upload-section";
 import { useDTEStore } from "./store";
-// import BulkDebtors from "./components/bulk-debtors";
-// import CreateManualDebtor from "./components/create-manual-debtor";
-// import ListDebtors from "./components/list-debtors";
 
 const PageDTE = () => {
   const { dtes, loading, fetchDTE } = useDTEStore();
@@ -42,12 +39,12 @@ const PageDTE = () => {
         />
         <DTEUploadSection />
         <div className="mt-5 border border-gray-200 rounded-md p-3">
-          <DataTable
+          <DataTableNormal
             columns={columns}
             data={dtes as any}
             isLoading={loading}
             loadingComponent={<LoaderTable cols={7} />}
-            emptyMessage="No se encontraron movimientos"
+            emptyMessage="No se encontraron DTEs"
             pageSize={15}
             pageSizeOptions={[15, 20, 25, 30, 40, 50]}
           />

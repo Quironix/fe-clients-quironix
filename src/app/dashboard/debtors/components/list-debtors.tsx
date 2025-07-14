@@ -23,6 +23,7 @@ const ListDebtors = () => {
     currentPage,
     currentLimit,
     currentSearch,
+    isSearching,
   } = useDebtors({
     accessToken: session?.token || "",
     clientId: profile?.client?.id || "",
@@ -30,26 +31,6 @@ const ListDebtors = () => {
     initialLimit: 15,
   });
 
-  const customSearchFunction = (row: any, columnId: string, value: string) => {
-    const searchTerm = value.toLowerCase();
-    const rowData = row.original; // Acceder a los datos originales
-
-    // Buscar en DNI
-    const dni = rowData?.dni?.dni;
-    if (dni && dni.toLowerCase().includes(searchTerm)) return true;
-
-    // Buscar en nombre
-    const name = rowData?.name;
-    if (name && name.toLowerCase().includes(searchTerm)) return true;
-
-    // Buscar en email
-    const email = rowData?.contacts?.[0]?.email;
-    if (email && email.toLowerCase().includes(searchTerm)) return true;
-
-    return false;
-  };
-
-  // Mostrar error si ocurre algún problema
   if (isError) {
     return (
       <div className="space-y-4">
@@ -89,10 +70,11 @@ const ListDebtors = () => {
         pagination={pagination}
         onPaginationChange={handlePaginationChange}
         onSearchChange={handleSearchChange}
-        isServerSideLoading={isLoading}
+        isServerSideLoading={isLoading || isSearching}
         // Configuración de búsqueda
         enableGlobalFilter={true}
         searchPlaceholder="Buscar por DNI, nombre o email..."
+        initialSearchValue={currentSearch}
         // Configuración de carga
         loadingComponent={<LoaderTable cols={7} />}
         emptyMessage="No se encontraron deudores"

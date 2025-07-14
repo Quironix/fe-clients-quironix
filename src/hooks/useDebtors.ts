@@ -12,6 +12,7 @@ interface UseDebtorsParams {
   clientId: string;
   initialPage?: number;
   initialLimit?: number;
+  initialSearch?: string;
 }
 
 interface UseDebtorsReturn {
@@ -29,8 +30,11 @@ interface UseDebtorsReturn {
   currentPage: number;
   currentLimit: number;
   currentSearch: string;
+  debouncedSearch: string;
   // Funciones adicionales
   invalidateDebtors: () => void;
+  // Estados derivados
+  isSearching: boolean;
 }
 
 // Clave base para las queries de deudores
@@ -41,6 +45,7 @@ export const useDebtors = ({
   clientId,
   initialPage = DEFAULT_PAGINATION_PARAMS.page,
   initialLimit = DEFAULT_PAGINATION_PARAMS.limit,
+  initialSearch = "",
 }: UseDebtorsParams): UseDebtorsReturn => {
   // Query function que incluye clientId en la clave
   const queryFn = useCallback(
@@ -62,13 +67,16 @@ export const useDebtors = ({
     currentPage,
     currentLimit,
     currentSearch,
+    debouncedSearch,
     invalidateQuery,
+    isSearching,
   } = usePaginatedQuery({
     queryKey: `${DEBTORS_QUERY_KEY}-${clientId}`,
     queryFn,
     enabled: !!accessToken && !!clientId,
     initialPage,
     initialLimit,
+    initialSearch,
     staleTime: 30 * 1000, // 30 segundos para búsquedas más responsivas
     gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
@@ -89,7 +97,9 @@ export const useDebtors = ({
     currentPage,
     currentLimit,
     currentSearch,
+    debouncedSearch,
     invalidateDebtors: invalidateQuery,
+    isSearching,
   };
 };
 
