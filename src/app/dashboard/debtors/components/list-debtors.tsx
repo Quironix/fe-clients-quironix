@@ -1,22 +1,34 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
-import { useEffect } from "react";
+import { useDebtors } from "@/hooks/useDebtors";
 import { DataTable } from "../../components/data-table";
 import LoaderTable from "../../components/loader-table";
 import { columns } from "../create/[[...params]]/components/steps/columns";
-import { useDebtorsStore } from "../store";
 import { Debtor } from "../types";
 
 const ListDebtors = () => {
   const { session, profile } = useProfileContext();
-  const { debtors, loading, error, fetchDebtors } = useDebtorsStore();
 
-  useEffect(() => {
-    if (session?.token && profile?.client?.id) {
-      fetchDebtors(session?.token, profile?.client?.id);
-    }
-  }, [session?.token, profile?.client?.id, fetchDebtors]);
+  // Usar el nuevo hook useDebtors con paginación del servidor
+  const {
+    debtors,
+    pagination,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    handlePaginationChange,
+    handleSearchChange,
+    currentPage,
+    currentLimit,
+    currentSearch,
+  } = useDebtors({
+    accessToken: session?.token || "",
+    clientId: profile?.client?.id || "",
+    initialPage: 1,
+    initialLimit: 15,
+  });
 
   const customSearchFunction = (row: any, columnId: string, value: string) => {
     const searchTerm = value.toLowerCase();
@@ -38,7 +50,7 @@ const ListDebtors = () => {
   };
 
   // Mostrar error si ocurre algún problema
-  if (error) {
+  if (isError) {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
@@ -50,13 +62,11 @@ const ListDebtors = () => {
               <p className="text-red-600 font-medium mb-2">
                 Error al cargar los deudores
               </p>
-              <p className="text-red-500 text-sm mb-4">{error}</p>
+              <p className="text-red-500 text-sm mb-4">
+                {error?.message || "Error desconocido"}
+              </p>
               <Button
-                onClick={() => {
-                  if (session?.token && profile?.client?.id) {
-                    fetchDebtors(session?.token, profile?.client?.id);
-                  }
-                }}
+                onClick={() => refetch()}
                 variant="outline"
                 className="border-red-200 text-red-600 hover:bg-red-50"
               >
@@ -74,14 +84,20 @@ const ListDebtors = () => {
       <DataTable
         columns={columns}
         data={debtors as Debtor[]}
-        isLoading={loading}
-        loadingComponent={<LoaderTable cols={7} />}
-        emptyMessage="No se encontraron deudores"
+        // Configuración para paginación del servidor
+        enableServerSidePagination={true}
+        pagination={pagination}
+        onPaginationChange={handlePaginationChange}
+        onSearchChange={handleSearchChange}
+        isServerSideLoading={isLoading}
+        // Configuración de búsqueda
         enableGlobalFilter={true}
         searchPlaceholder="Buscar por DNI, nombre o email..."
-        searchableColumns={["dni.dni", "name", "contacts.0.email"]}
-        globalFilterFunction={customSearchFunction}
-        pageSize={15}
+        // Configuración de carga
+        loadingComponent={<LoaderTable cols={7} />}
+        emptyMessage="No se encontraron deudores"
+        // Configuración de paginación
+        pageSize={currentLimit}
         pageSizeOptions={[15, 20, 25, 30, 40, 50]}
       />
     </div>

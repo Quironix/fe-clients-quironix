@@ -1,12 +1,37 @@
 import { BulkDebtorsSchema } from "../types";
+import {
+  DEFAULT_PAGINATION_PARAMS,
+  PaginatedResponse,
+  PaginationParams,
+} from "../types/pagination";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const getDebtors = async (accessToken: string, clientId: string) => {
+export const getDebtors = async (
+  accessToken: string,
+  clientId: string,
+  params?: PaginationParams
+): Promise<PaginatedResponse<any>> => {
   try {
-    const response = await fetch(`${API_URL}/v2/clients/${clientId}/debtors`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const paginationParams = {
+      page: params?.page || DEFAULT_PAGINATION_PARAMS.page,
+      limit: params?.limit || DEFAULT_PAGINATION_PARAMS.limit,
+      ...(params?.search && { search: params.search }),
+    };
+
+    const queryString = new URLSearchParams(
+      Object.entries(paginationParams).map(([key, value]) => [
+        key,
+        value.toString(),
+      ])
+    ).toString();
+
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/debtors?${queryString}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -14,12 +39,15 @@ export const getDebtors = async (accessToken: string, clientId: string) => {
 
     const data = await response.json();
 
-    // Validar que la respuesta tenga la estructura esperada
     if (!data || typeof data !== "object") {
       throw new Error("Respuesta del servidor no válida");
     }
 
-    return data;
+    if (!data.pagination || !Array.isArray(data.data)) {
+      throw new Error("Estructura de respuesta paginada no válida");
+    }
+
+    return data as PaginatedResponse<any>;
   } catch (error) {
     console.error("Error al obtener deudores:", error);
     throw error;

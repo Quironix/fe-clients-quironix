@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import Providers from "./providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,12 +39,14 @@ export default function RootLayout({
           `}
         </Script>
 
-        <SessionProvider>
-          <ProfileProvider>
-            {children}
-            <Toaster position="top-right" />
-          </ProfileProvider>
-        </SessionProvider>
+        <Providers>
+          <SessionProvider>
+            <ProfileProvider>
+              {children}
+              <Toaster position="top-right" />
+            </ProfileProvider>
+          </SessionProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -57,7 +57,7 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
     set({ loading: true, error: null, dataDebtor: {} as Debtor });
     try {
       const response = await getDebtors(accessToken, clientId);
-      const debtorsData = response.data || response.debtors || response || [];
+      const debtorsData = response.data || [];
       set({ debtors: Array.isArray(debtorsData) ? debtorsData : [] });
     } catch (error: any) {
       console.error("Error en fetchDebtors:", error);

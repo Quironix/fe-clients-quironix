@@ -56,6 +56,19 @@ interface DataTableProps<TData, TValue> {
     addMeta: any
   ) => boolean;
   debounceMs?: number;
+  // Nuevas propiedades para paginación del servidor
+  enableServerSidePagination?: boolean;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+  };
+  onPaginationChange?: (page: number, pageSize: number) => void;
+  onSearchChange?: (search: string) => void;
+  isServerSideLoading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -74,6 +87,12 @@ export function DataTable<TData, TValue>({
   searchableColumns,
   globalFilterFunction,
   debounceMs = 300,
+  // Valores por defecto para paginación del servidor
+  enableServerSidePagination = false,
+  pagination,
+  onPaginationChange,
+  onSearchChange,
+  isServerSideLoading = false,
 }: DataTableProps<TData, TValue>) {
   // Estado para el valor de búsqueda
   const [globalFilter, setGlobalFilter] = useState("");
@@ -110,35 +129,80 @@ export function DataTable<TData, TValue>({
   // Debounce para la búsqueda
   useEffect(() => {
     const timer = setTimeout(() => {
-      setGlobalFilter(searchValue);
+      if (enableServerSidePagination && onSearchChange) {
+        // Para paginación del servidor, llamar al callback
+        onSearchChange(searchValue);
+      } else {
+        // Para paginación del cliente, usar filtro local
+        setGlobalFilter(searchValue);
+      }
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  }, [searchValue, debounceMs]);
+  }, [searchValue, debounceMs, enableServerSidePagination, onSearchChange]);
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    globalFilterFn: customGlobalFilterFn,
+    ...(enableServerSidePagination
+      ? {
+          // Configuración para paginación del servidor
+          manualPagination: true,
+          pageCount: pagination?.totalPages || 1,
+        }
+      : {
+          // Configuración para paginación del cliente
+          getPaginationRowModel: getPaginationRowModel(),
+          getFilteredRowModel: getFilteredRowModel(),
+          globalFilterFn: customGlobalFilterFn,
+        }),
     state: {
-      globalFilter,
+      ...(enableServerSidePagination
+        ? {
+            pagination: {
+              pageIndex: (pagination?.page || 1) - 1, // React Table usa 0-based index
+              pageSize: pagination?.limit || pageSize,
+            },
+          }
+        : {
+            globalFilter,
+            pagination: {
+              pageIndex: 0,
+              pageSize,
+            },
+          }),
     },
-    onGlobalFilterChange: setGlobalFilter,
-    initialState: {
-      pagination: {
-        pageSize,
-      },
-    },
+    ...(enableServerSidePagination
+      ? {
+          onPaginationChange: (updater) => {
+            if (typeof updater === "function") {
+              const newPagination = updater({
+                pageIndex: (pagination?.page || 1) - 1,
+                pageSize: pagination?.limit || pageSize,
+              });
+              onPaginationChange?.(
+                newPagination.pageIndex + 1,
+                newPagination.pageSize
+              );
+            }
+          },
+        }
+      : {
+          onGlobalFilterChange: setGlobalFilter,
+        }),
   });
 
   // Función para limpiar la búsqueda
   const clearSearch = () => {
     setSearchValue("");
-    setGlobalFilter("");
-    table.setPageIndex(0);
+    if (enableServerSidePagination) {
+      onSearchChange?.("");
+      onPaginationChange?.(1, pagination?.limit || pageSize);
+    } else {
+      setGlobalFilter("");
+      table.setPageIndex(0);
+    }
   };
 
   return (
@@ -197,7 +261,7 @@ export function DataTable<TData, TValue>({
               ))}
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {isLoading || isServerSideLoading ? (
                 loadingComponent ? (
                   loadingComponent
                 ) : (
@@ -250,37 +314,71 @@ export function DataTable<TData, TValue>({
         {showPagination && (
           <div className="flex items-center justify-between px-2 py-1">
             <div className="text-sm text-muted-foreground">
-              Mostrando{" "}
-              {table.getState().pagination.pageIndex *
-                table.getState().pagination.pageSize +
-                1}{" "}
-              a{" "}
-              {Math.min(
-                (table.getState().pagination.pageIndex + 1) *
-                  table.getState().pagination.pageSize,
-                table.getFilteredRowModel().rows.length
-              )}{" "}
-              de {table.getFilteredRowModel().rows.length} registros
-              {globalFilter &&
-                table.getFilteredRowModel().rows.length !== data.length && (
-                  <span className="text-muted-foreground">
-                    {" "}
-                    (filtrado de {data.length} total)
-                  </span>
-                )}
+              {enableServerSidePagination && pagination ? (
+                <>
+                  Mostrando {(pagination.page - 1) * pagination.limit + 1} a{" "}
+                  {Math.min(
+                    pagination.page * pagination.limit,
+                    pagination.total
+                  )}{" "}
+                  de {pagination.total} registros
+                  {searchValue && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      (filtrado por búsqueda)
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  Mostrando{" "}
+                  {table.getState().pagination.pageIndex *
+                    table.getState().pagination.pageSize +
+                    1}{" "}
+                  a{" "}
+                  {Math.min(
+                    (table.getState().pagination.pageIndex + 1) *
+                      table.getState().pagination.pageSize,
+                    table.getFilteredRowModel().rows.length
+                  )}{" "}
+                  de {table.getFilteredRowModel().rows.length} registros
+                  {globalFilter &&
+                    table.getFilteredRowModel().rows.length !== data.length && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        (filtrado de {data.length} total)
+                      </span>
+                    )}
+                </>
+              )}
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
               <div className="flex items-center space-x-2">
                 <p className="text-sm font-medium">Filas por página</p>
                 <Select
-                  value={`${table.getState().pagination.pageSize}`}
+                  value={`${
+                    enableServerSidePagination && pagination
+                      ? pagination.limit
+                      : table.getState().pagination.pageSize
+                  }`}
                   onValueChange={(value) => {
-                    table.setPageSize(Number(value));
+                    if (enableServerSidePagination) {
+                      onPaginationChange?.(
+                        pagination?.page || 1,
+                        Number(value)
+                      );
+                    } else {
+                      table.setPageSize(Number(value));
+                    }
                   }}
                 >
                   <SelectTrigger className="h-8 w-[70px]">
                     <SelectValue
-                      placeholder={table.getState().pagination.pageSize}
+                      placeholder={
+                        enableServerSidePagination && pagination
+                          ? pagination.limit
+                          : table.getState().pagination.pageSize
+                      }
                     />
                   </SelectTrigger>
                   <SelectContent side="top">
@@ -293,16 +391,32 @@ export function DataTable<TData, TValue>({
                 </Select>
               </div>
               <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Página {table.getState().pagination.pageIndex + 1} de{" "}
-                {table.getPageCount()}
+                Página{" "}
+                {enableServerSidePagination && pagination
+                  ? pagination.page
+                  : table.getState().pagination.pageIndex + 1}{" "}
+                de{" "}
+                {enableServerSidePagination && pagination
+                  ? pagination.totalPages
+                  : table.getPageCount()}
               </div>
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
                   size="icon"
                   className="hidden size-8 lg:flex"
-                  onClick={() => table.setPageIndex(0)}
-                  disabled={!table.getCanPreviousPage()}
+                  onClick={() => {
+                    if (enableServerSidePagination) {
+                      onPaginationChange?.(1, pagination?.limit || pageSize);
+                    } else {
+                      table.setPageIndex(0);
+                    }
+                  }}
+                  disabled={
+                    enableServerSidePagination && pagination
+                      ? !pagination.hasPrevious
+                      : !table.getCanPreviousPage()
+                  }
                 >
                   <span className="sr-only">Ir a la primera página</span>
                   <ChevronsLeft className="h-4 w-4" />
@@ -311,8 +425,21 @@ export function DataTable<TData, TValue>({
                   variant="outline"
                   size="icon"
                   className="size-8"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
+                  onClick={() => {
+                    if (enableServerSidePagination && pagination) {
+                      onPaginationChange?.(
+                        pagination.page - 1,
+                        pagination.limit
+                      );
+                    } else {
+                      table.previousPage();
+                    }
+                  }}
+                  disabled={
+                    enableServerSidePagination && pagination
+                      ? !pagination.hasPrevious
+                      : !table.getCanPreviousPage()
+                  }
                 >
                   <span className="sr-only">Ir a la página anterior</span>
                   <ChevronLeft className="h-4 w-4" />
@@ -321,8 +448,21 @@ export function DataTable<TData, TValue>({
                   variant="outline"
                   size="icon"
                   className="size-8"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
+                  onClick={() => {
+                    if (enableServerSidePagination && pagination) {
+                      onPaginationChange?.(
+                        pagination.page + 1,
+                        pagination.limit
+                      );
+                    } else {
+                      table.nextPage();
+                    }
+                  }}
+                  disabled={
+                    enableServerSidePagination && pagination
+                      ? !pagination.hasNext
+                      : !table.getCanNextPage()
+                  }
                 >
                   <span className="sr-only">Ir a la página siguiente</span>
                   <ChevronRight className="h-4 w-4" />
@@ -331,8 +471,21 @@ export function DataTable<TData, TValue>({
                   variant="outline"
                   size="icon"
                   className="hidden size-8 lg:flex"
-                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                  disabled={!table.getCanNextPage()}
+                  onClick={() => {
+                    if (enableServerSidePagination && pagination) {
+                      onPaginationChange?.(
+                        pagination.totalPages,
+                        pagination.limit
+                      );
+                    } else {
+                      table.setPageIndex(table.getPageCount() - 1);
+                    }
+                  }}
+                  disabled={
+                    enableServerSidePagination && pagination
+                      ? !pagination.hasNext
+                      : !table.getCanNextPage()
+                  }
                 >
                   <span className="sr-only">Ir a la última página</span>
                   <ChevronsRight className="h-4 w-4" />
