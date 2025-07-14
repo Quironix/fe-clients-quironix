@@ -5,7 +5,7 @@ import { Users } from "lucide-react";
 import Image from "next/image";
 import { useEffect } from "react";
 import CreateManual from "../components/create-manual";
-import { DataTable } from "../components/data-table";
+import DataTableNormal from "../components/data-table-normal";
 import Header from "../components/header";
 import LoaderTable from "../components/loader-table";
 import { Main } from "../components/main";
@@ -61,7 +61,7 @@ const CompaniesPage = () => {
           {/* <div className="w-[37.5%] h-full"><BulkDebtors /></div> */}
         </div>
         <div className="mt-5 border border-gray-200 rounded-md p-3">
-          <DataTable
+          <DataTableNormal
             columns={columns}
             data={companies}
             isLoading={loading}

@@ -1,56 +1,152 @@
-import { toast } from "sonner";
 import { create } from "zustand";
-import { deletePayment, getPaymentById } from "../services";
+import {
+  createPayment,
+  deletePayment,
+  getBankInformation,
+  getPaymentById,
+  getPayments,
+  updatePayment,
+} from "../services";
 import { BulkUploadResponse, Payments } from "../types";
 
-interface PaymentState {
-  // Solo mantener funciones que no están relacionadas con paginación
-  // El estado de paginación será manejado por el hook usePayments
-  
-  // Estado individual de Payment
+interface PaymentStore {
   payment: Payments;
-  
-  // Funciones para bulk upload
-  uploadProgress: number;
-  uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
-  bulkUploadErrors: BulkUploadResponse | null;
-  
-  // Funciones existentes que no interfieren con paginación
+  payments: Payments[];
+  loading: boolean;
+  error: string | null;
+  fetchPayments: (
+    accessToken: string,
+    clientId: string,
+    startDate?: string,
+    endDate?: string
+  ) => Promise<void>;
   fetchPaymentById: (
     accessToken: string,
     clientId: string,
-    paymentId: string
+    dteId: string
   ) => Promise<void>;
   deletePayment: (
     accessToken: string,
     clientId: string,
-    paymentId: string
+    dteId: string
   ) => Promise<void>;
-  
-  // Funciones para bulk upload
-  setUploadProgress: (progress: number) => void;
-  setUploadStatus: (status: 'idle' | 'uploading' | 'success' | 'error') => void;
+  bulkUploadErrors: BulkUploadResponse | null;
   setBulkUploadErrors: (errors: BulkUploadResponse) => void;
   clearBulkUploadErrors: () => void;
-  resetUpload: () => void;
   clearPayment: () => void;
+  fetchBankInformation: (
+    accessToken: string,
+    clientId: string
+  ) => Promise<void>;
+  bankInformation: any;
+  createPayment: (
+    accessToken: string,
+    clientId: string,
+    payment: Payments
+  ) => Promise<void>;
+  responseSuccess: any;
+  updatePayment: (
+    accessToken: string,
+    clientId: string,
+    payment: Payments
+  ) => Promise<void>;
 }
 
-export const usePaymentStore = create<PaymentState>((set) => ({
+export const usePaymentStore = create<PaymentStore>((set, get) => ({
   payment: {} as Payments,
-  uploadProgress: 0,
-  uploadStatus: 'idle',
+  payments: [] as Payments[],
+  loading: true,
+  error: null,
   bulkUploadErrors: null,
-  
+  bankInformation: [],
+  responseSuccess: {} as any,
+  createPayment: async (
+    accessToken: string,
+    clientId: string,
+    payment: Payments
+  ) => {
+    set({ loading: true, error: null, payments: [] });
+    try {
+      const response = await createPayment(accessToken, clientId, payment);
+      if (response.statusCode !== 201) {
+        throw new Error(response.message);
+      }
+      set({ responseSuccess: response });
+    } catch (error: any) {
+      console.log("error", error);
+      set({ error: error.message });
+    } finally {
+      get().fetchPayments(accessToken, clientId);
+      set({ loading: false });
+    }
+  },
+  updatePayment: async (
+    accessToken: string,
+    clientId: string,
+    payment: Payments
+  ) => {
+    set({ loading: true, error: null, payments: [] });
+    try {
+      const response = await updatePayment(accessToken, clientId, payment);
+      if (response.statusCode !== 200) {
+        throw new Error("Error al actualizar el pago");
+      }
+      set({ responseSuccess: response });
+      get().fetchPayments(accessToken, clientId);
+      return response;
+    } catch (error: any) {
+      console.log("error", error);
+      set({ error: "ERROR" });
+    } finally {
+      set({ loading: false });
+    }
+  },
+  fetchPayments: async (
+    accessToken: string,
+    clientId: string,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await getPayments(accessToken, clientId, {
+        startDate: startDate || "",
+        endDate: endDate || "",
+      });
+      const paymentsData = response.data || response.payments || response || [];
+      set({ payments: Array.isArray(paymentsData) ? paymentsData : [] });
+    } catch (error: any) {
+      console.error("Error en fetchPayments:", error);
+      const errorMessage =
+        error?.message ||
+        error?.toString() ||
+        "Error desconocido al obtener los DTEs";
+      set({ error: errorMessage });
+    } finally {
+      set({ loading: false });
+    }
+  },
+  deletePayment: async (accessToken: string, clientId: string, id: string) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await deletePayment(accessToken, clientId, id);
+      set({ responseSuccess: response });
+    } catch (error: any) {
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
+      get().fetchPayments(accessToken, clientId);
+    }
+  },
   fetchPaymentById: async (
     accessToken: string,
     clientId: string,
-    paymentId: string
+    dteId: string
   ) => {
+    set({ loading: true, error: null });
     try {
-      set({ payment: {} as Payments });
-      const response = await getPaymentById(accessToken, clientId, paymentId);
-      
+      const response = await getPaymentById(accessToken, clientId, dteId);
+
       if (response && response.data) {
         // Asegurarse de que los valores numéricos sean números
         const formattedPayment = {
@@ -60,28 +156,34 @@ export const usePaymentStore = create<PaymentState>((set) => ({
         };
         set({ payment: formattedPayment });
       } else {
-        toast.error("No se encontró el pago o formato de respuesta inválido");
+        set({
+          error: "No se encontró el pago o formato de respuesta inválido",
+        });
       }
     } catch (error: any) {
-      toast.error("Error al cargar el pago");
-      console.error("Error fetching payment:", error);
+      set({ error: `Error al cargar el pago: ${error.message}` });
+    } finally {
+      set({ loading: false });
     }
   },
-  
-  deletePayment: async (accessToken: string, clientId: string, paymentId: string) => {
+  setBulkUploadErrors: (errors: BulkUploadResponse) => {
+    set({ bulkUploadErrors: errors });
+  },
+  clearBulkUploadErrors: () => {
+    set({ bulkUploadErrors: null });
+  },
+  fetchBankInformation: async (accessToken: string, clientId: string) => {
+    set({ loading: true, error: null });
     try {
-      await deletePayment(accessToken, clientId, paymentId);
-      toast.success("Pago eliminado exitosamente");
+      const response = await getBankInformation(accessToken, clientId);
+      set({ bankInformation: response });
     } catch (error: any) {
-      toast.error("Error al eliminar el pago");
-      console.error("Error deleting payment:", error);
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
     }
   },
-  
-  setUploadProgress: (progress) => set({ uploadProgress: progress }),
-  setUploadStatus: (status) => set({ uploadStatus: status }),
-  setBulkUploadErrors: (errors) => set({ bulkUploadErrors: errors }),
-  clearBulkUploadErrors: () => set({ bulkUploadErrors: null }),
-  resetUpload: () => set({ uploadProgress: 0, uploadStatus: 'idle' }),
-  clearPayment: () => set({ payment: {} as Payments }),
+  clearPayment: () => {
+    set({ payment: {} as Payments });
+  },
 }));

@@ -1,21 +1,14 @@
 import { toast } from "sonner";
 import { create } from "zustand";
-import { deleteDTE, getDTEById } from "../services";
+import { deleteDTE, getDTEById, getDTEs } from "../services";
 import { BulkUploadResponse, DTE } from "../types";
 
-interface DTEState {
-  // Solo mantener funciones que no están relacionadas con paginación
-  // El estado de paginación será manejado por el hook useDTEs
-  
-  // Estado individual de DTE
+interface DTEStore {
   dte: DTE;
-  
-  // Funciones para bulk upload
-  uploadProgress: number;
-  uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
-  bulkUploadErrors: BulkUploadResponse | null;
-  
-  // Funciones existentes que no interfieren con paginación
+  dtes: DTE[];
+  loading: boolean;
+  error: string | null;
+  fetchDTE: (accessToken: string, clientId: string) => Promise<void>;
   fetchDTEById: (
     accessToken: string,
     clientId: string,
@@ -26,49 +19,67 @@ interface DTEState {
     clientId: string,
     dteId: string
   ) => Promise<void>;
-  
-  // Funciones para bulk upload
-  setUploadProgress: (progress: number) => void;
-  setUploadStatus: (status: 'idle' | 'uploading' | 'success' | 'error') => void;
+  bulkUploadErrors: BulkUploadResponse | null;
   setBulkUploadErrors: (errors: BulkUploadResponse) => void;
   clearBulkUploadErrors: () => void;
-  resetUpload: () => void;
 }
 
-export const useDTEStore = create<DTEState>((set) => ({
+export const useDTEStore = create<DTEStore>((set, get) => ({
   dte: {} as DTE,
-  uploadProgress: 0,
-  uploadStatus: 'idle',
+  dtes: [],
+  loading: false,
+  error: null,
   bulkUploadErrors: null,
-  
+  fetchDTE: async (accessToken: string, clientId: string) => {
+    set({ loading: true, error: null, dte: {} as DTE });
+    try {
+      const response = await getDTEs(accessToken, clientId);
+      const dtesData = response.data || response.dtes || response || [];
+      set({ dtes: Array.isArray(dtesData) ? dtesData : [] });
+    } catch (error: any) {
+      const errorMessage =
+        error?.message ||
+        error?.toString() ||
+        "Error desconocido al obtener los DTEs";
+      set({ error: errorMessage });
+    } finally {
+      set({ loading: false });
+    }
+  },
+  deleteDTE: async (accessToken: string, clientId: string, dteId: string) => {
+    set({ loading: true, error: null });
+    try {
+      set({ loading: true });
+      await deleteDTE(accessToken, clientId, dteId);
+      set({ loading: false });
+      toast.success("DTE eliminado exitosamente");
+    } catch (error: any) {
+      set({ error: error.message });
+      toast.error("Error al eliminar el DTE");
+    } finally {
+      get().fetchDTE(accessToken, clientId);
+    }
+  },
   fetchDTEById: async (
     accessToken: string,
     clientId: string,
     dteId: string
   ) => {
+    set({ loading: true, error: null });
     try {
-      set({ dte: {} as DTE });
+      set({ dte: {} as DTE, loading: true });
       const response = await getDTEById(accessToken, clientId, dteId);
       set({ dte: response });
     } catch (error: any) {
-      toast.error("Error al cargar el DTE");
-      console.error("Error fetching DTE:", error);
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
     }
   },
-  
-  deleteDTE: async (accessToken: string, clientId: string, dteId: string) => {
-    try {
-      await deleteDTE(accessToken, clientId, dteId);
-      toast.success("DTE eliminado exitosamente");
-    } catch (error: any) {
-      toast.error("Error al eliminar el DTE");
-      console.error("Error deleting DTE:", error);
-    }
+  setBulkUploadErrors: (errors: BulkUploadResponse) => {
+    set({ bulkUploadErrors: errors });
   },
-  
-  setUploadProgress: (progress) => set({ uploadProgress: progress }),
-  setUploadStatus: (status) => set({ uploadStatus: status }),
-  setBulkUploadErrors: (errors) => set({ bulkUploadErrors: errors }),
-  clearBulkUploadErrors: () => set({ bulkUploadErrors: null }),
-  resetUpload: () => set({ uploadProgress: 0, uploadStatus: 'idle' }),
+  clearBulkUploadErrors: () => {
+    set({ bulkUploadErrors: null });
+  },
 }));
