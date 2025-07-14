@@ -3,27 +3,33 @@ import { Payments } from "../types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+interface PaymentsPaginationParams {
+  page?: number;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
 export const getPayments = async (
   token: string,
   clientId: string,
-  startDate: string,
-  endDate: string
+  params?: PaymentsPaginationParams
 ) => {
-  const params: Record<string, string> = {};
-  if (startDate) {
-    params.startDate = startDate;
-  }
-  if (endDate) {
-    params.endDate = endDate;
-  }
-  const response = await fetch(
-    `${API_URL}/v2/clients/${clientId}/payments?${new URLSearchParams(params).toString()}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const queryParams = new URLSearchParams();
+  
+  if (params?.page) queryParams.append('page', params.page.toString());
+  if (params?.limit) queryParams.append('limit', params.limit.toString());
+  if (params?.startDate) queryParams.append('startDate', params.startDate);
+  if (params?.endDate) queryParams.append('endDate', params.endDate);
+  
+  const queryString = queryParams.toString();
+  const url = `${API_URL}/v2/clients/${clientId}/payments${queryString ? `?${queryString}` : ''}`;
+  
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch payments");

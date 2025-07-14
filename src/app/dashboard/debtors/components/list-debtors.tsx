@@ -65,8 +65,7 @@ const ListDebtors = () => {
       <DataTable
         columns={columns}
         data={debtors as Debtor[]}
-        // Configuración para paginación del servidor
-        enableServerSidePagination={true}
+        // Configuración para paginación del servidor (requerida)
         pagination={pagination}
         onPaginationChange={handlePaginationChange}
         onSearchChange={handleSearchChange}

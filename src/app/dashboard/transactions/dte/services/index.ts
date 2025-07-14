@@ -1,6 +1,11 @@
 import { BulkSchema } from "../types";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+interface DTEPaginationParams {
+  page?: number;
+  limit?: number;
+}
+
 export const bulkData = async (
   accessToken: string,
   clientId: string,
@@ -32,8 +37,20 @@ export const bulkData = async (
   return response.json();
 };
 
-export const getDTEs = async (accessToken: string, clientId: string) => {
-  const response = await fetch(`${API_URL}/v2/clients/${clientId}/invoices`, {
+export const getDTEs = async (
+  accessToken: string, 
+  clientId: string,
+  params?: DTEPaginationParams
+) => {
+  const queryParams = new URLSearchParams();
+  
+  if (params?.page) queryParams.append('page', params.page.toString());
+  if (params?.limit) queryParams.append('limit', params.limit.toString());
+  
+  const queryString = queryParams.toString();
+  const url = `${API_URL}/v2/clients/${clientId}/invoices${queryString ? `?${queryString}` : ''}`;
+  
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",

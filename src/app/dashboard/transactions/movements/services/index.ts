@@ -1,15 +1,29 @@
 import { BulkDebtorsSchema } from "../../../debtors/types";
 import { MovementRequest } from "./types";
 
-export const getAll = async (accessToken: string, clientId: string) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/bank-movements`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
+interface MovementsPaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+export const getAll = async (
+  accessToken: string, 
+  clientId: string,
+  params?: MovementsPaginationParams
+) => {
+  const queryParams = new URLSearchParams();
+  
+  if (params?.page) queryParams.append('page', params.page.toString());
+  if (params?.limit) queryParams.append('limit', params.limit.toString());
+  
+  const queryString = queryParams.toString();
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/bank-movements${queryString ? `?${queryString}` : ''}`;
+  
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch bank movements");
