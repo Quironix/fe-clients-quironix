@@ -50,7 +50,7 @@ const formSchema = z.object({
     .string()
     .min(1, "El número documento sistema externo es requerido"),
   balance: z.number().min(0, "El saldo debe ser mayor a 0"),
-  amount: z.number().min(0, "El monto debe ser mayor a 0"),
+  amount: z.number().min(1, "El monto debe ser mayor a 0"),
   order_number: z.string().min(1, "La orden de compra es requerida"),
   reception_date: z.string().min(1, "La fecha de recepción es requerida"),
   issue_date: z.string().min(1, "La fecha de emisión es requerida"),
