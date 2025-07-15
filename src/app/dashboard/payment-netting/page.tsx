@@ -121,10 +121,10 @@ export default function PaymentNettingPage() {
       </Header>
       <Main>
         <TitleSection
-          title="Roles"
-          description="Aquí puedes ver un resumen de tus roles."
+          title="Compensación de pagos"
+          description="En esta sección podrás realizar la compensación de pagos entre tus clientes y proveedores."
           icon={<FileCheck2 color="white" />}
-          subDescription="Usuarios"
+          subDescription="Compensación de pagos"
         />
         <div className="space-y-6 p-6">
           {/* Header */}
