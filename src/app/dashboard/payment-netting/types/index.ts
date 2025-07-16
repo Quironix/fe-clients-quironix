@@ -5,7 +5,7 @@ export interface PaymentNetting {
   debtor: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'approved' | 'rejected' | 'processing';
+  status: "pending" | "approved" | "rejected" | "processing";
   reference: string;
   paymentMethod: string;
   description?: string;
@@ -34,3 +34,17 @@ export interface PaymentNettingResponse {
   data: PaymentNetting[];
   pagination: PaymentNettingPagination;
 }
+
+// BORRAR \/
+
+export type PaymentData = {
+  id: string;
+  estado: string;
+  importe: number;
+  banco: string;
+  numeroCuenta: string;
+  codigo: string;
+  fecha: string;
+  descripcion: string;
+  comentario: string;
+};

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { PaymentNetting, PaymentNettingResponse, PaymentNettingFilters } from "../types";
+import { useCallback, useEffect, useState } from "react";
+import { PaymentNetting, PaymentNettingFilters } from "../types";
 
 // Mock data para demostración
 const mockPaymentNettings: PaymentNetting[] = [
@@ -134,67 +134,79 @@ export function usePaymentNetting() {
   const [filters, setFilters] = useState<PaymentNettingFilters>({});
 
   // Simular fetch de datos con paginación del servidor
-  const fetchPaymentNettings = useCallback(async (
-    page: number = 1,
-    limit: number = 15,
-    searchFilters: PaymentNettingFilters = {}
-  ) => {
-    setIsServerSideLoading(true);
-    
-    // Simular delay de red
-    await new Promise(resolve => setTimeout(resolve, 300));
+  const fetchPaymentNettings = useCallback(
+    async (
+      page: number = 1,
+      limit: number = 15,
+      searchFilters: PaymentNettingFilters = {}
+    ) => {
+      setIsServerSideLoading(true);
 
-    let filteredData = [...mockPaymentNettings];
+      // Simular delay de red
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-    // Aplicar filtros
-    if (searchFilters.search) {
-      const searchTerm = searchFilters.search.toLowerCase();
-      filteredData = filteredData.filter(item =>
-        item.company.toLowerCase().includes(searchTerm) ||
-        item.debtor.toLowerCase().includes(searchTerm) ||
-        item.reference.toLowerCase().includes(searchTerm) ||
-        item.description?.toLowerCase().includes(searchTerm)
-      );
-    }
+      let filteredData = [...mockPaymentNettings];
 
-    if (searchFilters.status) {
-      filteredData = filteredData.filter(item => item.status === searchFilters.status);
-    }
+      // Aplicar filtros
+      if (searchFilters.search) {
+        const searchTerm = searchFilters.search.toLowerCase();
+        filteredData = filteredData.filter(
+          (item) =>
+            item.company.toLowerCase().includes(searchTerm) ||
+            item.debtor.toLowerCase().includes(searchTerm) ||
+            item.reference.toLowerCase().includes(searchTerm) ||
+            item.description?.toLowerCase().includes(searchTerm)
+        );
+      }
 
-    // Simular paginación del servidor
-    const total = filteredData.length;
-    const totalPages = Math.ceil(total / limit);
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedData = filteredData.slice(startIndex, endIndex);
+      if (searchFilters.status) {
+        filteredData = filteredData.filter(
+          (item) => item.status === searchFilters.status
+        );
+      }
 
-    const newPagination = {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrevious: page > 1,
-    };
+      // Simular paginación del servidor
+      const total = filteredData.length;
+      const totalPages = Math.ceil(total / limit);
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedData = filteredData.slice(startIndex, endIndex);
 
-    setData(paginatedData);
-    setPagination(newPagination);
-    setIsServerSideLoading(false);
-  }, []);
+      const newPagination = {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrevious: page > 1,
+      };
+
+      setData(paginatedData);
+      setPagination(newPagination);
+      setIsServerSideLoading(false);
+    },
+    []
+  );
 
   // Manejar cambio de paginación
-  const handlePaginationChange = useCallback((page: number, pageSize: number) => {
-    fetchPaymentNettings(page, pageSize, filters);
-  }, [fetchPaymentNettings, filters]);
+  const handlePaginationChange = useCallback(
+    (page: number, pageSize: number) => {
+      fetchPaymentNettings(page, pageSize, filters);
+    },
+    [fetchPaymentNettings, filters]
+  );
 
   // Manejar cambio de búsqueda
-  const handleSearchChange = useCallback((search: string) => {
-    if (search === filters.search) return; // Evitar llamadas duplicadas
-    
-    const newFilters = { ...filters, search };
-    setFilters(newFilters);
-    fetchPaymentNettings(1, pagination.limit, newFilters);
-  }, [fetchPaymentNettings, filters, pagination.limit]);
+  const handleSearchChange = useCallback(
+    (search: string) => {
+      if (search === filters.search) return; // Evitar llamadas duplicadas
+
+      const newFilters = { ...filters, search };
+      setFilters(newFilters);
+      fetchPaymentNettings(1, pagination.limit, newFilters);
+    },
+    [fetchPaymentNettings, filters, pagination.limit]
+  );
 
   // Memoizar refetch para evitar re-renders innecesarios
   const refetch = useCallback(() => {

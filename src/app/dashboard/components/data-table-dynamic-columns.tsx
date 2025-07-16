@@ -74,13 +74,7 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
   onPaginationChange: (page: number, pageSize: number) => void;
   onSearchChange?: (search: string) => void;
   isServerSideLoading?: boolean;
-
-  // Nuevas propiedades para gestión dinámica de columnas
-  ctaButton?: {
-    label: string;
-    onClick: () => void;
-    variant?: "default" | "secondary" | "destructive" | "outline";
-  };
+  ctaNode?: React.ReactNode;
   enableColumnFilter?: boolean;
   initialColumnVisibility?: VisibilityState;
   onColumnVisibilityChange?: (visibility: VisibilityState) => void;
@@ -121,7 +115,7 @@ export function DataTableDynamicColumns<TData, TValue>({
   onSearchChange,
   isServerSideLoading = false,
   // Nuevas props para gestión de columnas
-  ctaButton,
+  ctaNode,
   enableColumnFilter = false,
   initialColumnVisibility,
   onColumnVisibilityChange,
@@ -157,9 +151,10 @@ export function DataTableDynamicColumns<TData, TValue>({
   useEffect(() => {
     if (columns.length > 0 && columnOrder.length === 0) {
       const initialOrder = columns
-        .filter(col => (col as any).id !== "select") // Excluir columna de selección
-        .map((col, index) =>
-          (col as any).accessorKey || (col as any).id || `column-${index}`
+        .filter((col) => (col as any).id !== "select") // Excluir columna de selección
+        .map(
+          (col, index) =>
+            (col as any).accessorKey || (col as any).id || `column-${index}`
         );
       setColumnOrder(initialOrder);
     }
@@ -242,8 +237,8 @@ export function DataTableDynamicColumns<TData, TValue>({
     const finalDataColumns = [...orderedDataCols, ...missingCols];
 
     // Siempre agregar la columna de selección al inicio si está habilitada
-    return enableRowSelection 
-      ? [selectionColumn, ...finalDataColumns] 
+    return enableRowSelection
+      ? [selectionColumn, ...finalDataColumns]
       : finalDataColumns;
   }, [columns, columnOrder, enableRowSelection, selectionColumn]);
 
@@ -297,15 +292,15 @@ export function DataTableDynamicColumns<TData, TValue>({
 
     // Resetear orden de columnas también (solo columnas de datos)
     const initialOrder = columns
-      .filter(col => (col as any).id !== "select")
-      .map((col, index) =>
-        (col as any).accessorKey || (col as any).id || `column-${index}`
+      .filter((col) => (col as any).id !== "select")
+      .map(
+        (col, index) =>
+          (col as any).accessorKey || (col as any).id || `column-${index}`
       );
     setColumnOrder(initialOrder);
 
     setIsSheetOpen(false);
   };
-
 
   // Información de paginación del servidor
   const paginationInfo = {
@@ -331,7 +326,8 @@ export function DataTableDynamicColumns<TData, TValue>({
       <div className="space-y-4 mb-4">
         {/* Barra de búsqueda */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center justify-between gap-2 flex-1">
+            {title && <div className="font-bold text-black">{title}</div>}
             {enableGlobalFilter && (
               <div className="relative flex-1 max-w-sm bg-white">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -373,9 +369,9 @@ export function DataTableDynamicColumns<TData, TValue>({
             {enableColumnFilter && (
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Columns className="h-4 w-4 mr-2" />
-                    Columnas
+                  <Button variant="outline">
+                    <Columns className="h-4 w-4 mr-2 text-orange-400" />
+                    Editar tabla
                   </Button>
                 </SheetTrigger>
                 <SheetContent>
@@ -393,7 +389,8 @@ export function DataTableDynamicColumns<TData, TValue>({
                             .find(
                               (col) =>
                                 ((col.columnDef as any).accessorKey === colId ||
-                                col.id === colId) && col.id !== "select"
+                                  col.id === colId) &&
+                                col.id !== "select"
                             )
                         )
                         .filter(Boolean)
@@ -494,15 +491,7 @@ export function DataTableDynamicColumns<TData, TValue>({
             )}
 
             {/* Botón CTA personalizable */}
-            {ctaButton && (
-              <Button
-                variant={ctaButton.variant || "default"}
-                onClick={ctaButton.onClick}
-                size="sm"
-              >
-                {ctaButton.label}
-              </Button>
-            )}
+            {ctaNode && ctaNode}
           </div>
         </div>
 

@@ -1,33 +1,25 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import Language from "@/components/ui/language";
+import { useProfileContext } from "@/context/ProfileContext";
 import { RowSelectionState, VisibilityState } from "@tanstack/react-table";
-import {
-  Archive,
-  Download,
-  Eye,
-  FileCheck2,
-  FileText,
-  Plus,
-  Trash2,
-} from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { Archive, Eye, FileCheck2, Trash2 } from "lucide-react";
+
+import { useSession } from "next-auth/react";
+import { useEffect, useMemo, useState } from "react";
 import { DataTableDynamicColumns } from "../components/data-table-dynamic-columns";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import { columns } from "./components/columns";
 import { usePaymentNetting } from "./hooks/usePaymentNetting";
+import { usePaymentNettingStore } from "./store";
 
 export default function PaymentNettingPage() {
+  const { data: session }: any = useSession();
+  const { profile } = useProfileContext();
   const {
     data,
     isLoading,
@@ -37,6 +29,13 @@ export default function PaymentNettingPage() {
     handleSearchChange,
     refetch,
   } = usePaymentNetting();
+
+  const { fetchPaymentNetting, filters, setFilters, paymentNettings } =
+    usePaymentNettingStore();
+
+  useEffect(() => {
+    fetchPaymentNetting(session?.token, profile?.client_id, filters);
+  }, [session?.token, profile?.client_id, filters]);
 
   // Estado para la visibilidad de columnas (memoizado para evitar re-renders)
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
@@ -63,24 +62,6 @@ export default function PaymentNettingPage() {
     }),
     []
   );
-
-  // Manejar creación de nuevo payment netting (memoizado)
-  const handleCreate = useCallback(() => {
-    console.log("Crear nuevo Payment Netting");
-    // Aquí iría la lógica para abrir modal o navegar a página de creación
-  }, []);
-
-  // Manejar exportación (memoizado)
-  const handleExport = useCallback(() => {
-    console.log("Exportar Payment Nettings");
-    // Aquí iría la lógica para exportar datos
-  }, []);
-
-  // Manejar generación de reporte (memoizado)
-  const handleGenerateReport = useCallback(() => {
-    console.log("Generar reporte");
-    // Aquí iría la lógica para generar reporte
-  }, []);
 
   // Acciones masivas para elementos seleccionados
   const bulkActions = useMemo(
@@ -126,77 +107,55 @@ export default function PaymentNettingPage() {
           icon={<FileCheck2 color="white" />}
           subDescription="Compensación de pagos"
         />
-        <div className="space-y-6 p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                Payment Netting
-              </h1>
-              <p className="text-muted-foreground">
-                Gestiona y visualiza las compensaciones de pagos entre empresas
-                y deudores.
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" onClick={handleExport}>
-                <Download className="mr-2 h-4 w-4" />
-                Exportar
-              </Button>
-              <Button variant="outline" onClick={handleGenerateReport}>
-                <FileText className="mr-2 h-4 w-4" />
-                Reporte
-              </Button>
-              <Button onClick={handleCreate}>
-                <Plus className="mr-2 h-4 w-4" />
-                Nuevo Netting
-              </Button>
-            </div>
-          </div>
 
-          {/* DataTable with Dynamic Columns */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Lista de Payment Nettings</CardTitle>
-              <CardDescription>
-                Visualiza y gestiona las compensaciones de pagos. Puedes
-                personalizar las columnas visibles y su orden.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DataTableDynamicColumns
-                columns={columns}
-                data={data}
-                isLoading={isLoading}
-                isServerSideLoading={isServerSideLoading}
-                pagination={pagination}
-                onPaginationChange={handlePaginationChange}
-                onSearchChange={handleSearchChange}
-                enableGlobalFilter={true}
-                searchPlaceholder="Buscar por empresa, deudor, referencia..."
-                enableColumnFilter={true}
-                initialColumnVisibility={columnVisibility}
-                onColumnVisibilityChange={setColumnVisibility}
-                columnLabels={columnLabels}
-                ctaButton={useMemo(
-                  () => ({
-                    label: "Refrescar",
-                    onClick: refetch,
-                    variant: "outline" as const,
-                  }),
-                  [refetch]
-                )}
-                // Nuevas props para selección de filas
-                enableRowSelection={true}
-                initialRowSelection={rowSelection}
-                onRowSelectionChange={setRowSelection}
-                bulkActions={bulkActions}
-                emptyMessage="No se encontraron payment nettings"
-                className="rounded-lg"
-              />
-            </CardContent>
-          </Card>
-        </div>
+        {/* DataTable with Dynamic Columns */}
+        <Card>
+          <CardContent>
+            <DataTableDynamicColumns
+              columns={columns}
+              data={data}
+              isLoading={isLoading}
+              isServerSideLoading={isServerSideLoading}
+              pagination={pagination}
+              onPaginationChange={handlePaginationChange}
+              onSearchChange={handleSearchChange}
+              enableGlobalFilter={true}
+              searchPlaceholder="Buscar"
+              enableColumnFilter={true}
+              initialColumnVisibility={columnVisibility}
+              onColumnVisibilityChange={setColumnVisibility}
+              columnLabels={columnLabels}
+              ctaNode={
+                <>
+                  <Button
+                    className="bg-orange-400 text-white hover:bg-orange-400/90"
+                    onClick={() => {
+                      console.log("Asignar deudor");
+                    }}
+                  >
+                    Asignar deudor
+                  </Button>
+                  <Button
+                    className="bg-orange-400 text-white hover:bg-orange-400/90"
+                    onClick={() => {
+                      console.log("Generar pago");
+                    }}
+                  >
+                    Generar pago
+                  </Button>
+                </>
+              }
+              // Nuevas props para selección de filas
+              enableRowSelection={true}
+              initialRowSelection={rowSelection}
+              onRowSelectionChange={setRowSelection}
+              bulkActions={bulkActions}
+              emptyMessage="No se encontraron conciliaciones"
+              className="rounded-lg"
+              title="Historial de pagos"
+            />
+          </CardContent>
+        </Card>
       </Main>
     </>
   );
