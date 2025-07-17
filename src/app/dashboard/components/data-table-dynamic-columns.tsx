@@ -77,7 +77,6 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
   ctaNode?: React.ReactNode;
   enableColumnFilter?: boolean;
   initialColumnVisibility?: VisibilityState;
-  onColumnVisibilityChange?: (visibility: VisibilityState) => void;
   columnLabels?: Record<string, string>;
 
   // Propiedades para selección de filas
@@ -92,8 +91,18 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
   }>;
   title?: string;
   description?: string;
-  handleSuccessButton?: () => void;
+  handleSuccessButton?: (config?: ColumnConfiguration) => void | Promise<void>;
+  filterInputs?: React.ReactNode;
+  initialColumnConfiguration?: ColumnConfiguration;
 }
+
+// Interfaz para la configuración de columnas
+interface ColumnConfig {
+  name: string;
+  is_visible: boolean;
+}
+
+type ColumnConfiguration = ColumnConfig[];
 
 export function DataTableDynamicColumns<TData, TValue>({
   columns,
@@ -119,7 +128,6 @@ export function DataTableDynamicColumns<TData, TValue>({
   ctaNode,
   enableColumnFilter = false,
   initialColumnVisibility,
-  onColumnVisibilityChange,
   columnLabels = {},
   // Nuevas props para selección de filas
   enableRowSelection = false,
@@ -128,7 +136,9 @@ export function DataTableDynamicColumns<TData, TValue>({
   bulkActions = [],
   title = "Filtros",
   description = "Selecciona las columnas que deseas mostrar en la tabla.",
-  handleSuccessButton = () => {},
+  handleSuccessButton,
+  filterInputs,
+  initialColumnConfiguration,
 }: DataTableDynamicColumnsProps<TData, TValue>) {
   // Estado para el valor de búsqueda del servidor
   const [searchValue, setSearchValue] = useState(initialSearchValue);
@@ -149,11 +159,10 @@ export function DataTableDynamicColumns<TData, TValue>({
   // Estado para el orden de las columnas (drag & drop básico)
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
 
-  // Inicializar orden de columnas cuando cambien las columnas (solo columnas de datos)
   useEffect(() => {
     if (columns.length > 0 && columnOrder.length === 0) {
       const initialOrder = columns
-        .filter((col) => (col as any).id !== "select") // Excluir columna de selección
+        .filter((col) => (col as any).id !== "select")
         .map(
           (col, index) =>
             (col as any).accessorKey || (col as any).id || `column-${index}`
@@ -161,6 +170,12 @@ export function DataTableDynamicColumns<TData, TValue>({
       setColumnOrder(initialOrder);
     }
   }, [columns, columnOrder.length]);
+
+  useEffect(() => {
+    if (initialColumnConfiguration && initialColumnConfiguration.length > 0) {
+      applyColumnConfiguration(initialColumnConfiguration);
+    }
+  }, [initialColumnConfiguration]);
 
   // Debounce para la búsqueda del servidor
   useEffect(() => {
@@ -172,17 +187,6 @@ export function DataTableDynamicColumns<TData, TValue>({
 
     return () => clearTimeout(timer);
   }, [searchValue, debounceMs, onSearchChange, initialSearchValue]);
-
-  // Manejar cambios en visibilidad de columnas (evitar llamada inicial)
-  const [isFirstRender, setIsFirstRender] = useState(true);
-
-  useEffect(() => {
-    if (isFirstRender) {
-      setIsFirstRender(false);
-      return;
-    }
-    onColumnVisibilityChange?.(columnVisibility);
-  }, [columnVisibility, onColumnVisibilityChange, isFirstRender]);
 
   // Manejar cambios en selección de filas
   useEffect(() => {
@@ -274,37 +278,53 @@ export function DataTableDynamicColumns<TData, TValue>({
     },
   });
 
-  // Función para limpiar la búsqueda del servidor
   const clearSearch = () => {
     setSearchValue("");
     onSearchChange?.("");
     onPaginationChange(1, pagination?.limit || pageSize);
   };
 
-  // Función para resetear configuración de columnas
   const resetColumnConfig = () => {
-    const resetVisibility: VisibilityState = {};
-    table.getAllColumns().forEach((column) => {
-      // No resetear la columna de selección
-      if (column.id !== "select") {
-        resetVisibility[column.id] = true;
-      }
-    });
-    setColumnVisibility(resetVisibility);
-
-    // Resetear orden de columnas también (solo columnas de datos)
-    const initialOrder = columns
+    const defaultConfig: ColumnConfiguration = columns
       .filter((col) => (col as any).id !== "select")
-      .map(
-        (col, index) =>
-          (col as any).accessorKey || (col as any).id || `column-${index}`
-      );
-    setColumnOrder(initialOrder);
-
+      .map((col, index) => ({
+        name: (col as any).accessorKey || (col as any).id || `column-${index}`,
+        is_visible: true,
+      }));
+    applyColumnConfiguration(defaultConfig);
     setIsSheetOpen(false);
   };
 
-  // Información de paginación del servidor
+  const createColumnConfiguration = (): ColumnConfiguration => {
+    return columnOrder.map((columnName) => ({
+      name: columnName,
+      is_visible: columnVisibility[columnName] ?? true,
+    }));
+  };
+
+  const applyColumnConfiguration = (config: ColumnConfiguration) => {
+    const newVisibility: VisibilityState = {};
+    const newOrder: string[] = [];
+    config.forEach((col) => {
+      newVisibility[col.name] = col.is_visible;
+      newOrder.push(col.name);
+    });
+    setColumnVisibility(newVisibility);
+    setColumnOrder(newOrder);
+  };
+
+  const handleApplyConfiguration = async () => {
+    try {
+      const currentConfig: ColumnConfiguration = createColumnConfiguration();
+      if (handleSuccessButton && typeof handleSuccessButton === "function") {
+        await handleSuccessButton(currentConfig);
+      }
+      setIsSheetOpen(false);
+    } catch (error) {
+      console.error("Error al aplicar configuración de columnas:", error);
+    }
+  };
+
   const paginationInfo = {
     currentPage: pagination?.page || 1,
     pageSize: pagination?.limit || pageSize,
@@ -324,9 +344,7 @@ export function DataTableDynamicColumns<TData, TValue>({
 
   return (
     <>
-      {/* Barra de herramientas extendida */}
       <div className="space-y-4 mb-4">
-        {/* Barra de búsqueda */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center justify-between gap-2 flex-1">
             {title && <div className="font-bold text-black">{title}</div>}
@@ -367,7 +385,6 @@ export function DataTableDynamicColumns<TData, TValue>({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Botón para filtrar columnas */}
             {enableColumnFilter && (
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
@@ -383,93 +400,98 @@ export function DataTableDynamicColumns<TData, TValue>({
                   </SheetHeader>
                   <div className="py-6 space-y-4 px-2 overflow-y-auto max-h-[calc(100vh-200px)]">
                     <div className="space-y-2">
-                      {/* Renderizar columnas en el orden personalizado (sin la columna de selección) */}
-                      {columnOrder
-                        .map((colId) =>
-                          table
-                            .getAllColumns()
-                            .find(
-                              (col) =>
-                                ((col.columnDef as any).accessorKey === colId ||
-                                  col.id === colId) &&
-                                col.id !== "select"
-                            )
-                        )
-                        .filter(Boolean)
-                        .filter((column) => column!.getCanHide())
-                        .map((column) => {
-                          if (!column) return null;
+                      {columnOrder.map((colId) => {
+                        const column = columns.find(
+                          (col) =>
+                            (col as any).accessorKey === colId ||
+                            (col as any).id === colId
+                        );
+                        if (!column) return null;
 
-                          const columnLabel =
-                            columnLabels[column.id] ||
-                            (typeof column.columnDef.header === "string"
-                              ? column.columnDef.header
-                              : column.id);
+                        const columnId = colId;
+                        const tableColumn = table
+                          .getAllColumns()
+                          .find(
+                            (col) =>
+                              col.id === columnId ||
+                              (col.columnDef as any).accessorKey === columnId
+                          );
+                        const columnLabel =
+                          columnLabels[columnId] ||
+                          (typeof column.header === "string"
+                            ? column.header
+                            : columnId);
 
-                          const columnId =
-                            (column.columnDef as any).accessorKey || column.id;
+                        return (
+                          <div
+                            key={columnId}
+                            className="group flex items-center justify-between space-x-2 p-3 border rounded-lg bg-background hover:bg-muted/50 transition-colors cursor-grab active:cursor-grabbing"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/plain", columnId);
+                              e.dataTransfer.effectAllowed = "move";
+                            }}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.dataTransfer.dropEffect = "move";
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              const draggedColumnId =
+                                e.dataTransfer.getData("text/plain");
+                              const dropColumnId = columnId;
 
-                          return (
-                            <div
-                              key={column.id}
-                              className="group flex items-center justify-between space-x-2 p-3 border rounded-lg bg-background hover:bg-muted/50 transition-colors cursor-grab active:cursor-grabbing"
-                              draggable
-                              onDragStart={(e) => {
-                                e.dataTransfer.setData("text/plain", columnId);
-                                e.dataTransfer.effectAllowed = "move";
-                              }}
-                              onDragOver={(e) => {
-                                e.preventDefault();
-                                e.dataTransfer.dropEffect = "move";
-                              }}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                const draggedColumnId =
-                                  e.dataTransfer.getData("text/plain");
-                                const dropColumnId = columnId;
-
-                                if (draggedColumnId !== dropColumnId) {
-                                  const newOrder = [...columnOrder];
-                                  const dragIndex =
-                                    newOrder.indexOf(draggedColumnId);
-                                  const dropIndex =
-                                    newOrder.indexOf(dropColumnId);
-
-                                  // Remover elemento de la posición original
+                              if (draggedColumnId !== dropColumnId) {
+                                const newOrder = [...columnOrder];
+                                const dragIndex =
+                                  newOrder.indexOf(draggedColumnId);
+                                const dropIndex =
+                                  newOrder.indexOf(dropColumnId);
+                                if (dragIndex > -1 && dropIndex > -1) {
                                   newOrder.splice(dragIndex, 1);
-                                  // Insertar en la nueva posición
                                   newOrder.splice(
                                     dropIndex,
                                     0,
                                     draggedColumnId
                                   );
-
                                   setColumnOrder(newOrder);
                                 }
-                              }}
-                            >
-                              <div className="flex items-center space-x-3">
-                                <div className="flex items-center opacity-60 group-hover:opacity-100 transition-opacity">
-                                  <Menu className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                                <Checkbox
-                                  id={column.id}
-                                  checked={column.getIsVisible()}
-                                  onCheckedChange={(value) =>
-                                    column.toggleVisibility(!!value)
-                                  }
-                                />
-                                <label
-                                  htmlFor={column.id}
-                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1"
-                                >
-                                  {columnLabel}
-                                </label>
+                              }
+                            }}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="flex items-center opacity-60 group-hover:opacity-100 transition-opacity">
+                                <Menu className="h-4 w-4 text-muted-foreground" />
                               </div>
+                              <Checkbox
+                                id={columnId}
+                                checked={
+                                  tableColumn
+                                    ? tableColumn.getIsVisible()
+                                    : columnVisibility[columnId] !== false
+                                }
+                                onCheckedChange={(value) => {
+                                  if (tableColumn) {
+                                    tableColumn.toggleVisibility(!!value);
+                                  }
+                                  setColumnVisibility((prev) => ({
+                                    ...prev,
+                                    [columnId]: !!value,
+                                  }));
+                                }}
+                              />
+                              <label
+                                htmlFor={columnId}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1"
+                              >
+                                {columnLabel}
+                              </label>
                             </div>
-                          );
-                        })}
+                          </div>
+                        );
+                      })}
                     </div>
+                    {filterInputs && filterInputs}
                   </div>
                   <SheetFooter>
                     <div className="flex gap-2 pt-4">
@@ -481,10 +503,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                         Limpiar
                       </Button>
                       <Button
-                        onClick={() => {
-                          setIsSheetOpen(false);
-                          handleSuccessButton();
-                        }}
+                        onClick={handleApplyConfiguration}
                         className="flex-1"
                       >
                         Aplicar
@@ -494,13 +513,10 @@ export function DataTableDynamicColumns<TData, TValue>({
                 </SheetContent>
               </Sheet>
             )}
-
-            {/* Botón CTA personalizable */}
             {ctaNode && ctaNode}
           </div>
         </div>
 
-        {/* Barra de acciones masivas */}
         {enableRowSelection && Object.keys(rowSelection).length > 0 && (
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="text-sm text-muted-foreground">
@@ -608,7 +624,6 @@ export function DataTableDynamicColumns<TData, TValue>({
           </Table>
         </div>
 
-        {/* Controles de paginación del servidor */}
         {showPagination && (
           <div className="flex items-center justify-between px-2 py-1">
             <div className="text-sm text-muted-foreground">

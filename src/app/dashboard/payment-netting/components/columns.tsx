@@ -166,8 +166,6 @@ export const columns: ColumnDef<PaymentNetting>[] = [
     id: "actions",
     header: "Acción",
     cell: ({ row }) => {
-      const payment = row.original;
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -15,8 +15,10 @@ import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import { columns } from "./components/columns";
+import FilterInputs from "./components/filter";
 import { usePaymentNetting } from "./hooks/usePaymentNetting";
 import { updateReconciliationTableProfile } from "./services";
+import { PaymentNettingFilters } from "./types";
 
 export default function PaymentNettingPage() {
   const { data: session }: any = useSession();
@@ -30,22 +32,35 @@ export default function PaymentNettingPage() {
     handleSearchChange,
     refetch,
   } = usePaymentNetting(session?.token, profile?.client_id, false);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnConfiguration, setColumnConfiguration] = useState<
+    Array<{ name: string; is_visible: boolean }>
+  >([
+    { name: "id", is_visible: false },
+    { name: "status", is_visible: true },
+    { name: "amount", is_visible: true },
+    { name: "bank", is_visible: true },
+    { name: "account_number", is_visible: true },
+    { name: "code", is_visible: true },
+    { name: "description", is_visible: true },
+    { name: "comment", is_visible: true },
+    { name: "date", is_visible: true },
+    { name: "actions", is_visible: true },
+  ]);
+
+  const columnVisibility = useMemo(() => {
+    const visibility: VisibilityState = {};
+    columnConfiguration.forEach((col) => {
+      visibility[col.name] = col.is_visible;
+    });
+    return visibility;
+  }, [columnConfiguration]);
+
   useEffect(() => {
-    if (profile?.profile?.reconciliation_table.length > 0) {
-      setColumnVisibility(profile.profile.reconciliation_table[0]);
-    } else {
-      setColumnVisibility({
-        id: false,
-        status: true,
-        amount: true,
-        bank: true,
-        account_number: true,
-        code: true,
-        description: true,
-        comment: true,
-        actions: true,
-      });
+    if (profile?.profile?.reconciliation_table?.length > 0) {
+      const savedConfig = profile.profile.reconciliation_table;
+      if (Array.isArray(savedConfig)) {
+        setColumnConfiguration(savedConfig);
+      }
     }
   }, [profile?.profile]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -95,18 +110,36 @@ export default function PaymentNettingPage() {
     []
   );
 
-  const handleUpdateColumns = async () => {
-    const response = await updateReconciliationTableProfile({
-      accessToken: session?.token,
-      clientId: profile?.client_id,
-      userId: profile?.id,
-      reconciliationTable: [columnVisibility],
-    });
-    if (response.success) {
-      toast.success(response.message);
-    } else {
-      toast.error(response.message);
+  const handleUpdateColumns = async (
+    config?: Array<{ name: string; is_visible: boolean }>
+  ) => {
+    try {
+      // Usar la configuración recibida o el estado local como fallback
+      const configToSave = config || columnConfiguration;
+
+      const response = await updateReconciliationTableProfile({
+        accessToken: session?.token,
+        clientId: profile?.client_id,
+        userId: profile?.id,
+        reconciliationTable: configToSave,
+      });
+
+      if (response.success) {
+        toast.success(response.message);
+        if (config) {
+          setColumnConfiguration(config);
+        }
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error("Error al actualizar configuración de columnas:", error);
+      toast.error("Error al guardar la configuración de columnas");
     }
+  };
+
+  const handleFilterChange = (filters: PaymentNettingFilters) => {
+    console.log(filters);
   };
 
   return (
@@ -137,7 +170,7 @@ export default function PaymentNettingPage() {
               searchPlaceholder="Buscar"
               enableColumnFilter={true}
               initialColumnVisibility={columnVisibility}
-              onColumnVisibilityChange={setColumnVisibility}
+              initialColumnConfiguration={columnConfiguration}
               columnLabels={columnLabels}
               ctaNode={
                 <>
@@ -168,6 +201,9 @@ export default function PaymentNettingPage() {
               className="rounded-lg"
               title="Historial de pagos"
               handleSuccessButton={handleUpdateColumns}
+              filterInputs={
+                <FilterInputs handleFilterChange={handleFilterChange} />
+              }
             />
           </CardContent>
         </Card>

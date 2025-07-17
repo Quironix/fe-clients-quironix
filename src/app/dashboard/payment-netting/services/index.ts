@@ -75,12 +75,12 @@ export const updateReconciliationTableProfile = async ({
   accessToken,
   clientId,
   userId,
-  reconciliationTable = [],
+  reconciliationTable,
 }: {
   accessToken: string;
   clientId: string;
   userId: string;
-  reconciliationTable: any[];
+  reconciliationTable: Array<{ name: string; is_visible: boolean }>;
 }) => {
   try {
     const response = await fetch(

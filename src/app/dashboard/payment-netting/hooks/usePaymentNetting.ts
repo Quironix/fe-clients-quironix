@@ -7,7 +7,7 @@ import {
   PaymentNetting,
   PaymentNettingFilters,
 } from "../types";
-// Adaptador para transformar respuesta del servicio al formato esperado
+
 const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
   if (!apiData?.data) return [];
   return apiData.data.map((item: any) => ({
@@ -24,9 +24,6 @@ const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
     comment: item.comment || "",
   }));
 };
-
-// Mapear status del API al formato local
-
 const mapApiStatusToLocal = (apiStatus: string): BankMovementStatusEnum => {
   const statusMap: Record<string, BankMovementStatusEnum> = {
     PENDING: BankMovementStatusEnum.PENDING,
@@ -103,10 +100,6 @@ export function usePaymentNetting(
             setData(adaptedData);
             setPagination(newPagination);
           } else {
-            console.error(
-              "Error fetching payment nettings:",
-              apiResponse.message
-            );
             setData([]);
             setPagination({
               page: 1,
@@ -119,7 +112,6 @@ export function usePaymentNetting(
           }
         }
       } catch (error) {
-        console.error("Error in fetchPaymentNettings:", error);
         setData([]);
         setPagination({
           page: 1,
