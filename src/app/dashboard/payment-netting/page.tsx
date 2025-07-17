@@ -114,7 +114,6 @@ export default function PaymentNettingPage() {
     config?: Array<{ name: string; is_visible: boolean }>
   ) => {
     try {
-      // Usar la configuración recibida o el estado local como fallback
       const configToSave = config || columnConfiguration;
 
       const response = await updateReconciliationTableProfile({
@@ -128,6 +127,15 @@ export default function PaymentNettingPage() {
         toast.success(response.message);
         if (config) {
           setColumnConfiguration(config);
+        }
+
+        const storedProfile = localStorage.getItem("profile");
+        if (storedProfile) {
+          const parsedProfile = JSON.parse(storedProfile);
+          if (parsedProfile?.profile) {
+            parsedProfile.profile.reconciliation_table = configToSave;
+            localStorage.setItem("profile", JSON.stringify(parsedProfile));
+          }
         }
       } else {
         toast.error(response.message);
