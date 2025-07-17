@@ -9,13 +9,14 @@ import { Archive, Eye, FileCheck2, Trash2 } from "lucide-react";
 
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { DataTableDynamicColumns } from "../components/data-table-dynamic-columns";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import { columns } from "./components/columns";
 import { usePaymentNetting } from "./hooks/usePaymentNetting";
-import { usePaymentNettingStore } from "./store";
+import { updateReconciliationTableProfile } from "./services";
 
 export default function PaymentNettingPage() {
   const { data: session }: any = useSession();
@@ -28,42 +29,41 @@ export default function PaymentNettingPage() {
     handlePaginationChange,
     handleSearchChange,
     refetch,
-  } = usePaymentNetting();
-
-  const { fetchPaymentNetting, filters, setFilters, paymentNettings } =
-    usePaymentNettingStore();
-
+  } = usePaymentNetting(session?.token, profile?.client_id, false);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   useEffect(() => {
-    fetchPaymentNetting(session?.token, profile?.client_id, filters);
-  }, [session?.token, profile?.client_id, filters]);
-
-  // Estado para la visibilidad de columnas (memoizado para evitar re-renders)
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    () => ({
-      description: false, // Ocultar descripción por defecto
-    })
-  );
-
-  // Estado para la selección de filas
+    if (profile?.profile?.reconciliation_table.length > 0) {
+      setColumnVisibility(profile.profile.reconciliation_table[0]);
+    } else {
+      setColumnVisibility({
+        id: false,
+        status: true,
+        amount: true,
+        bank: true,
+        account_number: true,
+        code: true,
+        description: true,
+        comment: true,
+        actions: true,
+      });
+    }
+  }, [profile?.profile]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-
-  // Labels amigables para las columnas (memoizado)
   const columnLabels = useMemo(
     () => ({
-      reference: "Referencia",
-      date: "Fecha",
-      company: "Empresa",
-      debtor: "Deudor",
-      amount: "Monto",
+      id: "ID",
       status: "Estado",
-      paymentMethod: "Método de Pago",
+      amount: "Importe",
+      bank: "Banco",
+      account_number: "Nº de cuenta",
+      code: "Código",
       description: "Descripción",
+      comment: "Comentario",
       actions: "Acciones",
     }),
     []
   );
 
-  // Acciones masivas para elementos seleccionados
   const bulkActions = useMemo(
     () => [
       {
@@ -94,6 +94,20 @@ export default function PaymentNettingPage() {
     ],
     []
   );
+
+  const handleUpdateColumns = async () => {
+    const response = await updateReconciliationTableProfile({
+      accessToken: session?.token,
+      clientId: profile?.client_id,
+      userId: profile?.id,
+      reconciliationTable: [columnVisibility],
+    });
+    if (response.success) {
+      toast.success(response.message);
+    } else {
+      toast.error(response.message);
+    }
+  };
 
   return (
     <>
@@ -153,6 +167,7 @@ export default function PaymentNettingPage() {
               emptyMessage="No se encontraron conciliaciones"
               className="rounded-lg"
               title="Historial de pagos"
+              handleSuccessButton={handleUpdateColumns}
             />
           </CardContent>
         </Card>

@@ -1,16 +1,14 @@
 export interface PaymentNetting {
   id: string;
-  date: string;
-  company: string;
-  debtor: string;
   amount: number;
-  currency: string;
-  status: "pending" | "approved" | "rejected" | "processing";
-  reference: string;
-  paymentMethod: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
+  bank_information: {
+    bank: string;
+    account_number: string;
+  };
+  status: BankMovementStatusEnum;
+  code: string;
+  description: string;
+  comment: string;
 }
 
 export interface PaymentNettingFilters {
@@ -19,6 +17,9 @@ export interface PaymentNettingFilters {
   company?: string;
   dateFrom?: string;
   dateTo?: string;
+  // Alias para compatibilidad con el servicio API
+  createdAtFrom?: string;
+  createdAtTo?: string;
 }
 
 export interface PaymentNettingPagination {
@@ -48,3 +49,15 @@ export type PaymentData = {
   descripcion: string;
   comentario: string;
 };
+
+export enum BankMovementStatusEnum {
+  PENDING = "Pendiente",
+  PROCESSED = "Procesado",
+  REJECTED = "Rechazado",
+  ELIMINATED = "Eliminado",
+  COMPENSATED = "Compensado",
+  REJECTED_DUPLICATE = "Rechazado duplicado",
+  ELIMINATED_NEGATIVE_AMOUNT = "Eliminado monto negativo",
+  ELIMINATED_NO_TRACKING = "Eliminado sin tracking",
+  MAINTAINED = "Mantenido",
+}

@@ -92,6 +92,7 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
   }>;
   title?: string;
   description?: string;
+  handleSuccessButton?: () => void;
 }
 
 export function DataTableDynamicColumns<TData, TValue>({
@@ -127,6 +128,7 @@ export function DataTableDynamicColumns<TData, TValue>({
   bulkActions = [],
   title = "Filtros",
   description = "Selecciona las columnas que deseas mostrar en la tabla.",
+  handleSuccessButton = () => {},
 }: DataTableDynamicColumnsProps<TData, TValue>) {
   // Estado para el valor de búsqueda del servidor
   const [searchValue, setSearchValue] = useState(initialSearchValue);
@@ -479,7 +481,10 @@ export function DataTableDynamicColumns<TData, TValue>({
                         Limpiar
                       </Button>
                       <Button
-                        onClick={() => setIsSheetOpen(false)}
+                        onClick={() => {
+                          setIsSheetOpen(false);
+                          handleSuccessButton();
+                        }}
                         className="flex-1"
                       >
                         Aplicar

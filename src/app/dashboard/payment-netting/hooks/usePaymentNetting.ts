@@ -1,125 +1,53 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { PaymentNetting, PaymentNettingFilters } from "../types";
+import { getPaymentNetting } from "../services";
+import {
+  BankMovementStatusEnum,
+  PaymentNetting,
+  PaymentNettingFilters,
+} from "../types";
+// Adaptador para transformar respuesta del servicio al formato esperado
+const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
+  if (!apiData?.data) return [];
+  return apiData.data.map((item: any) => ({
+    id: item.id,
+    date: item?.created_at
+      ? new Date(item.created_at).toISOString().split("T")[0]
+      : "",
+    amount: parseFloat(item.amount) || 0,
+    bank: item.bank_information.bank || "",
+    account_number: item.bank_information.account_number || "",
+    status: mapApiStatusToLocal(item.status),
+    code: "-",
+    description: item.description || "",
+    comment: item.comment || "",
+  }));
+};
 
-// Mock data para demostración
-const mockPaymentNettings: PaymentNetting[] = [
-  {
-    id: "PN-001",
-    date: "2024-01-15",
-    company: "Tech Solutions S.A.",
-    debtor: "Juan Pérez",
-    amount: 150000,
-    currency: "CLP",
-    status: "approved",
-    reference: "REF-001-2024",
-    paymentMethod: "Transferencia Bancaria",
-    description: "Pago netting enero 2024",
-    createdAt: "2024-01-15T10:30:00Z",
-    updatedAt: "2024-01-15T14:20:00Z",
-  },
-  {
-    id: "PN-002",
-    date: "2024-01-16",
-    company: "Innovate Corp",
-    debtor: "María González",
-    amount: 75000,
-    currency: "CLP",
-    status: "pending",
-    reference: "REF-002-2024",
-    paymentMethod: "Cheque",
-    description: "Compensación de deudas Q1",
-    createdAt: "2024-01-16T09:15:00Z",
-    updatedAt: "2024-01-16T09:15:00Z",
-  },
-  {
-    id: "PN-003",
-    date: "2024-01-17",
-    company: "Global Trading Ltd.",
-    debtor: "Carlos Rodríguez",
-    amount: 320000,
-    currency: "CLP",
-    status: "processing",
-    reference: "REF-003-2024",
-    paymentMethod: "Transferencia Bancaria",
-    description: "Netting operaciones comerciales",
-    createdAt: "2024-01-17T11:45:00Z",
-    updatedAt: "2024-01-17T16:30:00Z",
-  },
-  {
-    id: "PN-004",
-    date: "2024-01-18",
-    company: "StartUp Ventures",
-    debtor: "Ana Silva",
-    amount: 45000,
-    currency: "CLP",
-    status: "rejected",
-    reference: "REF-004-2024",
-    paymentMethod: "Transferencia Bancaria",
-    description: "Ajuste de cuentas enero",
-    createdAt: "2024-01-18T08:20:00Z",
-    updatedAt: "2024-01-18T13:10:00Z",
-  },
-  {
-    id: "PN-005",
-    date: "2024-01-19",
-    company: "Enterprise Solutions",
-    debtor: "Roberto Morales",
-    amount: 180000,
-    currency: "CLP",
-    status: "approved",
-    reference: "REF-005-2024",
-    paymentMethod: "Vale Vista",
-    description: "Compensación múltiple Q1",
-    createdAt: "2024-01-19T14:00:00Z",
-    updatedAt: "2024-01-19T17:45:00Z",
-  },
-  {
-    id: "PN-006",
-    date: "2024-01-20",
-    company: "Digital Marketing Pro",
-    debtor: "Claudia Herrera",
-    amount: 95000,
-    currency: "CLP",
-    status: "pending",
-    reference: "REF-006-2024",
-    paymentMethod: "Transferencia Bancaria",
-    description: "Netting servicios digitales",
-    createdAt: "2024-01-20T10:30:00Z",
-    updatedAt: "2024-01-20T10:30:00Z",
-  },
-  {
-    id: "PN-007",
-    date: "2024-01-21",
-    company: "Construction Works",
-    debtor: "Felipe Vargas",
-    amount: 450000,
-    currency: "CLP",
-    status: "approved",
-    reference: "REF-007-2024",
-    paymentMethod: "Transferencia Bancaria",
-    description: "Compensación proyecto construcción",
-    createdAt: "2024-01-21T09:00:00Z",
-    updatedAt: "2024-01-21T15:20:00Z",
-  },
-  {
-    id: "PN-008",
-    date: "2024-01-22",
-    company: "Retail Solutions",
-    debtor: "Lorena Castillo",
-    amount: 67000,
-    currency: "CLP",
-    status: "processing",
-    reference: "REF-008-2024",
-    paymentMethod: "Cheque",
-    description: "Netting retail enero",
-    createdAt: "2024-01-22T12:15:00Z",
-    updatedAt: "2024-01-22T16:00:00Z",
-  },
-];
+// Mapear status del API al formato local
 
-export function usePaymentNetting() {
+const mapApiStatusToLocal = (apiStatus: string): BankMovementStatusEnum => {
+  const statusMap: Record<string, BankMovementStatusEnum> = {
+    PENDING: BankMovementStatusEnum.PENDING,
+    PROCESSED: BankMovementStatusEnum.PROCESSED,
+    REJECTED: BankMovementStatusEnum.REJECTED,
+    ELIMINATED: BankMovementStatusEnum.ELIMINATED,
+    COMPENSATED: BankMovementStatusEnum.COMPENSATED,
+    REJECTED_DUPLICATE: BankMovementStatusEnum.REJECTED_DUPLICATE,
+    ELIMINATED_NEGATIVE_AMOUNT:
+      BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT,
+    ELIMINATED_NO_TRACKING: BankMovementStatusEnum.ELIMINATED_NO_TRACKING,
+    MAINTAINED: BankMovementStatusEnum.MAINTAINED,
+  };
+  return statusMap[apiStatus?.toUpperCase()] || "pending";
+};
+
+export function usePaymentNetting(
+  accessToken?: string,
+  clientId?: string,
+  useMockData: boolean = false
+) {
   const [data, setData] = useState<PaymentNetting[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isServerSideLoading, setIsServerSideLoading] = useState(false);
@@ -133,7 +61,7 @@ export function usePaymentNetting() {
   });
   const [filters, setFilters] = useState<PaymentNettingFilters>({});
 
-  // Simular fetch de datos con paginación del servidor
+  // Fetch de datos con servicio real o mock
   const fetchPaymentNettings = useCallback(
     async (
       page: number = 1,
@@ -142,50 +70,70 @@ export function usePaymentNetting() {
     ) => {
       setIsServerSideLoading(true);
 
-      // Simular delay de red
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      try {
+        // Usar servicio real
+        if (accessToken && clientId) {
+          const apiResponse = await getPaymentNetting({
+            accessToken: accessToken || "",
+            clientId: clientId || "",
+            page,
+            limit,
+            status: searchFilters.status || "ALL",
+            createdAtToFrom:
+              searchFilters.dateFrom || searchFilters.createdAtFrom,
+            createdAtTo: searchFilters.dateTo || searchFilters.createdAtTo,
+          });
 
-      let filteredData = [...mockPaymentNettings];
+          if (apiResponse.data.length > 0) {
+            const adaptedData = adaptApiResponseToPaymentNetting(apiResponse);
 
-      // Aplicar filtros
-      if (searchFilters.search) {
-        const searchTerm = searchFilters.search.toLowerCase();
-        filteredData = filteredData.filter(
-          (item) =>
-            item.company.toLowerCase().includes(searchTerm) ||
-            item.debtor.toLowerCase().includes(searchTerm) ||
-            item.reference.toLowerCase().includes(searchTerm) ||
-            item.description?.toLowerCase().includes(searchTerm)
-        );
+            // Calcular paginación desde la respuesta del API
+            const total = apiResponse.pagination?.total || 0;
+            const totalPages = Math.ceil(total / limit);
+
+            const newPagination = {
+              page,
+              limit,
+              total,
+              totalPages,
+              hasNext: page < totalPages,
+              hasPrevious: page > 1,
+            };
+
+            setData(adaptedData);
+            setPagination(newPagination);
+          } else {
+            console.error(
+              "Error fetching payment nettings:",
+              apiResponse.message
+            );
+            setData([]);
+            setPagination({
+              page: 1,
+              limit,
+              total: 0,
+              totalPages: 1,
+              hasNext: false,
+              hasPrevious: false,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error in fetchPaymentNettings:", error);
+        setData([]);
+        setPagination({
+          page: 1,
+          limit,
+          total: 0,
+          totalPages: 1,
+          hasNext: false,
+          hasPrevious: false,
+        });
+      } finally {
+        setIsServerSideLoading(false);
       }
-
-      if (searchFilters.status) {
-        filteredData = filteredData.filter(
-          (item) => item.status === searchFilters.status
-        );
-      }
-
-      // Simular paginación del servidor
-      const total = filteredData.length;
-      const totalPages = Math.ceil(total / limit);
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedData = filteredData.slice(startIndex, endIndex);
-
-      const newPagination = {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrevious: page > 1,
-      };
-
-      setData(paginatedData);
-      setPagination(newPagination);
-      setIsServerSideLoading(false);
     },
-    []
+    [accessToken, clientId, useMockData]
   );
 
   // Manejar cambio de paginación
