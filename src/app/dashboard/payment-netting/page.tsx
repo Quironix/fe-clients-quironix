@@ -8,17 +8,16 @@ import { RowSelectionState, VisibilityState } from "@tanstack/react-table";
 import { Archive, Eye, FileCheck2, Trash2 } from "lucide-react";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { DataTableDynamicColumns } from "../components/data-table-dynamic-columns";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import { columns } from "./components/columns";
-import FilterInputs from "./components/filter";
+import FilterInputs, { FilterInputsRef } from "./components/filter";
 import { usePaymentNetting } from "./hooks/usePaymentNetting";
 import { updateReconciliationTableProfile } from "./services";
-import { PaymentNettingFilters } from "./types";
 
 export default function PaymentNettingPage() {
   const { data: session }: any = useSession();
@@ -28,10 +27,15 @@ export default function PaymentNettingPage() {
     isLoading,
     isServerSideLoading,
     pagination,
+    filters,
     handlePaginationChange,
     handleSearchChange,
+    handleFilterChange,
     refetch,
   } = usePaymentNetting(session?.token, profile?.client_id, false);
+  const filterInputsRef = useRef<FilterInputsRef>(null);
+  const [isApplyingFilters, setIsApplyingFilters] = useState(false);
+
   const [columnConfiguration, setColumnConfiguration] = useState<
     Array<{ name: string; is_visible: boolean }>
   >([
@@ -101,7 +105,6 @@ export default function PaymentNettingPage() {
         label: "Eliminar",
         onClick: (selectedRows: any[]) => {
           console.log("Eliminar elementos seleccionados:", selectedRows);
-          // Aquí se podría mostrar un modal de confirmación
         },
         variant: "destructive" as const,
         icon: <Trash2 className="h-4 w-4" />,
@@ -113,6 +116,7 @@ export default function PaymentNettingPage() {
   const handleUpdateColumns = async (
     config?: Array<{ name: string; is_visible: boolean }>
   ) => {
+    setIsApplyingFilters(true);
     try {
       const configToSave = config || columnConfiguration;
 
@@ -124,7 +128,6 @@ export default function PaymentNettingPage() {
       });
 
       if (response.success) {
-        toast.success(response.message);
         if (config) {
           setColumnConfiguration(config);
         }
@@ -137,17 +140,20 @@ export default function PaymentNettingPage() {
             localStorage.setItem("profile", JSON.stringify(parsedProfile));
           }
         }
+
+        if (filterInputsRef.current) {
+          const currentFilters = filterInputsRef.current.getCurrentFilters();
+          await handleFilterChange(currentFilters);
+        }
       } else {
         toast.error(response.message);
       }
     } catch (error) {
       console.error("Error al actualizar configuración de columnas:", error);
       toast.error("Error al guardar la configuración de columnas");
+    } finally {
+      setIsApplyingFilters(false);
     }
-  };
-
-  const handleFilterChange = (filters: PaymentNettingFilters) => {
-    console.log(filters);
   };
 
   return (
@@ -163,7 +169,6 @@ export default function PaymentNettingPage() {
           subDescription="Compensación de pagos"
         />
 
-        {/* DataTable with Dynamic Columns */}
         <Card>
           <CardContent>
             <DataTableDynamicColumns
@@ -200,7 +205,6 @@ export default function PaymentNettingPage() {
                   </Button>
                 </>
               }
-              // Nuevas props para selección de filas
               enableRowSelection={true}
               initialRowSelection={rowSelection}
               onRowSelectionChange={setRowSelection}
@@ -209,7 +213,14 @@ export default function PaymentNettingPage() {
               className="rounded-lg"
               title="Historial de pagos"
               handleSuccessButton={handleUpdateColumns}
-              filterInputs={<FilterInputs />}
+              filterInputs={
+                <FilterInputs
+                  ref={filterInputsRef}
+                  onFilterChange={handleFilterChange}
+                  initialFilters={filters}
+                />
+              }
+              isApplyingFilters={isApplyingFilters}
             />
           </CardContent>
         </Card>

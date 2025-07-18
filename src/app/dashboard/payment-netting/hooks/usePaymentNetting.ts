@@ -58,7 +58,6 @@ export function usePaymentNetting(
   });
   const [filters, setFilters] = useState<PaymentNettingFilters>({});
 
-  // Fetch de datos con servicio real o mock
   const fetchPaymentNettings = useCallback(
     async (
       page: number = 1,
@@ -68,7 +67,6 @@ export function usePaymentNetting(
       setIsServerSideLoading(true);
 
       try {
-        // Usar servicio real
         if (accessToken && clientId) {
           const apiResponse = await getPaymentNetting({
             accessToken: accessToken || "",
@@ -84,7 +82,6 @@ export function usePaymentNetting(
           if (apiResponse.data.length > 0) {
             const adaptedData = adaptApiResponseToPaymentNetting(apiResponse);
 
-            // Calcular paginación desde la respuesta del API
             const total = apiResponse.pagination?.total || 0;
             const totalPages = Math.ceil(total / limit);
 
@@ -128,7 +125,6 @@ export function usePaymentNetting(
     [accessToken, clientId, useMockData]
   );
 
-  // Manejar cambio de paginación
   const handlePaginationChange = useCallback(
     (page: number, pageSize: number) => {
       fetchPaymentNettings(page, pageSize, filters);
@@ -136,10 +132,9 @@ export function usePaymentNetting(
     [fetchPaymentNettings, filters]
   );
 
-  // Manejar cambio de búsqueda
   const handleSearchChange = useCallback(
     (search: string) => {
-      if (search === filters.search) return; // Evitar llamadas duplicadas
+      if (search === filters.search) return;
 
       const newFilters = { ...filters, search };
       setFilters(newFilters);
@@ -148,12 +143,18 @@ export function usePaymentNetting(
     [fetchPaymentNettings, filters, pagination.limit]
   );
 
-  // Memoizar refetch para evitar re-renders innecesarios
+  const handleFilterChange = useCallback(
+    (newFilters: PaymentNettingFilters) => {
+      setFilters(newFilters);
+      fetchPaymentNettings(1, pagination.limit, newFilters);
+    },
+    [fetchPaymentNettings, pagination.limit]
+  );
+
   const refetch = useCallback(() => {
     fetchPaymentNettings(pagination.page, pagination.limit, filters);
   }, [fetchPaymentNettings, pagination.page, pagination.limit, filters]);
 
-  // Cargar datos iniciales
   useEffect(() => {
     setIsLoading(true);
     fetchPaymentNettings().finally(() => setIsLoading(false));
@@ -167,6 +168,7 @@ export function usePaymentNetting(
     filters,
     handlePaginationChange,
     handleSearchChange,
+    handleFilterChange,
     refetch,
   };
 }

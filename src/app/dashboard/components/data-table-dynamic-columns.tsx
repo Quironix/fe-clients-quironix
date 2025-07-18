@@ -57,12 +57,10 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
   pageSizeOptions?: number[];
   showPagination?: boolean;
   className?: string;
-  // Propiedades para búsqueda del servidor
   enableGlobalFilter?: boolean;
   searchPlaceholder?: string;
   debounceMs?: number;
   initialSearchValue?: string;
-  // Propiedades para paginación del servidor (opcional durante loading)
   pagination?: {
     page: number;
     limit: number;
@@ -78,8 +76,6 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
   enableColumnFilter?: boolean;
   initialColumnVisibility?: VisibilityState;
   columnLabels?: Record<string, string>;
-
-  // Propiedades para selección de filas
   enableRowSelection?: boolean;
   initialRowSelection?: RowSelectionState;
   onRowSelectionChange?: (selection: RowSelectionState) => void;
@@ -94,9 +90,9 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
   handleSuccessButton?: (config?: ColumnConfiguration) => void | Promise<void>;
   filterInputs?: React.ReactNode;
   initialColumnConfiguration?: ColumnConfiguration;
+  isApplyingFilters?: boolean;
 }
 
-// Interfaz para la configuración de columnas
 interface ColumnConfig {
   name: string;
   is_visible: boolean;
@@ -114,22 +110,18 @@ export function DataTableDynamicColumns<TData, TValue>({
   pageSizeOptions = [15, 20, 25, 30, 40, 50],
   showPagination = true,
   className = "",
-  // Valores por defecto para búsqueda del servidor
   enableGlobalFilter = false,
   searchPlaceholder = "Buscar...",
   debounceMs = 300,
   initialSearchValue = "",
-  // Paginación del servidor (requerida)
   pagination,
   onPaginationChange,
   onSearchChange,
   isServerSideLoading = false,
-  // Nuevas props para gestión de columnas
   ctaNode,
   enableColumnFilter = false,
   initialColumnVisibility,
   columnLabels = {},
-  // Nuevas props para selección de filas
   enableRowSelection = false,
   initialRowSelection,
   onRowSelectionChange,
@@ -139,24 +131,20 @@ export function DataTableDynamicColumns<TData, TValue>({
   handleSuccessButton,
   filterInputs,
   initialColumnConfiguration,
+  isApplyingFilters = false,
 }: DataTableDynamicColumnsProps<TData, TValue>) {
-  // Estado para el valor de búsqueda del servidor
   const [searchValue, setSearchValue] = useState(initialSearchValue);
 
-  // Estado para la visibilidad de columnas
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     initialColumnVisibility || {}
   );
 
-  // Estado para la selección de filas
   const [rowSelection, setRowSelection] = useState<RowSelectionState>(
     initialRowSelection || {}
   );
 
-  // Estado para el Sheet de configuración de columnas
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  // Estado para el orden de las columnas (drag & drop básico)
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
 
   useEffect(() => {
@@ -177,9 +165,8 @@ export function DataTableDynamicColumns<TData, TValue>({
     }
   }, [initialColumnConfiguration]);
 
-  // Debounce para la búsqueda del servidor
   useEffect(() => {
-    if (searchValue === initialSearchValue) return; // Evitar llamada inicial
+    if (searchValue === initialSearchValue) return;
 
     const timer = setTimeout(() => {
       onSearchChange?.(searchValue);
@@ -188,12 +175,10 @@ export function DataTableDynamicColumns<TData, TValue>({
     return () => clearTimeout(timer);
   }, [searchValue, debounceMs, onSearchChange, initialSearchValue]);
 
-  // Manejar cambios en selección de filas
   useEffect(() => {
     onRowSelectionChange?.(rowSelection);
   }, [rowSelection, onRowSelectionChange]);
 
-  // Crear columna de selección si está habilitada
   const selectionColumn: ColumnDef<TData, TValue> = React.useMemo(
     () => ({
       id: "select",
@@ -217,14 +202,11 @@ export function DataTableDynamicColumns<TData, TValue>({
     []
   );
 
-  // Reordenar columnas según el estado de columnOrder
   const orderedColumns = React.useMemo(() => {
-    // Si no hay orden personalizado, usar orden original con selección al inicio
     if (columnOrder.length === 0) {
       return enableRowSelection ? [selectionColumn, ...columns] : columns;
     }
 
-    // Reordenar solo las columnas de datos (sin selección)
     const orderedDataCols = columnOrder
       .map((colId) =>
         columns.find(
@@ -234,7 +216,6 @@ export function DataTableDynamicColumns<TData, TValue>({
       )
       .filter(Boolean) as ColumnDef<TData, TValue>[];
 
-    // Agregar columnas que no están en el orden
     const missingCols = columns.filter(
       (col) =>
         !columnOrder.includes((col as any).accessorKey || (col as any).id)
@@ -242,13 +223,11 @@ export function DataTableDynamicColumns<TData, TValue>({
 
     const finalDataColumns = [...orderedDataCols, ...missingCols];
 
-    // Siempre agregar la columna de selección al inicio si está habilitada
     return enableRowSelection
       ? [selectionColumn, ...finalDataColumns]
       : finalDataColumns;
   }, [columns, columnOrder, enableRowSelection, selectionColumn]);
 
-  // Configuración de React Table para paginación del servidor
   const table = useReactTable({
     data,
     columns: orderedColumns,
@@ -510,8 +489,16 @@ export function DataTableDynamicColumns<TData, TValue>({
                       <Button
                         onClick={handleApplyConfiguration}
                         className="flex-1"
+                        disabled={isApplyingFilters}
                       >
-                        Aplicar
+                        {isApplyingFilters ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Aplicando...
+                          </>
+                        ) : (
+                          "Aplicar"
+                        )}
                       </Button>
                     </div>
                   </SheetFooter>

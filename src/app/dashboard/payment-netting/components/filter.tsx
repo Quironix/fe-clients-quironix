@@ -13,17 +13,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import DatePickerFormItem from "../../components/date-picker-form-item";
-import { usePaymentNetting } from "../hooks/usePaymentNetting";
 import { BankMovementStatusEnum, PaymentNettingFilters } from "../types";
 
-const FilterInputs = () => {
-  const { filters } = usePaymentNetting();
+export interface FilterInputsRef {
+  getCurrentFilters: () => PaymentNettingFilters;
+}
+
+const FilterInputs = React.forwardRef<
+  FilterInputsRef,
+  {
+    onFilterChange?: (filters: PaymentNettingFilters) => void;
+    initialFilters?: PaymentNettingFilters;
+  }
+>(({ onFilterChange, initialFilters }, ref) => {
   const filterSchema = z.object({
     search: z.string().optional(),
-    status: z.string().optional(), // Cambiar a string para aceptar las keys del enum
+    status: z.string().optional(),
     dateFrom: z.string().optional(),
     dateTo: z.string().optional(),
   });
@@ -34,16 +43,31 @@ const FilterInputs = () => {
     resolver: zodResolver(filterSchema),
     mode: "onChange",
     defaultValues: {
-      search: "",
-      status: "PENDING", // Usar la key del enum directamente
-      dateFrom: "",
-      dateTo: "",
+      search: initialFilters?.search || "",
+      status: initialFilters?.status || "PENDING",
+      dateFrom: initialFilters?.dateFrom || "",
+      dateTo: initialFilters?.dateTo || "",
     },
   });
 
   const handleSubmit = (data: PaymentNettingFilters) => {
-    console.log(data);
+    onFilterChange?.(data);
   };
+
+  React.useImperativeHandle(ref, () => ({
+    getCurrentFilters: () => {
+      const values = form.getValues();
+      return {
+        ...values,
+        dateFrom: values.dateFrom
+          ? new Date(values.dateFrom).toISOString().split("T")[0]
+          : undefined,
+        dateTo: values.dateTo
+          ? new Date(values.dateTo).toISOString().split("T")[0]
+          : undefined,
+      };
+    },
+  }));
 
   return (
     <>
@@ -51,11 +75,7 @@ const FilterInputs = () => {
         <span className="text-sm font-bold text-gray-500">Filtros</span>
       </div>
       <FormProvider {...form}>
-        <form
-          onChange={form.handleSubmit(handleSubmit)}
-          className="w-full space-y-6"
-          autoComplete="off"
-        >
+        <form className="w-full space-y-6" autoComplete="off">
           <div className="space-y-2 grid grid-cols-2 gap-2">
             <FormField
               control={form.control}
@@ -91,10 +111,7 @@ const FilterInputs = () => {
                       <SelectContent>
                         {Object.entries(BankMovementStatusEnum).map(
                           ([key, value]) => (
-                            <SelectItem
-                              key={key}
-                              value={key} // Usar la key directamente sin transformación
-                            >
+                            <SelectItem key={key} value={key}>
                               {value}
                             </SelectItem>
                           )
@@ -111,6 +128,8 @@ const FilterInputs = () => {
       </FormProvider>
     </>
   );
-};
+});
+
+FilterInputs.displayName = "FilterInputs";
 
 export default FilterInputs;
