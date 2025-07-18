@@ -209,9 +209,7 @@ export default function PaymentNettingPage() {
               className="rounded-lg"
               title="Historial de pagos"
               handleSuccessButton={handleUpdateColumns}
-              filterInputs={
-                <FilterInputs handleFilterChange={handleFilterChange} />
-              }
+              filterInputs={<FilterInputs />}
             />
           </CardContent>
         </Card>

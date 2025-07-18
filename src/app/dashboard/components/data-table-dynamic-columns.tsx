@@ -393,13 +393,18 @@ export function DataTableDynamicColumns<TData, TValue>({
                     Editar tabla
                   </Button>
                 </SheetTrigger>
-                <SheetContent>
+                <SheetContent className="min-w-[30vw]">
                   <SheetHeader>
                     <SheetTitle>{title}</SheetTitle>
                     <SheetDescription>{description}</SheetDescription>
                   </SheetHeader>
-                  <div className="py-6 space-y-4 px-2 overflow-y-auto max-h-[calc(100vh-200px)]">
-                    <div className="space-y-2">
+                  <div className="space-y-4 px-4 max-w-full overflow-x-hidden overflow-y-auto max-h-[calc(100vh-200px)]">
+                    <div className="w-full border-b border-gray-200 mb-2 pb-1">
+                      <span className="text-sm font-bold text-gray-500">
+                        Columnas
+                      </span>
+                    </div>
+                    <div className="space-y-1">
                       {columnOrder.map((colId) => {
                         const column = columns.find(
                           (col) =>
@@ -425,7 +430,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                         return (
                           <div
                             key={columnId}
-                            className="group flex items-center justify-between space-x-2 p-3 border rounded-lg bg-background hover:bg-muted/50 transition-colors cursor-grab active:cursor-grabbing"
+                            className="group flex items-center justify-between space-x-1 py-2 rounded-lg bg-background hover:bg-muted/50 transition-colors cursor-grab active:cursor-grabbing"
                             draggable
                             onDragStart={(e) => {
                               e.dataTransfer.setData("text/plain", columnId);
@@ -459,9 +464,9 @@ export function DataTableDynamicColumns<TData, TValue>({
                               }
                             }}
                           >
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
                               <div className="flex items-center opacity-60 group-hover:opacity-100 transition-opacity">
-                                <Menu className="h-4 w-4 text-muted-foreground" />
+                                <Menu className="h-5 w-5 text-muted-foreground" />
                               </div>
                               <Checkbox
                                 id={columnId}
