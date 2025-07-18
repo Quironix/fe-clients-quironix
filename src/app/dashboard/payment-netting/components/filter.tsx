@@ -75,7 +75,7 @@ const FilterInputs = React.forwardRef<
         <span className="text-sm font-bold text-gray-500">Filtros</span>
       </div>
       <FormProvider {...form}>
-        <form className="w-full space-y-6" autoComplete="off">
+        <form className="w-full space-y-3" autoComplete="off">
           <div className="space-y-2 grid grid-cols-2 gap-2">
             <FormField
               control={form.control}
@@ -92,38 +92,37 @@ const FilterInputs = React.forwardRef<
                 <DatePickerFormItem field={field} title="Hasta" required />
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estado</FormLabel>
-
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || ""}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecciona un estado" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(BankMovementStatusEnum).map(
-                          ([key, value]) => (
-                            <SelectItem key={key} value={key}>
-                              {value}
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estado</FormLabel>
+
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || ""}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona un estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(BankMovementStatusEnum).map(
+                        ([key, value]) => (
+                          <SelectItem key={key} value={key}>
+                            {value}
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </form>
       </FormProvider>
     </>
