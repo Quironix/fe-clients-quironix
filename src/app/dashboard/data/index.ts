@@ -1,5 +1,6 @@
 import {
   IconCreditCard,
+  IconFileCheckFilled,
   IconFileInvoice,
   IconHeartHandshake,
   IconLayoutDashboard,
@@ -194,6 +195,12 @@ export const getSidebarData = (profile: any) => {
               },
             ],
           },
+          {
+            title: "Conciliación de pagos",
+            url: "/dashboard/payment-netting",
+            icon: IconFileCheckFilled,
+            scope: "client.payment_netting",
+          },
         ],
       },
     ],
@@ -345,6 +352,11 @@ export const sidebarData: any = {
               title: "Carga de cartolas",
               url: "/dashboard/transactions/movements",
               scope: "client.transactions.movements",
+            },
+            {
+              title: "Payment Netting",
+              url: "/dashboard/payment-netting",
+              scope: "client.transactions.payment_netting",
             },
           ],
         },
