@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { RowSelectionState } from "@tanstack/react-table";
 import { getPaymentNetting } from "../services";
 import {
   BankMovementStatusEnum,
@@ -57,6 +58,13 @@ export function usePaymentNetting(
     hasPrevious: false,
   });
   const [filters, setFilters] = useState<PaymentNettingFilters>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("paymentNettingSelection");
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
 
   const fetchPaymentNettings = useCallback(
     async (
@@ -155,6 +163,21 @@ export function usePaymentNetting(
     fetchPaymentNettings(pagination.page, pagination.limit, filters);
   }, [fetchPaymentNettings, pagination.page, pagination.limit, filters]);
 
+  const handleRowSelectionChange = useCallback((updater: any) => {
+    const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
+    setRowSelection(newSelection);
+    localStorage.setItem("paymentNettingSelection", JSON.stringify(newSelection));
+  }, [rowSelection]);
+
+  const getSelectedRows = useCallback(() => {
+    return data.filter((_, index) => rowSelection[index]);
+  }, [data, rowSelection]);
+
+  const clearRowSelection = useCallback(() => {
+    setRowSelection({});
+    localStorage.removeItem("paymentNettingSelection");
+  }, []);
+
   useEffect(() => {
     setIsLoading(true);
     fetchPaymentNettings().finally(() => setIsLoading(false));
@@ -170,5 +193,9 @@ export function usePaymentNetting(
     handleSearchChange,
     handleFilterChange,
     refetch,
+    rowSelection,
+    handleRowSelectionChange,
+    getSelectedRows,
+    clearRowSelection,
   };
 }

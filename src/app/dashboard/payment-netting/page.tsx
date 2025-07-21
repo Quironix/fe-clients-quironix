@@ -8,6 +8,7 @@ import { RowSelectionState, VisibilityState } from "@tanstack/react-table";
 import { Archive, Eye, FileCheck2, Trash2 } from "lucide-react";
 
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { DataTableDynamicColumns } from "../components/data-table-dynamic-columns";
@@ -22,6 +23,7 @@ import { updateReconciliationTableProfile } from "./services";
 export default function PaymentNettingPage() {
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
+  const router = useRouter();
   const {
     data,
     isLoading,
@@ -32,6 +34,10 @@ export default function PaymentNettingPage() {
     handleSearchChange,
     handleFilterChange,
     refetch,
+    rowSelection,
+    handleRowSelectionChange,
+    getSelectedRows,
+    clearRowSelection,
   } = usePaymentNetting(session?.token, profile?.client_id, false);
   const filterInputsRef = useRef<FilterInputsRef>(null);
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
@@ -67,7 +73,6 @@ export default function PaymentNettingPage() {
       }
     }
   }, [profile?.profile]);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const columnLabels = useMemo(
     () => ({
       id: "ID",
@@ -198,7 +203,9 @@ export default function PaymentNettingPage() {
                   <Button
                     className="bg-orange-400 text-white hover:bg-orange-400/90"
                     onClick={() => {
-                      console.log("Generar pago");
+                      router.push(
+                        "/dashboard/payment-netting/generate-payment"
+                      );
                     }}
                   >
                     Generar pago
@@ -207,7 +214,7 @@ export default function PaymentNettingPage() {
               }
               enableRowSelection={true}
               initialRowSelection={rowSelection}
-              onRowSelectionChange={setRowSelection}
+              onRowSelectionChange={handleRowSelectionChange}
               bulkActions={bulkActions}
               emptyMessage="No se encontraron conciliaciones"
               className="rounded-lg"

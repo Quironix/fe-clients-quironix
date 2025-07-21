@@ -514,7 +514,7 @@ export function DataTableDynamicColumns<TData, TValue>({
             <div className="text-sm text-muted-foreground">
               {Object.keys(rowSelection).length} elemento(s) seleccionado(s)
             </div>
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               {bulkActions.map((action, index) => {
                 const selectedRows = table
                   .getFilteredSelectedRowModel()
@@ -539,7 +539,7 @@ export function DataTableDynamicColumns<TData, TValue>({
               >
                 Limpiar selección
               </Button>
-            </div>
+            </div> */}
           </div>
         )}
       </div>
