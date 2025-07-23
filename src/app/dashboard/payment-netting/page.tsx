@@ -78,6 +78,19 @@ export default function PaymentNettingPage() {
     return getSelectedRows();
   }, [getSelectedRows, isHydrated]);
 
+  const isValidSelectionForPayment = useMemo(() => {
+    if (selectedPayments.length === 0) return false;
+    if (selectedPayments.length === 1) return !!selectedPayments[0]?.payment?.debtor;
+    
+    // Para múltiples selecciones, verificar que todos tengan el mismo debtor.id
+    const firstDebtorId = selectedPayments[0]?.payment?.debtor?.id;
+    if (!firstDebtorId) return false;
+    
+    return selectedPayments.every(payment => 
+      payment?.payment?.debtor?.id === firstDebtorId
+    );
+  }, [selectedPayments]);
+
   const columnVisibility = useMemo(() => {
     const visibility: VisibilityState = {};
     columnConfiguration.forEach((col) => {
@@ -285,7 +298,8 @@ export default function PaymentNettingPage() {
                   </DialogForm>
 
                   <Button
-                    className="bg-orange-400 text-white hover:bg-orange-400/90"
+                    disabled={!isValidSelectionForPayment}
+                    className="bg-orange-400 text-white hover:bg-orange-400/90 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => {
                       router.push(
                         "/dashboard/payment-netting/generate-payment"
