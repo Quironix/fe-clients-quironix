@@ -6,7 +6,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,15 +14,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { FileCheck2 } from "lucide-react";
@@ -34,22 +25,25 @@ import Header from "../../components/header";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
 import { columns } from "../components/columns";
+import ListAccountReceivable from "../components/list-account-receivable";
+import ListCreditFavor from "../components/list-credit-favor";
 import StepperPN from "../components/stepper";
+import SummaryPaymentNetting from "../components/summary-payment-netting";
 import { usePaymentNetting } from "../hooks/usePaymentNetting";
-
 
 const GeneratePayment = () => {
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
-  const { getSelectedRows } = usePaymentNetting(
-    session?.token, 
-    profile?.client_id, 
+  const { getSelectedRows, isHydrated } = usePaymentNetting(
+    session?.token,
+    profile?.client_id,
     false
   );
 
   const selectedPayments = useMemo(() => {
+    if (!isHydrated) return [];
     return getSelectedRows();
-  }, [getSelectedRows]);
+  }, [getSelectedRows, isHydrated]);
 
   return (
     <>
@@ -130,7 +124,8 @@ const GeneratePayment = () => {
                       <div className="text-center py-8 text-gray-500">
                         <p className="text-sm">No hay pagos seleccionados</p>
                         <p className="text-xs mt-2">
-                          Regresa a la página anterior y selecciona los pagos que deseas procesar
+                          Regresa a la página anterior y selecciona los pagos
+                          que deseas procesar
                         </p>
                       </div>
                     )}
@@ -141,10 +136,23 @@ const GeneratePayment = () => {
           </Card>
           <StepperPN
             number={2}
-            is_active={false}
+            is_active={true}
             title="Compensación manual"
             description="Selecciona una tarjeta de la columna de “facturas pendientes” y otra de “pagos disponibles”. El sistema te guiará para realizar una compensación correcta."
           />
+          <section className="grid grid-cols-2 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="">
+                <ListAccountReceivable />
+              </div>
+              <div className="">
+                <ListCreditFavor />
+              </div>
+            </div>
+            <div className="">
+              <SummaryPaymentNetting />
+            </div>
+          </section>
         </section>
       </Main>
     </>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
-import { RowSelectionState, VisibilityState } from "@tanstack/react-table";
+import { VisibilityState } from "@tanstack/react-table";
 import { Archive, Eye, FileCheck2, Trash2 } from "lucide-react";
 
 import { useSession } from "next-auth/react";
@@ -38,6 +38,7 @@ export default function PaymentNettingPage() {
     handleRowSelectionChange,
     getSelectedRows,
     clearRowSelection,
+    isHydrated,
   } = usePaymentNetting(session?.token, profile?.client_id, false);
   const filterInputsRef = useRef<FilterInputsRef>(null);
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
@@ -213,7 +214,7 @@ export default function PaymentNettingPage() {
                 </>
               }
               enableRowSelection={true}
-              initialRowSelection={rowSelection}
+              initialRowSelection={isHydrated ? rowSelection : {}}
               onRowSelectionChange={handleRowSelectionChange}
               bulkActions={bulkActions}
               emptyMessage="No se encontraron conciliaciones"
