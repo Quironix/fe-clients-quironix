@@ -1,7 +1,24 @@
+import { useProfileContext } from "@/context/ProfileContext";
+import { useQuery } from "@tanstack/react-query";
 import { Clock2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { getInvoices } from "../services";
 import ItemListPayment from "./item-list-payment";
 
 const ListAccountReceivable = () => {
+  const { data: session } = useSession();
+  const { profile } = useProfileContext();
+
+  const { data: invoices } = useQuery({
+    queryKey: ["invoices"],
+    queryFn: () =>
+      getInvoices({
+        accessToken: session?.token as string,
+        clientId: profile?.client_id as string,
+        debtorId: profile?.profile.id as string,
+      }),
+  });
+
   // Datos dummy
   const dummyData = [
     {

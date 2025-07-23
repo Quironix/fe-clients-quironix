@@ -12,6 +12,7 @@ import {
 const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
   if (!apiData?.data) return [];
   return apiData.data.map((item: any) => ({
+    ...item,
     id: item.id,
     date: item?.created_at
       ? new Date(item.created_at).toISOString().split("T")[0]
@@ -37,8 +38,9 @@ const mapApiStatusToLocal = (apiStatus: string): BankMovementStatusEnum => {
       BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT,
     ELIMINATED_NO_TRACKING: BankMovementStatusEnum.ELIMINATED_NO_TRACKING,
     MAINTAINED: BankMovementStatusEnum.MAINTAINED,
+    PAYMENT_CREATED: BankMovementStatusEnum.PAYMENT_CREATED,
   };
-  return statusMap[apiStatus?.toUpperCase()] || "pending";
+  return statusMap[apiStatus?.toUpperCase()] || BankMovementStatusEnum.PENDING;
 };
 
 export function usePaymentNetting(
@@ -198,6 +200,8 @@ export function usePaymentNetting(
     if (typeof window !== "undefined") {
       localStorage.removeItem("paymentNettingSelection");
     }
+    setIsHydrated(false);
+    setRowSelection({});
   }, []);
 
   useEffect(() => {

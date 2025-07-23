@@ -36,6 +36,7 @@ const WARNING_CLASS =
   "bg-white border-orange-500 rounded-md gap-2 text-orange-500 text-[10px]";
 
 const getStatusBadge = (status: PaymentNetting["status"]) => {
+  console.log(status);
   const statusConfig = {
     [BankMovementStatusEnum.PENDING]: {
       label: "Pendiente",
@@ -43,6 +44,10 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
     },
     [BankMovementStatusEnum.PROCESSED]: {
       label: "Procesado",
+      variant: SUCCESS_CLASS as string,
+    },
+    [BankMovementStatusEnum.PAYMENT_CREATED]: {
+      label: "Pago creado",
       variant: SUCCESS_CLASS as string,
     },
     [BankMovementStatusEnum.REJECTED]: {
@@ -85,7 +90,11 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
     },
   };
 
-  const config = statusConfig[status];
+  const config = statusConfig[status] || {
+    label: "Desconocido",
+    variant: WARNING_CLASS as string,
+  };
+
   return <Badge className={config.variant}>{config.label}</Badge>;
 };
 
@@ -133,7 +142,11 @@ export const columns: ColumnDef<PaymentNetting>[] = [
   {
     id: "code",
     header: "Código",
-    cell: ({ row }) => <div className="font-medium text-sm"> S/I</div>,
+    cell: ({ row }) => (
+      <div className="font-medium text-sm">
+        {row.original?.payment?.debtor?.name || "N/A"}
+      </div>
+    ),
   },
   {
     accessorKey: "date",

@@ -11,7 +11,7 @@ import { ReactNode } from "react";
 interface DialogFormProps<T> {
   defaultValues?: Partial<T>;
   title?: string;
-  description?: string;
+  description?: string | ReactNode;
   isEdit?: boolean;
   children: ReactNode;
   trigger: ReactNode;
@@ -38,7 +38,7 @@ const DialogForm = <T,>({
         <DialogHeader>
           <DialogTitle className="font-extrabold">{title}</DialogTitle>
           <DialogDescription className="text-sm">
-            {description}
+            <span>{description}</span>
           </DialogDescription>
         </DialogHeader>
         {children}
