@@ -19,7 +19,7 @@ export default function DebtorsSelectFormItem({
   title,
   required,
 }: DebtorsSelectFormItemProps) {
-  const { debtors, fetchDebtors } = useDebtorsStore();
+  const { debtors, fetchDebtors, loading } = useDebtorsStore();
   const { profile, session } = useProfileContext();
 
   useEffect(() => {
@@ -35,6 +35,7 @@ export default function DebtorsSelectFormItem({
       </FormLabel>
       <FormControl className="w-full">
         <SearchInput
+          key={`${field.value}-${loading}`}
           value={field.value}
           onValueChange={(value: string) => field.onChange(value)}
           options={debtors.map((debtor: any) => ({

@@ -1,9 +1,5 @@
 import { BulkDebtorsSchema } from "../types";
-import {
-  DEFAULT_PAGINATION_PARAMS,
-  PaginatedResponse,
-  PaginationParams,
-} from "../types/pagination";
+import { PaginatedResponse, PaginationParams } from "../types/pagination";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -14,15 +10,15 @@ export const getDebtors = async (
 ): Promise<PaginatedResponse<any>> => {
   try {
     const paginationParams = {
-      page: params?.page || DEFAULT_PAGINATION_PARAMS.page,
-      limit: params?.limit || DEFAULT_PAGINATION_PARAMS.limit,
+      page: params?.page,
+      limit: params?.limit,
       ...(params?.search && { search: params.search }),
     };
 
     const queryString = new URLSearchParams(
       Object.entries(paginationParams).map(([key, value]) => [
         key,
-        value.toString(),
+        value?.toString() || "",
       ])
     ).toString();
 
