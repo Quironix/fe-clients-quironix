@@ -27,7 +27,7 @@ import DialogForm from "../components/dialog-form";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
-import { columns } from "./components/columns";
+import { createColumns } from "./components/columns";
 import FilterInputs, { FilterInputsRef } from "./components/filter";
 import FormAssignDebtor from "./components/form-assign-debtor";
 import IconDescription from "./components/icon-description";
@@ -38,6 +38,8 @@ export default function PaymentNettingPage() {
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const [openDialog, setOpenDialog] = useState(false);
+  const [openDetailModal, setOpenDetailModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
   const router = useRouter();
   const {
     data,
@@ -80,14 +82,15 @@ export default function PaymentNettingPage() {
 
   const isValidSelectionForPayment = useMemo(() => {
     if (selectedPayments.length === 0) return false;
-    if (selectedPayments.length === 1) return !!selectedPayments[0]?.payment?.debtor;
-    
+    if (selectedPayments.length === 1)
+      return !!selectedPayments[0]?.payment?.debtor;
+
     // Para múltiples selecciones, verificar que todos tengan el mismo debtor.id
     const firstDebtorId = selectedPayments[0]?.payment?.debtor?.id;
     if (!firstDebtorId) return false;
-    
-    return selectedPayments.every(payment => 
-      payment?.payment?.debtor?.id === firstDebtorId
+
+    return selectedPayments.every(
+      (payment) => payment?.payment?.debtor?.id === firstDebtorId
     );
   }, [selectedPayments]);
 
@@ -195,6 +198,16 @@ export default function PaymentNettingPage() {
     }
   };
 
+  const handleOpenTransactionDetail = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setOpenDetailModal(true);
+  };
+
+  const columns = useMemo(
+    () => createColumns(handleOpenTransactionDetail),
+    [handleOpenTransactionDetail]
+  );
+
   return (
     <>
       <Header fixed>
@@ -228,17 +241,15 @@ export default function PaymentNettingPage() {
                 <>
                   <DialogForm
                     title="Detalle del depósito"
-                    description={
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-blue-400" />
-                        <span>MOV-{selectedPayments[0]?.id}</span>
-                      </div>
-                    }
+                    description=""
                     open={openDialog}
                     onOpenChange={setOpenDialog}
                     trigger={
                       <Button
-                        disabled={selectedPayments.length !== 1 || !!selectedPayments[0]?.payment?.debtor}
+                        disabled={
+                          selectedPayments.length !== 1 ||
+                          !!selectedPayments[0]?.payment?.debtor
+                        }
                         className="bg-orange-400 text-white hover:bg-orange-400/90"
                         onClick={() => setOpenDialog(true)}
                       >
@@ -246,6 +257,14 @@ export default function PaymentNettingPage() {
                       </Button>
                     }
                   >
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-blue-400" />
+                        <span className="font-medium">
+                          MOV-{selectedPayments[0]?.id}
+                        </span>
+                      </div>
+                    </div>
                     <div className="grid grid-cols-2 gap-4 border-b border-t border-gray-200 py-4">
                       <IconDescription
                         icon={<File className="w-4 h-4 text-gray-400" />}

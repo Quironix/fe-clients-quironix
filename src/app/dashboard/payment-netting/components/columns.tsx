@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, MoreVertical, Trash, Trash2 } from "lucide-react";
+import { Eye, MoreVertical, Trash } from "lucide-react";
 import { BankMovementStatusEnum, PaymentNetting } from "../types";
 
 const formatCurrency = (amount: number, currency: string) => {
@@ -108,7 +108,9 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
 // Comentario => comment
 // Acción ---
 
-export const columns: ColumnDef<PaymentNetting>[] = [
+export const createColumns = (
+  onViewDetails?: (transaction: PaymentNetting) => void
+): ColumnDef<PaymentNetting>[] => [
   {
     accessorKey: "status",
     header: "Estado",
@@ -188,21 +190,23 @@ export const columns: ColumnDef<PaymentNetting>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onViewDetails?.(row.original)}>
               <Eye className="mr-2 h-4 w-4" />
               Ver detalles
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            {/* <DropdownMenuItem>
               <Edit className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
             <DropdownMenuItem className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               Eliminar
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
   },
 ];
+
+export const columns = createColumns();
