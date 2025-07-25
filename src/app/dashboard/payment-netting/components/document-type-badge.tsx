@@ -12,7 +12,8 @@ type DocumentType =
   | "N. de crédito de exp."
   | "Anticipo"
   | "Retención"
-  | "Fac. comercial";
+  | "Fac. comercial"
+  | "CREDIT_NOTE";
 
 interface DocumentTypeBadgeProps {
   type: DocumentType;
@@ -55,6 +56,11 @@ const DocumentTypeBadge = ({ type }: DocumentTypeBadgeProps) => {
         className:
           "bg-orange-200 text-orange-700 border border-orange-300 rounded-full",
         text: "Cheque protestado",
+      },
+      CREDIT_NOTE: {
+        className:
+          "bg-pink-200 text-pink-600 border border-pink-300 rounded-full",
+        text: "N. de crédito",
       },
       "N. de crédito": {
         className:

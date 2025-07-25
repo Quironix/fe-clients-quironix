@@ -49,7 +49,7 @@ export function usePaymentNetting(
   useMockData: boolean = false
 ) {
   const [data, setData] = useState<PaymentNetting[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isServerSideLoading, setIsServerSideLoading] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,

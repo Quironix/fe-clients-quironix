@@ -237,3 +237,55 @@ export const assignDebtor = async ({
     };
   }
 };
+
+/**
+ * Obtiene los pagos de un deudor específico para reconciliación.
+ * @param {string} params.accessToken - Token de acceso para autenticación.
+ * @param {string} params.clientId - ID del cliente.
+ * @param {string} params.debtorId - ID del deudor.
+ * @returns {Promise<Object>} - Respuesta de la API con los pagos.
+ */
+export const getPayments = async ({
+  accessToken,
+  clientId,
+  debtorId,
+}: {
+  accessToken: string;
+  clientId: string;
+  debtorId: string;
+}) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/reconciliation/debtors/${debtorId}/payments`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        message: errorData?.message || "Error al obtener los pagos",
+        data: null,
+      };
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      message: "Pagos obtenidos correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al obtener los pagos",
+      data: null,
+    };
+  }
+};

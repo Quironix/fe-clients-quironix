@@ -1,73 +1,79 @@
+import { Skeleton } from "@/components/ui/skeleton";
+import { useProfileContext } from "@/context/ProfileContext";
+import { useQuery } from "@tanstack/react-query";
 import { DollarSign } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useMemo } from "react";
+import { usePaymentNetting } from "../hooks/usePaymentNetting";
+import { getPayments } from "../services";
 import ItemListPayment from "./item-list-payment";
 
 const ListCreditFavor = () => {
-  // Datos dummy
-  const dummyData = [
-    {
-      id: 1,
-      numero: "123456778",
-      empresa: "Empresa ABC S.A.",
-      fase: 1,
-      vencimiento: "15/03/2024",
-      monto: "250.000",
-      tipo: "Factura" as const,
-    },
-    {
-      id: 2,
-      numero: "987654321",
-      empresa: "Comercial XYZ Ltda.",
-      fase: 2,
-      vencimiento: "22/03/2024",
-      monto: "180.500",
-      tipo: "Fac. exenta" as const,
-    },
-    {
-      id: 3,
-      numero: "456789123",
-      empresa: "Servicios DEF SpA",
-      fase: "Factura sin información",
-      vencimiento: "28/03/2024",
-      monto: "320.750",
-      tipo: "Fac. de exportación" as const,
-    },
-    {
-      id: 4,
-      numero: "789123456",
-      empresa: "Importadora GHI Ltda.",
-      fase: 3,
-      vencimiento: "05/04/2024",
-      monto: "450.200",
-      tipo: "N. de débito" as const,
-    },
-    {
-      id: 5,
-      numero: "321654987",
-      empresa: "Exportaciones JKL S.A.",
-      fase: 1,
-      vencimiento: "12/04/2024",
-      monto: "680.300",
-      tipo: "N. de débito de exp." as const,
-    },
-    {
-      id: 6,
-      numero: "654321789",
-      empresa: "Financiera MNO SpA",
-      fase: 2,
-      vencimiento: "18/04/2024",
-      monto: "125.800",
-      tipo: "Pagaré" as const,
-    },
-    {
-      id: 7,
-      numero: "159753468",
-      empresa: "Comercial PQR Ltda.",
-      fase: "Protestado",
-      vencimiento: "25/04/2024",
-      monto: "95.500",
-      tipo: "Cheque protestado" as const,
-    },
-  ];
+  const { data: session } = useSession();
+  const { profile } = useProfileContext();
+  const { getSelectedRows, isHydrated } = usePaymentNetting(
+    session?.token,
+    profile?.client_id,
+    false
+  );
+  const selectedPayments = useMemo(() => {
+    if (!isHydrated) return [];
+    return getSelectedRows();
+  }, [getSelectedRows, isHydrated]);
+
+  // Validar que todos los parámetros requeridos estén disponibles
+  const canFetchInvoices = useMemo(() => {
+    return !!(
+      session?.token &&
+      profile?.client_id &&
+      selectedPayments[0]?.payment?.debtor?.id
+    );
+  }, [session?.token, profile?.client_id, selectedPayments]);
+
+  const {
+    data: invoices,
+    isLoading: isLoadingInvoices,
+    error: invoicesError,
+  } = useQuery({
+    queryKey: ["payments", selectedPayments[0]?.payment?.debtor?.id],
+    queryFn: async () =>
+      await getPayments({
+        accessToken: session?.token as string,
+        clientId: profile?.client_id as string,
+        debtorId: selectedPayments[0]?.payment?.debtor?.id as string,
+      }),
+    enabled: canFetchInvoices, // Solo ejecutar si todos los parámetros están disponibles
+    retry: 1, // Reintentar solo una vez en caso de error
+    refetchOnWindowFocus: false, // No refetch al enfocar la ventana
+  });
+
+  const mapInvoiceData = (invoice: any) => ({
+    id: invoice.id || Math.random(),
+    number: invoice.number || "N/A",
+    debtor: invoice.debtor || { name: "N/A" },
+    phases: invoice.phases || [],
+    due_date: invoice.due_date || "",
+    amount: invoice.amount?.toString() || "0",
+    type: invoice.type || "PAYMENT",
+  });
+
+  const invoicesData = useMemo(() => {
+    if (
+      !invoices?.success ||
+      !invoices.data?.data ||
+      !Array.isArray(invoices.data.data)
+    ) {
+      return [];
+    }
+
+    console.log("📋 Respuesta cruda de la API:", invoices.data);
+    console.log("📄 Array de facturas:", invoices.data.data);
+
+    const mappedData = invoices.data.data.map(mapInvoiceData);
+    console.log("🔄 Datos mapeados:", mappedData);
+
+    return mappedData;
+  }, [invoices]);
 
   // Funciones dummy
   const handleOpenInfo = (row: any) => {
@@ -85,20 +91,47 @@ const ListCreditFavor = () => {
           <DollarSign className="w-4 h-4 text-blue-400" /> Créditos a favor
         </span>
         <span className="text-xs font-medium bg-gray-100 text-gray-500 rounded-full p-3 w-3 h-3 flex items-center justify-center">
-          {dummyData.length}
+          {invoicesData.length}
         </span>
       </div>
-      <div className="mt-4 space-y-4">
-        {dummyData.map((row) => (
-          <ItemListPayment
-            key={row.id}
-            row={row}
-            handleOpenInfo={handleOpenInfo}
-            handleCloseInfo={handleCloseInfo}
-            type="credit-favor"
-          />
-        ))}
-      </div>
+      {isLoadingInvoices && canFetchInvoices && (
+        <div className="flex flex-col gap-4">
+          <Skeleton className="h-[150px] w-full rounded-md" />
+          <Skeleton className="h-[150px] w-full rounded-md" />
+          <Skeleton className="h-[150px] w-full rounded-md" />
+        </div>
+      )}
+
+      {invoicesError && (
+        <div className="mt-2 p-2 bg-red-100 border border-red-400 rounded text-sm text-red-700">
+          ❌ Error al cargar facturas: {invoicesError.message}
+        </div>
+      )}
+
+      {!isLoadingInvoices && (
+        <div className="mt-4 space-y-4">
+          {invoicesData.length > 0 ? (
+            invoicesData.map((row: any) => {
+              console.log("🎯 Renderizando item:", row);
+              return (
+                <ItemListPayment
+                  key={row.id}
+                  row={row}
+                  type="credit-favor"
+                  handleOpenInfo={handleOpenInfo}
+                  handleCloseInfo={handleCloseInfo}
+                />
+              );
+            })
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              {canFetchInvoices
+                ? "No se encontraron pagos a favor para este deudor"
+                : "Selecciona un pago para ver los pagos a favor relacionados"}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
