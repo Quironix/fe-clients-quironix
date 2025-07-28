@@ -201,6 +201,12 @@ export const getSidebarData = (profile: any) => {
             icon: IconFileCheckFilled,
             scope: "client.payment_netting",
           },
+          {
+            title: "Seguimiento",
+            url: "/dashboard/litigation",
+            icon: IconFileCheckFilled,
+            scope: "client.litigation"
+          }
         ],
       },
     ],
@@ -358,6 +364,11 @@ export const sidebarData: any = {
               url: "/dashboard/payment-netting",
               scope: "client.transactions.payment_netting",
             },
+            {
+              title: "Seguimiento",
+              url: "/dashboard/litigation",
+              scope: "client.litigation"
+            }
           ],
         },
       ],
