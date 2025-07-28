@@ -31,7 +31,7 @@ const ListCreditFavor = () => {
   }, [session?.token, profile?.client_id, selectedPayments]);
 
   const {
-    data: invoices,
+    data: payments,
     isLoading: isLoadingInvoices,
     error: invoicesError,
   } = useQuery({
@@ -49,31 +49,32 @@ const ListCreditFavor = () => {
 
   const mapInvoiceData = (invoice: any) => ({
     id: invoice.id || Math.random(),
-    number: invoice.number || "N/A",
+    number: invoice.payment_number || "N/A",
     debtor: invoice.debtor || { name: "N/A" },
     phases: invoice.phases || [],
-    due_date: invoice.due_date || "",
+    due_date: invoice.due_at || "",
     amount: invoice.amount?.toString() || "0",
     type: invoice.type || "PAYMENT",
   });
 
-  const invoicesData = useMemo(() => {
+  const paymentsData = useMemo(() => {
     if (
-      !invoices?.success ||
-      !invoices.data?.data ||
-      !Array.isArray(invoices.data.data)
+      !payments?.success ||
+      !payments.data?.data ||
+      !Array.isArray(payments.data.data)
     ) {
       return [];
     }
 
-    console.log("📋 Respuesta cruda de la API:", invoices.data);
-    console.log("📄 Array de facturas:", invoices.data.data);
+    console.log("📋 Respuesta cruda de la API:", payments.data);
+    console.log("📄 Array de facturas:", payments.data.data);
 
-    const mappedData = invoices.data.data.map(mapInvoiceData);
+    debugger;
+    const mappedData = payments.data.data.map(mapInvoiceData);
     console.log("🔄 Datos mapeados:", mappedData);
 
     return mappedData;
-  }, [invoices]);
+  }, [payments]);
 
   // Funciones dummy
   const handleOpenInfo = (row: any) => {
@@ -91,7 +92,7 @@ const ListCreditFavor = () => {
           <DollarSign className="w-4 h-4 text-blue-400" /> Créditos a favor
         </span>
         <span className="text-xs font-medium bg-gray-100 text-gray-500 rounded-full p-3 w-3 h-3 flex items-center justify-center">
-          {invoicesData.length}
+          {paymentsData.length}
         </span>
       </div>
       {isLoadingInvoices && canFetchInvoices && (
@@ -110,8 +111,8 @@ const ListCreditFavor = () => {
 
       {!isLoadingInvoices && (
         <div className="mt-4 space-y-4">
-          {invoicesData.length > 0 ? (
-            invoicesData.map((row: any) => {
+          {paymentsData.length > 0 ? (
+            paymentsData.map((row: any) => {
               console.log("🎯 Renderizando item:", row);
               return (
                 <ItemListPayment

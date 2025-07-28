@@ -46,19 +46,22 @@ const ItemListPayment = ({
         <div className="flex items-center justify-start gap-1 mb-2">
           <Clock2 className="w-3 h-3 text-orange-400" />
           <span className="text-xs text-gray-500">
-            <span className="font-bold text-md">Nº {row.number}</span>
+            <span className="font-bold text-md">Nº {row?.number}</span>
           </span>
         </div>
         <div className="flex flex-col items-start border-b border-orange-400 pb-2 w-full">
           <span className="font-bold text-xs truncate w-full">
             {row.debtor?.name}
           </span>
-          <div className="flex items-start gap-1">
-            <span className="font-bold text-xs">Fase</span>
-            <span className="text-xs text-gray-500 truncate">
-              {row?.phases?.length > 0 ? row?.phases[0] : "Sin fase"}
-            </span>
-          </div>
+
+          {type === "account-receivable" && (
+            <div className="flex items-start gap-1">
+              <span className="font-bold text-xs">Fase</span>
+              <span className="text-xs text-gray-500 truncate">
+                {row?.phases?.length > 0 ? row?.phases[0] : "Sin fase"}
+              </span>
+            </div>
+          )}
           <div className="flex items-start gap-1">
             <span className="font-bold text-xs">Vencimiento</span>
             <span className="text-xs text-gray-500">

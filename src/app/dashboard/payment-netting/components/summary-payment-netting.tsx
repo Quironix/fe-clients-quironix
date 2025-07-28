@@ -22,12 +22,12 @@ const SummaryPaymentNetting = () => {
             key={1}
             row={{
               id: 1,
-              numero: "123456778",
-              empresa: "Empresa ABC S.A.",
-              fase: 1,
-              vencimiento: "15/03/2024",
-              monto: "250.000",
-              tipo: "Factura" as const,
+              number: "123456778",
+              debtor: { name: "Empresa ABC S.A." },
+              phases: [1],
+              due_date: "2024-03-15T00:00:00Z",
+              amount: "250000",
+              type: "Factura",
             }}
             type="account-receivable"
             handleOpenInfo={() => {}}
@@ -43,12 +43,12 @@ const SummaryPaymentNetting = () => {
               key={2}
               row={{
                 id: 6,
-                numero: "654321789",
-                empresa: "Financiera MNO SpA",
-                fase: 2,
-                vencimiento: "18/04/2024",
-                monto: "125.800",
-                tipo: "Pagaré" as const,
+                number: "654321789",
+                debtor: { name: "Financiera MNO SpA" },
+                phases: [2],
+                due_date: "2024-04-18T00:00:00Z",
+                amount: "125800",
+                type: "Pagaré",
               }}
               type="credit-favor"
               handleOpenInfo={() => {}}
@@ -57,13 +57,13 @@ const SummaryPaymentNetting = () => {
             <ItemListPayment
               key={4}
               row={{
-                id: 6,
-                numero: "654321789",
-                empresa: "Financiera MNO SpA",
-                fase: 2,
-                vencimiento: "18/04/2024",
-                monto: "125.800",
-                tipo: "Pagaré" as const,
+                id: 7,
+                number: "987654321",
+                debtor: { name: "Financiera MNO SpA" },
+                phases: [2],
+                due_date: "2024-04-18T00:00:00Z",
+                amount: "125800",
+                type: "Pagaré",
               }}
               type="credit-favor"
               handleOpenInfo={() => {}}
