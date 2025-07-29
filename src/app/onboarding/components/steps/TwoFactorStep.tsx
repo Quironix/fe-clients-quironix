@@ -28,6 +28,13 @@ import { ContinueAndBackButtons } from "./ContinueAndBackButtons";
 
 const COUNTDOWN_TIME = 120; // 2 minutos en segundos
 
+// Definir el schema y tipo del formulario
+const twoFactorSchema = z.object({
+  code: z.string().min(6, "El código debe tener al menos 6 caracteres"),
+});
+
+type TwoFactorFormData = z.infer<typeof twoFactorSchema>;
+
 const TwoFactorStep: React.FC<OnboardingStepProps> = ({
   onNext,
   onBack,
@@ -45,14 +52,14 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
   const [isCodeValid, setIsCodeValid] = useState(false);
   const [isValidatingCode, setIsValidatingCode] = useState<boolean>(false);
 
-  const form = useForm<{ code: string }>({
-    resolver: zodResolver(z.object({ code: z.string().min(6) })),
+  const form = useForm<TwoFactorFormData>({
+    resolver: zodResolver(twoFactorSchema),
     defaultValues: {
       code: "",
     },
   });
 
-  const handleSubmit = async (data: { code: string }) => {
+  const handleSubmit = async (data: TwoFactorFormData) => {
     if (profile?.client?.id && session?.token) {
       setIsValidatingCode(true);
       const success = await verifyCode(

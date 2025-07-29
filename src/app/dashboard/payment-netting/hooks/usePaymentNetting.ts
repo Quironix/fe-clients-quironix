@@ -181,12 +181,10 @@ export function usePaymentNetting(
       const newSelection =
         typeof updater === "function" ? updater(rowSelection) : updater;
       setRowSelection(newSelection);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          "paymentNettingSelection",
-          JSON.stringify(newSelection)
-        );
-      }
+      localStorage.setItem(
+        "paymentNettingSelection",
+        JSON.stringify(newSelection)
+      );
     },
     [rowSelection]
   );
