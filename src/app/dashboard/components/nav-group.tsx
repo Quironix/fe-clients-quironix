@@ -32,6 +32,15 @@ import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { NavCollapsible, NavItem, NavLink, type NavGroup } from "../types";
 
+// Type guards para NavLink y NavCollapsible
+const isNavLink = (item: NavItem): item is NavLink => {
+  return "url" in item && !("items" in item);
+};
+
+const isNavCollapsible = (item: NavItem): item is NavCollapsible => {
+  return "items" in item && !("url" in item);
+};
+
 // Función para validar si el usuario tiene acceso a un item basándose en sus scopes
 const hasAccessToItem = (itemScope: string, userScopes: string[]): boolean => {
   if (!itemScope || !userScopes || userScopes.length === 0) {
@@ -98,8 +107,8 @@ export function NavGroup({ title, items }: NavGroup) {
     profile?.roles?.flatMap((role: any) => role.scopes || []) || [];
 
   // Filtrar items basándose en los scopes del usuario
-  const filteredItems = items
-    .map((item) => {
+  const filteredItems: NavItem[] = items
+    .map((item): NavItem | null => {
       // Si el item no tiene scope definido, se muestra por defecto
       if (!item.scope) return item;
 
@@ -119,16 +128,16 @@ export function NavGroup({ title, items }: NavGroup) {
         // Solo mostrar el item padre si tiene al menos un hijo visible
         if (filteredSubItems.length === 0) return null;
 
-        // Crear una copia del item con los subitems filtrados
+        // Crear una copia del item NavCollapsible con los subitems filtrados
         return {
           ...item,
           items: filteredSubItems,
-        };
+        } as NavCollapsible;
       }
 
       return item;
     })
-    .filter((item) => item !== null);
+    .filter((item): item is NavItem => item !== null);
 
   return (
     <SidebarGroup>
@@ -137,12 +146,12 @@ export function NavGroup({ title, items }: NavGroup) {
       </SidebarGroupLabel>
       <SidebarMenu>
         {filteredItems.map((item) => {
-          const key = `${item.title}-${item.url}`;
+          const key = `${item.title}-${item.url || "collapsible"}`;
 
-          if (!item.items)
+          if (isNavLink(item))
             return <SidebarMenuLink key={key} item={item} href={pathname} />;
 
-          if (state === "collapsed")
+          if (state === "collapsed" && isNavCollapsible(item))
             return (
               <SidebarMenuCollapsedDropdown
                 key={key}
@@ -151,9 +160,12 @@ export function NavGroup({ title, items }: NavGroup) {
               />
             );
 
-          return (
-            <SidebarMenuCollapsible key={key} item={item} href={pathname} />
-          );
+          if (isNavCollapsible(item))
+            return (
+              <SidebarMenuCollapsible key={key} item={item} href={pathname} />
+            );
+
+          return null;
         })}
       </SidebarMenu>
     </SidebarGroup>

@@ -3,15 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-old-space-size=4096' next dev",
-    "dev:turbo": "next dev --turbo",
+    "dev": "next dev --turbo --port 5173",
+    "dev:webpack": "NODE_OPTIONS='--max-old-space-size=8192' next dev",
+    "dev:fast": "ESLINT_DISABLE=true next dev --turbo --port 5173",
+    "dev:optimize": "./dev-optimize.sh && npm run dev",
     "analyze": "ANALYZE=true next build",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --cache",
+    "lint": "next lint --cache --max-warnings 0",
+    "lint:fix": "next lint --cache --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "clean": "rm -rf .next && rm -rf build && rm -rf .tsbuildinfo"
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next && rm -rf build && rm -rf .tsbuildinfo && rm -rf node_modules/.cache"
   },
   "dependencies": {
     "@fintoc/fintoc-js": "^1.1.2",

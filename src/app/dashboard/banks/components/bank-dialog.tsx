@@ -60,19 +60,30 @@ const BankDialog = ({
   } = useBankInformationStore();
 
   const handleSubmit = async (data: BankFormValues) => {
-    if (data.ledger_account === "") {
-      delete data.ledger_account;
+    // Crear objeto limpio para la API
+    const requestData: {
+      bank: string;
+      account_number: string;
+      ledger_account?: string;
+    } = {
+      bank: data.bank,
+      account_number: data.account_number,
+    };
+
+    // Solo incluir ledger_account si tiene valor
+    if (data.ledger_account && data.ledger_account.trim() !== "") {
+      requestData.ledger_account = data.ledger_account;
     }
 
     if (defaultValues) {
       await updateBankInformation(
         session?.token,
         defaultValues.id,
-        data,
+        requestData,
         clientId
       );
     } else {
-      await createBankInformation(session?.token, data, clientId);
+      await createBankInformation(session?.token, requestData, clientId);
     }
     setIsBankDialogOpen(false);
   };
