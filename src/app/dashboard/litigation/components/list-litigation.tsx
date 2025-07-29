@@ -14,9 +14,11 @@ import { VisibilityState } from "@tanstack/react-table";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import FilterInputs, { FilterInputsRef } from "../../payment-netting/components/filter";
 import { columns } from "./columns";
+import LitigationDetail from "./modals/litigation-detail";
 
 const ListLitigation = () => {
   const { session, profile } = useProfileContext();
+  const [showDialog, setShowDialog] = useState(false);
 
   const {
     data,
@@ -86,7 +88,7 @@ const ListLitigation = () => {
       label: "Ver detalles",
       onClick: async (selectedRows: Litigation[]) => {
         console.log("Ver detalles:", selectedRows);
-        toast("Mostrando detalles en consola");
+        <LitigationDetail onClose={() => setShowDialog(false)}/>
       },
       variant: "outline" as const,
       icon: <Eye className="h-4 w-4" />,

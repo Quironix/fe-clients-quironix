@@ -68,7 +68,7 @@ const DisputeForm = () => {
   } = form;
 
   const onSubmit = async (data: LitigationForm) => {
-    console.log('data',data)
+    console.log('data',profile)
     try {
       const payload = {
         invoice_id: data.invoiceNumber,
@@ -82,7 +82,7 @@ const DisputeForm = () => {
       };
   
       const res = await fetch(
-        `${API_URL}/v2/clients/${profile.clientId}/litigations`,
+        `${API_URL}/v2/clients/${profile.client_id}/litigations`,
         {
           method: "POST",
           headers: {

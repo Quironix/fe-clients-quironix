@@ -212,45 +212,49 @@ const NormalizeForm = () => {
             <Textarea
               placeholder="Comentario"
               {...register("comment")}
-              className="min-h-[80px]"
+              className="min-h-[40px]"
             />
           </div>
 
           <div className=" bg-[#FF8113] h-0.5 max-w-full"></div>
 
           {/* Botón */}
-          <div className="grid grid-cols-2 gap-4 items-center ">
-            <div className="bg-[#F1F5F9] mr-2 px-5 py-2 rounded w-full">
+          <div className="grid grid-cols-3 gap-4 items-center justify-center">
+            <div className="col-span-2 bg-[#F1F5F9] mr-2 px-5 py-2 rounded w-full">
               <div className="flex items-center">
-
                 <div className="items-center mr-2">
-                <Image src="/img/dollar-sign.svg"
-                   alt="Signo pesos"
+                  <Image
+                    src="/img/dollar-sign.svg"
+                    alt="Signo pesos"
                     width={8}
                     height={8}
-                    className="w-8 h-8"></Image>
+                    className="w-8 h-8"
+                  />
                 </div>
                 <div>
                   <p>Monto Factura</p>
-                  <p className="text-[#2F6EFF] font-bold text-3xl">$ { ""}</p>
+                  <p className="text-[#2F6EFF] font-bold text-3xl">$ {"..."}</p>
                 </div>
               </div>
-
             </div>
-            <Button
-              type="submit"
-               className="mt-4 px-5 bg-[#1249C7] text-white hover:bg-[#1249C7]/90"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Guardando
-                </>
-              ) : (
-                "Normalizar"
-              )}
-            </Button>
+
+            <div className="col-span-1">
+              <Button
+                type="submit"
+                className="mt-4 px-10 bg-[#1249C7] text-white hover:bg-[#1249C7]/90 w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Guardando
+                  </>
+                ) : (
+                  "Normalizar"
+                )}
+              </Button>
+            </div>
           </div>
+
         </form>
       </FormProvider>
 

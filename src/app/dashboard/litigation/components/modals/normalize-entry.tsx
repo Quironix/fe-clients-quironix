@@ -3,7 +3,7 @@ import NormalizeForm from "../normalize-form";
 
 const NormalizeEntry = ({ onClose }: { onClose: () => void }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-md w-full max-w-3xl relative py-6 px-2">
         <button
           onClick={onClose}
