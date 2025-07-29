@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { RowSelectionState } from "@tanstack/react-table";
+import { useCallback, useEffect, useState } from "react";
 import { getPaymentNetting } from "../services";
 import {
   BankMovementStatusEnum,
@@ -38,7 +38,7 @@ const mapApiStatusToLocal = (apiStatus: string): BankMovementStatusEnum => {
     ELIMINATED_NO_TRACKING: BankMovementStatusEnum.ELIMINATED_NO_TRACKING,
     MAINTAINED: BankMovementStatusEnum.MAINTAINED,
   };
-  return statusMap[apiStatus?.toUpperCase()] || "pending";
+  return statusMap[apiStatus?.toUpperCase()] || BankMovementStatusEnum.PENDING;
 };
 
 export function usePaymentNetting(
@@ -163,11 +163,18 @@ export function usePaymentNetting(
     fetchPaymentNettings(pagination.page, pagination.limit, filters);
   }, [fetchPaymentNettings, pagination.page, pagination.limit, filters]);
 
-  const handleRowSelectionChange = useCallback((updater: any) => {
-    const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
-    setRowSelection(newSelection);
-    localStorage.setItem("paymentNettingSelection", JSON.stringify(newSelection));
-  }, [rowSelection]);
+  const handleRowSelectionChange = useCallback(
+    (updater: any) => {
+      const newSelection =
+        typeof updater === "function" ? updater(rowSelection) : updater;
+      setRowSelection(newSelection);
+      localStorage.setItem(
+        "paymentNettingSelection",
+        JSON.stringify(newSelection)
+      );
+    },
+    [rowSelection]
+  );
 
   const getSelectedRows = useCallback(() => {
     return data.filter((_, index) => rowSelection[index]);

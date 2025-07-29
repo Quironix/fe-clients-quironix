@@ -87,6 +87,9 @@ const FormDTE = () => {
         fetchDTEById(session.token, profile.client.id, id);
       }
     }
+    if (!id) {
+      form.reset();
+    }
   }, [session?.token, profile?.client?.id, id]);
 
   const form = useForm<z.infer<typeof formSchema>>({
