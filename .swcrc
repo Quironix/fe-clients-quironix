@@ -1,0 +1,31 @@
+{
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "tsx": true,
+      "decorators": false,
+      "dynamicImport": true
+    },
+    "transform": {
+      "react": {
+        "runtime": "automatic"
+      }
+    },
+    "target": "es2017",
+    "loose": true,
+    "externalHelpers": false,
+    "keepClassNames": false,
+    "minify": {
+      "compress": {
+        "drop_console": false,
+        "drop_debugger": false
+      },
+      "mangle": false
+    }
+  },
+  "module": {
+    "type": "es6"
+  },
+  "minify": false,
+  "sourceMaps": true
+}
