@@ -6,11 +6,13 @@ import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { usePaymentNetting } from "../hooks/usePaymentNetting";
 import { getInvoices } from "../services";
+import { usePaymentNettingStore } from "../store";
 import ItemListPayment from "./item-list-payment";
 
 const ListAccountReceivable = () => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
+  const { selectedInvoices } = usePaymentNettingStore();
   const { getSelectedRows, isHydrated } = usePaymentNetting(
     session?.token,
     profile?.client_id,
@@ -113,6 +115,16 @@ const ListAccountReceivable = () => {
           {invoicesData.length > 0 ? (
             invoicesData.map((row: any) => {
               console.log("🎯 Renderizando item:", row);
+              // Validar que row no sea null antes de continuar
+              if (!row || !row.id) {
+                return null;
+              }
+
+              // Verificar si este elemento ya está seleccionado
+              const isAlreadySelected = selectedInvoices.some(
+                (invoice) => invoice.id === row.id
+              );
+
               return (
                 <ItemListPayment
                   key={row.id}
@@ -120,6 +132,8 @@ const ListAccountReceivable = () => {
                   type="account-receivable"
                   handleOpenInfo={handleOpenInfo}
                   handleCloseInfo={handleCloseInfo}
+                  isSelected={isAlreadySelected}
+                  isDisabled={false}
                 />
               );
             })

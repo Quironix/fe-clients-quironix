@@ -137,6 +137,10 @@ interface PaymentNettingStore {
     createdAtToFrom: string;
     createdAtTo: string;
   }) => void;
+  selectedInvoices: any[];
+  selectedPayments: any[];
+  setSelectedInvoices: (invoices: any[] | any) => void;
+  setSelectedPayments: (payments: any[] | any) => void;
 }
 export const usePaymentNettingStore = create<PaymentNettingStore>(
   (set, get) => ({
@@ -172,5 +176,45 @@ export const usePaymentNettingStore = create<PaymentNettingStore>(
       createdAtTo: format(new Date(), "yyyy-MM-dd"),
     },
     setFilters: (filters) => set({ filters }),
+    selectedInvoices: [],
+    selectedPayments: [],
+    setSelectedInvoices: (invoices) => {
+      const currentInvoices = get().selectedInvoices;
+
+      // Si se está pasando un array completo, reemplazar todo
+      if (Array.isArray(invoices)) {
+        set({ selectedInvoices: invoices });
+        return;
+      }
+
+      // Si se está pasando un elemento individual, verificar duplicados
+      const invoice = invoices as any;
+      const existingInvoice = currentInvoices.find(
+        (item) => item.id === invoice.id
+      );
+
+      if (!existingInvoice) {
+        set({ selectedInvoices: [...currentInvoices, invoice] });
+      }
+    },
+    setSelectedPayments: (payments) => {
+      const currentPayments = get().selectedPayments;
+
+      // Si se está pasando un array completo, reemplazar todo
+      if (Array.isArray(payments)) {
+        set({ selectedPayments: payments });
+        return;
+      }
+
+      // Si se está pasando un elemento individual, verificar duplicados
+      const payment = payments as any;
+      const existingPayment = currentPayments.find(
+        (item) => item.id === payment.id
+      );
+
+      if (!existingPayment) {
+        set({ selectedPayments: [...currentPayments, payment] });
+      }
+    },
   })
 );

@@ -63,6 +63,7 @@ interface Payment {
   updated_at: string;
   accounting_at: null;
   sender_account: null;
+  phases: any[];
 }
 
 interface Debtor {

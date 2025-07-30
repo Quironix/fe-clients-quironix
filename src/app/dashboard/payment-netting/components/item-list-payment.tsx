@@ -1,4 +1,5 @@
-import { Clock2, InfoIcon } from "lucide-react";
+import { CheckCircle2, Clock2, DollarSign, InfoIcon } from "lucide-react";
+import { usePaymentNettingStore } from "../store";
 import DocumentTypeBadge, { DocumentType } from "./document-type-badge";
 
 interface ItemListPaymentProps {
@@ -10,10 +11,13 @@ interface ItemListPaymentProps {
     due_date: string;
     amount: string;
     type: DocumentType;
+    created_at?: string;
   };
   type: "account-receivable" | "credit-favor";
   handleOpenInfo: (row: any) => void;
   handleCloseInfo: () => void;
+  isSelected?: boolean;
+  isDisabled?: boolean;
 }
 
 const ItemListPayment = ({
@@ -21,15 +25,54 @@ const ItemListPayment = ({
   type,
   handleOpenInfo,
   handleCloseInfo,
+  isSelected = false,
+  isDisabled = false,
 }: ItemListPaymentProps) => {
+  const {
+    setSelectedInvoices,
+    setSelectedPayments,
+    selectedInvoices,
+    selectedPayments,
+  } = usePaymentNettingStore();
+
+  const handleClick = () => {
+    // No hacer nada si está deshabilitado o ya seleccionado
+    if (isDisabled || isSelected) {
+      return;
+    }
+
+    if (type === "account-receivable") {
+      setSelectedInvoices(row);
+    } else {
+      setSelectedPayments(row);
+    }
+  };
+
+  // Determinar las clases CSS basadas en el estado
+  const getContainerClasses = () => {
+    const baseClasses =
+      "flex flex-col items-start justify-between w-full border rounded-lg p-3 transition-all duration-300 group space-y-1 max-h-40 min-h-40";
+    const typeClasses =
+      type === "account-receivable" ? "border-orange-400" : "border-blue-400";
+
+    if (isSelected) {
+      return `${baseClasses} bg-gray-100 border-dashed border-gray-300 shadow-md cursor-default`;
+    }
+
+    if (isDisabled) {
+      return `${baseClasses} bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed`;
+    }
+
+    return `${baseClasses} ${typeClasses} hover:translate-y-[-2px] hover:shadow-md cursor-pointer`;
+  };
+
   return (
-    <div
-      className={`flex flex-col items-end justify-between w-full border rounded-lg p-3 hover:translate-y-[-2px] hover:shadow-md transition-all duration-300 group space-y-1 ${
-        type === "account-receivable" ? "border-orange-400" : "border-blue-400"
-      }`}
-    >
-      <div className="flex items-end w-full justify-between">
-        <div></div>
+    <div className={getContainerClasses()} onClick={handleClick}>
+      <div className="flex items-center w-full justify-between">
+        <div>
+          {/* Badge de seleccionado */}
+          {isSelected && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+        </div>
         <div className="flex items-center gap-1">
           <DocumentTypeBadge type={row.type} />
           <div className="hidden group-hover:block">
@@ -44,21 +87,34 @@ const ItemListPayment = ({
 
       <div className="flex flex-col items-start justify-start w-full">
         <div className="flex items-center justify-start gap-1 mb-2">
-          <Clock2 className="w-3 h-3 text-orange-400" />
+          {type === "account-receivable" ? (
+            <Clock2 className="w-3 h-3 text-orange-400" />
+          ) : (
+            <DollarSign className="w-3 h-3 text-blue-400" />
+          )}
           <span className="text-xs text-gray-500">
             <span className="font-bold text-md">Nº {row?.number}</span>
           </span>
         </div>
-        <div className="flex flex-col items-start border-b border-orange-400 pb-2 w-full">
+        <div className="flex flex-col items-start border-b border-orange-400 pb-2 w-full h-full">
           <span className="font-bold text-xs truncate w-full">
             {row.debtor?.name}
           </span>
 
-          {type === "account-receivable" && (
+          {type === "account-receivable" ? (
             <div className="flex items-start gap-1">
               <span className="font-bold text-xs">Fase</span>
               <span className="text-xs text-gray-500 truncate">
-                {row?.phases?.length > 0 ? row?.phases[0] : "Sin fase"}
+                {row?.phases?.length > 0
+                  ? row?.phases[0]?.phase || "Sin fase"
+                  : "Sin fase"}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-start gap-1">
+              <span className="font-bold text-xs">F. Depósito</span>
+              <span className="text-xs text-gray-500">
+                {row?.created_at?.split("T")[0]}
               </span>
             </div>
           )}

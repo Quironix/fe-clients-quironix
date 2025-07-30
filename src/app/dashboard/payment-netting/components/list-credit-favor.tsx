@@ -6,17 +6,19 @@ import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { usePaymentNetting } from "../hooks/usePaymentNetting";
 import { getPayments } from "../services";
+import { usePaymentNettingStore } from "../store";
 import ItemListPayment from "./item-list-payment";
 
 const ListCreditFavor = () => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
+  const { selectedInvoices, selectedPayments } = usePaymentNettingStore();
   const { getSelectedRows, isHydrated } = usePaymentNetting(
     session?.token,
     profile?.client_id,
     false
   );
-  const selectedPayments = useMemo(() => {
+  const selectedPaymentsList = useMemo(() => {
     if (!isHydrated) return [];
     return getSelectedRows();
   }, [getSelectedRows, isHydrated]);
@@ -26,21 +28,21 @@ const ListCreditFavor = () => {
     return !!(
       session?.token &&
       profile?.client_id &&
-      selectedPayments[0]?.payment?.debtor?.id
+      selectedPaymentsList[0]?.payment?.debtor?.id
     );
-  }, [session?.token, profile?.client_id, selectedPayments]);
+  }, [session?.token, profile?.client_id, selectedPaymentsList]);
 
   const {
     data: payments,
     isLoading: isLoadingInvoices,
     error: invoicesError,
   } = useQuery({
-    queryKey: ["payments", selectedPayments[0]?.payment?.debtor?.id],
+    queryKey: ["payments", selectedPaymentsList[0]?.payment?.debtor?.id],
     queryFn: async () =>
       await getPayments({
         accessToken: session?.token as string,
         clientId: profile?.client_id as string,
-        debtorId: selectedPayments[0]?.payment?.debtor?.id as string,
+        debtorId: selectedPaymentsList[0]?.payment?.debtor?.id as string,
       }),
     enabled: canFetchInvoices, // Solo ejecutar si todos los parámetros están disponibles
     retry: 1, // Reintentar solo una vez en caso de error
@@ -48,7 +50,7 @@ const ListCreditFavor = () => {
   });
 
   const mapInvoiceData = (invoice: any) => ({
-    id: invoice.id || Math.random(),
+    id: invoice.id || `fallback-${invoice.payment_number || Date.now()}`,
     number: invoice.payment_number || "N/A",
     debtor: invoice.debtor || { name: "N/A" },
     phases: invoice.phases || [],
@@ -56,6 +58,18 @@ const ListCreditFavor = () => {
     amount: invoice.amount?.toString() || "0",
     type: invoice.type || "PAYMENT",
   });
+
+  // Función para contar propiedades válidas (no null, undefined, vacías)
+  const countValidProperties = (obj: any) => {
+    if (!obj) return 0;
+    return Object.values(obj).filter(
+      (value) =>
+        value !== null &&
+        value !== undefined &&
+        value !== "" &&
+        (Array.isArray(value) ? value.length > 0 : true)
+    ).length;
+  };
 
   const paymentsData = useMemo(() => {
     if (
@@ -66,15 +80,54 @@ const ListCreditFavor = () => {
       return [];
     }
 
-    console.log("📋 Respuesta cruda de la API:", payments.data);
-    console.log("📄 Array de facturas:", payments.data.data);
+    let mappedData = payments.data.data.map(mapInvoiceData);
 
-    debugger;
-    const mappedData = payments.data.data.map(mapInvoiceData);
-    console.log("🔄 Datos mapeados:", mappedData);
+    // Procesar pagos seleccionados
+    selectedPaymentsList.forEach((payment) => {
+      const selectedPaymentData = {
+        id: payment.id,
+        number: payment.payment.payment_number || "N/A",
+        debtor: payment.payment.debtor,
+        phases: payment.payment.phases,
+        due_date: payment.payment.due_at,
+        amount: payment.payment.amount,
+        type: payment.payment.document_type,
+        created_at: payment.payment.created_at,
+      };
+
+      // Buscar si ya existe un elemento con el mismo ID
+      const existingIndex = mappedData.findIndex(
+        (item) => item?.id === payment?.payment?.id
+      );
+
+      if (existingIndex !== -1) {
+        // Si existe, comparar cuál tiene más datos
+        const existingItem = mappedData[existingIndex];
+        const existingDataCount = countValidProperties(existingItem);
+        const selectedDataCount = countValidProperties(selectedPaymentData);
+
+        console.log(`🔍 Comparando duplicados:
+          - Existente (${existingDataCount} propiedades): ${JSON.stringify(existingItem)}
+          - Seleccionado (${selectedDataCount} propiedades): ${JSON.stringify(selectedPaymentData)}`);
+
+        // Usar el que tenga más datos válidos
+        if (selectedDataCount > existingDataCount) {
+          mappedData[existingIndex] = selectedPaymentData;
+          console.log(`✅ Reemplazando con elemento seleccionado (más datos)`);
+        } else {
+          console.log(`✅ Manteniendo elemento existente (más datos)`);
+        }
+      } else {
+        // Si no existe, agregarlo
+        mappedData.push(selectedPaymentData);
+        console.log(
+          `➕ Agregando nuevo elemento: ${JSON.stringify(selectedPaymentData)}`
+        );
+      }
+    });
 
     return mappedData;
-  }, [payments]);
+  }, [payments, selectedPaymentsList]);
 
   // Funciones dummy
   const handleOpenInfo = (row: any) => {
@@ -114,6 +167,16 @@ const ListCreditFavor = () => {
           {paymentsData.length > 0 ? (
             paymentsData.map((row: any) => {
               console.log("🎯 Renderizando item:", row);
+              // Validar que row no sea null antes de renderizar
+              if (!row || !row.id) {
+                return null;
+              }
+
+              // Verificar si este elemento ya está seleccionado
+              const isAlreadySelected = selectedPayments.some(
+                (payment) => payment.id === row.id
+              );
+
               return (
                 <ItemListPayment
                   key={row.id}
@@ -121,6 +184,8 @@ const ListCreditFavor = () => {
                   type="credit-favor"
                   handleOpenInfo={handleOpenInfo}
                   handleCloseInfo={handleCloseInfo}
+                  isSelected={isAlreadySelected}
+                  isDisabled={false}
                 />
               );
             })
