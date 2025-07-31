@@ -16,11 +16,15 @@ import DisputeEntry from "./components/modals/dispute-entry";
 import { FileCog } from "lucide-react";
 import NormalizeEntry from "./components/modals/normalize-entry";
 import NormalizeLitigation from "./components/normalize-litigation";
+import LitigationEditModal from "./components/modals/litigation-edit";
+import LitigationDetail from "./components/modals/litigation-detail";
 
 const Litigation = () => {
   const [openCreateForm, setOpenCreateForm] = useState(false);
   const [openNormalizeForm, setOpenNormalizeForm] = useState(false);
 
+  const [showEdit, setShowEdit] = useState(false);
+const [detailsModal , setDetailsModal] = useState(false)
   return (
     <>
       <Header fixed>
@@ -57,6 +61,12 @@ const Litigation = () => {
         <div className="mt-5 border border-gray-200 rounded-md p-3">
           <ListLitigation />
         </div>
+        {/* <div>
+          <LitigationEditModal open={false} onOpenChange={setShowEdit } litigation={undefined} />
+        </div> */}
+        {/* <div>
+          <LitigationDetail open={false}  onOpenChange={setDetailsModal } litigation={undefined} />
+        </div> */}
 
         {openCreateForm && <DisputeEntry onClose={() => setOpenCreateForm(false)} />}
         {openNormalizeForm && <NormalizeEntry onClose={() => setOpenNormalizeForm(false)} />}

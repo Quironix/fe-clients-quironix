@@ -1,113 +1,125 @@
-"use client";
-import { MessageSquare, SquareUserRound, Building, Calendar, FileText, FolderTree, User } from "lucide-react";
+import { SquareUserRound, Building, FileText, FolderTree, Calendar, User, MessageSquare, X } from "lucide-react";
 import Image from 'next/image';
+import { Litigation } from "../../types";
 
-const LitigationDetail = ({ onClose }: { onClose: () => void }) => {
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center gap-2 justify-center z-50 text-start">
-    <div className="bg-white rounded-md  w-full max-w-3xl relative py-12 px-6">
-      <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-black">
-       X
-      </button>
-
-      <div className="my-4">
+type LitigationDetailProps = {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    litigation: Litigation; 
+  };
+  
+  const LitigationDetail = ({ open, onOpenChange, litigation }: LitigationDetailProps) => {
+  
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center gap-4 justify-center z-50 text-start">
+        <div className="bg-white rounded-md  w-full max-w-3xl relative py-12 px-6">
+        <button
+            onClick={() => onOpenChange(false)}
+            className="absolute top-4 right-4 hover:text-black"
+          >
+            <X />
+          </button>
+  
+          <div className="my-4">
             <h2 className="text-lg font-bold text-gray-800">Detalle del litigio</h2>
-            <p className="text-lg font-bold text-gray-800">Factura N° 12345678</p>
+            <p className="text-lg font-bold text-gray-800">
+              Factura N° {litigation?.invoice_number || "Desconocido"}
+            </p>
           </div>
-
+  
           <div className="grid grid-cols-2 gap-4 bg-[#EDF2F7] px-4 py-3 my-2 rounded-md">
             <div className="flex items-center">
-                <div className="items-center mr-2">
-                  <Image
-                    src="/img/dollar-sign.svg"
-                    alt="Signo pesos"
-                    width={6}
-                    height={6}
-                    className="w-8 h-8"
-                  />
-                </div>
-                <div>
-                  <p>Monto Factura</p>
-                  <p className="text-[#2F6EFF] font-bold text-2xl">$ {"..."}</p>
-                </div>
+              <div className="items-center mr-2">
+                <Image
+                  src="/img/dollar-sign.svg"
+                  alt="Signo pesos"
+                  width={6}
+                  height={6}
+                  className="w-8 h-8"
+                />
               </div>
+              <div>
+                <p>Monto Factura</p>
+                <p className="text-[#2F6EFF] font-bold text-2xl">
+                  $ {litigation?.invoiceAmount ?? "..."}
+                </p>
+              </div>
+            </div>
   
             <div>
-                <p className="text-sm text-gray-600">Monto litigio</p>
-                <p className="text-[#2F6EFF] font-bold text-2xl">$100.000</p>
+              <p className="text-sm text-gray-600">Monto litigio</p>
+              <p className="text-[#2F6EFF] font-bold text-2xl">
+                ${litigation?.litigationAmount ?? "..."}
+              </p>
             </div>
-        </div>
-
-              <div className=" bg-[#CBD5E1] h-0.5 max-w-full my-3"></div>
-
+          </div>
+  
+          <div className=" bg-[#CBD5E1] h-0.5 max-w-full my-4"></div>
+  
           <div className="grid grid-cols-2 gap-6 text-sm text-gray-800">
             <div className="flex items-center gap-2">
-              <SquareUserRound/>
+              <SquareUserRound />
               <div>
-                <p className="text-xs text-gray-500">RUT</p>
-                <p>60.123.123-2</p>
+                <p className="text-sm ">RUT</p>
+                <p className="text-lg">{litigation?.number ?? "Desconocido"}</p>
               </div>
             </div>
-
+  
             <div className="flex items-center gap-2">
-              <Building/>
+              <Building />
               <div>
-                <p className="text-xs text-gray-500">Razón social</p>
-                <p>Nombre Empresa</p>
+                <p className="text-sm ">Razón social</p>
+                <p className="text-lg">{litigation?.company_id ?? "Razon social"}</p>
               </div>
             </div>
-
+  
             <div className="flex items-center gap-2">
-              <FileText/>
-                <p className="text-xs text-gray-500">Motivo</p>
-                <p>
-                  <p className="border-2 border-[#038E06] text-[#038E06] px-.5 py-1 rounded-md text-xs font-medium">
-                    Fac. Comercial
-                  </p>
+            
+              <FileText />
+                <p className="text-sm ">Motivo</p>
+                <p className="text-md border-2 border-[#038E06] text-[#038E06] px-2 py-.5 rounded-xl font-medium">
+                  {litigation?.reason ?? "Motivo"}
                 </p>
             </div>
-
+  
             <div className="flex items-center gap-2">
-              <FolderTree/>
+              <FolderTree />
               <div>
-                <p className="text-xs text-gray-500">Submotivo</p>
-                <p>No emitida</p>
+                <p className="text-sm ">Submotivo</p>
+                <p className="text-lg">{litigation?.subreason ?? "Submotivo"}</p>
               </div>
             </div>
-
+  
             <div className="flex items-center gap-2">
-              <Calendar/>
+              <Calendar />
               <div>
-                <p className="text-xs text-gray-500">Fecha</p>
-                <p>
-                  <span className="font-semibold">12/04/2025</span>, 19:30 hr.
+                <p className="text-sm ">Fecha</p>
+                <p className="text-lg">
+                  <span className="font-semibold">{litigation?.date ?? "Fecha"}</span>
                 </p>
               </div>
             </div>
-
+  
             <div className="flex items-center gap-2">
-              <User/>
+              <User />
               <div>
-                <p className="text-xs text-gray-500">Contacto</p>
-                <p>Nombre Apellido</p>
+                <p className="text-sm ">Contacto</p>
+                <p className="text-lg">{litigation?.number ?? "Contacto"}</p>
               </div>
             </div>
           </div>
-
-              <div className="flex items-center gap-2 border-2 border-[#EDF2F7] rounded-md p-4 text-sm text-gray-700 my-3">
-              <MessageSquare />
-                  <div>
-                      
-            <p className="font-medium text-xs mb-1 text-gray-600">Comentario</p>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-              dolore magna aliqua.
-            </p>
-                  </div>
+  
+          <div className="flex items-center gap-2 border-2 border-[#EDF2F7] rounded-md p-4 text-sm my-4">
+            <MessageSquare />
+            <div>
+              <p className="font-medium text-sm mb-1">Comentario</p>
+              <p className="text-lg">{litigation?.comment ?? "Sin comentario."}</p>
+            </div>
           </div>
+        </div>
       </div>
-    </div>
-  );
-};
-
-export default LitigationDetail;
+    );
+  };
+  
+  export default LitigationDetail;
+  

@@ -1,7 +1,9 @@
+import Litigation from '../page';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export const getLitigations = async (accessToken: string, clientId: string) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/litigations`,
+    `${API_URL}/v2/clients/${clientId}/litigations`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -10,7 +12,51 @@ export const getLitigations = async (accessToken: string, clientId: string) => {
   );
   return response.json();
 };
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export const updateLitigation = async (
+  accessToken: string,
+  clientId: string,
+  litigationId: string,
+  payload: {
+    litigation_amount: number;
+    motivo: string;
+    submotivo: string;
+    contact: string;
+  }
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/litigations/${litigationId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error?.message || "Error al editar litigio");
+  }
+
+  return response.json();
+};
+export const GetAllLitigationByDebtorId = async( accessToken: string, clientId: string, debtorId) => {
+  const response = await fetch(`${API_URL}/v2/clients/${clientId}/litigations/debtor/${debtorId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  )
+  console.log('GEtALldebtor', response)
+  return response.json();
+
+}
+
+
 /**
  * Actualiza el perfil de usuario para la tabla de conciliación.
  *

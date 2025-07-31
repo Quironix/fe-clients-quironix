@@ -19,6 +19,8 @@ import LitigationDetail from "./modals/litigation-detail";
 const ListLitigation = () => {
   const { session, profile } = useProfileContext();
   const [showDialog, setShowDialog] = useState(false);
+  const [selectedLitigation, setSelectedLitigation] = useState<Litigation | null>(null);
+const [showDetailModal, setShowDetailModal] = useState(false);
 
   const {
     data,
@@ -87,8 +89,12 @@ const ListLitigation = () => {
     {
       label: "Ver detalles",
       onClick: async (selectedRows: Litigation[]) => {
-        console.log("Ver detalles:", selectedRows);
-        <LitigationDetail onClose={() => setShowDialog(false)}/>
+        if (selectedRows.length > 0) {
+          setSelectedLitigation(selectedRows[0]);
+          setShowDetailModal(true);
+        } else {
+          toast.warning("Selecciona al menos un litigio para ver detalles.");
+        }
       },
       variant: "outline" as const,
       icon: <Eye className="h-4 w-4" />,

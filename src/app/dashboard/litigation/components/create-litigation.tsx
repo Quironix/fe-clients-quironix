@@ -1,10 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React from "react";
 
 const CreateLitigation = ({ onOpenForm }: { onOpenForm: () => void }) => {
-  const [openForm, setOpenForm] = useState(false);
   return (
     <div className="w-full h-full min-h-full border border-gray-200 rounded-md p-3 space-y-4">
       <h2 className="text-lg font-bold border-b border-gray-300 pb-2">
@@ -21,7 +19,6 @@ const CreateLitigation = ({ onOpenForm }: { onOpenForm: () => void }) => {
           Crear
         </Button>
       </div>
-      {/* {openForm && <DisputeEntry />} */}
     </div>
   );
 };

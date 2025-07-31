@@ -7,15 +7,12 @@ import * as z from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useDisputeStore } from "../store/disputeStore";
+import { useDisputeStore } from "../../store/disputeStore";
 import { Loader2 } from "lucide-react";
-import { useLitigationStore } from "../store/litigation-store";
-import LitigationDialogConfirm from "./litigation-dialog-confirm";
+import { useLitigationStore } from "../../store/litigation-store";
+import LitigationDialogConfirm from "../litigation-dialog-confirm";
 import Image from 'next/image';
-import { FormField } from "@/components/ui/form";
-import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
-import SelectClient from "../../components/select-client";
-import { dataTagSymbol } from "@tanstack/react-query";
+import { Litigation } from "../../types";
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -39,7 +36,12 @@ const litigationSchema = z.object({
 
 type LitigationForm = z.infer<typeof litigationSchema>;
 
-const NormalizeForm = () => {
+type NormalizeFormModalsProps = {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    litigation: Litigation; 
+  };
+const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormModalsProps) => {
   const { setField } = useDisputeStore();
   const { litigiosIngresados, addLitigio } = useLitigationStore();
   const [showDialog, setShowDialog] = useState(false);
@@ -64,21 +66,23 @@ const NormalizeForm = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    control
   } = form;
- 
 
   const onSubmit = async (data: LitigationForm) => {
     try {
       const payload = {
-        normalization_reason: data.reason,
-        normalization_by_contact: data.contact,
-        comment: data.comment,
-        is_important_comment: "Cliente no responde...",
+        invoice_id: data.invoiceNumber,
+        debtor_id: data.debtor,
+        litigation_amount: parseFloat(data.litigationAmount ?? "0"),
+        description: "Cliente no responde...",
+        motivo: data.reason,
+        submotivo: data.subreason,
+        contact: data.contact,
+        initial_comment: data.comment ?? "",
       };
   
       const res = await fetch(
-        `${API_URL}/v2/clients/${data.client}/litigations/${data.invoiceId}/normalize`,
+        `${API_URL}/v2/clients/${data.client}/litigations`,
         {
           method: "POST",
           headers: {
@@ -123,23 +127,21 @@ const NormalizeForm = () => {
           </div>
 
           {/* Cliente y Deudor */}
-         
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={control}
-              name="client"
-              render={({ field }) => (
-                <SelectClient field={field} title="Cliente" singleClient />
+            <div>
+              <label className="font-semibold">Cliente</label>
+              <Input placeholder="Cliente" {...register("client")} />
+              {errors.client && (
+                <p className="text-red-500 text-sm">{errors.client.message}</p>
               )}
-            />
-
-            <FormField
-              control={control}
-              name="debtorId"
-              render={({ field }) => (
-                <DebtorsSelectFormItem field={field} title="Deudor" />
+            </div>
+            <div>
+              <label className="font-semibold">Deudor</label>
+              <Input placeholder="Deudor" {...register("debtor")} />
+              {errors.debtor && (
+                <p className="text-red-500 text-sm">{errors.debtor.message}</p>
               )}
-            />
+            </div>
           </div>
           {/* Tabla de litigios */}
           {litigiosIngresados.length === 0 ? (
@@ -276,4 +278,4 @@ const NormalizeForm = () => {
   );
 };
 
-export default NormalizeForm;
+export default NormalizeFormModals;
