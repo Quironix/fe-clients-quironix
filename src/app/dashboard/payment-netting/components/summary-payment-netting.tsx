@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock2, DollarSign, HeartHandshake } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { usePaymentNettingStore } from "../store";
 import DiferenceAlert from "./diference-alert";
 import ItemListPayment from "./item-list-payment";
@@ -7,7 +8,35 @@ import PendingAlert from "./pending-alert";
 import SuccessAlert from "./success-alert";
 
 const SummaryPaymentNetting = () => {
-  const { selectedInvoices, selectedPayments } = usePaymentNettingStore();
+  const {
+    selectedInvoices,
+    selectedPayments,
+    setTotalPayments,
+    setTotalInvoices,
+  } = usePaymentNettingStore();
+
+  const totalPayments = useMemo(() => {
+    return selectedPayments.reduce((acc, payment) => {
+      const amount = Number(payment.amount);
+      return acc + amount;
+    }, 0);
+  }, [selectedPayments]);
+
+  const totalInvoices = useMemo(() => {
+    return selectedInvoices.reduce((acc, invoice) => {
+      const amount = Number(invoice.amount);
+      return acc + amount;
+    }, 0);
+  }, [selectedInvoices]);
+
+  // Actualizar el store cuando cambien los totales
+  useEffect(() => {
+    setTotalPayments(totalPayments);
+  }, [totalPayments, setTotalPayments]);
+
+  useEffect(() => {
+    setTotalInvoices(totalInvoices);
+  }, [totalInvoices, setTotalInvoices]);
   return (
     <div className="border border-gray-300 rounded-lg p-4 space-y-4">
       <div className="flex justify-between items-center">
@@ -63,15 +92,28 @@ const SummaryPaymentNetting = () => {
           </div>
         </div>
       </div>
-      <SuccessAlert />
-      <DiferenceAlert />
-      <PendingAlert />
-      <div className="flex items-center justify-center gap-3">
-        <ArrowRight className="w-6 h-6 text-blue-400" />
-        <span className="text-lg font-bold">Compensar: $150.000</span>
-      </div>
+      {totalInvoices !== 0 && totalPayments !== 0 && (
+        <>
+          {totalInvoices === totalPayments && <SuccessAlert />}
+          {totalInvoices < totalPayments && <DiferenceAlert />}
+          {totalInvoices > totalPayments && <PendingAlert />}
+          <div className="flex items-center justify-center gap-3">
+            <ArrowRight className="w-6 h-6 text-blue-400" />
+            <span className="text-lg font-bold">
+              Compensar: $
+              {new Intl.NumberFormat("es-CL").format(
+                Math.min(totalInvoices, totalPayments)
+              )}
+            </span>
+          </div>
+        </>
+      )}
+
       <div className="flex items-center justify-center w-full">
-        <Button className="flex items-center justify-center gap-2">
+        <Button
+          className="flex items-center justify-center gap-2"
+          disabled={totalInvoices === 0 || totalPayments === 0}
+        >
           <HeartHandshake className="w-4 h-4 text-white" />
           <span className="text-md font-bold">Compensar manualmente</span>
         </Button>

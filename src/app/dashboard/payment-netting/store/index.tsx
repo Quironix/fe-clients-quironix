@@ -141,6 +141,10 @@ interface PaymentNettingStore {
   selectedPayments: any[];
   setSelectedInvoices: (invoices: any[] | any) => void;
   setSelectedPayments: (payments: any[] | any) => void;
+  totalPayments: number;
+  totalInvoices: number;
+  setTotalPayments: (total: number) => void;
+  setTotalInvoices: (total: number) => void;
 }
 export const usePaymentNettingStore = create<PaymentNettingStore>(
   (set, get) => ({
@@ -216,5 +220,9 @@ export const usePaymentNettingStore = create<PaymentNettingStore>(
         set({ selectedPayments: [...currentPayments, payment] });
       }
     },
+    totalPayments: 0,
+    totalInvoices: 0,
+    setTotalPayments: (total) => set({ totalPayments: total }),
+    setTotalInvoices: (total) => set({ totalInvoices: total }),
   })
 );

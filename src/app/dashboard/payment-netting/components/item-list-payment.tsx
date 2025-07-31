@@ -1,4 +1,17 @@
-import { CheckCircle2, Clock2, DollarSign, InfoIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  CheckCircle2,
+  Clock2,
+  DollarSign,
+  InfoIcon,
+  Trash,
+} from "lucide-react";
+import { useState } from "react";
 import { usePaymentNettingStore } from "../store";
 import DocumentTypeBadge, { DocumentType } from "./document-type-badge";
 
@@ -35,6 +48,8 @@ const ItemListPayment = ({
     selectedPayments,
   } = usePaymentNettingStore();
 
+  const [popOver, setPopOver] = useState(false);
+
   const handleClick = () => {
     // No hacer nada si está deshabilitado o ya seleccionado
     if (isDisabled || isSelected) {
@@ -45,6 +60,38 @@ const ItemListPayment = ({
       setSelectedInvoices(row);
     } else {
       setSelectedPayments(row);
+    }
+  };
+
+  const handleRemoveFromSelection = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevenir que se ejecute el handleClick del contenedor
+
+    if (type === "account-receivable") {
+      // Filtrar el elemento actual de la lista de facturas seleccionadas
+      const updatedInvoices = selectedInvoices.filter(
+        (invoice) => invoice.id !== row.id
+      );
+      setSelectedInvoices(updatedInvoices);
+    } else {
+      // Filtrar el elemento actual de la lista de pagos seleccionados
+      const updatedPayments = selectedPayments.filter(
+        (payment) => payment.id !== row.id
+      );
+      setSelectedPayments(updatedPayments);
+    }
+    setPopOver(false); // Cerrar el popover después de eliminar
+  };
+
+  const handleInfoClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevenir que se ejecute el handleClick del contenedor
+  };
+
+  // Verificar si el elemento está seleccionado en el store
+  const isItemSelected = () => {
+    if (type === "account-receivable") {
+      return selectedInvoices.some((invoice) => invoice.id === row.id);
+    } else {
+      return selectedPayments.some((payment) => payment.id === row.id);
     }
   };
 
@@ -75,12 +122,65 @@ const ItemListPayment = ({
         </div>
         <div className="flex items-center gap-1">
           <DocumentTypeBadge type={row.type} />
-          <div className="hidden group-hover:block">
-            <InfoIcon
+          <div className={`${popOver ? "block" : "hidden group-hover:block"}`}>
+            {/* <InfoIcon
               onMouseEnter={() => handleOpenInfo(row)}
               onMouseLeave={handleCloseInfo}
               className="w-5 h-5 text-orange-400"
-            />
+            /> */}
+            <Popover open={popOver} onOpenChange={setPopOver}>
+              <PopoverTrigger asChild className="cursor-pointer">
+                <InfoIcon
+                  className="w-5 h-5 text-orange-400"
+                  onClick={handleInfoClick}
+                  onMouseEnter={(e) => e.stopPropagation()}
+                  onMouseLeave={(e) => e.stopPropagation()}
+                />
+              </PopoverTrigger>
+              <PopoverContent
+                onClick={(e) => e.stopPropagation()}
+                onMouseEnter={(e) => e.stopPropagation()}
+                onMouseLeave={(e) => e.stopPropagation()}
+                onMouseOver={(e) => e.stopPropagation()}
+                onMouseOut={(e) => e.stopPropagation()}
+              >
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-medium">
+                    Información del documento
+                  </p>
+                  <div className="text-xs text-gray-600">
+                    <p>
+                      <span className="font-medium">Número:</span> {row.number}
+                    </p>
+                    <p>
+                      <span className="font-medium">Deudor:</span>{" "}
+                      {row.debtor?.name}
+                    </p>
+                    <p>
+                      <span className="font-medium">Monto:</span> $
+                      {new Intl.NumberFormat("es-CL").format(
+                        Number(row.amount)
+                      )}
+                    </p>
+                  </div>
+                  {isItemSelected() ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={handleRemoveFromSelection}
+                    >
+                      <Trash className="w-3 h-3 mr-2" />
+                      Eliminar de selección
+                    </Button>
+                  ) : (
+                    <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded">
+                      Este documento no está seleccionado actualmente
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>
