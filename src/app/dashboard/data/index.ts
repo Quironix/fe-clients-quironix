@@ -202,10 +202,16 @@ export const getSidebarData = (profile: any) => {
             scope: "client.payment_netting",
           },
           {
-            title: "Seguimiento",
+            title: "Litigios",
             url: "/dashboard/litigation",
             icon: IconFileCheckFilled,
             scope: "client.litigation"
+          },
+          {
+            title: "Planes de pago",
+            url: "/dashboard/payment-plans",
+            icon: IconFileCheckFilled,
+            scope: "client.payment_plans"
           }
         ],
       },
@@ -365,10 +371,16 @@ export const sidebarData: any = {
               scope: "client.transactions.payment_netting",
             },
             {
-              title: "Seguimiento",
+              title: "Litigios",
               url: "/dashboard/litigation",
               scope: "client.litigation"
-            }
+            },
+          {
+            title: "Planes de pago",
+            url: "/dashboard/payment-plans",
+            icon: IconFileCheckFilled,
+            scope: "client.payment_plans"
+          }
           ],
         },
       ],

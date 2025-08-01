@@ -43,7 +43,7 @@ const adaptApiResponseToLitigation = (apiData: any): Litigation[] => {
       ? `${item.dispute_days} días`
       : "30 días",
 
-    approver: item?.approver?.name ?? "Nombre Apellido", 
+    approver: item?.approver ?? "Nombre Apellido",
     reason: item?.reason ?? "Sin motivo",
     subreason: item?.subreason ?? "Sin submotivo",
 
@@ -60,6 +60,52 @@ const adaptApiResponseToLitigation = (apiData: any): Litigation[] => {
     code: "-",
     description: item.description ?? "",
     comment: item.comment ?? "",
+    id: "",
+    invoice_id: "",
+    litigation_amount: 0,
+    motivo: "",
+    submotivo: "",
+    contact: "",
+    normalization_reason: "",
+    normalization_by_contact: "",
+    created_by: "",
+    creator: {
+      id: "",
+      first_name: "",
+      last_name: "",
+      client_id: "",
+      type: "",
+      email: "",
+      phone_number: "",
+      created_at: "",
+      updated_at: ""
+    },
+    approved_by: "",
+    debtor: {
+      id: "",
+      name: "",
+      client_id: "",
+      channel: "",
+      debtor_code: "",
+      addresses: [],
+      payment_method: "",
+      dni_id: "",
+      currency: "",
+      email: "",
+      phone: "",
+      communication_channel: "",
+      contacts: [],
+      category: "",
+      economic_activities: [],
+      sales_person: undefined,
+      attention_days_hours: [],
+      executive_id: "",
+      created_at: "",
+      updated_at: "",
+      company_id: "",
+      company: undefined,
+      comments: []
+    }
   }));
 };
 
@@ -104,12 +150,13 @@ export function useLitigation(
           accessToken,
           clientId,
         );
-
+         console.log('apiResponse', apiResponse.data)
         const adaptedData = adaptApiResponseToLitigation(apiResponse);
+        console.log('adaptedData', adaptedData)
         const total = apiResponse?.pagination?.total || 0;
         const totalPages = Math.max(1, Math.ceil(total / limit));
 
-        setData(adaptedData);
+        setData(apiResponse.data);
         setPagination({
           page,
           limit,

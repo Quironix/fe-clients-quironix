@@ -21,6 +21,109 @@ export interface Litigation {
   code: string;
   description: string;
   comment: string;
+  id: string;
+  invoice_id: string;
+  invoice?: {
+    id: string;
+    type: string;
+    number: string;
+    external_number: string;
+    is_internal_document: boolean;
+    amount: string;
+    order_number: string;
+    issue_date: string;
+    is_fictitious: boolean;
+    company_id: string | null;
+    company: any;
+    reference: string;
+    file: any; 
+    due_date: string;
+    operation_date: string;
+    reception_date: string;
+    folio: string;
+    balance: string;
+    litigation_balance: string;
+    number_of_installments: number;
+    observations: string;
+    order_code: string;
+    ref_1: string;
+    ref_2: string;
+    ref_3: string;
+    ref_4: string;
+    client_id: string;
+    client: any;
+    debtor_id: string;
+    debtor: any;
+    status: string;
+    phases: any[];
+    created_at: string;
+    updated_at: string;
+    payment_plan_id: string | null;
+  };
+  litigation_amount: number;
+  motivo: string;
+  submotivo: string;
+  contact: string;
+  normalization_reason: string | null;
+  normalization_by_contact: string | null;
+  created_by: string;
+  creator: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    client_id: string;
+    type: string;
+    email: string;
+    phone_number: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+  approved_by: string | null;
+  debtor: {
+    id: string;
+    name: string;
+    client_id: string;
+    channel: string | null;
+    debtor_code: string;
+    addresses: {
+      street: string | null;
+      city: string | null;
+      state: string | null;
+      country: string | null;
+      postal_code: string | null;
+      is_primary: boolean;
+    }[];
+    payment_method: string;
+    dni_id: string;
+    currency: string;
+    email: string | null;
+    phone: string | null;
+    communication_channel: string | null;
+    contacts: {
+      name: string;
+      role: string;
+      email: string;
+      phone: string;
+      channel: string;
+      function: string;
+    }[];
+    category: string | null;
+    economic_activities: any[];
+    sales_person: any;
+    attention_days_hours: {
+      day: string;
+      hour_start: string;
+      hour_end: string;
+    }[];
+    executive_id: string | null;
+    created_at: string;
+    updated_at: string;
+  company_id: string | null;
+  company: any;
+  comments: any[];
+}
+
+  
 }
 
 

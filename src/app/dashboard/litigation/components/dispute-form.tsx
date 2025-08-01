@@ -173,7 +173,7 @@ const DisputeForm = () => {
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${session.accessToken}`,
+            Authorization: `Bearer ${session.token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
@@ -407,8 +407,6 @@ const DisputeForm = () => {
     )}
   />
 </div>
-
-
                    <div >
             <FormLabel className="py-2">Comentario</FormLabel>
             <Textarea {...register("comment")} placeholder="Comentario..." />

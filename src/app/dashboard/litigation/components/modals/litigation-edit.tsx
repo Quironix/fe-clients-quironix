@@ -30,6 +30,8 @@ import {
 import {updateLitigation} from "../../services"
 import { useProfileContext } from "@/context/ProfileContext";
 import LitigationDialogConfirm from "../litigation-dialog-confirm";
+import { useLitigation } from "../../hooks/useLitigation";
+
 
 const litigationEditSchema = z.object({
   litigationAmount: z.coerce.number(),
@@ -43,7 +45,7 @@ type LitigationEditForm = z.infer<typeof litigationEditSchema>;
 type LitigationEditModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  litigation: Litigation;
+    litigation: Litigation;
 };
 
 const disputes = [
@@ -97,30 +99,38 @@ const LitigationEditModal = ({ open, onOpenChange, litigation }: LitigationEditM
     const [selectedReason, setSelectedReason] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showDialog, setShowDialog] = useState(false);
+    const { refetch } = useLitigation(session?.token, profile?.client_id)
 
   const form = useForm<LitigationEditForm>({
     resolver: zodResolver(litigationEditSchema),
     defaultValues: {
-        litigationAmount: 0,
-      reason:  "",
-      subreason:  "",
-      contact: "",
+        litigationAmount: litigation.litigation_amount,
+      reason:  litigation.motivo,
+      subreason:  litigation.submotivo,
+      contact: litigation.contact,
     },
   });
   useEffect(() => {
     if (litigation) {
       form.reset({
-        litigationAmount: Number(litigation.litigationAmount ?? 0),
-        reason: litigation.reason ?? "",
-        subreason: litigation.subreason ?? "",
-        contact: litigation.number ?? "",
+        litigationAmount: Number(litigation.litigation_amount ?? 0),
+        reason: litigation.motivo ?? "",
+        subreason: litigation.submotivo ?? "",
+        contact: litigation.contact ?? "",
       });
     }
   }, [litigation]);
+  useEffect(() => {
+    if (litigation?.motivo) {
+      setSelectedReason(litigation.motivo);
+    }
+  }, [litigation]);
+  
 
   const { control, register, handleSubmit, formState: { errors }, reset } = form;
 
-  const onSubmit = async (data: LitigationEditForm) => {
+    const onSubmit = async (data: LitigationEditForm) => {
+        console.log("Formulario enviado", data);
     setIsSubmitting(true);
     try {
       const payload = {
@@ -129,10 +139,11 @@ const LitigationEditModal = ({ open, onOpenChange, litigation }: LitigationEditM
         submotivo: data.subreason,
         contact: data.contact,
       };
+      console.log("Formulario enviado payload", payload);
 
-      const accessToken = session?.accessToken;
+      const accessToken = session?.token;
     const clientId = profile?.client_id;
-    const litigationId = litigation?.code;
+    const litigationId = litigation.id;
 
     if (!accessToken || !clientId || !litigationId) {
       throw new Error("Faltan datos necesarios para la actualización");
@@ -140,8 +151,12 @@ const LitigationEditModal = ({ open, onOpenChange, litigation }: LitigationEditM
 
     await updateLitigation(accessToken, clientId, litigationId, payload);
 
-    window.dispatchEvent(new CustomEvent("litigation:updated"));
-    onOpenChange(false);
+        window.dispatchEvent(new CustomEvent("litigation:updated"));
+        onOpenChange(false);
+        setTimeout(() => {
+            setShowDialog(true); 
+            refetch()
+        })
     } catch (error) {
       console.error(error);
       alert("Error al actualizar litigio");
@@ -153,15 +168,24 @@ const LitigationEditModal = ({ open, onOpenChange, litigation }: LitigationEditM
     if (!open) return null;
      const handleConfirm = () => {
     setShowDialog(false);
-    reset();
-  };
+    reset({
+        litigationAmount: 0,
+        reason: "",
+        subreason: "",
+        contact: "",
+      });
+      
+     };
+     const selected = disputes.find((item) => item.code === selectedReason);
+
 
 
   return (
     <FormProvider {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 text-start">
         <div className="bg-white rounded-md w-full max-w-3xl relative py-8 px-6">
-          <button
+                  <button
+                       aria-label="Cerrar modal"
             onClick={() => onOpenChange(false)}
             className="absolute top-4 right-4 hover:text-black"
           >
@@ -170,7 +194,7 @@ const LitigationEditModal = ({ open, onOpenChange, litigation }: LitigationEditM
 
           <div className="my-4">
             <h2 className="text-xl font-bold text-gray-800">Editar litigio</h2>
-            <p className="text-lg text-gray-600">Factura N° {litigation?.invoice_number ?? "..."}</p>
+            <p className="text-lg text-gray-600">Factura N° {litigation.invoice.number ?? "..."}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 bg-[#EDF2F7] px-4 py-6 my-2 rounded-md">
@@ -179,7 +203,7 @@ const LitigationEditModal = ({ open, onOpenChange, litigation }: LitigationEditM
               <div className="ml-2">
                 <p>Monto Factura</p>
                 <p className="text-[#2F6EFF] font-bold text-3xl">
-                  ${litigation?.invoiceAmount ?? "..."}
+                  ${litigation?.invoice.amount ?? "..."}
                 </p>
               </div>
             </div>
@@ -210,7 +234,7 @@ const LitigationEditModal = ({ open, onOpenChange, litigation }: LitigationEditM
               <Building />
               <div>
                 <p className="text-sm">Razón social</p>
-                <p>{litigation?.reason ?? "Sin Razón Social"}</p>
+                <p>{litigation?.debtor.name?? "Sin Razón Social"}</p>
               </div>
             </div>
 
@@ -244,7 +268,6 @@ const LitigationEditModal = ({ open, onOpenChange, litigation }: LitigationEditM
               control={control}
               name="subreason"
               render={({ field }) => {
-                const selected = disputes.find((item) => item.code === selectedReason);
                 return (
                   <FormItem>
                     <FormLabel>Submotivo</FormLabel>
@@ -313,7 +336,7 @@ const LitigationEditModal = ({ open, onOpenChange, litigation }: LitigationEditM
               {showDialog && (
         <LitigationDialogConfirm
           title={<img src="/img/success-confirm.svg" alt="éxito" className="w-20 mx-auto" />}
-          description="El litigio ha sido creado con éxito."
+          description="El litigio ha sido editado con éxito."
           onConfirm={handleConfirm}
         />
       )}

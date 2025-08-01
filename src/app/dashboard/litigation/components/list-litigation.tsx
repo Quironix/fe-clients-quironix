@@ -7,20 +7,16 @@ import { useLitigation } from "../hooks/useLitigation";
 import { updateReconciliationTableProfile } from "../services";
 import { Litigation } from "../types";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, Archive, Trash2 } from "lucide-react";
 import { VisibilityState } from "@tanstack/react-table";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import FilterInputs, { FilterInputsRef } from "../../payment-netting/components/filter";
 import { columns } from "./columns";
-import LitigationDetail from "./modals/litigation-detail";
 
 const ListLitigation = () => {
   const { session, profile } = useProfileContext();
-  const [showDialog, setShowDialog] = useState(false);
   const [selectedLitigation, setSelectedLitigation] = useState<Litigation | null>(null);
-const [showDetailModal, setShowDetailModal] = useState(false);
+  const [modalType, setModalType] = useState<"none" | "detail" | "edit" | "normalize">("none");
 
   const {
     data,
@@ -45,8 +41,9 @@ const [showDetailModal, setShowDetailModal] = useState(false);
     Array<{ name: string; is_visible: boolean }>
   >([
     { name: "id", is_visible: false },
-    { name: "invoice_id", is_visible: false },
+    { name: "invoice_number", is_visible: true },
     { name: "debtor_id", is_visible: true },
+    { name: "dispute_days", is_visible: true },
     { name: "litigation_amount", is_visible: true },
     { name: "description", is_visible: true },
     { name: "motivo", is_visible: true },
@@ -69,63 +66,63 @@ const [showDetailModal, setShowDetailModal] = useState(false);
     }, {} as VisibilityState);
   }, [columnConfiguration]);
 
-  const columnLabels = useMemo(
-    () => ({
-      invoice_number: "N° Factura",
-      debtor_name: "Deudor",
-      dispute_entry: "Ingreso de litigio",
-      client_code: "Días de disputa",
-      dispute_amount: "Monto de litigio",
-      invoice_balance: "Saldo factura",
-      approver: "Aprobador",
-      reason: "Motivo",
-      sub_reason: "Submotivo",
-      actions: "Acción",
-    }),
-    []
-  );
+  // const columnLabels = useMemo(
+  //   () => ({
+  //     invoice_number: "N° Factura",
+  //     debtor_name: "Deudor",
+  //     dispute_entry: "Ingreso de litigio",
+  //     client_code: "Días de disputa",
+  //     dispute_amount: "Monto de litigio",
+  //     invoice_balance: "Saldo factura",
+  //     approver: "Aprobador",
+  //     reason: "Motivo",
+  //     sub_reason: "Submotivo",
+  //     actions: "Acción",
+  //   }),
+  //   []
+  // );
 
-  const bulkActions = useMemo(() => [
-    {
-      label: "Ver detalles",
-      onClick: async (selectedRows: Litigation[]) => {
-        if (selectedRows.length > 0) {
-          setSelectedLitigation(selectedRows[0]);
-          setShowDetailModal(true);
-        } else {
-          toast.warning("Selecciona al menos un litigio para ver detalles.");
-        }
-      },
-      variant: "outline" as const,
-      icon: <Eye className="h-4 w-4" />,
-    },
-    {
-      label: "Editar factura",
-      onClick: async (selectedRows: Litigation[]) => {
-        console.log("Editar factura:", selectedRows);
-        toast("Función de edición aún no implementada");
-      },
-      variant: "secondary" as const,
-      icon: <Archive className="h-4 w-4" />,
-    },
-    {
-      label: "Normalizar",
-      onClick: async (selectedRows: Litigation[]) => {
-        try {
-          // Aquí va endpoint para normalizar
-          console.log("Normalizar factura:", selectedRows);
-          toast.success("Litigios normalizados correctamente");
-          await refetch();
-          clearRowSelection();
-        } catch (err) {
-          console.error("Error normalizando:", err);
-          toast.error("Ocurrió un error al normalizar");
-        }
-      },
-      variant: "destructive" as const,
-      icon: <Trash2 className="h-4 w-4" />,
-    },
-  ], [clearRowSelection, refetch]);
+  // const bulkActions = useMemo(() => [
+  //   {
+  //     label: "Ver detalles",
+  //     onClick: async (selectedRows: Litigation[]) => {
+  //       if (selectedRows.length > 0) {
+  //         setSelectedLitigation(selectedRows[0]);
+  //         setModalType("detail");
+  //       } else {
+  //         toast.warning("Selecciona al menos un litigio para ver detalles.");
+  //       }
+  //     },
+  //     variant: "outline" as const,
+  //     icon: <Eye className="h-4 w-4" />,
+  //   },
+  //   {
+  //     label: "Editar factura",
+  //     onClick: async (selectedRows: Litigation[]) => {
+  //       if (selectedRows.length > 0) {
+  //         setSelectedLitigation(selectedRows[0]);
+  //         setModalType("edit");
+  //       } else {
+  //         toast.warning("Selecciona al menos un litigio para editar.");
+  //       }
+  //     },
+  //     variant: "secondary" as const,
+  //     icon: <Archive className="h-4 w-4" />,
+  //   },
+  //   {
+  //     label: "Normalizar",
+  //     onClick: async (selectedRows: Litigation[]) => {
+  //       if (selectedRows.length > 0) {
+  //         setSelectedLitigation(selectedRows[0]);
+  //         setModalType("normalize");
+  //       } else {
+  //         toast.warning("Selecciona al menos un litigio para normalizar.");
+  //       }
+  //     },
+  //     variant: "destructive" as const,
+  //     icon: <Trash2 className="h-4 w-4" />,
+  //   },
+  // ], [clearRowSelection, refetch]);
 
   const handleUpdateColumns = async (
     config?: Array<{ name: string; is_visible: boolean }>
@@ -170,37 +167,72 @@ const [showDetailModal, setShowDetailModal] = useState(false);
   };
 
   return (
-    <Card>
-      <CardContent>
-        <DataTableDynamicColumns
-          columns={columns}
-          data={data as Litigation[]}
-          isLoading={isLoading}
-          isServerSideLoading={isServerSideLoading}
-          pagination={pagination}
-          onPaginationChange={handlePaginationChange}
-          onSearchChange={handleSearchChange}
-          enableGlobalFilter
-          searchPlaceholder="Buscar"
-          enableColumnFilter
-          columnLabels={columnLabels}
-          onRowSelectionChange={handleRowSelectionChange}
-          bulkActions={bulkActions}
-          emptyMessage="No se encontraron litigios"
-          className="rounded-lg"
-          title="Historial de litigios"
-          handleSuccessButton={handleUpdateColumns}
-          filterInputs={
-            <FilterInputs
-              ref={filterInputsRef}
-              onFilterChange={handleFilterChange}
-              initialFilters={filters}
-            />
-          }
-          isApplyingFilters={isApplyingFilters}
+    <>
+      <Card>
+        <CardContent>
+          <DataTableDynamicColumns
+            columns={columns}
+            data={data}
+            isLoading={isLoading}
+            isServerSideLoading={isServerSideLoading}
+            pagination={pagination}
+            onPaginationChange={handlePaginationChange}
+            onSearchChange={handleSearchChange}
+            enableGlobalFilter
+            searchPlaceholder="Buscar"
+            enableColumnFilter
+       
+            onRowSelectionChange={handleRowSelectionChange}
+            emptyMessage="No se encontraron litigios"
+            className="rounded-lg"
+            title="Historial de litigios"
+            handleSuccessButton={handleUpdateColumns}
+            filterInputs={
+              <FilterInputs
+                ref={filterInputsRef}
+                onFilterChange={handleFilterChange}
+                initialFilters={filters}
+              />
+            }
+            isApplyingFilters={isApplyingFilters}
+          />
+        </CardContent>
+      </Card>
+
+      {/* {modalType === "detail" && selectedLitigation && (
+        <LitigationDetail
+          open={true}
+          litigation={selectedLitigation}
+          onClose={() => {
+            setModalType("none");
+            setSelectedLitigation(null);
+          }}
         />
-      </CardContent>
-    </Card>
+      )} */}
+
+      {/* {modalType === "edit" && selectedLitigation && (
+        <LitigationEditModal
+          open={true}
+          litigation={selectedLitigation}
+          onOpenChange={() => {
+            setModalType("none");
+            setSelectedLitigation(null);
+          }}
+        />
+      )}
+
+      {modalType === "normalize" && selectedLitigation && (
+        <NormalizeFormModals
+          open={true}
+          litigation={selectedLitigation}
+          onOpenChange={() => {
+            setModalType("none");
+            setSelectedLitigation(null);
+            refetch();
+          }}
+        />
+      )} */}
+    </>
   );
 };
 

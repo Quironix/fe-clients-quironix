@@ -1,3 +1,4 @@
+import { profile } from 'console';
 import Litigation from '../page';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -35,6 +36,33 @@ export const updateLitigation = async (
       body: JSON.stringify(payload),
     }
   );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error?.message || "Error al editar litigio");
+  }
+
+  return response.json();
+};
+export const normalizeLitigation = async (
+  accessToken: string,
+  clientId: string,
+  litigationId: string,
+  payload: {
+    normalization_reason: string;
+    normalization_by_contact: string;
+    comment: string;
+    is_important_comment: boolean;
+  }
+) => {
+ const response = await fetch(`${API_URL}/v2/clients/${clientId}/litigations/${litigationId}/normalize`, {
+        method: "POST",
+   headers: {
+            Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));

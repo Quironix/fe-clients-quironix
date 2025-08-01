@@ -19,6 +19,24 @@ import { dataTagSymbol } from "@tanstack/react-query";
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// {
+//   "litigations": [
+//     {
+//       "litigation_id": "123e4567-e89b-12d3-a456-426614174000",
+//       "normalization_reason": "PAYMENT_RECEIVED",
+//       "normalization_by_contact": "Cliente contactó vía WhatsApp confirmando transferencia por $150,000 el 25/07/2025",
+//       "comment": "Transferencia verificada exitosamente. Cliente agradeció la gestión rápida del caso.",
+//       "is_important_comment": false
+//     },
+//     {
+//       "litigation_id": "456e7890-e89b-12d3-a456-426614174001",
+//       "normalization_reason": "PAYMENT_RECEIVED",
+//       "normalization_by_contact": "Cliente confirmó pago vía email",
+//       "comment": "Pago confirmado por el cliente",
+//       "is_important_comment": true
+//     }
+//   ]
+// }
 
 const litigationSchema = z.object({
   client: z.string(),
@@ -78,7 +96,7 @@ const NormalizeForm = () => {
       };
   
       const res = await fetch(
-        `${API_URL}/v2/clients/${data.client}/litigations/${data.invoiceId}/normalize`,
+        `${API_URL}/v2/clients/${data.client}/litigations//bulk-normalize`,
         {
           method: "POST",
           headers: {

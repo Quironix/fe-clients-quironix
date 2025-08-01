@@ -2,13 +2,14 @@ import { SquareUserRound, Building, FileText, FolderTree, Calendar, User, Messag
 import Image from 'next/image';
 import { Litigation } from "../../types";
 
-type LitigationDetailProps = {
+interface LitigationDetailProps {
     open: boolean;
+    litigation: Litigation | null;
     onOpenChange: (open: boolean) => void;
-    litigation: Litigation; 
-  };
+  }
   
-  const LitigationDetail = ({ open, onOpenChange, litigation }: LitigationDetailProps) => {
+  
+  const LitigationDetail = ({ open, litigation, onOpenChange }: LitigationDetailProps) => {
   
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center gap-4 justify-center z-50 text-start">
@@ -23,7 +24,7 @@ type LitigationDetailProps = {
           <div className="my-4">
             <h2 className="text-lg font-bold text-gray-800">Detalle del litigio</h2>
             <p className="text-lg font-bold text-gray-800">
-              Factura N° {litigation?.invoice_number || "Desconocido"}
+              Factura N° {litigation?.invoice.number || "Desconocido"}
             </p>
           </div>
   
@@ -41,7 +42,7 @@ type LitigationDetailProps = {
               <div>
                 <p>Monto Factura</p>
                 <p className="text-[#2F6EFF] font-bold text-2xl">
-                  $ {litigation?.invoiceAmount ?? "..."}
+                  $ {litigation?.invoice_number ?? "..."}
                 </p>
               </div>
             </div>
@@ -49,7 +50,7 @@ type LitigationDetailProps = {
             <div>
               <p className="text-sm text-gray-600">Monto litigio</p>
               <p className="text-[#2F6EFF] font-bold text-2xl">
-                ${litigation?.litigationAmount ?? "..."}
+                ${litigation?.litigation_amount ?? "..."}
               </p>
             </div>
           </div>
@@ -61,7 +62,7 @@ type LitigationDetailProps = {
               <SquareUserRound />
               <div>
                 <p className="text-sm ">RUT</p>
-                <p className="text-lg">{litigation?.number ?? "Desconocido"}</p>
+                <p className="text-lg">{litigation?.debtor.dni_id ?? "Desconocido"}</p>
               </div>
             </div>
   
@@ -69,7 +70,7 @@ type LitigationDetailProps = {
               <Building />
               <div>
                 <p className="text-sm ">Razón social</p>
-                <p className="text-lg">{litigation?.company_id ?? "Razon social"}</p>
+                <p className="text-lg">{litigation?.debtor.name ?? "Razon social"}</p>
               </div>
             </div>
   

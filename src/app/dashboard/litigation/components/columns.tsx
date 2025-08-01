@@ -1,23 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { Eye, Edit, MoreVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-
 import { Litigation } from "../types";
 import LitigationDetail from "./modals/litigation-detail";
-import LitigationEdit from "./modals/litigation-edit";
 import NormalizeFormModals from "./modals/normalize-form-modals";
+import LitigationEditModal from "./modals/litigation-edit";
+import { formatDate } from "@/lib/utils";
 
-// Componente separado para manejar acciones y modales
 const ActionsCell = ({ row }: { row: Row<Litigation> }) => {
-  const [showDetail, setShowDetail] = useState(false);
-  const [showEdit, setShowEdit] = useState(false);
-  const [showNormalize, setShowNormalize] = useState(false);
+  const [modalType, setModalType] = useState<"none" | "detail" | "edit" | "normalize">("none");
+  const [selectedLitigation, setSelectedLitigation] = useState<Litigation | null>(null);
 
   const litigation = row.original;
 
@@ -31,17 +28,29 @@ const ActionsCell = ({ row }: { row: Row<Litigation> }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => setShowDetail(true)}>
+          <DropdownMenuItem
+            onClick={() => {
+              setSelectedLitigation(litigation);
+              setModalType("detail");
+            }}
+          >
             <Eye className="mr-2 h-4 w-4" />
             Ver detalles
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowEdit(true)}>
+          <DropdownMenuItem
+            onClick={() => {
+              setSelectedLitigation(litigation);
+              setModalType("edit");
+            }}
+          >
             <Edit className="mr-2 h-4 w-4" />
             Editar factura
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => setShowNormalize(true)}
-            className="text-destructive"
+            onClick={() => {
+              setSelectedLitigation(litigation);
+              setModalType("normalize");
+            }}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Normalizar
@@ -49,85 +58,110 @@ const ActionsCell = ({ row }: { row: Row<Litigation> }) => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <LitigationDetail
-        open={showDetail}
-        onOpenChange={setShowDetail}
-        litigation={litigation}
-      />
+      {modalType === "detail" && selectedLitigation && (
+        <LitigationDetail
+          open={true}
+          litigation={selectedLitigation}
+          onOpenChange={() => {
+            setModalType("none");
+            setSelectedLitigation(null);
+          }}
+        />
+      )}
 
-      <LitigationEdit
-        open={showEdit}
-        onOpenChange={setShowEdit}
-        litigation={litigation}
-      />
+      {modalType === "edit" && selectedLitigation && (
+        <LitigationEditModal
+          open={true}
+          litigation={selectedLitigation}
+          onOpenChange={() => {
+            setModalType("none");
+            setSelectedLitigation(null);
+          }}
+        />
+      )}
 
-      <NormalizeFormModals
-        open={showNormalize}
-        onOpenChange={setShowNormalize}
-        litigation={litigation}
-      />
+      {modalType === "normalize" && selectedLitigation && (
+        <NormalizeFormModals
+          open={true}
+          litigation={selectedLitigation}
+          onOpenChange={() => {
+            setModalType("none");
+            setSelectedLitigation(null);
+          }}
+        />
+      )}
     </>
   );
 };
 
-
-// Columnas de la tabla
+// Columnas de la tabla con accessorFn en todas
 export const columns: ColumnDef<Litigation>[] = [
   {
-    accessorKey: "invoice_number",
+    accessorFn: (row) => row.invoice?.number || "-",
+    id: "invoice_number",
     header: "N° Factura",
-    cell: ({ row }) => <div className="font-medium">{row.getValue("invoice_number") || "-"}</div>,
+    cell: ({ getValue }) => {
+      const value = getValue<string>();
+      return <div className="font-medium">{value}</div>;
+    }
   },
   {
-    accessorKey: "debtor_name",
+    accessorFn: (row) => row.debtor.name || "-",
+    id: "debtor_name",
     header: "Deudor",
-    cell: ({ row }) => <div className="font-medium">{row.getValue("debtor_name") || "-"}</div>,
+    cell: ({ getValue }) => <div className="font-medium">{getValue<string>()}</div>,
   },
   {
-    accessorKey: "created_at",
+    accessorFn: (row) => row.creator.created_at || "-",
+    id: "created_at",
     header: "Ingreso de litigio",
-    cell: ({ row }) => <div>{row.getValue("created_at") || "-"}</div>,
+    cell: ({ getValue }) => <div>{formatDate(getValue<string>())}</div>,
   },
   {
-    accessorKey: "client_code",
+    accessorFn: (row) => row.disputeDays|| "-",
+    id: "dispute_days",
     header: "Días de disputa",
-    cell: ({ row }) => <div>{row.getValue("client_code") || "-"}</div>,
+    cell: ({ getValue }) => <div>{getValue<string>()}</div>,
   },
   {
-    accessorKey: "dispute_amount",
+    accessorFn: (row) => row.litigation_amount || "-",
+    id: "litigation_amount",
     header: "Monto de litigio",
-    cell: ({ row }) => {
-      return <div className="truncate max-w-[150px]">{row.getValue("dispute_amount") || "-"}</div>;
-    },
+    cell: ({ getValue }) => (
+      <div className="truncate max-w-[150px]">{getValue<string>()}</div>
+    ),
   },
   {
-    accessorKey: "invoice_balance",
+    accessorFn: (row) => row.invoice.balance || "-",
+    id: "invoice_balance",
     header: "Saldo factura",
-    cell: ({ row }) => {
-      return <div className="truncate max-w-[150px]">{row.getValue("invoice_balance") || "-"}</div>;
-    },
+    cell: ({ getValue }) => (
+      <div className="truncate max-w-[150px]">{getValue<string>()}</div>
+    ),
   },
   {
-    accessorKey: "approver",
+    accessorFn: (row) => row.approver || "-",
+    id: "approver",
     header: "Aprobador",
-    cell: ({ row }) => {
-      const value = row.getValue("approver");
-      return <div className="truncate max-w-[150px]">{row.getValue("approver") || "-"}</div>;
-    },
+    cell: ({ getValue }) => (
+      <div className="truncate max-w-[150px]">{getValue<string>()}</div>
+    ),
   },
   {
-    accessorKey: "reason",
+    accessorFn: (row) => row.motivo || "-",
+    id: "reason",
     header: "Motivo",
-    cell: ({ row }) => {
-      return <div className="truncate max-w-[150px]">{row.getValue("reason") || "-"}</div>;
-    },
+    cell: ({ getValue }) => (
+      <div className="truncate max-w-[150px] rounded-xl border border-green-700 bg-emerald-100 px-2 py-.5 text-xs">{getValue<string>()}</div>
+    ),
   },
   {
-    accessorKey: "sub_reason",
+    accessorFn: (row) => row.submotivo || "-",
+    id: "submotivo",
     header: "Submotivo",
-    cell: ({ row }) => {
-      return <div className="truncate max-w-[150px]">{row.getValue("sub_reason") || "-"}</div>;
-    },
+    cell: ({ getValue }) => (
+      <div className="truncate max-w-[150px]">{getValue<string>()}</div>
+    ),
   },
   {
     id: "actions",
