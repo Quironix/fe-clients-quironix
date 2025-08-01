@@ -66,64 +66,6 @@ const ListLitigation = () => {
     }, {} as VisibilityState);
   }, [columnConfiguration]);
 
-  // const columnLabels = useMemo(
-  //   () => ({
-  //     invoice_number: "N° Factura",
-  //     debtor_name: "Deudor",
-  //     dispute_entry: "Ingreso de litigio",
-  //     client_code: "Días de disputa",
-  //     dispute_amount: "Monto de litigio",
-  //     invoice_balance: "Saldo factura",
-  //     approver: "Aprobador",
-  //     reason: "Motivo",
-  //     sub_reason: "Submotivo",
-  //     actions: "Acción",
-  //   }),
-  //   []
-  // );
-
-  // const bulkActions = useMemo(() => [
-  //   {
-  //     label: "Ver detalles",
-  //     onClick: async (selectedRows: Litigation[]) => {
-  //       if (selectedRows.length > 0) {
-  //         setSelectedLitigation(selectedRows[0]);
-  //         setModalType("detail");
-  //       } else {
-  //         toast.warning("Selecciona al menos un litigio para ver detalles.");
-  //       }
-  //     },
-  //     variant: "outline" as const,
-  //     icon: <Eye className="h-4 w-4" />,
-  //   },
-  //   {
-  //     label: "Editar factura",
-  //     onClick: async (selectedRows: Litigation[]) => {
-  //       if (selectedRows.length > 0) {
-  //         setSelectedLitigation(selectedRows[0]);
-  //         setModalType("edit");
-  //       } else {
-  //         toast.warning("Selecciona al menos un litigio para editar.");
-  //       }
-  //     },
-  //     variant: "secondary" as const,
-  //     icon: <Archive className="h-4 w-4" />,
-  //   },
-  //   {
-  //     label: "Normalizar",
-  //     onClick: async (selectedRows: Litigation[]) => {
-  //       if (selectedRows.length > 0) {
-  //         setSelectedLitigation(selectedRows[0]);
-  //         setModalType("normalize");
-  //       } else {
-  //         toast.warning("Selecciona al menos un litigio para normalizar.");
-  //       }
-  //     },
-  //     variant: "destructive" as const,
-  //     icon: <Trash2 className="h-4 w-4" />,
-  //   },
-  // ], [clearRowSelection, refetch]);
-
   const handleUpdateColumns = async (
     config?: Array<{ name: string; is_visible: boolean }>
   ) => {

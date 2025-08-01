@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useDisputeStore } from "../store/disputeStore";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useLitigationStore } from "../store/litigation-store";
 import LitigationDialogConfirm from "./litigation-dialog-confirm";
 import { useProfileContext } from "@/context/ProfileContext";
@@ -106,7 +106,7 @@ const DisputeForm = () => {
   } = form;
 
 
-  const debtorId = form.watch("debtorId");
+  const debtorId = form.watch("debtorId")
 
   const disputes = [
   {
@@ -208,13 +208,14 @@ const DisputeForm = () => {
           debtorId
         );
         setLitigationsByDebtor(data);
+        reset()
       } catch (error) {
         console.error("Error al obtener litigios anteriores", error);
       }
     };
   
     fetchLitigations();
-  }, [debtorId, session?.token, profile?.client_id]);
+  }, [ session?.token, profile?.client_id]);
 
   return (
     <>
