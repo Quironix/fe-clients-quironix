@@ -42,7 +42,7 @@ interface LitigationDetailProps {
               <div>
                 <p>Monto Factura</p>
                 <p className="text-[#2F6EFF] font-bold text-2xl">
-                  $ {litigation?.invoice_number ?? "..."}
+                  $ {litigation?.invoice.amount ?? "..."}
                 </p>
               </div>
             </div>
@@ -79,7 +79,7 @@ interface LitigationDetailProps {
               <FileText />
                 <p className="text-sm ">Motivo</p>
                 <p className="text-md border-2 border-[#038E06] text-[#038E06] px-2 py-.5 rounded-xl font-medium">
-                  {litigation?.reason ?? "Motivo"}
+                  {litigation?.motivo ?? "Motivo"}
                 </p>
             </div>
   
@@ -87,7 +87,7 @@ interface LitigationDetailProps {
               <FolderTree />
               <div>
                 <p className="text-sm ">Submotivo</p>
-                <p className="text-lg">{litigation?.subreason ?? "Submotivo"}</p>
+                <p className="text-lg">{litigation?.submotivo ?? "Submotivo"}</p>
               </div>
             </div>
   

@@ -1,148 +1,142 @@
 "use client";
-import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useDisputeStore } from "../store/disputeStore";
-import { Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+
 import { useLitigationStore } from "../store/litigation-store";
-import LitigationDialogConfirm from "./litigation-dialog-confirm";
-import Image from 'next/image';
+import { GetAllLitigationByDebtorId } from "../services";
+import { useProfileContext } from "@/context/ProfileContext";
 import { FormField } from "@/components/ui/form";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
 import SelectClient from "../../components/select-client";
-import { dataTagSymbol } from "@tanstack/react-query";
-
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-// {
-//   "litigations": [
-//     {
-//       "litigation_id": "123e4567-e89b-12d3-a456-426614174000",
-//       "normalization_reason": "PAYMENT_RECEIVED",
-//       "normalization_by_contact": "Cliente contactó vía WhatsApp confirmando transferencia por $150,000 el 25/07/2025",
-//       "comment": "Transferencia verificada exitosamente. Cliente agradeció la gestión rápida del caso.",
-//       "is_important_comment": false
-//     },
-//     {
-//       "litigation_id": "456e7890-e89b-12d3-a456-426614174001",
-//       "normalization_reason": "PAYMENT_RECEIVED",
-//       "normalization_by_contact": "Cliente confirmó pago vía email",
-//       "comment": "Pago confirmado por el cliente",
-//       "is_important_comment": true
-//     }
-//   ]
-// }
 
-const litigationSchema = z.object({
-  client: z.string(),
-  debtor: z.string(),
-  invoiceType: z.string(),
-  invoiceNumber: z.string(),
-  invoiceAmount: z.string(),
+const formSchema = z.object({
   reason: z.string(),
-  subreason: z.string(),
   contact: z.string(),
-  comment: z.string().optional(),
-  number: z.string().optional(),
-  document: z.string().optional(),
-  litigationAmount: z.string().optional(),
-  debtorId: z.string().optional(), 
-  invoiceId: z.string().optional(),
+  comment: z.string(),
+  client: z.string(),
+  debtorId: z.string()
 });
 
-type LitigationForm = z.infer<typeof litigationSchema>;
+type FormSchema = z.infer<typeof formSchema>;
 
-const NormalizeForm = () => {
-  const { setField } = useDisputeStore();
-  const { litigiosIngresados, addLitigio } = useLitigationStore();
+export default function NormalizeLitigationForm() {
+  const [litigations, setLitigations] = useState<any[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showDialog, setShowDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { session, profile } = useProfileContext();
+  const [deudorId, setDeudorId] = useState<string | null>(null);
 
-  const form = useForm<LitigationForm>({
-    resolver: zodResolver(litigationSchema),
+  const form = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      client: "",
-      debtor: "",
-      invoiceType: "",
-      invoiceNumber: "",
-      invoiceAmount: "",
       reason: "",
-      subreason: "",
       contact: "",
       comment: "",
     },
   });
 
-  const {
+  const { addLitigio, clearLitigios } = useLitigationStore();
+
+    const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    control
+    control,
   } = form;
- 
 
-  const onSubmit = async (data: LitigationForm) => {
-    try {
-      const payload = {
-        normalization_reason: data.reason,
-        normalization_by_contact: data.contact,
-        comment: data.comment,
-        is_important_comment: "Cliente no responde...",
-      };
+  const debtorId = form.watch("debtorId");
   
+  useEffect(() => {
+    async function fetchLitigations() {
+      try {
+        setLoading(true);
+        const data = await GetAllLitigationByDebtorId(
+          profile.client_id,
+          session.token,
+          debtorId
+        );
+        setLitigations(data);
+      } catch (err) {
+        console.error("Error al cargar litigios", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (profile.client_id && session.token) {
+      fetchLitigations();
+    }
+  }, [profile.client_id, session.token]);
+
+  const handleCheckboxChange = (id: string, litigio: any) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((x) => x !== id);
+      } else {
+        addLitigio({ ...litigio, litigation_id: id });
+        return [...prev, id];
+      }
+    });
+  };
+
+  const onSubmit = async (data: FormSchema) => {
+    const payload = {
+      litigations: litigations
+        .filter((l) => selectedIds.includes(l.litigation_id))
+        .map((l) => ({
+          litigation_id: l.litigation_id,
+          normalization_reason: data.reason,
+          normalization_by_contact: data.contact,
+          comment: data.comment,
+          is_important_comment: false,
+        })),
+    };
+
+    try {
       const res = await fetch(
-        `${API_URL}/v2/clients/${data.client}/litigations//bulk-normalize`,
+        `${API_URL}/v2/clients/${profile.client_id}/litigations/bulk-normalize`,
         {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${session.token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
         }
       );
-  
-      if (!res.ok) throw new Error("Error al crear litigio");
-  
-      setShowDialog(true);
-      if (typeof window !== "undefined") {
-        const event = new CustomEvent("litigation:created");
-        window.dispatchEvent(event);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Error al normalizar litigios");
       }
-    } catch (error) {
+
+      setShowDialog(true);
+      clearLitigios();
+      form.reset();
+      setSelectedIds([]);
+      window.dispatchEvent(new CustomEvent("litigation:created"));
+    } catch (error: any) {
       console.error(error);
-      alert("Error al guardar litigio");
+      alert(error.message || "Error al guardar litigio");
       setShowDialog(false);
     }
   };
-  
-  
-  const handleConfirm = () => {
-    setShowDialog(false);
-    reset(); 
-  };
 
   return (
-    <>
-      <FormProvider {...form}>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-[735px] max-w-full bg-white rounded-md p-6 space-y-6"
-        >
-          <div>
-            <h2 className="text-lg font-semibold">Normailizar litigio</h2>
-            <p className="text-sm text-gray-500">
-              Completa los campos obligatorios para ingresar un litigio.
-            </p>
-          </div>
-
-          {/* Cliente y Deudor */}
-         
-          <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
+        <div className="grid grid-cols-2 gap-4">
             <FormField
               control={control}
               name="client"
@@ -159,139 +153,76 @@ const NormalizeForm = () => {
               )}
             />
           </div>
-          {/* Tabla de litigios */}
-          {litigiosIngresados.length === 0 ? (
-            <div className="bg-gray-100 p-3 rounded text-sm text-gray-600 border">
-              No hay litigios ingresados con anterioridad
-            </div>
-          ) : (
-            <div className="border bg-gray-50 p-4 rounded mt-4">
-              <h3 className="text-sm font-semibold mb-2">Litigios ingresados</h3>
-              <table className="min-w-full border bg-white text-sm">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="p-2 text-left">
-                      <input type="checkbox" />
-                    </th>
-                    <th className="p-2 text-left">Número</th>
-                    <th className="p-2 text-left">Documento</th>
-                    <th className="p-2 text-left">Monto Factura</th>
-                    <th className="p-2 text-left">Monto Litigio</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {litigiosIngresados.map((l, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2">
-                        <input type="checkbox" />
-                      </td>
-                      <td className="p-2">{l.invoiceId}</td>
-                      <td className="p-2">{l.invoiceId}</td>
-                      <td className="p-2">${l.invoiceAmount}</td>
-                      <td className="p-2">${l.litigationAmount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Motivo de normalización
+        </label>
+        <Input {...form.register("reason")} />
+        {form.formState.errors.reason && (
+          <p className="text-sm text-red-500">
+            {form.formState.errors.reason.message}
+          </p>
+        )}
+      </div>
 
-          {/* Motivo, submotivo, contacto */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="font-semibold">Razón de normalización</label>
-              <select
-                className="w-full border border-gray-300 p-2 rounded-md"
-                {...register("reason")}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Contacto con cliente
+        </label>
+        <Input {...form.register("contact")} />
+        {form.formState.errors.contact && (
+          <p className="text-sm text-red-500">
+            {form.formState.errors.contact.message}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Comentario (opcional)
+        </label>
+        <Textarea {...form.register("comment")} />
+      </div>
+
+      <div className="border p-4 rounded-md">
+        <h3 className="font-semibold mb-2">Litigios disponibles</h3>
+        {loading ? (
+          <p className="text-sm text-gray-500">Cargando litigios...</p>
+        ) : litigations.length === 0 ? (
+          <p className="text-sm text-gray-500">No hay litigios para mostrar</p>
+        ) : (
+          <div className="space-y-2 max-h-[300px] overflow-auto">
+            {litigations.map((litigio) => (
+              <div
+                key={litigio.litigation_id}
+                className="flex items-center justify-between border rounded px-2 py-1"
               >
-                <option value="">Selecciona motivo</option>
-                <option value="Falta de pago">Falta de pago</option>
-                <option value="Error en factura">Error en factura</option>
-              </select>
-              {errors.reason && (
-                <p className="text-red-500 text-sm">{errors.reason.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="font-semibold">Contacto</label>
-              <select
-                className="w-full border border-gray-300 p-2 rounded-md"
-                {...register("contact")}
-              >
-                <option value="">Selecciona contacto</option>
-                <option value="Juan Pérez">Juan Pérez</option>
-                <option value="María González">María González</option>
-              </select>
-              {errors.contact && (
-                <p className="text-red-500 text-sm">{errors.contact.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Comentario */}
-          <div>
-            <label className="font-semibold">Comentario</label>
-            <Textarea
-              placeholder="Comentario"
-              {...register("comment")}
-              className="min-h-[40px]"
-            />
-          </div>
-
-          <div className=" bg-[#FF8113] h-0.5 max-w-full"></div>
-
-          {/* Botón */}
-          <div className="grid grid-cols-3 gap-4 items-center justify-center">
-            <div className="col-span-2 bg-[#F1F5F9] mr-2 px-5 py-2 rounded w-full">
-              <div className="flex items-center">
-                <div className="items-center mr-2">
-                  <Image
-                    src="/img/dollar-sign.svg"
-                    alt="Signo pesos"
-                    width={8}
-                    height={8}
-                    className="w-8 h-8"
-                  />
+                <div className="text-sm">
+                  <p className="font-medium">Factura: {litigio.invoiceId}</p>
+                  <p>Monto: ${litigio.invoiceAmount}</p>
+                  <p>Motivo: {litigio.reason}</p>
                 </div>
-                <div>
-                  <p>Monto Factura</p>
-                  <p className="text-[#2F6EFF] font-bold text-3xl">$ {"..."}</p>
-                </div>
+                <Checkbox
+                  checked={selectedIds.includes(litigio.litigation_id)}
+                  onCheckedChange={() =>
+                    handleCheckboxChange(litigio.litigation_id, litigio)
+                  }
+                />
               </div>
-            </div>
-
-            <div className="col-span-1">
-              <Button
-                type="submit"
-                className="mt-4 px-10 bg-[#1249C7] text-white hover:bg-[#1249C7]/90 w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Guardando
-                  </>
-                ) : (
-                  "Normalizar"
-                )}
-              </Button>
-            </div>
+            ))}
           </div>
+        )}
+      </div>
 
-        </form>
-      </FormProvider>
+      <Button type="submit" className="w-full">
+        Normalizar seleccionados
+      </Button>
 
       {showDialog && (
-        <div className="justify-center">
-
-          <LitigationDialogConfirm
-          title={<img src="/img/success-confirm.svg" alt="éxito" className="w-20 h-full mx-auto" />}
-            description="El litigio ha sido creado con éxito."
-            onConfirm={handleConfirm}
-          />
-        </div>
+        <p className="text-sm text-green-600 mt-2">
+          Litigios normalizados exitosamente.
+        </p>
       )}
-    </>
+    </form>
   );
-};
-
-export default NormalizeForm;
+}
