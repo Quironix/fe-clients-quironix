@@ -63,7 +63,7 @@ const litigationSchema = z.object({
 type LitigationForm = z.infer<typeof litigationSchema>;
 
 
-const DisputeForm = () => {
+const DisputeForm = ({ onClose }: { onClose: () => void }) => {
   const { litigiosIngresados } = useLitigationStore();
   const [showDialog, setShowDialog] = useState(false);
   const { session, profile } = useProfileContext();
@@ -182,11 +182,15 @@ const DisputeForm = () => {
 
       if (!res.ok) throw new Error("Error al crear litigio");
 
-      setShowDialog(true);
-
+      
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("litigation:created"));
       }
+      setShowDialog(true);
+      setTimeout(() => {
+        onClose();
+
+      },1000)
     } catch (error) {
       console.error(error);
       alert("Error al guardar litigio");
@@ -224,6 +228,9 @@ const DisputeForm = () => {
           onSubmit={handleSubmit(onSubmit)}
           className="w-[735px] max-w-full bg-white rounded-md p-6 space-y-6"
         >
+            <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-black">
+       X
+      </button>
           <div>
             <h2 className="text-lg font-semibold">Ingreso de litigio</h2>
             <p className="text-sm text-gray-500">

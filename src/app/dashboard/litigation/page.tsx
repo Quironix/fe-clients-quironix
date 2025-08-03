@@ -61,12 +61,6 @@ const [detailsModal , setDetailsModal] = useState(false)
         <div className="mt-5 border border-gray-200 rounded-md p-3">
           <ListLitigation />
         </div>
-        {/* <div>
-          <LitigationEditModal open={false} onOpenChange={setShowEdit } litigation={undefined} />
-        </div> */}
-        {/* <div>
-          <LitigationDetail open={false}  onOpenChange={setDetailsModal } litigation={undefined} />
-        </div> */}
 
         {openCreateForm && <DisputeEntry onClose={() => setOpenCreateForm(false)} />}
         {openNormalizeForm && <NormalizeEntry onClose={() => setOpenNormalizeForm(false)} />}
