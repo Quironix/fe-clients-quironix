@@ -68,7 +68,7 @@ const BulkDebtors = () => {
 
       if (response.invalidCount === 0) {
         toast.success(
-          `Archivo cargado exitosamente. ${response.validCount} deudores procesados correctamente.`
+          `Archivo cargado exitosamente. ${response.validCount} cartolas procesadas correctamente.`
         );
         // Refrescar la lista de deudores
         await getAllMovements(session.token, profile.client.id);
