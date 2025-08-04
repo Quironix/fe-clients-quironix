@@ -1,22 +1,21 @@
 "use client";
-import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useDisputeStore } from "../store/disputeStore";
+import { Form, FormField } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
-import { useLitigationStore } from "../store/litigation-store";
-import LitigationDialogConfirm from "./litigation-dialog-confirm";
-import Image from 'next/image';
-import { FormField } from "@/components/ui/form";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
 import SelectClient from "../../components/select-client";
-import { dataTagSymbol } from "@tanstack/react-query";
-
+import { useDisputeStore } from "../store/disputeStore";
+import { useLitigationStore } from "../store/litigation-store";
+import EmptyLitigations from "./empty-litigations";
+import LitigationDialogConfirm from "./litigation-dialog-confirm";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -33,13 +32,14 @@ const litigationSchema = z.object({
   number: z.string().optional(),
   document: z.string().optional(),
   litigationAmount: z.string().optional(),
-  debtorId: z.string().optional(), 
+  debtorId: z.string().optional(),
   invoiceId: z.string().optional(),
 });
 
 type LitigationForm = z.infer<typeof litigationSchema>;
 
 const NormalizeForm = () => {
+  const { data: session } = useSession();
   const { setField } = useDisputeStore();
   const { litigiosIngresados, addLitigio } = useLitigationStore();
   const [showDialog, setShowDialog] = useState(false);
@@ -64,9 +64,8 @@ const NormalizeForm = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    control
+    control,
   } = form;
- 
 
   const onSubmit = async (data: LitigationForm) => {
     try {
@@ -76,20 +75,21 @@ const NormalizeForm = () => {
         comment: data.comment,
         is_important_comment: "Cliente no responde...",
       };
-  
+
       const res = await fetch(
         `${API_URL}/v2/clients/${data.client}/litigations/${data.invoiceId}/normalize`,
         {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${session?.token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
         }
       );
-  
+
       if (!res.ok) throw new Error("Error al crear litigio");
-  
+
       setShowDialog(true);
       if (typeof window !== "undefined") {
         const event = new CustomEvent("litigation:created");
@@ -101,29 +101,22 @@ const NormalizeForm = () => {
       setShowDialog(false);
     }
   };
-  
-  
+
   const handleConfirm = () => {
     setShowDialog(false);
-    reset(); 
+    reset();
   };
 
   return (
     <>
-      <FormProvider {...form}>
+      <Form {...form}>
         <form
+          autoComplete="off"
           onSubmit={handleSubmit(onSubmit)}
-          className="w-[735px] max-w-full bg-white rounded-md p-6 space-y-6"
+          className="space-y-6"
         >
-          <div>
-            <h2 className="text-lg font-semibold">Normailizar litigio</h2>
-            <p className="text-sm text-gray-500">
-              Completa los campos obligatorios para ingresar un litigio.
-            </p>
-          </div>
-
           {/* Cliente y Deudor */}
-         
+
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={control}
@@ -143,12 +136,12 @@ const NormalizeForm = () => {
           </div>
           {/* Tabla de litigios */}
           {litigiosIngresados.length === 0 ? (
-            <div className="bg-gray-100 p-3 rounded text-sm text-gray-600 border">
-              No hay litigios ingresados con anterioridad
-            </div>
+            <EmptyLitigations />
           ) : (
             <div className="border bg-gray-50 p-4 rounded mt-4">
-              <h3 className="text-sm font-semibold mb-2">Litigios ingresados</h3>
+              <h3 className="text-sm font-semibold mb-2">
+                Litigios ingresados
+              </h3>
               <table className="min-w-full border bg-white text-sm">
                 <thead className="bg-gray-100">
                   <tr>
@@ -258,15 +251,19 @@ const NormalizeForm = () => {
               </Button>
             </div>
           </div>
-
         </form>
-      </FormProvider>
+      </Form>
 
       {showDialog && (
         <div className="justify-center">
-
           <LitigationDialogConfirm
-          title={<img src="/img/success-confirm.svg" alt="éxito" className="w-20 h-full mx-auto" />}
+            title={
+              <img
+                src="/img/success-confirm.svg"
+                alt="éxito"
+                className="w-20 h-full mx-auto"
+              />
+            }
             description="El litigio ha sido creado con éxito."
             onConfirm={handleConfirm}
           />

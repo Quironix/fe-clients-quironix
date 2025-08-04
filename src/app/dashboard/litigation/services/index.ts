@@ -1,4 +1,4 @@
-import Litigation from '../page';
+import { DISPUTE_MESSAGES } from "../../data";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export const getLitigations = async (accessToken: string, clientId: string) => {
@@ -43,19 +43,22 @@ export const updateLitigation = async (
 
   return response.json();
 };
-export const GetAllLitigationByDebtorId = async( accessToken: string, clientId: string, debtorId) => {
-  const response = await fetch(`${API_URL}/v2/clients/${clientId}/litigations/debtor/${debtorId}`,
+export const GetAllLitigationByDebtorId = async (
+  accessToken: string,
+  clientId: string,
+  debtorId
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/litigations/debtor/${debtorId}`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     }
-  )
-  console.log('GEtALldebtor', response)
+  );
+  console.log("GEtALldebtor", response);
   return response.json();
-
-}
-
+};
 
 /**
  * Actualiza el perfil de usuario para la tabla de conciliación.
@@ -113,6 +116,56 @@ export const updateReconciliationTableProfile = async ({
     return {
       success: false,
       message: "Error al actualizar el perfil",
+      data: null,
+    };
+  }
+};
+
+export const createLitigation = async ({
+  accessToken,
+  clientId,
+  dataToInsert,
+}: {
+  accessToken: string;
+  clientId: string;
+  dataToInsert: any;
+}) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/litigations`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToInsert),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        message:
+          DISPUTE_MESSAGES[
+            errorData?.message as keyof typeof DISPUTE_MESSAGES
+          ] || "Error al crear litigio",
+        data: null,
+      };
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      message: "Litigio creado correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al crear litigio",
       data: null,
     };
   }

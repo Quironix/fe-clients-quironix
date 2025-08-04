@@ -1,7 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useState } from "react";
+import DialogForm from "../../components/dialog-form";
+import NormalizeForm from "./normalize-form";
 
 const NormalizeLitigation = ({ onOpenForm }: { onOpenForm: () => void }) => {
   const [openForm, setOpenForm] = useState(false);
@@ -12,15 +14,28 @@ const NormalizeLitigation = ({ onOpenForm }: { onOpenForm: () => void }) => {
         <span className="text-orange-500">Normalizar</span> litigio
       </h2>
       <div className="flex flex-col items-center justify-center w-full">
-        <span className="text-sm text-gray-500">
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Maxime, ipsa. Numquam non ab accusantium tenetur nobis aperiam quaerat quos natus beatae unde! Quo vitae sapiente ad voluptatum, porro adipisci ab.
+        <span className="text-sm text-gray-500 mb-5">
+          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Maxime,
+          ipsa. Numquam non ab accusantium tenetur nobis aperiam quaerat quos
+          natus beatae unde! Quo vitae sapiente ad voluptatum, porro adipisci
+          ab.
         </span>
-        <Button
+        {/* <Button
           className="mt-4 px-10 bg-[#1249C7] text-white hover:bg-[#1249C7]/90"
           onClick={onOpenForm}
         >
           Normalizar
-        </Button>
+        </Button> */}
+
+        <DialogForm
+          trigger={
+            <Button className="bg-blue-700 text-white w-64">Normalizar</Button>
+          }
+          title="Normailizar litigio"
+          description="Completa los campos obligatorios para normalizar un litigio."
+        >
+          <NormalizeForm />
+        </DialogForm>
       </div>
     </div>
   );

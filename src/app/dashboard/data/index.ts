@@ -205,8 +205,8 @@ export const getSidebarData = (profile: any) => {
             title: "Seguimiento",
             url: "/dashboard/litigation",
             icon: IconFileCheckFilled,
-            scope: "client.litigation"
-          }
+            scope: "client.litigation",
+          },
         ],
       },
     ],
@@ -367,8 +367,8 @@ export const sidebarData: any = {
             {
               title: "Seguimiento",
               url: "/dashboard/litigation",
-              scope: "client.litigation"
-            }
+              scope: "client.litigation",
+            },
           ],
         },
       ],
@@ -689,3 +689,57 @@ export const COMMUNICATION_CHANNEL = [
   { code: "WHATSAPP", name: "WhatsApp" },
   { code: "SMS", name: "SMS" },
 ];
+
+export const disputes = [
+  {
+    code: "COMMERCIAL_INVOICE",
+    label: "Factura comercial",
+    submotivo: [
+      { code: "ISSUED", label: "Emitida" },
+      { code: "NOT_ISSUED", label: "No emitida" },
+    ],
+  },
+  {
+    code: "SETTLEMENT",
+    label: "Finiquito",
+    submotivo: [
+      { code: "LEGAL_COLLECTION", label: "Cobranza judicial" },
+      { code: "STORE_DELIVERY", label: "Entrega de local" },
+    ],
+  },
+  {
+    code: "CREDIT_NOTE",
+    label: "Nota de crédito",
+    submotivo: [
+      { code: "ADMINISTRATIVE", label: "Administrativa" },
+      { code: "PHYSICAL_DIFFERENCE", label: "Diferencia física" },
+      { code: "VALUE_DIFFERENCE", label: "Diferencia valor" },
+      {
+        code: "DISPATCH_GUIDE_DIFFERENCE",
+        label: "Diferencia Guía de Despacho",
+      },
+    ],
+  },
+  {
+    code: "INVOICE_ISSUE",
+    label: "Problemas con la factura",
+    submotivo: [
+      { code: "RETENTION_CERTIFICATE", label: "Certificado de retención" },
+      { code: "SERVICE_ISSUES", label: "Inconvenientes con el servicio" },
+      { code: "IN_OTHER_FACTORING", label: "En poder de otro factoring" },
+      { code: "DUE_DATE_ERROR", label: "Error de vencimiento" },
+      { code: "INVOICE_VOIDED", label: "Factura anulada" },
+      { code: "INVOICE_PAID", label: "Factura pagada" },
+      { code: "REINVOICING", label: "Re-facturación" },
+      { code: "REJECTED_BY_SII", label: "Rechazo en el SII" },
+      { code: "NO_CONTRACT", label: "Sin contrato" },
+      { code: "TRANSFERABLE_REQUEST", label: "Solicitud de cedible" },
+      { code: "DOCUMENTATION_REQUEST", label: "Solicitud de documentación" },
+    ],
+  },
+];
+
+export enum DISPUTE_MESSAGES {
+  INVOICE_NOT_FOUND = "No se encontró la factura",
+  DEBTOR_NOT_FOUND = "No se encontró el deudor",
+}

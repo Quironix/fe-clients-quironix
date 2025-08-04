@@ -2,29 +2,26 @@
 
 import { useState } from "react";
 
-import TitleSection from "@/app/dashboard/components/title-section";
 import Header from "@/app/dashboard/components/header";
 import { Main } from "@/app/dashboard/components/main";
+import TitleSection from "@/app/dashboard/components/title-section";
 
 import Language from "@/components/ui/language";
 import Image from "next/image";
 
 import CreateLitigation from "./components/create-litigation";
 import ListLitigation from "./components/list-litigation";
-import DisputeEntry from "./components/modals/dispute-entry";
 
 import { FileCog } from "lucide-react";
 import NormalizeEntry from "./components/modals/normalize-entry";
 import NormalizeLitigation from "./components/normalize-litigation";
-import LitigationEditModal from "./components/modals/litigation-edit";
-import LitigationDetail from "./components/modals/litigation-detail";
 
 const Litigation = () => {
   const [openCreateForm, setOpenCreateForm] = useState(false);
   const [openNormalizeForm, setOpenNormalizeForm] = useState(false);
 
   const [showEdit, setShowEdit] = useState(false);
-const [detailsModal , setDetailsModal] = useState(false)
+  const [detailsModal, setDetailsModal] = useState(false);
   return (
     <>
       <Header fixed>
@@ -50,26 +47,23 @@ const [detailsModal , setDetailsModal] = useState(false)
           </div>
 
           <div className="w-[37.5%] h-full">
-            <CreateLitigation onOpenForm={() => setOpenCreateForm(true)} />
+            <CreateLitigation />
           </div>
 
           <div className="w-[37.5%] h-full">
-            <NormalizeLitigation onOpenForm={() => setOpenNormalizeForm(true)} />
+            <NormalizeLitigation
+              onOpenForm={() => setOpenNormalizeForm(true)}
+            />
           </div>
         </div>
 
         <div className="mt-5 border border-gray-200 rounded-md p-3">
           <ListLitigation />
         </div>
-        {/* <div>
-          <LitigationEditModal open={false} onOpenChange={setShowEdit } litigation={undefined} />
-        </div> */}
-        {/* <div>
-          <LitigationDetail open={false}  onOpenChange={setDetailsModal } litigation={undefined} />
-        </div> */}
 
-        {openCreateForm && <DisputeEntry onClose={() => setOpenCreateForm(false)} />}
-        {openNormalizeForm && <NormalizeEntry onClose={() => setOpenNormalizeForm(false)} />}
+        {openNormalizeForm && (
+          <NormalizeEntry onClose={() => setOpenNormalizeForm(false)} />
+        )}
       </Main>
     </>
   );
