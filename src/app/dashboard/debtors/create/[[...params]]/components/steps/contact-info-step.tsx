@@ -44,10 +44,10 @@ import { Button } from "@/components/ui/button";
 const debtorFormSchema = z.object({
   contact_info: z.array(
     z.object({
-      name: z.string(),
-      role: z.string(),
-      function: z.string(),
-      email: z.string(),
+      name: z.string().min(1, "Nombre es requerido"),
+      role: z.string().min(1, "Rol es requerido"),
+      function: z.string().min(1, "Función es requerida"),
+      email: z.string().email("Email inválido"),
       phone: z
         .string()
         .min(8, "Campo requerido")
@@ -178,8 +178,12 @@ const ContactInfoStep: React.FC<StepProps> = ({
       if (data.contact_info.length > 0 && dataDebtor?.id) {
         // Normalizar los números de teléfono antes de guardar
         const normalizedContacts = data.contact_info.map((contact) => ({
-          ...contact,
+          name: contact.name || "",
+          role: contact.role || "",
+          email: contact.email || "",
           phone: normalizePhoneNumber(contact.phone),
+          channel: contact.channel,
+          function: contact.function,
         }));
 
         dataDebtor.contacts = normalizedContacts;

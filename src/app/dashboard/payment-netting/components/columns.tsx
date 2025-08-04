@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, MoreVertical, Trash, Trash2 } from "lucide-react";
+import { Eye, MoreVertical, Trash } from "lucide-react";
 import { BankMovementStatusEnum, PaymentNetting } from "../types";
 
 const formatCurrency = (amount: number, currency: string) => {
@@ -36,6 +36,7 @@ const WARNING_CLASS =
   "bg-white border-orange-500 rounded-md gap-2 text-orange-500 text-[10px]";
 
 const getStatusBadge = (status: PaymentNetting["status"]) => {
+  console.log(status);
   const statusConfig = {
     [BankMovementStatusEnum.PENDING]: {
       label: "Pendiente",
@@ -43,6 +44,10 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
     },
     [BankMovementStatusEnum.PROCESSED]: {
       label: "Procesado",
+      variant: SUCCESS_CLASS as string,
+    },
+    [BankMovementStatusEnum.PAYMENT_CREATED]: {
+      label: "Pago creado",
       variant: SUCCESS_CLASS as string,
     },
     [BankMovementStatusEnum.REJECTED]: {
@@ -85,7 +90,11 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
     },
   };
 
-  const config = statusConfig[status];
+  const config = statusConfig[status] || {
+    label: "Desconocido",
+    variant: WARNING_CLASS as string,
+  };
+
   return <Badge className={config.variant}>{config.label}</Badge>;
 };
 
@@ -99,7 +108,9 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
 // Comentario => comment
 // Acción ---
 
-export const columns: ColumnDef<PaymentNetting>[] = [
+export const createColumns = (
+  onViewDetails?: (transaction: PaymentNetting) => void
+): ColumnDef<PaymentNetting>[] => [
   {
     accessorKey: "status",
     header: "Estado",
@@ -133,7 +144,11 @@ export const columns: ColumnDef<PaymentNetting>[] = [
   {
     id: "code",
     header: "Código",
-    cell: ({ row }) => <div className="font-medium text-sm"> S/I</div>,
+    cell: ({ row }) => (
+      <div className="font-medium text-sm">
+        {row.original?.payment?.debtor?.name || "N/A"}
+      </div>
+    ),
   },
   {
     accessorKey: "date",
@@ -175,21 +190,23 @@ export const columns: ColumnDef<PaymentNetting>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onViewDetails?.(row.original)}>
               <Eye className="mr-2 h-4 w-4" />
               Ver detalles
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            {/* <DropdownMenuItem>
               <Edit className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
             <DropdownMenuItem className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               Eliminar
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
   },
 ];
+
+export const columns = createColumns();

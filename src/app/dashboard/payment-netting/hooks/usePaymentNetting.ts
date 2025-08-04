@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { RowSelectionState } from "@tanstack/react-table";
+import { useCallback, useEffect, useState } from "react";
 import { getPaymentNetting } from "../services";
 import {
   BankMovementStatusEnum,
@@ -12,6 +12,7 @@ import {
 const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
   if (!apiData?.data) return [];
   return apiData.data.map((item: any) => ({
+    ...item,
     id: item.id,
     date: item?.created_at
       ? new Date(item.created_at).toISOString().split("T")[0]
@@ -37,8 +38,9 @@ const mapApiStatusToLocal = (apiStatus: string): BankMovementStatusEnum => {
       BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT,
     ELIMINATED_NO_TRACKING: BankMovementStatusEnum.ELIMINATED_NO_TRACKING,
     MAINTAINED: BankMovementStatusEnum.MAINTAINED,
+    PAYMENT_CREATED: BankMovementStatusEnum.PAYMENT_CREATED,
   };
-  return statusMap[apiStatus?.toUpperCase()] || "pending";
+  return statusMap[apiStatus?.toUpperCase()] || BankMovementStatusEnum.PENDING;
 };
 
 export function usePaymentNetting(
@@ -47,7 +49,7 @@ export function usePaymentNetting(
   useMockData: boolean = false
 ) {
   const [data, setData] = useState<PaymentNetting[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isServerSideLoading, setIsServerSideLoading] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -58,13 +60,24 @@ export function usePaymentNetting(
     hasPrevious: false,
   });
   const [filters, setFilters] = useState<PaymentNettingFilters>({});
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>(() => {
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Cargar datos de localStorage después de la hidratación
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("paymentNettingSelection");
-      return saved ? JSON.parse(saved) : {};
+      if (saved) {
+        try {
+          const parsedSelection = JSON.parse(saved);
+          setRowSelection(parsedSelection);
+        } catch (error) {
+          console.error("Error parsing localStorage selection:", error);
+        }
+      }
+      setIsHydrated(true);
     }
-    return {};
-  });
+  }, []);
 
   const fetchPaymentNettings = useCallback(
     async (
@@ -160,14 +173,22 @@ export function usePaymentNetting(
   );
 
   const refetch = useCallback(() => {
+    clearRowSelection();
     fetchPaymentNettings(pagination.page, pagination.limit, filters);
   }, [fetchPaymentNettings, pagination.page, pagination.limit, filters]);
 
-  const handleRowSelectionChange = useCallback((updater: any) => {
-    const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
-    setRowSelection(newSelection);
-    localStorage.setItem("paymentNettingSelection", JSON.stringify(newSelection));
-  }, [rowSelection]);
+  const handleRowSelectionChange = useCallback(
+    (updater: any) => {
+      const newSelection =
+        typeof updater === "function" ? updater(rowSelection) : updater;
+      setRowSelection(newSelection);
+      localStorage.setItem(
+        "paymentNettingSelection",
+        JSON.stringify(newSelection)
+      );
+    },
+    [rowSelection]
+  );
 
   const getSelectedRows = useCallback(() => {
     return data.filter((_, index) => rowSelection[index]);
@@ -175,7 +196,9 @@ export function usePaymentNetting(
 
   const clearRowSelection = useCallback(() => {
     setRowSelection({});
-    localStorage.removeItem("paymentNettingSelection");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("paymentNettingSelection");
+    }
   }, []);
 
   useEffect(() => {
@@ -197,5 +220,6 @@ export function usePaymentNetting(
     handleRowSelectionChange,
     getSelectedRows,
     clearRowSelection,
+    isHydrated,
   };
 }
