@@ -81,7 +81,7 @@ const ListCreditFavor = () => {
       return [];
     }
 
-    let mappedData = payments.data.data.map(mapInvoiceData);
+    const mappedData = payments.data.data.map(mapInvoiceData);
 
     // Procesar pagos seleccionados
     selectedPaymentsList.forEach((payment) => {
@@ -105,7 +105,6 @@ const ListCreditFavor = () => {
       if (existingIndex !== -1) {
         // Si existe, comparar cuál tiene más datos
         const existingItem = mappedData[existingIndex];
-        debugger;
         const existingDataCount = countValidProperties(existingItem);
         const selectedDataCount = countValidProperties(selectedPaymentData);
 
