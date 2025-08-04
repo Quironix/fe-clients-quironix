@@ -1,31 +1,41 @@
 import { Button } from "@/components/ui/button";
+import { useProfileContext } from "@/context/ProfileContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Clock2, DollarSign, HeartHandshake } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useEffect, useMemo } from "react";
+import { toast } from "sonner";
+import { createConciliation } from "../services";
 import { usePaymentNettingStore } from "../store";
 import DiferenceAlert from "./diference-alert";
 import ItemListPayment from "./item-list-payment";
 import PendingAlert from "./pending-alert";
 import SuccessAlert from "./success-alert";
 
-const SummaryPaymentNetting = () => {
+const SummaryPaymentNetting = ({ selectedRows }: { selectedRows: any[] }) => {
   const {
     selectedInvoices,
     selectedPayments,
     setTotalPayments,
     setTotalInvoices,
+    resetSelected,
   } = usePaymentNettingStore();
+
+  const { data: session }: any = useSession();
+  const { profile } = useProfileContext();
+  const queryClient = useQueryClient();
 
   const totalPayments = useMemo(() => {
     return selectedPayments.reduce((acc, payment) => {
-      const amount = Number(payment.amount);
-      return acc + amount;
+      const amount = Number(payment.balance || 0);
+      return parseInt(acc + amount);
     }, 0);
   }, [selectedPayments]);
 
   const totalInvoices = useMemo(() => {
     return selectedInvoices.reduce((acc, invoice) => {
-      const amount = Number(invoice.amount);
-      return acc + amount;
+      const amount = Number(invoice.balance || 0);
+      return parseInt(acc + amount);
     }, 0);
   }, [selectedInvoices]);
 
@@ -37,6 +47,43 @@ const SummaryPaymentNetting = () => {
   useEffect(() => {
     setTotalInvoices(totalInvoices);
   }, [totalInvoices, setTotalInvoices]);
+
+  const handleCompensate = async () => {
+    console.log("Invoices", selectedInvoices);
+    console.log("Payments", selectedPayments);
+    debugger;
+    try {
+      const response = await createConciliation({
+        accessToken: session?.token,
+        clientId: profile?.client?.id,
+        debtorId: selectedRows[0]?.payment?.debtor_id,
+        invoices: selectedInvoices.map((invoice) => invoice.id),
+        payments: selectedPayments.map((payment) => payment.id),
+      });
+      if (response.success) {
+        toast.success(response.message);
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Error al compensar, por favor intente nuevamente");
+      console.error("Error", error);
+    } finally {
+      resetSelected();
+
+      // Invalidar queries de payments e invoices
+      const debtorId = selectedRows[0]?.payment?.debtor_id;
+      if (debtorId) {
+        queryClient.invalidateQueries({
+          queryKey: ["payments", debtorId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["invoices", debtorId],
+        });
+      }
+    }
+  };
+
   return (
     <div className="border border-gray-300 rounded-lg p-4 space-y-4">
       <div className="flex justify-between items-center">
@@ -113,6 +160,7 @@ const SummaryPaymentNetting = () => {
         <Button
           className="flex items-center justify-center gap-2"
           disabled={totalInvoices === 0 || totalPayments === 0}
+          onClick={handleCompensate}
         >
           <HeartHandshake className="w-4 h-4 text-white" />
           <span className="text-md font-bold">Compensar manualmente</span>

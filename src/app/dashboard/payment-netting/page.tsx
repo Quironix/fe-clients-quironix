@@ -310,7 +310,6 @@ export default function PaymentNettingPage() {
                       detailMovement={selectedPayments[0]}
                       handleClose={() => {
                         setOpenDialog(false);
-                        clearRowSelection();
                         refetch();
                       }}
                     />

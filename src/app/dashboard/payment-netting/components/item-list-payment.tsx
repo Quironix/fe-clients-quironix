@@ -25,6 +25,7 @@ interface ItemListPaymentProps {
     amount: string;
     type: DocumentType;
     created_at?: string;
+    balance: string;
   };
   type: "account-receivable" | "credit-favor";
   handleOpenInfo: (row: any) => void;
@@ -47,6 +48,8 @@ const ItemListPayment = ({
     selectedInvoices,
     selectedPayments,
   } = usePaymentNettingStore();
+
+  debugger;
 
   const [popOver, setPopOver] = useState(false);
 
@@ -98,7 +101,7 @@ const ItemListPayment = ({
   // Determinar las clases CSS basadas en el estado
   const getContainerClasses = () => {
     const baseClasses =
-      "flex flex-col items-start justify-between w-full border rounded-lg p-3 transition-all duration-300 group space-y-1 max-h-40 min-h-40";
+      "flex flex-col items-start justify-between w-full border rounded-lg p-3 transition-all duration-300 group space-y-1 max-h-45 min-h-45 py-3";
     const typeClasses =
       type === "account-receivable" ? "border-orange-400" : "border-blue-400";
 
@@ -148,7 +151,7 @@ const ItemListPayment = ({
                   <p className="text-sm font-medium">
                     Información del documento
                   </p>
-                  <div className="text-xs text-gray-600">
+                  <div className="text-xs text-gray-600 pb-2 border-b border-gray-200">
                     <p>
                       <span className="font-medium">Número:</span> {row.number}
                     </p>
@@ -162,6 +165,12 @@ const ItemListPayment = ({
                         Number(row.amount)
                       )}
                     </p>
+                    <p>
+                      <span className="font-medium">Balance:</span> $
+                      {new Intl.NumberFormat("es-CL").format(
+                        Number(row.balance || 0)
+                      )}
+                    </p>
                   </div>
                   {isItemSelected() ? (
                     <Button
@@ -171,7 +180,7 @@ const ItemListPayment = ({
                       onClick={handleRemoveFromSelection}
                     >
                       <Trash className="w-3 h-3 mr-2" />
-                      Eliminar de selección
+                      Quitar selección
                     </Button>
                   ) : (
                     <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded">
@@ -228,7 +237,13 @@ const ItemListPayment = ({
         <div className="flex items-center justify-between gap-1 mt-1 w-full">
           <span className="text-xs text-gray-500">Monto</span>
           <span className="text-xs font-bold text-gray-500">
-            ${new Intl.NumberFormat("es-CL").format(Number(row.amount))}
+            ${new Intl.NumberFormat("es-CL").format(Number(row.amount || 0))}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-1 mt-1 w-full">
+          <span className="text-xs text-gray-500">Balance</span>
+          <span className="text-xs font-bold text-gray-500">
+            ${new Intl.NumberFormat("es-CL").format(Number(row.balance || 0))}
           </span>
         </div>
       </div>

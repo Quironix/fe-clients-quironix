@@ -52,6 +52,7 @@ const ListAccountReceivable = () => {
   const mapInvoiceData = (invoice: any) => ({
     id: invoice.id || Math.random(),
     number: invoice.number || "N/A",
+    balance: invoice.balance || 0,
     debtor: invoice.debtor || { name: "N/A" },
     phases: invoice.phases || [],
     due_date: invoice.due_date || "",
@@ -111,7 +112,7 @@ const ListAccountReceivable = () => {
       )}
 
       {!isLoadingInvoices && (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 space-y-4 pr-4 pt-2 max-h-[32rem] min-h-[32rem] overflow-y-auto">
           {invoicesData.length > 0 ? (
             invoicesData.map((row: any) => {
               console.log("🎯 Renderizando item:", row);

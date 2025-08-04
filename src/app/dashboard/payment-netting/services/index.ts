@@ -289,3 +289,67 @@ export const getPayments = async ({
     };
   }
 };
+
+/**
+ * Crea una conciliación entre facturas y pagos para un deudor específico.
+ * @param {Object} params - Parámetros para crear la conciliación.
+ * @param {string} params.accessToken - Token de acceso para autenticación.
+ * @param {string} params.clientId - ID del cliente.
+ * @param {string} params.debtorId - ID del deudor.
+ * @param {string[]} params.invoices - Arreglo de IDs de facturas.
+ * @param {string[]} params.payments - Arreglo de IDs de pagos.
+ * @returns {Promise<Object>} - Respuesta de la API.
+ */
+export const createConciliation = async ({
+  accessToken,
+  clientId,
+  debtorId,
+  invoices,
+  payments,
+}: {
+  accessToken: string;
+  clientId: string;
+  debtorId: string;
+  invoices: string[];
+  payments: string[];
+}) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/reconciliation/debtors/${debtorId}/execute`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          invoices,
+          payments,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: data?.message || "Error al crear la conciliación",
+        data: null,
+      };
+    }
+
+    return {
+      success: true,
+      message: "Conciliación creada correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al crear la conciliación",
+      data: null,
+    };
+  }
+};

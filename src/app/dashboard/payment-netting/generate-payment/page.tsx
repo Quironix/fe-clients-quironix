@@ -150,7 +150,7 @@ const GeneratePayment = () => {
               </div>
             </div>
             <div className="">
-              <SummaryPaymentNetting />
+              <SummaryPaymentNetting selectedRows={selectedPayments} />
             </div>
           </section>
         </section>

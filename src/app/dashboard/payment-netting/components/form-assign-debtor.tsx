@@ -2,7 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -14,8 +16,9 @@ const FormAssignDebtor = ({
   handleClose,
 }: {
   detailMovement: any;
-  handleClose: (value: boolean) => void;
+  handleClose: () => void;
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const formSchema = z.object({
@@ -28,6 +31,7 @@ const FormAssignDebtor = ({
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
+      setIsLoading(true);
       const response = await assignDebtor({
         accessToken: session.token,
         clientId: profile.client_id,
@@ -36,14 +40,20 @@ const FormAssignDebtor = ({
       });
       if (response.success) {
         toast.success(response.message);
+        form.reset();
+        // Cierra el diálogo, refresca la tabla y deselecciona los registros
+        handleClose();
+      } else {
+        toast.error(response.message || "Error al asignar el deudor");
       }
     } catch (error) {
+      console.error("Error al asignar el deudor:", error);
       toast.error("Error al asignar el deudor");
     } finally {
-      handleClose(false);
-      form.reset();
+      setIsLoading(false);
     }
   };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -59,8 +69,19 @@ const FormAssignDebtor = ({
           )}
         />
         <div className="flex items-center justify-center border-t border-orange-500 pt-4 w-full">
-          <Button type="submit" className="bg-blue-500 text-white w-sm">
-            Guardar
+          <Button
+            type="submit"
+            className="bg-blue-500 text-white w-sm"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" />
+                <span className="text-white">Guardando...</span>
+              </>
+            ) : (
+              <span className="text-white">Guardar</span>
+            )}
           </Button>
         </div>
       </form>

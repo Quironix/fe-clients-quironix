@@ -173,6 +173,7 @@ export function usePaymentNetting(
   );
 
   const refetch = useCallback(() => {
+    clearRowSelection();
     fetchPaymentNettings(pagination.page, pagination.limit, filters);
   }, [fetchPaymentNettings, pagination.page, pagination.limit, filters]);
 
@@ -198,8 +199,6 @@ export function usePaymentNetting(
     if (typeof window !== "undefined") {
       localStorage.removeItem("paymentNettingSelection");
     }
-    setIsHydrated(false);
-    setRowSelection({});
   }, []);
 
   useEffect(() => {

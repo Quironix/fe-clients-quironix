@@ -12,7 +12,7 @@ import ItemListPayment from "./item-list-payment";
 const ListCreditFavor = () => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
-  const { selectedInvoices, selectedPayments } = usePaymentNettingStore();
+  const { selectedPayments } = usePaymentNettingStore();
   const { getSelectedRows, isHydrated } = usePaymentNetting(
     session?.token,
     profile?.client_id,
@@ -52,6 +52,7 @@ const ListCreditFavor = () => {
   const mapInvoiceData = (invoice: any) => ({
     id: invoice.id || `fallback-${invoice.payment_number || Date.now()}`,
     number: invoice.payment_number || "N/A",
+    balance: invoice.balance || 0,
     debtor: invoice.debtor || { name: "N/A" },
     phases: invoice.phases || [],
     due_date: invoice.due_at || "",
@@ -87,6 +88,7 @@ const ListCreditFavor = () => {
       const selectedPaymentData = {
         id: payment.id,
         number: payment.payment.payment_number || "N/A",
+        balance: payment.payment.balance || 0,
         debtor: payment.payment.debtor,
         phases: payment.payment.phases,
         due_date: payment.payment.due_at,
@@ -103,6 +105,7 @@ const ListCreditFavor = () => {
       if (existingIndex !== -1) {
         // Si existe, comparar cuál tiene más datos
         const existingItem = mappedData[existingIndex];
+        debugger;
         const existingDataCount = countValidProperties(existingItem);
         const selectedDataCount = countValidProperties(selectedPaymentData);
 
@@ -111,12 +114,12 @@ const ListCreditFavor = () => {
           - Seleccionado (${selectedDataCount} propiedades): ${JSON.stringify(selectedPaymentData)}`);
 
         // Usar el que tenga más datos válidos
-        if (selectedDataCount > existingDataCount) {
-          mappedData[existingIndex] = selectedPaymentData;
-          console.log(`✅ Reemplazando con elemento seleccionado (más datos)`);
-        } else {
-          console.log(`✅ Manteniendo elemento existente (más datos)`);
-        }
+        // if (selectedDataCount > existingDataCount) {
+        //   mappedData[existingIndex] = selectedPaymentData;
+        //   console.log(`✅ Reemplazando con elemento seleccionado (más datos)`);
+        // } else {
+        //   console.log(`✅ Manteniendo elemento existente (más datos)`);
+        // }
       } else {
         // Si no existe, agregarlo
         mappedData.push(selectedPaymentData);
@@ -163,7 +166,7 @@ const ListCreditFavor = () => {
       )}
 
       {!isLoadingInvoices && (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 space-y-4 pr-4 pt-2 max-h-[32rem] min-h-[32rem] overflow-y-auto">
           {paymentsData.length > 0 ? (
             paymentsData.map((row: any) => {
               console.log("🎯 Renderizando item:", row);

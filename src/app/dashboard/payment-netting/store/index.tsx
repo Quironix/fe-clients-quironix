@@ -145,6 +145,7 @@ interface PaymentNettingStore {
   totalInvoices: number;
   setTotalPayments: (total: number) => void;
   setTotalInvoices: (total: number) => void;
+  resetSelected: () => void;
 }
 export const usePaymentNettingStore = create<PaymentNettingStore>(
   (set, get) => ({
@@ -224,5 +225,12 @@ export const usePaymentNettingStore = create<PaymentNettingStore>(
     totalInvoices: 0,
     setTotalPayments: (total) => set({ totalPayments: total }),
     setTotalInvoices: (total) => set({ totalInvoices: total }),
+    resetSelected: () =>
+      set({
+        selectedInvoices: [],
+        selectedPayments: [],
+        totalInvoices: 0,
+        totalPayments: 0,
+      }),
   })
 );
