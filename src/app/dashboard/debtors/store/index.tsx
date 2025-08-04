@@ -8,6 +8,7 @@ import {
   updateDebtor,
 } from "../services";
 import { BulkUploadResponse, Debtor } from "../types";
+import { DEFAULT_PAGINATION_PARAMS } from "../types/pagination";
 
 interface DebtorsStore {
   dataDebtor: Debtor;
@@ -15,9 +16,22 @@ interface DebtorsStore {
   debtors: any[];
   loading: boolean;
   error: any;
+
+  // Nuevos estados para paginación y búsqueda
+  paginatedDebtors: any[];
+  currentPage: number;
+  hasNextPage: boolean;
+  totalPages: number;
+  totalDebtors: number;
+  searchTerm: string;
+  isLoadingMore: boolean;
+  isSearching: boolean;
+
   bulkUploadErrors: BulkUploadResponse | null;
   isFetchingDebtor: boolean;
   setIsFetchingDebtor: (isFetching: boolean) => void;
+
+  // Métodos existentes
   fetchDebtors: (accessToken: string, clientId: string) => Promise<void>;
   fetchDebtorById: (
     accessToken: string,
@@ -41,6 +55,23 @@ interface DebtorsStore {
   ) => Promise<void>;
   setBulkUploadErrors: (errors: BulkUploadResponse) => void;
   clearBulkUploadErrors: () => void;
+
+  // Nuevos métodos para paginación y búsqueda
+  fetchDebtorsPaginated: (
+    accessToken: string,
+    clientId: string,
+    page?: number,
+    search?: string,
+    reset?: boolean
+  ) => Promise<void>;
+  loadMoreDebtors: (accessToken: string, clientId: string) => Promise<void>;
+  searchDebtors: (
+    accessToken: string,
+    clientId: string,
+    searchTerm: string
+  ) => Promise<void>;
+  clearSearch: () => void;
+  resetPagination: () => void;
 }
 
 export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
@@ -49,10 +80,23 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   debtors: [],
   loading: false,
   error: null,
+
+  // Estados iniciales para paginación
+  paginatedDebtors: [],
+  currentPage: 1,
+  hasNextPage: false,
+  totalPages: 0,
+  totalDebtors: 0,
+  searchTerm: "",
+  isLoadingMore: false,
+  isSearching: false,
+
   isFetchingDebtor: false,
   setIsFetchingDebtor: (isFetching: boolean) =>
     set({ isFetchingDebtor: isFetching }),
   bulkUploadErrors: null,
+
+  // Método original mantenido para compatibilidad
   fetchDebtors: async (accessToken: string, clientId: string) => {
     set({ loading: true, error: null, dataDebtor: {} as Debtor });
     try {
@@ -69,6 +113,121 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+
+  // Nuevo método para paginación
+  fetchDebtorsPaginated: async (
+    accessToken: string,
+    clientId: string,
+    page = 1,
+    search = "",
+    reset = false
+  ) => {
+    const state = get();
+
+    // Si es una nueva búsqueda o reset, limpiar datos existentes
+    if (reset || page === 1) {
+      set({
+        paginatedDebtors: [],
+        currentPage: 1,
+        searchTerm: search,
+        isSearching: !!search,
+      });
+    }
+
+    set({
+      loading: page === 1,
+      isLoadingMore: page > 1,
+      error: null,
+    });
+
+    try {
+      const response = await getDebtors(accessToken, clientId, {
+        page,
+        limit: DEFAULT_PAGINATION_PARAMS.limit,
+        search: search || undefined,
+      });
+
+      const newDebtors = response.data || [];
+      const pagination = response.pagination;
+
+      set((state) => ({
+        paginatedDebtors:
+          page === 1 ? newDebtors : [...state.paginatedDebtors, ...newDebtors],
+        currentPage: pagination.page,
+        hasNextPage: pagination.hasNext,
+        totalPages: pagination.totalPages,
+        totalDebtors: pagination.total,
+        searchTerm: search,
+        debtors: Array.isArray(newDebtors) ? newDebtors : [],
+      }));
+    } catch (error: any) {
+      console.error("Error en fetchDebtorsPaginated:", error);
+      const errorMessage =
+        error?.message ||
+        error?.toString() ||
+        "Error desconocido al obtener los deudores";
+      set({ error: errorMessage });
+    } finally {
+      set({
+        loading: false,
+        isLoadingMore: false,
+        isSearching: false,
+      });
+    }
+  },
+
+  // Cargar más deudores (infinite scroll)
+  loadMoreDebtors: async (accessToken: string, clientId: string) => {
+    const state = get();
+
+    if (!state.hasNextPage || state.isLoadingMore) {
+      return;
+    }
+
+    await state.fetchDebtorsPaginated(
+      accessToken,
+      clientId,
+      state.currentPage + 1,
+      state.searchTerm
+    );
+  },
+
+  // Buscar deudores
+  searchDebtors: async (
+    accessToken: string,
+    clientId: string,
+    searchTerm: string
+  ) => {
+    set({ isSearching: true });
+    await get().fetchDebtorsPaginated(
+      accessToken,
+      clientId,
+      1,
+      searchTerm,
+      true
+    );
+  },
+
+  // Limpiar búsqueda
+  clearSearch: () => {
+    set({
+      searchTerm: "",
+      isSearching: false,
+    });
+  },
+
+  // Reset paginación
+  resetPagination: () => {
+    set({
+      paginatedDebtors: [],
+      currentPage: 1,
+      hasNextPage: false,
+      totalPages: 0,
+      totalDebtors: 0,
+      searchTerm: "",
+      isSearching: false,
+    });
   },
   fetchDebtorById: async (
     accessToken: string,
