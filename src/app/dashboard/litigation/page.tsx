@@ -7,21 +7,28 @@ import { Main } from "@/app/dashboard/components/main";
 import TitleSection from "@/app/dashboard/components/title-section";
 
 import Language from "@/components/ui/language";
+import { useProfileContext } from "@/context/ProfileContext";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 import CreateLitigation from "./components/create-litigation";
 import ListLitigation from "./components/list-litigation";
 
 import { FileCog } from "lucide-react";
-import NormalizeEntry from "./components/modals/normalize-entry";
 import NormalizeLitigation from "./components/normalize-litigation";
+import { useLitigation } from "./hooks/useLitigation";
 
 const Litigation = () => {
+  const { data: session } = useSession();
+  const { profile } = useProfileContext();
   const [openCreateForm, setOpenCreateForm] = useState(false);
   const [openNormalizeForm, setOpenNormalizeForm] = useState(false);
 
   const [showEdit, setShowEdit] = useState(false);
   const [detailsModal, setDetailsModal] = useState(false);
+
+  // Hook centralizado para manejar litigios
+  const litigationHook = useLitigation(session?.token, profile?.client_id);
   return (
     <>
       <Header fixed>
@@ -47,7 +54,7 @@ const Litigation = () => {
           </div>
 
           <div className="w-[37.5%] h-full">
-            <CreateLitigation />
+            <CreateLitigation onRefetch={litigationHook.refetch} />
           </div>
 
           <div className="w-[37.5%] h-full">
@@ -58,12 +65,12 @@ const Litigation = () => {
         </div>
 
         <div className="mt-5 border border-gray-200 rounded-md p-3">
-          <ListLitigation />
+          <ListLitigation litigationHook={litigationHook} />
         </div>
 
-        {openNormalizeForm && (
+        {/* {openNormalizeForm && (
           <NormalizeEntry onClose={() => setOpenNormalizeForm(false)} />
-        )}
+        )} */}
       </Main>
     </>
   );

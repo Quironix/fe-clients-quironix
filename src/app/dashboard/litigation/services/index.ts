@@ -13,36 +13,6 @@ export const getLitigations = async (accessToken: string, clientId: string) => {
   return response.json();
 };
 
-export const updateLitigation = async (
-  accessToken: string,
-  clientId: string,
-  litigationId: string,
-  payload: {
-    litigation_amount: number;
-    motivo: string;
-    submotivo: string;
-    contact: string;
-  }
-) => {
-  const response = await fetch(
-    `${API_URL}/v2/clients/${clientId}/litigations/${litigationId}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error?.message || "Error al editar litigio");
-  }
-
-  return response.json();
-};
 export const GetAllLitigationByDebtorId = async (
   accessToken: string,
   clientId: string,
@@ -166,6 +136,58 @@ export const createLitigation = async ({
     return {
       success: false,
       message: "Error al crear litigio",
+      data: null,
+    };
+  }
+};
+
+export const updateLitigation = async (
+  accessToken: string,
+  clientId: string,
+  litigationId: string,
+  dataToUpdate: {
+    litigation_amount: number;
+    motivo: string;
+    submotivo: string;
+    contact: string;
+  }
+) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/litigations/${litigationId}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToUpdate),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        message:
+          DISPUTE_MESSAGES[
+            errorData?.message as keyof typeof DISPUTE_MESSAGES
+          ] || "Error al actualizar litigio",
+        data: null,
+      };
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      message: "Litigio actualizado correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al actualizar litigio",
       data: null,
     };
   }

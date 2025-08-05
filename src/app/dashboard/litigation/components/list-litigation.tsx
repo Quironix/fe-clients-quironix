@@ -1,26 +1,31 @@
 "use client";
 
-import { useRef, useState, useMemo, useEffect } from "react";
-import { toast } from "sonner";
 import { useProfileContext } from "@/context/ProfileContext";
-import { useLitigation } from "../hooks/useLitigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { updateReconciliationTableProfile } from "../services";
-import { Litigation } from "../types";
+import { Litigation, LitigationItem } from "../types";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, Archive, Trash2 } from "lucide-react";
-import { VisibilityState } from "@tanstack/react-table";
+import { Archive, Eye, Trash2 } from "lucide-react";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
-import FilterInputs, { FilterInputsRef } from "../../payment-netting/components/filter";
-import { columns } from "./columns";
-import LitigationDetail from "./modals/litigation-detail";
+import FilterInputs, {
+  FilterInputsRef,
+} from "../../payment-netting/components/filter";
+import { getColumns } from "./columns";
 
-const ListLitigation = () => {
+interface ListLitigationProps {
+  litigationHook: ReturnType<
+    typeof import("../hooks/useLitigation").useLitigation
+  >;
+}
+
+const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
   const { session, profile } = useProfileContext();
   const [showDialog, setShowDialog] = useState(false);
-  const [selectedLitigation, setSelectedLitigation] = useState<Litigation | null>(null);
-const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedLitigation, setSelectedLitigation] =
+    useState<Litigation | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const {
     data,
@@ -36,7 +41,7 @@ const [showDetailModal, setShowDetailModal] = useState(false);
     getSelectedRows,
     clearRowSelection,
     refetch,
-  } = useLitigation(session?.token, profile?.client_id);
+  } = litigationHook;
 
   const filterInputsRef = useRef<FilterInputsRef>(null);
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
@@ -62,12 +67,12 @@ const [showDetailModal, setShowDetailModal] = useState(false);
     }
   }, [profile?.profile?.reconciliation_table]);
 
-  const columnVisibility = useMemo<VisibilityState>(() => {
-    return columnConfiguration.reduce((acc, col) => {
-      acc[col.name] = col.is_visible;
-      return acc;
-    }, {} as VisibilityState);
-  }, [columnConfiguration]);
+  // const columnVisibility = useMemo<VisibilityState>(() => {
+  //   return columnConfiguration.reduce((acc, col) => {
+  //     acc[col.name] = col.is_visible;
+  //     return acc;
+  //   }, {} as VisibilityState);
+  // }, [columnConfiguration]);
 
   const columnLabels = useMemo(
     () => ({
@@ -85,47 +90,50 @@ const [showDetailModal, setShowDetailModal] = useState(false);
     []
   );
 
-  const bulkActions = useMemo(() => [
-    {
-      label: "Ver detalles",
-      onClick: async (selectedRows: Litigation[]) => {
-        if (selectedRows.length > 0) {
-          setSelectedLitigation(selectedRows[0]);
-          setShowDetailModal(true);
-        } else {
-          toast.warning("Selecciona al menos un litigio para ver detalles.");
-        }
+  const bulkActions = useMemo(
+    () => [
+      {
+        label: "Ver detalles",
+        onClick: async (selectedRows: Litigation[]) => {
+          if (selectedRows.length > 0) {
+            // setSelectedLitigation(selectedRows[0]);
+            // setShowDetailModal(true);
+          } else {
+            toast.warning("Selecciona al menos un litigio para ver detalles.");
+          }
+        },
+        variant: "outline" as const,
+        icon: <Eye className="h-4 w-4" />,
       },
-      variant: "outline" as const,
-      icon: <Eye className="h-4 w-4" />,
-    },
-    {
-      label: "Editar factura",
-      onClick: async (selectedRows: Litigation[]) => {
-        console.log("Editar factura:", selectedRows);
-        toast("Función de edición aún no implementada");
+      {
+        label: "Editar factura",
+        onClick: async (selectedRows: Litigation[]) => {
+          console.log("Editar factura:", selectedRows);
+          toast("Función de edición aún no implementada");
+        },
+        variant: "secondary" as const,
+        icon: <Archive className="h-4 w-4" />,
       },
-      variant: "secondary" as const,
-      icon: <Archive className="h-4 w-4" />,
-    },
-    {
-      label: "Normalizar",
-      onClick: async (selectedRows: Litigation[]) => {
-        try {
-          // Aquí va endpoint para normalizar
-          console.log("Normalizar factura:", selectedRows);
-          toast.success("Litigios normalizados correctamente");
-          await refetch();
-          clearRowSelection();
-        } catch (err) {
-          console.error("Error normalizando:", err);
-          toast.error("Ocurrió un error al normalizar");
-        }
+      {
+        label: "Normalizar",
+        onClick: async (selectedRows: Litigation[]) => {
+          try {
+            // Aquí va endpoint para normalizar
+            console.log("Normalizar factura:", selectedRows);
+            toast.success("Litigios normalizados correctamente");
+            await refetch();
+            clearRowSelection();
+          } catch (err) {
+            console.error("Error normalizando:", err);
+            toast.error("Ocurrió un error al normalizar");
+          }
+        },
+        variant: "destructive" as const,
+        icon: <Trash2 className="h-4 w-4" />,
       },
-      variant: "destructive" as const,
-      icon: <Trash2 className="h-4 w-4" />,
-    },
-  ], [clearRowSelection, refetch]);
+    ],
+    [clearRowSelection, refetch]
+  );
 
   const handleUpdateColumns = async (
     config?: Array<{ name: string; is_visible: boolean }>
@@ -173,8 +181,8 @@ const [showDetailModal, setShowDetailModal] = useState(false);
     <Card>
       <CardContent>
         <DataTableDynamicColumns
-          columns={columns}
-          data={data as Litigation[]}
+          columns={getColumns(refetch)}
+          data={data as unknown as LitigationItem[]}
           isLoading={isLoading}
           isServerSideLoading={isServerSideLoading}
           pagination={pagination}

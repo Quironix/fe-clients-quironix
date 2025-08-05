@@ -1,19 +1,19 @@
 "use client";
-import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import * as z from "zod";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useDisputeStore } from "../../store/disputeStore";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
+import { toast } from "sonner";
+import { useDisputeStore } from "../../store/disputeStore";
 import { useLitigationStore } from "../../store/litigation-store";
+import { LitigationItem } from "../../types";
 import LitigationDialogConfirm from "../litigation-dialog-confirm";
-import Image from 'next/image';
-import { Litigation } from "../../types";
-
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -30,18 +30,24 @@ const litigationSchema = z.object({
   number: z.string().optional(),
   document: z.string().optional(),
   litigationAmount: z.string().optional(),
-  debtorId: z.string().optional(), 
+  debtorId: z.string().optional(),
   invoiceId: z.string().optional(),
 });
 
 type LitigationForm = z.infer<typeof litigationSchema>;
 
 type NormalizeFormModalsProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    litigation: Litigation; 
-  };
-const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormModalsProps) => {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  litigation: LitigationItem;
+  onRefetch?: () => void;
+};
+const NormalizeFormModals = ({
+  open,
+  onOpenChange,
+  litigation,
+  onRefetch,
+}: NormalizeFormModalsProps) => {
   const { setField } = useDisputeStore();
   const { litigiosIngresados, addLitigio } = useLitigationStore();
   const [showDialog, setShowDialog] = useState(false);
@@ -80,7 +86,7 @@ const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormMo
         contact: data.contact,
         initial_comment: data.comment ?? "",
       };
-  
+
       const res = await fetch(
         `${API_URL}/v2/clients/${data.client}/litigations`,
         {
@@ -91,25 +97,26 @@ const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormMo
           body: JSON.stringify(payload),
         }
       );
-  
+
       if (!res.ok) throw new Error("Error al crear litigio");
-  
-      setShowDialog(true);
-      if (typeof window !== "undefined") {
-        const event = new CustomEvent("litigation:created");
-        window.dispatchEvent(event);
+
+      // Éxito: ejecutar refetch, cerrar modal y mostrar confirmación
+      toast.success("Litigio normalizado exitosamente");
+      onOpenChange(false);
+      reset();
+      if (onRefetch) {
+        onRefetch();
       }
+      setShowDialog(true);
     } catch (error) {
       console.error(error);
-      alert("Error al guardar litigio");
-      setShowDialog(false);
+      toast.error("Error al normalizar litigio");
     }
   };
-  
-  
+
   const handleConfirm = () => {
     setShowDialog(false);
-    reset(); 
+    reset();
   };
 
   return (
@@ -150,7 +157,9 @@ const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormMo
             </div>
           ) : (
             <div className="border bg-gray-50 p-4 rounded mt-4">
-              <h3 className="text-sm font-semibold mb-2">Litigios ingresados</h3>
+              <h3 className="text-sm font-semibold mb-2">
+                Litigios ingresados
+              </h3>
               <table className="min-w-full border bg-white text-sm">
                 <thead className="bg-gray-100">
                   <tr>
@@ -260,15 +269,19 @@ const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormMo
               </Button>
             </div>
           </div>
-
         </form>
       </FormProvider>
 
       {showDialog && (
         <div className="justify-center">
-
           <LitigationDialogConfirm
-          title={<img src="/img/success-confirm.svg" alt="éxito" className="w-20 h-full mx-auto" />}
+            title={
+              <img
+                src="/img/success-confirm.svg"
+                alt="éxito"
+                className="w-20 h-full mx-auto"
+              />
+            }
             description="El litigio ha sido creado con éxito."
             onConfirm={handleConfirm}
           />

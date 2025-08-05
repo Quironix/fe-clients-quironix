@@ -3,6 +3,7 @@ import {
   IconFileCheckFilled,
   IconFileInvoice,
   IconHeartHandshake,
+  IconInfoTriangle,
   IconLayoutDashboard,
   IconUsers,
 } from "@tabler/icons-react";
@@ -202,11 +203,17 @@ export const getSidebarData = (profile: any) => {
             scope: "client.payment_netting",
           },
           {
-            title: "Seguimiento",
+            title: "Litigios",
             url: "/dashboard/litigation",
-            icon: IconFileCheckFilled,
+            icon: IconInfoTriangle,
             scope: "client.litigation",
           },
+          // {
+          //   title: "Seguimiento",
+          //   url: "/dashboard/litigation",
+          //   icon: IconFileCheckFilled,
+          //   scope: "client.litigation",
+          // },
         ],
       },
     ],

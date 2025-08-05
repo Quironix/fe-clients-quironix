@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { RowSelectionState } from "@tanstack/react-table";
+import { useCallback, useEffect, useState } from "react";
 import { getLitigations } from "../services";
 import {
   Litigation,
@@ -24,53 +24,53 @@ const mapApiStatusToLocal = (
     ELIMINATED_NO_TRACKING: LitigationMovementStatusEnum.ELIMINATED_NO_TRACKING,
     MAINTAINED: LitigationMovementStatusEnum.MAINTAINED,
   };
-  return statusMap[apiStatus?.toUpperCase()] ?? LitigationMovementStatusEnum.PENDING;
+  return (
+    statusMap[apiStatus?.toUpperCase()] ?? LitigationMovementStatusEnum.PENDING
+  );
 };
 
 const adaptApiResponseToLitigation = (apiData: any): Litigation[] => {
   if (!apiData?.data || !Array.isArray(apiData.data)) return [];
+  return apiData.data;
 
-  return apiData.data.map((item: any): Litigation => ({
-    invoice_number: item.invoice_number ?? item.number ?? "-",
-    number: item.number ?? "-",
-    debtor_id: item.debtor_id ?? "-",
-    company_id: item.company_id ?? null,
-    name: item?.debtor?.name ?? item?.name ?? "Nombre no disponible",
-    date: item.created_at
-      ? new Date(item.created_at).toISOString().split("T")[0]
-      : "",
-    disputeDays: item?.dispute_days
-      ? `${item.dispute_days} días`
-      : "30 días",
+  // return apiData.data.map(
+  //   (item: any): LitigationItem => ({
+  //     invoice_number: item?.invoice?.number || "-",
+  //     // number: item.number ?? "-",
+  //     debtor_id: item.debtor_id ?? "-",
+  //     company_id: item.company_id ?? null,
+  //     name: item?.debtor?.name ?? item?.name ?? "Nombre no disponible",
+  //     date: item.created_at
+  //       ? new Date(item.created_at).toISOString().split("T")[0]
+  //       : "",
+  //     disputeDays: item?.dispute_days ? `${item.dispute_days} días` : "30 días",
 
-    approver: item?.approver?.name ?? "Nombre Apellido", 
-    reason: item?.reason ?? "Sin motivo",
-    subreason: item?.subreason ?? "Sin submotivo",
+  //     approver: item?.approver?.name ?? "Nombre Apellido",
+  //     reason: item?.reason ?? "Sin motivo",
+  //     subreason: item?.subreason ?? "Sin submotivo",
 
-    amount: parseFloat(item.amount ?? "0") || 0,
-    invoiceAmount: parseFloat(item.invoice_amount ?? "0") || 0,
-    litigationAmount: parseFloat(item.litigation_amount ?? "0") || 0,
+  //     amount: parseFloat(item.amount ?? "0") || 0,
+  //     invoiceAmount: parseFloat(item.invoice_amount ?? "0") || 0,
+  //     litigationAmount: parseFloat(item.litigation_amount ?? "0") || 0,
 
-    bank_information: {
-      bank: item?.bank_information?.bank ?? "",
-      account_number: item?.bank_information?.account_number ?? "",
-    },
+  //     bank_information: {
+  //       bank: item?.bank_information?.bank ?? "",
+  //       account_number: item?.bank_information?.account_number ?? "",
+  //     },
 
-    status: mapApiStatusToLocal(item.status),
-    code: "-",
-    description: item.description ?? "",
-    comment: item.comment ?? "",
-  }));
+  //     status: mapApiStatusToLocal(item.status),
+  //     code: "-",
+  //     description: item.description ?? "",
+  //     comment: item.comment ?? "",
+  //   })
+  // );
 };
 
-
-export function useLitigation(
-  accessToken?: string,
-  clientId?: string
-) {
+export function useLitigation(accessToken?: string, clientId?: string) {
   const [data, setData] = useState<Litigation[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isServerSideLoading, setIsServerSideLoading] = useState<boolean>(false);
+  const [isServerSideLoading, setIsServerSideLoading] =
+    useState<boolean>(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 15,
@@ -100,10 +100,7 @@ export function useLitigation(
       try {
         if (!accessToken || !clientId) return;
 
-        const apiResponse = await getLitigations(
-          accessToken,
-          clientId,
-        );
+        const apiResponse = await getLitigations(accessToken, clientId);
 
         const adaptedData = adaptApiResponseToLitigation(apiResponse);
         const total = apiResponse?.pagination?.total || 0;
@@ -167,10 +164,18 @@ export function useLitigation(
   }, [fetchLitigations, pagination.page, pagination.limit, filters]);
 
   const handleRowSelectionChange = useCallback(
-    (updater: RowSelectionState | ((prev: RowSelectionState) => RowSelectionState)) => {
-      const newSelection = typeof updater === "function" ? updater(rowSelection) : updater;
+    (
+      updater:
+        | RowSelectionState
+        | ((prev: RowSelectionState) => RowSelectionState)
+    ) => {
+      const newSelection =
+        typeof updater === "function" ? updater(rowSelection) : updater;
       setRowSelection(newSelection);
-      localStorage.setItem("paymentNettingSelection", JSON.stringify(newSelection));
+      localStorage.setItem(
+        "paymentNettingSelection",
+        JSON.stringify(newSelection)
+      );
     },
     [rowSelection]
   );

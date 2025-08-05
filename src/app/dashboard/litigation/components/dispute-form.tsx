@@ -57,7 +57,13 @@ const litigationSchema = z.object({
 
 type LitigationForm = z.infer<typeof litigationSchema>;
 
-const DisputeForm = ({ handleClose }: { handleClose: () => void }) => {
+const DisputeForm = ({
+  handleClose,
+  onRefetch,
+}: {
+  handleClose: () => void;
+  onRefetch?: () => void;
+}) => {
   const { data: session } = useSession();
   const [showDialog, setShowDialog] = useState(false);
   const { profile } = useProfileContext();
@@ -106,6 +112,7 @@ const DisputeForm = ({ handleClose }: { handleClose: () => void }) => {
         contact: data.contact,
         debtor_id: data.debtorId,
         initial_comment: data.initial_comment ?? "",
+        company_id: data.client,
       };
 
       const res = await createLitigation({
@@ -120,11 +127,15 @@ const DisputeForm = ({ handleClose }: { handleClose: () => void }) => {
       }
 
       toast.success(res.message);
-    } catch (error) {
-      toast.error("Error al guardar litigio");
-      setShowDialog(false);
-    } finally {
+      // Solo ejecutar refetch y cerrar modal en caso de éxito
+      if (onRefetch) {
+        onRefetch();
+      }
       handleClose();
+      reset();
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al guardar litigio");
     }
   };
 

@@ -5,7 +5,11 @@ import { useState } from "react";
 import DialogForm from "../../components/dialog-form";
 import DisputeForm from "./dispute-form";
 
-const CreateLitigation = () => {
+interface CreateLitigationProps {
+  onRefetch?: () => void;
+}
+
+const CreateLitigation = ({ onRefetch }: CreateLitigationProps) => {
   const [open, setOpen] = useState(false);
   return (
     <div className="w-full h-full min-h-full border border-gray-200 rounded-md p-3 space-y-4">
@@ -33,7 +37,10 @@ const CreateLitigation = () => {
           open={open}
           onOpenChange={setOpen}
         >
-          <DisputeForm handleClose={() => setOpen(false)} />
+          <DisputeForm
+            handleClose={() => setOpen(false)}
+            onRefetch={onRefetch}
+          />
         </DialogForm>
       </div>
     </div>
