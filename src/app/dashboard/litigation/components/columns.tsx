@@ -140,7 +140,7 @@ export const columns: ColumnDef<Litigation>[] = [
     ),
   },
   {
-    accessorFn: (row) => row.approver || "-",
+    accessorFn: (row) => row.approver?.name || "-",
     id: "approver",
     header: "Aprobador",
     cell: ({ getValue }) => (

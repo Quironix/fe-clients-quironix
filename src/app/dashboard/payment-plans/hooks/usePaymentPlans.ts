@@ -2,14 +2,14 @@
 
 import { RowSelectionState } from "@tanstack/react-table";
 import { useCallback, useEffect, useState } from "react";
-import { getPaymentNetting } from "../services";
+import { getPaymentPlans } from "../services";
 import {
   BankMovementStatusEnum,
-  PaymentNetting,
-  PaymentNettingFilters,
+  PaymentPlans,
+  PaymentPlansFilters,
 } from "../types";
 
-const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
+const adaptApiResponseToPaymentPlans = (apiData: any): PaymentPlans[] => {
   if (!apiData?.data) return [];
   return apiData.data.map((item: any) => ({
     id: item.id,
@@ -17,36 +17,34 @@ const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
       ? new Date(item.created_at).toISOString().split("T")[0]
       : "",
     amount: parseFloat(item.amount) || 0,
-    bank: item.bank_information.bank || "",
-    account_number: item.bank_information.account_number || "",
+    bank: item.bank_information?.bank || "",
+    account_number: item.bank_information?.account_number || "",
     status: mapApiStatusToLocal(item.status),
     code: "-",
     description: item.description || "",
     comment: item.comment || "",
   }));
 };
+
 const mapApiStatusToLocal = (apiStatus: string): BankMovementStatusEnum => {
   const statusMap: Record<string, BankMovementStatusEnum> = {
-    PENDING: BankMovementStatusEnum.PENDING,
-    PROCESSED: BankMovementStatusEnum.PROCESSED,
+    APPROVED: BankMovementStatusEnum.APPROVED,
+    WITH_OBSERVATIONS: BankMovementStatusEnum.WITH_OBSERVATIONS,
     REJECTED: BankMovementStatusEnum.REJECTED,
-    ELIMINATED: BankMovementStatusEnum.ELIMINATED,
-    COMPENSATED: BankMovementStatusEnum.COMPENSATED,
-    REJECTED_DUPLICATE: BankMovementStatusEnum.REJECTED_DUPLICATE,
-    ELIMINATED_NEGATIVE_AMOUNT:
-      BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT,
-    ELIMINATED_NO_TRACKING: BankMovementStatusEnum.ELIMINATED_NO_TRACKING,
-    MAINTAINED: BankMovementStatusEnum.MAINTAINED,
+    IN_REVIEW: BankMovementStatusEnum.IN_REVIEW,
   };
-  return statusMap[apiStatus?.toUpperCase()] || BankMovementStatusEnum.PENDING;
+
+  const normalizedStatus = apiStatus?.toUpperCase();
+  return statusMap[normalizedStatus] || BankMovementStatusEnum.IN_REVIEW;
 };
 
-export function usePaymentNetting(
+
+export function usePaymentPlans(
   accessToken?: string,
   clientId?: string,
   useMockData: boolean = false
 ) {
-  const [data, setData] = useState<PaymentNetting[]>([]);
+  const [data, setData] = useState<PaymentPlans[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isServerSideLoading, setIsServerSideLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -57,64 +55,46 @@ export function usePaymentNetting(
     hasNext: false,
     hasPrevious: false,
   });
-  const [filters, setFilters] = useState<PaymentNettingFilters>({});
+  const [filters, setFilters] = useState<PaymentPlansFilters>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("paymentNettingSelection");
+      const saved = localStorage.getItem("paymentPlanselection");
       return saved ? JSON.parse(saved) : {};
     }
     return {};
   });
 
-  const fetchPaymentNettings = useCallback(
+  const fetchPaymentPlans = useCallback(
     async (
       page: number = 1,
       limit: number = 15,
-      searchFilters: PaymentNettingFilters = {}
+      searchFilters: PaymentPlansFilters = {}
     ) => {
       setIsServerSideLoading(true);
-
       try {
         if (accessToken && clientId) {
-          const apiResponse = await getPaymentNetting({
-            accessToken: accessToken || "",
-            clientId: clientId || "",
+          const apiResponse = await getPaymentPlans({
+            accessToken,
+            clientId,
             page,
             limit,
             status: searchFilters.status || "ALL",
-            createdAtToFrom:
-              searchFilters.dateFrom || searchFilters.createdAtFrom,
-            createdAtTo: searchFilters.dateTo || searchFilters.createdAtTo,
           });
 
-          if (apiResponse.data.length > 0) {
-            const adaptedData = adaptApiResponseToPaymentNetting(apiResponse);
+          const total = apiResponse.pagination?.total || 0;
+          const totalPages = Math.ceil(total / limit);
 
-            const total = apiResponse.pagination?.total || 0;
-            const totalPages = Math.ceil(total / limit);
+          const adaptedData = adaptApiResponseToPaymentPlans(apiResponse);
 
-            const newPagination = {
-              page,
-              limit,
-              total,
-              totalPages,
-              hasNext: page < totalPages,
-              hasPrevious: page > 1,
-            };
-
-            setData(adaptedData);
-            setPagination(newPagination);
-          } else {
-            setData([]);
-            setPagination({
-              page: 1,
-              limit,
-              total: 0,
-              totalPages: 1,
-              hasNext: false,
-              hasPrevious: false,
-            });
-          }
+          setData(adaptedData);
+          setPagination({
+            page,
+            limit,
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrevious: page > 1,
+          });
         }
       } catch (error) {
         setData([]);
@@ -130,48 +110,44 @@ export function usePaymentNetting(
         setIsServerSideLoading(false);
       }
     },
-    [accessToken, clientId, useMockData]
+    [accessToken, clientId]
   );
 
   const handlePaginationChange = useCallback(
     (page: number, pageSize: number) => {
-      fetchPaymentNettings(page, pageSize, filters);
+      fetchPaymentPlans(page, pageSize, filters);
     },
-    [fetchPaymentNettings, filters]
+    [fetchPaymentPlans, filters]
   );
 
   const handleSearchChange = useCallback(
     (search: string) => {
       if (search === filters.search) return;
-
       const newFilters = { ...filters, search };
       setFilters(newFilters);
-      fetchPaymentNettings(1, pagination.limit, newFilters);
+      fetchPaymentPlans(1, pagination.limit, newFilters);
     },
-    [fetchPaymentNettings, filters, pagination.limit]
+    [fetchPaymentPlans, filters, pagination.limit]
   );
 
   const handleFilterChange = useCallback(
-    (newFilters: PaymentNettingFilters) => {
+    (newFilters: PaymentPlansFilters) => {
       setFilters(newFilters);
-      fetchPaymentNettings(1, pagination.limit, newFilters);
+      fetchPaymentPlans(1, pagination.limit, newFilters);
     },
-    [fetchPaymentNettings, pagination.limit]
+    [fetchPaymentPlans, pagination.limit]
   );
 
   const refetch = useCallback(() => {
-    fetchPaymentNettings(pagination.page, pagination.limit, filters);
-  }, [fetchPaymentNettings, pagination.page, pagination.limit, filters]);
+    fetchPaymentPlans(pagination.page, pagination.limit, filters);
+  }, [fetchPaymentPlans, pagination.page, pagination.limit, filters]);
 
   const handleRowSelectionChange = useCallback(
     (updater: any) => {
       const newSelection =
         typeof updater === "function" ? updater(rowSelection) : updater;
       setRowSelection(newSelection);
-      localStorage.setItem(
-        "paymentNettingSelection",
-        JSON.stringify(newSelection)
-      );
+      localStorage.setItem("paymentPlanselection", JSON.stringify(newSelection));
     },
     [rowSelection]
   );
@@ -182,13 +158,13 @@ export function usePaymentNetting(
 
   const clearRowSelection = useCallback(() => {
     setRowSelection({});
-    localStorage.removeItem("paymentNettingSelection");
+    localStorage.removeItem("paymentPlanselection");
   }, []);
 
   useEffect(() => {
     setIsLoading(true);
-    fetchPaymentNettings().finally(() => setIsLoading(false));
-  }, [fetchPaymentNettings]);
+    fetchPaymentPlans().finally(() => setIsLoading(false));
+  }, [fetchPaymentPlans]);
 
   return {
     data,

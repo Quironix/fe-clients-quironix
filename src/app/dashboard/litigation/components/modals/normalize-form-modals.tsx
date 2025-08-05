@@ -15,6 +15,9 @@ import LitigationDialogConfirm from "../litigation-dialog-confirm";
 import { Litigation } from "../../types";
 import { useProfileContext } from '../../../../../context/ProfileContext';
 import { normalizeLitigation } from "../../services";
+import DebtorsSelectFormItem from "@/app/dashboard/components/debtors-select-form-item";
+import SelectClient from "@/app/dashboard/components/select-client";
+import { FormField } from "@/components/ui/form";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -25,7 +28,7 @@ const normalizeSchema = z.object({
     client: z.string(),
     debtor: z.string().optional(),
     invoiceNumber: z.string().optional(),
-  });
+});
 
 type normalizeForm = z.infer<typeof normalizeSchema>;
 
@@ -54,6 +57,7 @@ const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormMo
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    control
   } = form;
 
   const onSubmit = async (data: normalizeForm) => {
@@ -115,7 +119,8 @@ const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormMo
             className="absolute top-4 right-4 hover:text-black"
           >
             <X />
-          </button>
+                      </button>
+                      
             <div>
               <h2 className="text-lg font-semibold">Normalizar litigio</h2>
               <p className="text-sm text-gray-500">Completa los campos obligatorios para ingresar un litigio.</p>
@@ -136,18 +141,23 @@ const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormMo
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="font-semibold">Cliente</label>
-                <Input placeholder="Completa" {...register("client")} />
-                {errors.client && <p className="text-red-500 text-sm">{errors.client.message}</p>}
-              </div>
-              <div>
-                <label className="font-semibold">Deudor</label>
-                <Input placeholder="Completa" {...register("debtor")} />
-                {errors.debtor && <p className="text-red-500 text-sm">{errors.debtor.message}</p>}
-              </div>
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={control}
+              name="client"
+              render={({ field }) => (
+                <SelectClient field={field} title="Cliente" singleClient />
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="debtor"
+              render={({ field }) => (
+                <DebtorsSelectFormItem field={field} title="Deudor" />
+              )}
+            />
+          </div>
 
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div>
@@ -157,10 +167,15 @@ const NormalizeFormModals = ({ open, onOpenChange, litigation }: NormalizeFormMo
               </div>
               <div className="flex flex-col">
                 <label className="font-semibold">Razón de normalización</label>
-                <select className="border border-gray-300 p-2 rounded-md" {...register("normalizedReason")}>
-                  <option value="">Selecciona</option>
-                  <option value="Falta de pago">Falta de pago</option>
-                  <option value="Error en factura">Error en factura</option>
+                <select {...register("normalizedReason")} className="w-full border border-gray-300 p-2 rounded-md">
+                    <option value="PAYMENT_RECEIVED">Pago recibido</option>
+                    <option value="PAYMENT_AGREEMENT">Acuerdo de pago</option>
+                    <option value="PARTIAL_PAYMENT">Pago parcial</option>
+                    <option value="DEBT_FORGIVENESS">Condonación de deuda</option>
+                    <option value="LEGAL_SETTLEMENT">Acuerdo legal</option>
+                    <option value="ADMINISTRATIVE_ERROR">Error administrativo</option>
+                    <option value="DUPLICATE_INVOICE">Factura duplicada</option>
+                    <option value="OTHER">Otro</option>
                 </select>
                 {errors.normalizedReason && <p className="text-red-500 text-sm">{errors.normalizedReason.message}</p>}
               </div>

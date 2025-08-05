@@ -106,7 +106,7 @@ const DisputeForm = ({ onClose }: { onClose: () => void }) => {
   } = form;
 
 
-  const debtorId = form.watch("debtorId")
+ 
 
   const disputes = [
   {
@@ -159,6 +159,7 @@ const DisputeForm = ({ onClose }: { onClose: () => void }) => {
       const payload = {
         document_type: data.documentType,
         invoice_number: data.invoiceNumber,
+        invoice_amount: Number(data.invoiceAmount),
         litigation_amount: Number(data.litigationAmount),
         description: data.comment ?? "",
         motivo: data.reason,
@@ -202,7 +203,9 @@ const DisputeForm = ({ onClose }: { onClose: () => void }) => {
     setShowDialog(false);
     reset();
   };
+  const debtorId = form.watch("debtorId");
   useEffect(() => {
+ 
     const fetchLitigations = async () => {
       if (!debtorId || !session?.token || !profile?.client_id) return;
       try {
@@ -211,7 +214,7 @@ const DisputeForm = ({ onClose }: { onClose: () => void }) => {
           profile.client_id,
           debtorId
         );
-        setLitigationsByDebtor(data);
+        setLitigationsByDebtor(data.data);
         reset()
       } catch (error) {
         console.error("Error al obtener litigios anteriores", error);
@@ -320,14 +323,11 @@ const DisputeForm = ({ onClose }: { onClose: () => void }) => {
 
           {/* Litigios anteriores */}
           <div className="mt-2 border bg-[#F1F5F9] border-gray-200 rounded-md py-4 px-3">
-
-          <DataTableDynamicColumns
+            <p className="px-2">Litigios ingresados</p>
+          <DataTable
             columns={columnsLitigationEntry}
-            title="Litigios ingresados"
               data={litigationsByDebtor}
-              enableRowSelection={true}
-              initialRowSelection={{}}
-              onRowSelectionChange={() => {}}
+              showPagination={false}
             // Configuración para paginación del servidor (requerida)
             // pagination={pagination}
             onPaginationChange={handlePaginationChange}

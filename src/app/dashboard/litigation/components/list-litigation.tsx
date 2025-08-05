@@ -140,40 +140,6 @@ const ListLitigation = () => {
           />
         </CardContent>
       </Card>
-
-      {/* {modalType === "detail" && selectedLitigation && (
-        <LitigationDetail
-          open={true}
-          litigation={selectedLitigation}
-          onClose={() => {
-            setModalType("none");
-            setSelectedLitigation(null);
-          }}
-        />
-      )} */}
-
-      {/* {modalType === "edit" && selectedLitigation && (
-        <LitigationEditModal
-          open={true}
-          litigation={selectedLitigation}
-          onOpenChange={() => {
-            setModalType("none");
-            setSelectedLitigation(null);
-          }}
-        />
-      )}
-
-      {modalType === "normalize" && selectedLitigation && (
-        <NormalizeFormModals
-          open={true}
-          litigation={selectedLitigation}
-          onOpenChange={() => {
-            setModalType("none");
-            setSelectedLitigation(null);
-            refetch();
-          }}
-        />
-      )} */}
     </>
   );
 };

@@ -16,15 +16,11 @@ import DisputeEntry from "./components/modals/dispute-entry";
 import { FileCog } from "lucide-react";
 import NormalizeEntry from "./components/modals/normalize-entry";
 import NormalizeLitigation from "./components/normalize-litigation";
-import LitigationEditModal from "./components/modals/litigation-edit";
-import LitigationDetail from "./components/modals/litigation-detail";
 
 const Litigation = () => {
   const [openCreateForm, setOpenCreateForm] = useState(false);
   const [openNormalizeForm, setOpenNormalizeForm] = useState(false);
 
-  const [showEdit, setShowEdit] = useState(false);
-const [detailsModal , setDetailsModal] = useState(false)
   return (
     <>
       <Header fixed>
@@ -39,13 +35,13 @@ const [detailsModal , setDetailsModal] = useState(false)
         />
 
         <div className="flex justify-between items-start gap-5 p-3 border border-gray-200 rounded-md h-[320px]">
-          <div className="w-[25%] h-full">
+          <div className="w-[30%] h-full bg-[#F1F5F9]">
             <Image
               src="/img/image-litigation.svg"
-              alt="Deudores"
-              className="w-full h-full object-cover rounded-md"
-              width={100}
-              height={100}
+              alt="Litigios"
+              className="w-full h-full object-cover rounded-lg"
+              width={80}
+              height={80}
             />
           </div>
 

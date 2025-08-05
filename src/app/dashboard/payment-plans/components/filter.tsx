@@ -5,36 +5,27 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
-import DatePickerFormItem from "../../components/date-picker-form-item";
-import { BankMovementStatusEnum, PaymentNettingFilters } from "../types";
+import { BankMovementStatusEnum, PaymentPlansFilters } from "../types";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export interface FilterInputsRef {
-  getCurrentFilters: () => PaymentNettingFilters;
+  getCurrentFilters: () => PaymentPlansFilters;
 }
 
 const FilterInputs = React.forwardRef<
   FilterInputsRef,
   {
-    onFilterChange?: (filters: PaymentNettingFilters) => void;
-    initialFilters?: PaymentNettingFilters;
+    onFilterChange?: (filters: PaymentPlansFilters) => void;
+    initialFilters?: PaymentPlansFilters;
   }
 >(({ onFilterChange, initialFilters }, ref) => {
   const filterSchema = z.object({
     search: z.string().optional(),
-    status: z.string().optional(),
-    dateFrom: z.string().optional(),
-    dateTo: z.string().optional(),
+    status: z.array(z.string()).optional(),
   });
 
   type FilterFormValues = z.infer<typeof filterSchema>;
@@ -44,27 +35,36 @@ const FilterInputs = React.forwardRef<
     mode: "onChange",
     defaultValues: {
       search: initialFilters?.search || "",
-      status: initialFilters?.status || "PENDING",
-      dateFrom: initialFilters?.dateFrom || "",
-      dateTo: initialFilters?.dateTo || "",
+      status: initialFilters?.status
+      ? Array.isArray(initialFilters.status)
+        ? initialFilters.status
+        : [initialFilters.status]
+      : []
     },
   });
 
-  const handleSubmit = (data: PaymentNettingFilters) => {
+  const handleSubmit = (data: PaymentPlansFilters) => {
     onFilterChange?.(data);
   };
+  const handleCheckboxChange = (value: string) => {
+    const current = form.getValues("status") || [];
+    if (current.includes(value)) {
+      form.setValue(
+        "status",
+        current.filter((v) => v !== value)
+      );
+    } else {
+      form.setValue("status", [...current, value]);
+    }
+  };
+
 
   React.useImperativeHandle(ref, () => ({
     getCurrentFilters: () => {
       const values = form.getValues();
       return {
         ...values,
-        dateFrom: values.dateFrom
-          ? new Date(values.dateFrom).toISOString().split("T")[0]
-          : undefined,
-        dateTo: values.dateTo
-          ? new Date(values.dateTo).toISOString().split("T")[0]
-          : undefined,
+        status: values.status && values.status.length > 0 ? values.status : undefined,
       };
     },
   }));
@@ -72,27 +72,10 @@ const FilterInputs = React.forwardRef<
   return (
     <>
       <div className="w-full border-b border-gray-200 mb-4 pb-1">
-        <span className="text-sm font-bold text-gray-500">Filtros</span>
+        <span className="text-sm font-bold text-gray-500">Estado</span>
       </div>
       <FormProvider {...form}>
         <form className="w-full space-y-3" autoComplete="off">
-          <div className="space-y-2 grid grid-cols-2 gap-2">
-            <FormField
-              control={form.control}
-              name="dateFrom"
-              render={({ field }) => (
-                <DatePickerFormItem field={field} title="Desde" required />
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="dateTo"
-              render={({ field }) => (
-                <DatePickerFormItem field={field} title="Hasta" required />
-              )}
-            />
-          </div>
           <FormField
             control={form.control}
             name="status"
@@ -101,23 +84,35 @@ const FilterInputs = React.forwardRef<
                 <FormLabel>Estado</FormLabel>
 
                 <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || ""}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecciona un estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(BankMovementStatusEnum).map(
-                        ([key, value]) => (
-                          <SelectItem key={key} value={key}>
-                            {value}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-2">
+                {Object.entries(BankMovementStatusEnum).map(([key, label]) => {
+  const checked = form.watch("status")?.includes(key) || false;
+  return (
+    <FormControl key={key}>
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id={key}
+          checked={checked}
+          onCheckedChange={(checked) => {
+            const current = form.getValues("status") || [];
+            if (checked) {
+              form.setValue("status", [...current, key]);
+            } else {
+              form.setValue(
+                "status",
+                current.filter((v) => v !== key)
+              );
+            }
+          }}
+        />
+        <label htmlFor={key} className="text-sm cursor-pointer select-none">
+          {label}
+        </label>
+      </div>
+    </FormControl>
+  );
+})}
+                </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

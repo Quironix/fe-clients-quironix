@@ -211,7 +211,16 @@ export const getSidebarData = (profile: any) => {
             title: "Planes de pago",
             url: "/dashboard/payment-plans",
             icon: IconFileCheckFilled,
-            scope: "client.payment_plans"
+            scope: "client.payment_plans",
+            is_parent: true,
+            items: [
+              {
+                title: "Creación de deudores",
+                url: "/dashboard/payment-plans/create-payments-plans",
+                scope: "client.settings_account.payment_plans.create_payments_plans",
+              },
+            
+            ],
           }
         ],
       },
@@ -379,7 +388,16 @@ export const sidebarData: any = {
             title: "Planes de pago",
             url: "/dashboard/payment-plans",
             icon: IconFileCheckFilled,
-            scope: "client.payment_plans"
+            scope: "client.payment_plans",
+            is_parent: true,
+            items: [
+              {
+                title: "Creación de deudores",
+                url: "/dashboard/payment-plans/create-payments-plans",
+                scope: "client.settings_account.payment_plans.create_payments_plans",
+              },
+            
+            ],
           }
           ],
         },

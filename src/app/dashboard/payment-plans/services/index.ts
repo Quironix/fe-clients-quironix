@@ -1,5 +1,17 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-export const getPaymentNetting = async ({
+
+export type RawPaymentPlansResponse = {
+  success: boolean;
+  message?: string;
+  data: any[]; // raw data array
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+};
+
+export const getPaymentPlans = async ({
   accessToken,
   clientId,
   page = 1,
@@ -12,14 +24,11 @@ export const getPaymentNetting = async ({
   clientId: string;
   page?: number;
   limit?: number;
-  status?: string;
+   status?: string | string[];
   createdAtToFrom?: string;
   createdAtTo?: string;
-}) => {
+}): Promise<RawPaymentPlansResponse> => {
   try {
-    // Convertir fechas a formato ISO
-
-    // Construir parámetros de consulta dinámicamente
     const queryParams = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
@@ -36,10 +45,13 @@ export const getPaymentNetting = async ({
       queryParams.append("createdAtTo", toISO);
     }
 
-    // Agregar filtro de status solo si no es vacío o "ALL"
-    if (status && status !== "ALL") {
-      queryParams.append("status", status);
-    }
+   if (status && status !== "ALL") {
+  if (Array.isArray(status)) {
+    status.forEach((s) => queryParams.append("status", s));
+  } else {
+    queryParams.append("status", status);
+  }
+}
 
     const response = await fetch(
       `${API_URL}/v2/clients/${clientId}/reconciliation/movements?${queryParams.toString()}`,
@@ -49,17 +61,34 @@ export const getPaymentNetting = async ({
         },
       }
     );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        message: errorData?.message || "Error en la petición",
+        data: [],
+      };
+    }
+
     const data = await response.json();
-    return data;
+
+    return {
+      success: true,
+      message: data.message || "",
+      data: data.data || [],
+      pagination: data.pagination,
+    };
   } catch (error) {
     console.error(error);
     return {
       success: false,
       message: "Error al obtener los datos",
-      data: null,
+      data: [],
     };
   }
 };
+
 
 /**
  * Actualiza el perfil de usuario para la tabla de conciliación.

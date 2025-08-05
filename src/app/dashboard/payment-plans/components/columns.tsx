@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Eye, MoreVertical, Trash, Trash2 } from "lucide-react";
-import { BankMovementStatusEnum, PaymentNetting } from "../types";
+import { BankMovementStatusEnum, PaymentPlans } from "../types";
 
 const formatCurrency = (amount: number, currency: string) => {
   return new Intl.NumberFormat("es-CL", {
@@ -35,79 +35,35 @@ const SUCCESS_CLASS =
 const WARNING_CLASS =
   "bg-white border-orange-500 rounded-md gap-2 text-orange-500 text-[10px]";
 
-const getStatusBadge = (status: PaymentNetting["status"]) => {
-  const statusConfig = {
-    [BankMovementStatusEnum.PENDING]: {
-      label: "Pendiente",
-      variant: WARNING_CLASS as string,
-    },
-    [BankMovementStatusEnum.PROCESSED]: {
-      label: "Procesado",
-      variant: SUCCESS_CLASS as string,
-    },
-    [BankMovementStatusEnum.REJECTED]: {
-      label: "Rechazado",
-      variant: ERROR_CLASS as string,
-    },
-    [BankMovementStatusEnum.ELIMINATED]: {
-      label: "Eliminado",
-      variant: ERROR_CLASS as string,
-    },
-    [BankMovementStatusEnum.COMPENSATED]: {
-      label: "Compensado",
-      variant: SUCCESS_CLASS as string,
-    },
-    [BankMovementStatusEnum.REJECTED_DUPLICATE]: {
-      label: "Rechazado duplicado",
-      variant: ERROR_CLASS as string,
-    },
-    [BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT]: {
-      label: (
-        <span className="flex items-center gap-1">
-          <Trash className="h-3 w-3" />
-          Monto negativo
-        </span>
-      ),
-      variant: ERROR_CLASS as string,
-    },
-    [BankMovementStatusEnum.ELIMINATED_NO_TRACKING]: {
-      label: (
-        <span className="flex items-center gap-1">
-          <Trash className="h-3 w-3" />
-          Sin tracking
-        </span>
-      ),
-      variant: ERROR_CLASS as string,
-    },
-    [BankMovementStatusEnum.MAINTAINED]: {
-      label: "Mantenido",
-      variant: SUCCESS_CLASS as string,
-    },
+  const getStatusBadge = (status: PaymentPlans["status"]) => {
+    const statusConfig = {
+      [BankMovementStatusEnum.APPROVED]: {
+        label: "Aprobado",
+        variant: SUCCESS_CLASS,
+      },
+      [BankMovementStatusEnum.WITH_OBSERVATIONS]: {
+        label: "Con observaciones",
+        variant: WARNING_CLASS,
+      },
+      [BankMovementStatusEnum.REJECTED]: {
+        label: "Rechazado",
+        variant: ERROR_CLASS,
+      },
+      [BankMovementStatusEnum.IN_REVIEW]: {
+        label: "En revisión",
+        variant: WARNING_CLASS,
+      },
+    };
+  
+    const config = statusConfig[status];
+    return <Badge className={config.variant}>{config.label}</Badge>;
   };
+  
 
-  const config = statusConfig[status];
-  return <Badge className={config.variant}>{config.label}</Badge>;
-};
-
-// Estado => status
-// Importe => amount
-// Banco => bank_information.bank
-// Nº de cuenta => bank_information.account_number
-// Código => Vacío
-// Fecha => created_at
-// Descripción => description
-// Comentario => comment
-// Acción ---
-
-export const columns: ColumnDef<PaymentNetting>[] = [
+export const columns: ColumnDef<PaymentPlans>[] = [
   {
-    accessorKey: "status",
-    header: "Estado",
-    cell: ({ row }) => getStatusBadge(row.getValue("status")),
-  },
-  {
-    accessorKey: "amount",
-    header: "Importe",
+    accessorKey: "id",
+    header: "N° de Solicitud",
     cell: ({ row }) => (
       <div className="font-bold text-sm">
         {formatCurrency(row.getValue("amount"), "CLP")}
@@ -115,15 +71,20 @@ export const columns: ColumnDef<PaymentNetting>[] = [
     ),
   },
   {
-    accessorKey: "bank",
-    header: "Banco",
+    accessorKey: "debtor",
+    header: "Deudor",
     cell: ({ row }) => (
       <div className="font-medium text-sm">{row.getValue("bank")}</div>
     ),
   },
+   {
+    accessorKey: "status",
+    header: "Estado",
+    cell: ({ row }) => getStatusBadge(row.getValue("status")),
+  },
   {
     accessorKey: "account_number",
-    header: "Nº de cuenta",
+    header: "Deuda total",
     cell: ({ row }) => (
       <div className="font-medium text-sm">
         {row.getValue("account_number")}
@@ -131,13 +92,13 @@ export const columns: ColumnDef<PaymentNetting>[] = [
     ),
   },
   {
-    id: "code",
-    header: "Código",
+    accessorKey: "installments_number",
+    header: "N° Coutas",
     cell: ({ row }) => <div className="font-medium text-sm"> S/I</div>,
   },
   {
     accessorKey: "date",
-    header: "Fecha",
+    header: "Monto cuota",
     cell: ({ row }) => (
       <div className="font-medium text-sm">
         {formatDate(row.getValue("date"))}
@@ -146,10 +107,19 @@ export const columns: ColumnDef<PaymentNetting>[] = [
   },
   {
     accessorKey: "description",
-    header: "Descripción",
+    header: "Inicio pago",
     cell: ({ row }) => (
       <div className="max-w-[200px] truncate text-sm">
         {row.getValue("description")}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "comment",
+    header: "Término de pago",
+    cell: ({ row }) => (
+      <div className="max-w-[200px] truncate text-sm">
+        {row.getValue("comment")}
       </div>
     ),
   },
@@ -159,6 +129,15 @@ export const columns: ColumnDef<PaymentNetting>[] = [
     cell: ({ row }) => (
       <div className="max-w-[200px] truncate text-sm">
         {row.getValue("comment")}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "approver",
+    header: "Aprobador",
+    cell: ({ row }) => (
+      <div className="max-w-[200px] truncate text-sm">
+        {row.getValue("approver")}
       </div>
     ),
   },
