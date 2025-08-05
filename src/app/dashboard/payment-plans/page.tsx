@@ -20,6 +20,7 @@ import FilterInputs, { FilterInputsRef } from "./components/filter";
 import { usePaymentPlans } from "./hooks/usePaymentPlans";
 import Image from "next/image";
 import { updateReconciliationTableProfile } from "./services";
+import FormPaymentPlans from "./components/form-payment-plans";
 
 export default function PaymentPlans() {
   const { data: session }: any = useSession();
@@ -199,6 +200,7 @@ export default function PaymentPlans() {
                     <Button className="mt-4 px-10 bg-[#1249C7] text-white hover:bg-[#1249C7]/90"  onClick={handleCreateClick}>Crear plan de pago</Button>
               </div> 
           </div>
+        
 
         
         </div>
@@ -235,6 +237,9 @@ export default function PaymentPlans() {
               }
               isApplyingFilters={isApplyingFilters}
             />
+              <div className="p-4">
+            <FormPaymentPlans/>
+          </div>
           </CardContent>
         </Card>
       </Main>
