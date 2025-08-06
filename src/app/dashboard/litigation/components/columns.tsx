@@ -18,8 +18,32 @@ import NormalizationFormId from "./modals/normalization-id-form";
 
 // Funciones helper para mapear códigos a etiquetas
 const getMotivoLabel = (code: string) => {
-  const dispute = disputes.find((d) => d.code === code);
-  return dispute ? dispute.label : code || "-";
+  switch (code) {
+    case "COMMERCIAL_INVOICE":
+      return (
+        <span className="text-green-600 border border-green-600 rounded-full px-2 py-0.4 text-xs">
+          Fac. comercial
+        </span>
+      );
+    case "SETTLEMENT":
+      return (
+        <span className="text-blue-600 border border-blue-600 rounded-full px-2 py-0.4 text-xs">
+          Finiquito
+        </span>
+      );
+    case "CREDIT_NOTE":
+      return (
+        <span className="text-purple-600 border border-purple-600 rounded-full px-2 py-0.4 text-xs">
+          Nota de crédito
+        </span>
+      );
+    case "INVOICE_ISSUE":
+      return (
+        <span className="text-orange-600 border border-orange-600 rounded-full px-2 py-0.4 text-xs">
+          Problemas con la fac.
+        </span>
+      );
+  }
 };
 
 const getSubmotivoLabel = (motivoCode: string, submotivoCode: string) => {
@@ -260,7 +284,7 @@ export const getColumns = (
                 row.original?.approver?.last_name || "-"}
             </>
           ) : (
-            "Pendiente"
+            "-"
           )}
         </div>
       );

@@ -3,7 +3,7 @@
 import { useProfileContext } from "@/context/ProfileContext";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { updateReconciliationTableProfile } from "../services";
+import { updateLitigationTableProfile } from "../services";
 import { Litigation, LitigationItem } from "../types";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,9 +20,6 @@ interface ListLitigationProps {
 
 const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
   const { session, profile } = useProfileContext();
-  const [showDialog, setShowDialog] = useState(false);
-  const [selectedLitigation, setSelectedLitigation] =
-    useState<Litigation | null>(null);
 
   const {
     data,
@@ -33,9 +30,7 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
     handlePaginationChange,
     handleSearchChange,
     handleFilterChange,
-    rowSelection,
     handleRowSelectionChange,
-    getSelectedRows,
     clearRowSelection,
     refetch,
   } = litigationHook;
@@ -58,18 +53,11 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
   ]);
 
   useEffect(() => {
-    const savedConfig = profile?.profile?.reconciliation_table;
+    const savedConfig = profile?.profile?.litigations_table;
     if (Array.isArray(savedConfig)) {
       setColumnConfiguration(savedConfig);
     }
-  }, [profile?.profile?.reconciliation_table]);
-
-  // const columnVisibility = useMemo<VisibilityState>(() => {
-  //   return columnConfiguration.reduce((acc, col) => {
-  //     acc[col.name] = col.is_visible;
-  //     return acc;
-  //   }, {} as VisibilityState);
-  // }, [columnConfiguration]);
+  }, [profile?.profile?.litigations_table]);
 
   const columnLabels = useMemo(
     () => ({
@@ -140,11 +128,11 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
     const configToSave = config || columnConfiguration;
 
     try {
-      const response = await updateReconciliationTableProfile({
+      const response = await updateLitigationTableProfile({
         accessToken: session?.token,
         clientId: profile?.client_id,
         userId: profile?.id,
-        reconciliationTable: configToSave,
+        litigationTable: configToSave,
       });
 
       if (response.success) {
@@ -154,7 +142,7 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
         if (storedProfile) {
           const parsedProfile = JSON.parse(storedProfile);
           if (parsedProfile?.profile) {
-            parsedProfile.profile.reconciliation_table = configToSave;
+            parsedProfile.profile.litigations_table = configToSave;
             localStorage.setItem("profile", JSON.stringify(parsedProfile));
           }
         }

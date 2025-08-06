@@ -33,6 +33,7 @@ import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
 import LoaderTable from "../../components/loader-table";
 import SelectClient from "../../components/select-client";
 import { disputes, INVOICE_TYPES } from "../../data";
+import { useDebtorsStore } from "../../debtors/store";
 import { useDTEs } from "../../transactions/dte/hooks/useDTEs";
 import { createLitigation, GetAllLitigationByDebtorId } from "../services";
 import { columnsLitigationEntry } from "./columns-litigation-entry";
@@ -68,6 +69,8 @@ const DisputeForm = ({
   const [showDialog, setShowDialog] = useState(false);
   const { profile } = useProfileContext();
   const [litigationsByDebtor, setLitigationsByDebtor] = useState([]);
+  const [selectedDebtor, setSelectedDebtor] = useState<any>(null);
+  const { fetchDebtorById, dataDebtor, isFetchingDebtor } = useDebtorsStore();
 
   const form = useForm<LitigationForm>({
     resolver: zodResolver(litigationSchema),
@@ -100,6 +103,24 @@ const DisputeForm = ({
   } = form;
 
   const debtorId = form.watch("debtorId");
+
+  // Efecto para obtener el debtor completo cuando cambie debtorId
+  useEffect(() => {
+    if (debtorId && session?.token && profile?.client_id) {
+      fetchDebtorById(session.token, profile.client_id, debtorId);
+    } else {
+      setSelectedDebtor(null);
+      // Limpiar el campo de contacto cuando no hay debtor seleccionado
+      form.setValue("contact", "");
+    }
+  }, [debtorId, session?.token, profile?.client_id, fetchDebtorById, form]);
+
+  // Efecto para actualizar selectedDebtor cuando se obtenga dataDebtor
+  useEffect(() => {
+    if (dataDebtor?.id) {
+      setSelectedDebtor(dataDebtor);
+    }
+  }, [dataDebtor]);
 
   const onSubmit = async (data: LitigationForm) => {
     try {
@@ -369,9 +390,43 @@ const DisputeForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Contacto</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej. Juan López" {...field} />
-                </FormControl>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                  }}
+                  value={field.value}
+                  disabled={!selectedDebtor || isFetchingDebtor}
+                >
+                  <FormControl>
+                    <SelectTrigger className="truncate w-full">
+                      <SelectValue
+                        placeholder={
+                          isFetchingDebtor
+                            ? "Cargando contactos..."
+                            : !selectedDebtor
+                              ? "Selecciona un deudor primero"
+                              : selectedDebtor.contacts?.length === 0
+                                ? "Sin contactos disponibles"
+                                : "Selecciona contacto"
+                        }
+                        className="truncate"
+                      />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {selectedDebtor?.contacts?.length > 0 ? (
+                      selectedDebtor.contacts.map((contact: any) => (
+                        <SelectItem key={contact.name} value={contact.name}>
+                          {contact.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="py-2 px-3 text-sm text-gray-500">
+                        No hay contactos disponibles
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

@@ -23,11 +23,6 @@ const Litigation = () => {
   const { profile } = useProfileContext();
   const [openCreateForm, setOpenCreateForm] = useState(false);
   const [openNormalizeForm, setOpenNormalizeForm] = useState(false);
-
-  const [showEdit, setShowEdit] = useState(false);
-  const [detailsModal, setDetailsModal] = useState(false);
-
-  // Hook centralizado para manejar litigios
   const litigationHook = useLitigation(session?.token, profile?.client_id);
   return (
     <>
@@ -58,9 +53,7 @@ const Litigation = () => {
           </div>
 
           <div className="w-[37.5%] h-full">
-            <NormalizeLitigation
-              onOpenForm={() => setOpenNormalizeForm(true)}
-            />
+            <NormalizeLitigation onOpenForm={() => null} />
           </div>
         </div>
 
