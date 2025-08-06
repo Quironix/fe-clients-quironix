@@ -3,6 +3,7 @@ import {
   IconFileCheckFilled,
   IconFileInvoice,
   IconHeartHandshake,
+  IconInfoTriangle,
   IconLayoutDashboard,
   IconUsers,
 } from "@tabler/icons-react";
@@ -201,6 +202,18 @@ export const getSidebarData = (profile: any) => {
             icon: IconFileCheckFilled,
             scope: "client.payment_netting",
           },
+          {
+            title: "Litigios",
+            url: "/dashboard/litigation",
+            icon: IconInfoTriangle,
+            scope: "client.litigation",
+          },
+          // {
+          //   title: "Seguimiento",
+          //   url: "/dashboard/litigation",
+          //   icon: IconFileCheckFilled,
+          //   scope: "client.litigation",
+          // },
         ],
       },
     ],
@@ -357,6 +370,11 @@ export const sidebarData: any = {
               title: "Payment Netting",
               url: "/dashboard/payment-netting",
               scope: "client.transactions.payment_netting",
+            },
+            {
+              title: "Seguimiento",
+              url: "/dashboard/litigation",
+              scope: "client.litigation",
             },
           ],
         },
@@ -677,4 +695,79 @@ export const COMMUNICATION_CHANNEL = [
   { code: "IN_PERSON", name: "Presencial" },
   { code: "WHATSAPP", name: "WhatsApp" },
   { code: "SMS", name: "SMS" },
+];
+
+export const disputes = [
+  {
+    code: "COMMERCIAL_INVOICE",
+    label: "Factura comercial",
+    submotivo: [
+      { code: "ISSUED", label: "Emitida" },
+      { code: "NOT_ISSUED", label: "No emitida" },
+    ],
+  },
+  {
+    code: "SETTLEMENT",
+    label: "Finiquito",
+    submotivo: [
+      { code: "LEGAL_COLLECTION", label: "Cobranza judicial" },
+      { code: "STORE_DELIVERY", label: "Entrega de local" },
+    ],
+  },
+  {
+    code: "CREDIT_NOTE",
+    label: "Nota de crédito",
+    submotivo: [
+      { code: "ADMINISTRATIVE", label: "Administrativa" },
+      { code: "PHYSICAL_DIFFERENCE", label: "Diferencia física" },
+      { code: "VALUE_DIFFERENCE", label: "Diferencia valor" },
+      {
+        code: "DISPATCH_GUIDE_DIFFERENCE",
+        label: "Diferencia Guía de Despacho",
+      },
+    ],
+  },
+  {
+    code: "INVOICE_ISSUE",
+    label: "Problemas con la factura",
+    submotivo: [
+      { code: "RETENTION_CERTIFICATE", label: "Certificado de retención" },
+      { code: "SERVICE_ISSUES", label: "Inconvenientes con el servicio" },
+      { code: "IN_OTHER_FACTORING", label: "En poder de otro factoring" },
+      { code: "DUE_DATE_ERROR", label: "Error de vencimiento" },
+      { code: "INVOICE_VOIDED", label: "Factura anulada" },
+      { code: "INVOICE_PAID", label: "Factura pagada" },
+      { code: "REINVOICING", label: "Re-facturación" },
+      { code: "REJECTED_BY_SII", label: "Rechazo en el SII" },
+      { code: "NO_CONTRACT", label: "Sin contrato" },
+      { code: "TRANSFERABLE_REQUEST", label: "Solicitud de cedible" },
+      { code: "DOCUMENTATION_REQUEST", label: "Solicitud de documentación" },
+    ],
+  },
+];
+
+export enum DISPUTE_MESSAGES {
+  INVOICE_NOT_FOUND = "No se encontró la factura",
+  DEBTOR_NOT_FOUND = "No se encontró el deudor",
+}
+
+// Motivos de normalización como un JSON constante
+export const NORMALIZATION_REASONS = [
+  { code: "PAYMENT_RECEIVED", label: "Pago recibido" },
+  { code: "PAYMENT_AGREEMENT", label: "Acuerdo de pago" },
+  { code: "PARTIAL_PAYMENT", label: "Pago parcial" },
+  { code: "DEBT_FORGIVENESS", label: "Condonación de deuda" },
+  { code: "LEGAL_SETTLEMENT", label: "Acuerdo legal" },
+  { code: "ADMINISTRATIVE_ERROR", label: "Error administrativo" },
+  { code: "DUPLICATE_INVOICE", label: "Factura duplicada" },
+];
+
+// Estado de litigio como un JSON constante
+export const LITIGATION_STATUS = [
+  { code: "PENDING", label: "Pendiente de revisión" },
+  { code: "IN_REVIEW", label: "En revisión" },
+  { code: "APPROVED", label: "Aprobado" },
+  { code: "REJECTED", label: "Rechazado" },
+  { code: "NORMALIZED", label: "Normalizado (resuelto)" },
+  { code: "CANCELLED", label: "Cancelado" },
 ];

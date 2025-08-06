@@ -122,7 +122,7 @@ const SelectClient = ({
       <Select open={open} onOpenChange={handleOpenChange}>
         <FormControl>
           <SelectTrigger
-            className="w-full min-h-10"
+            className="w-full min-h-8"
             onClick={() => setOpen(!open)}
           >
             <div className="flex flex-wrap gap-1 items-center w-full">
