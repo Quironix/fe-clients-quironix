@@ -9,10 +9,8 @@ import { Litigation, LitigationItem } from "../types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Archive, Eye, Trash2 } from "lucide-react";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
-import FilterInputs, {
-  FilterInputsRef,
-} from "../../payment-netting/components/filter";
 import { getColumns } from "./columns";
+import FilterInputs, { FilterInputsRef } from "./filter";
 
 interface ListLitigationProps {
   litigationHook: ReturnType<
@@ -25,7 +23,6 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
   const [showDialog, setShowDialog] = useState(false);
   const [selectedLitigation, setSelectedLitigation] =
     useState<Litigation | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const {
     data,

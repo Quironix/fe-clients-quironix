@@ -67,10 +67,6 @@ const Litigation = () => {
         <div className="mt-5 border border-gray-200 rounded-md p-3">
           <ListLitigation litigationHook={litigationHook} />
         </div>
-
-        {/* {openNormalizeForm && (
-          <NormalizeEntry onClose={() => setOpenNormalizeForm(false)} />
-        )} */}
       </Main>
     </>
   );

@@ -1,10 +1,11 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
@@ -13,7 +14,6 @@ import { toast } from "sonner";
 import { useDisputeStore } from "../../store/disputeStore";
 import { useLitigationStore } from "../../store/litigation-store";
 import { LitigationItem } from "../../types";
-import LitigationDialogConfirm from "../litigation-dialog-confirm";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -121,11 +121,8 @@ const NormalizeFormModals = ({
 
   return (
     <>
-      <FormProvider {...form}>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-[735px] max-w-full bg-white rounded-md p-6 space-y-6"
-        >
+      <Form {...form}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div>
             <h2 className="text-lg font-semibold">Normailizar litigio</h2>
             <p className="text-sm text-gray-500">
@@ -270,23 +267,7 @@ const NormalizeFormModals = ({
             </div>
           </div>
         </form>
-      </FormProvider>
-
-      {showDialog && (
-        <div className="justify-center">
-          <LitigationDialogConfirm
-            title={
-              <img
-                src="/img/success-confirm.svg"
-                alt="éxito"
-                className="w-20 h-full mx-auto"
-              />
-            }
-            description="El litigio ha sido creado con éxito."
-            onConfirm={handleConfirm}
-          />
-        </div>
-      )}
+      </Form>
     </>
   );
 };

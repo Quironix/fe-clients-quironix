@@ -7,6 +7,7 @@ import NormalizeForm from "./normalize-form";
 
 const NormalizeLitigation = ({ onOpenForm }: { onOpenForm: () => void }) => {
   const [openForm, setOpenForm] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
   return (
     <div className="w-full h-full min-h-full border border-gray-200 rounded-md p-3 space-y-4">
@@ -31,10 +32,12 @@ const NormalizeLitigation = ({ onOpenForm }: { onOpenForm: () => void }) => {
           trigger={
             <Button className="bg-blue-700 text-white w-64">Normalizar</Button>
           }
-          title="Normailizar litigio"
+          title="Normalizar litigio"
           description="Completa los campos obligatorios para normalizar un litigio."
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
         >
-          <NormalizeForm />
+          <NormalizeForm onSuccess={() => setIsDialogOpen(false)} />
         </DialogForm>
       </div>
     </div>

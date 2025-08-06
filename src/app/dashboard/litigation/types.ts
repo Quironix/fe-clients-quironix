@@ -222,3 +222,11 @@ interface Dni {
   created_at: string;
   updated_at: string;
 }
+
+export interface LitigationFilters {
+  search?: string;
+  status?: string;
+  // Alias para compatibilidad con el servicio API
+  createdAtFrom?: string;
+  createdAtTo?: string;
+}

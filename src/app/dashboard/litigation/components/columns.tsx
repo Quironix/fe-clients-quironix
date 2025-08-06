@@ -7,13 +7,14 @@ import { Edit, Eye, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import BulletMenu, { BulletMenuItem } from "../../components/bullet-menu";
 
+import { format } from "date-fns";
 import { useState } from "react";
 import DialogForm from "../../components/dialog-form";
 import { disputes } from "../../data";
 import { LitigationItem } from "../types";
 import LitigationDetail from "./modals/litigation-detail";
 import LitigationEditModal from "./modals/litigation-edit";
-import NormalizeFormModals from "./modals/normalize-form-modals";
+import NormalizationFormId from "./modals/normalization-id-form";
 
 // Funciones helper para mapear códigos a etiquetas
 const getMotivoLabel = (code: string) => {
@@ -85,7 +86,7 @@ const NormalizeModalWrapper = ({
         </div>
       }
     >
-      <NormalizeFormModals
+      <NormalizationFormId
         open={open}
         onOpenChange={setOpen}
         litigation={row}
@@ -185,13 +186,17 @@ export const getColumns = (
     accessorKey: "debtor_name",
     header: "Deudor",
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.debtor.name || "-"}</div>
+      <div className="font-medium max-w-[150px] truncate">
+        {row.original.debtor.name || "-"}
+      </div>
     ),
   },
   {
     accessorKey: "created_at",
     header: "Ingreso de litigio",
-    cell: ({ row }) => <div>{row.original.created_at || "-"}</div>,
+    cell: ({ row }) => (
+      <div>{format(row.original.created_at, "dd/MM/yyyy HH:mm") || "-"}</div>
+    ),
   },
   {
     accessorKey: "client_code",

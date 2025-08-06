@@ -750,3 +750,24 @@ export enum DISPUTE_MESSAGES {
   INVOICE_NOT_FOUND = "No se encontró la factura",
   DEBTOR_NOT_FOUND = "No se encontró el deudor",
 }
+
+// Motivos de normalización como un JSON constante
+export const NORMALIZATION_REASONS = [
+  { code: "PAYMENT_RECEIVED", label: "Pago recibido" },
+  { code: "PAYMENT_AGREEMENT", label: "Acuerdo de pago" },
+  { code: "PARTIAL_PAYMENT", label: "Pago parcial" },
+  { code: "DEBT_FORGIVENESS", label: "Condonación de deuda" },
+  { code: "LEGAL_SETTLEMENT", label: "Acuerdo legal" },
+  { code: "ADMINISTRATIVE_ERROR", label: "Error administrativo" },
+  { code: "DUPLICATE_INVOICE", label: "Factura duplicada" },
+];
+
+// Estado de litigio como un JSON constante
+export const LITIGATION_STATUS = [
+  { code: "PENDING", label: "Pendiente de revisión" },
+  { code: "IN_REVIEW", label: "En revisión" },
+  { code: "APPROVED", label: "Aprobado" },
+  { code: "REJECTED", label: "Rechazado" },
+  { code: "NORMALIZED", label: "Normalizado (resuelto)" },
+  { code: "CANCELLED", label: "Cancelado" },
+];
