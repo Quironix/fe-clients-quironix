@@ -80,10 +80,7 @@ export interface LitigationFilters {
   search?: string;
   status?: string;
   company?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  createdAtFrom?: string;
-  createdAtTo?: string;
+  motivo?: string;
 }
 
 export interface LitigationItem {
