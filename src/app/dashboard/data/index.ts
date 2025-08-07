@@ -208,6 +208,12 @@ export const getSidebarData = (profile: any) => {
             icon: IconInfoTriangle,
             scope: "client.litigation",
           },
+          {
+            title: "Planes de pago",
+            url: "/dashboard/payment-plans",
+            icon: IconInfoTriangle,
+            scope: "client.payment_plans",
+          },
           // {
           //   title: "Seguimiento",
           //   url: "/dashboard/litigation",
