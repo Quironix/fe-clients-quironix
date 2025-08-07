@@ -18,10 +18,8 @@ const CreateLitigation = ({ onRefetch }: CreateLitigationProps) => {
       </h2>
       <div className="flex flex-col items-center justify-center w-full">
         <span className="text-sm text-gray-500 mb-5">
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Maxime,
-          ipsa. Numquam non ab accusantium tenetur nobis aperiam quaerat quos
-          natus beatae unde! Quo vitae sapiente ad voluptatum, porro adipisci
-          ab.
+          Utiliza este formulario para registrar un nuevo litigio y gestionar
+          los casos de compensación de pagos pendientes.
         </span>
         <DialogForm
           trigger={

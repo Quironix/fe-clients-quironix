@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -40,23 +40,27 @@ import { columnsLitigationEntry } from "./columns-litigation-entry";
 import EmptyLitigations from "./empty-litigations";
 import LitigationDialogConfirm from "./litigation-dialog-confirm";
 
-const litigationSchema = z.object({
-  client: z.string().min(1, "El cliente es requerido"),
-  debtorId: z.string().min(1, "El deudor es requerido"),
-  invoiceNumber: z.string().min(1, "El número de factura es requerido"),
-  reason: z.string(),
-  subreason: z.string(),
-  contact: z.string(),
-  initial_comment: z.string().optional(),
-  number: z.string().optional(),
-  document: z.string().optional(),
-  invoiceId: z.string().optional(),
-  invoiceAmount: z.string(),
-  litigationAmount: z.string(),
-  documentType: z.string().min(1, "El tipo de factura es requerido"),
-});
+const litigationSchema = (isFactoring: boolean) => {
+  return z.object({
+    client: isFactoring
+      ? z.string().min(1, "El cliente es requerido")
+      : z.string().optional().nullable(),
+    debtorId: z.string().min(1, "El deudor es requerido"),
+    invoiceNumber: z.string().min(1, "El número de factura es requerido"),
+    reason: z.string(),
+    subreason: z.string(),
+    contact: z.string(),
+    initial_comment: z.string().optional(),
+    number: z.string().optional(),
+    document: z.string().optional(),
+    invoiceId: z.string().optional(),
+    invoiceAmount: z.string(),
+    litigationAmount: z.string(),
+    documentType: z.string().min(1, "El tipo de factura es requerido"),
+  });
+};
 
-type LitigationForm = z.infer<typeof litigationSchema>;
+type LitigationForm = z.infer<ReturnType<typeof litigationSchema>>;
 
 const DisputeForm = ({
   handleClose,
@@ -72,10 +76,17 @@ const DisputeForm = ({
   const [selectedDebtor, setSelectedDebtor] = useState<any>(null);
   const { fetchDebtorById, dataDebtor, isFetchingDebtor } = useDebtorsStore();
 
+  const isFactoring = profile?.client?.type === "FACTORING";
+  const litigationFormSchema = useMemo(
+    () => litigationSchema(isFactoring),
+    [isFactoring]
+  );
+
   const form = useForm<LitigationForm>({
-    resolver: zodResolver(litigationSchema),
+    resolver: zodResolver(litigationFormSchema),
+    mode: "onSubmit",
     defaultValues: {
-      client: "",
+      client: isFactoring ? "" : null,
       debtorId: "",
       invoiceNumber: "",
       invoiceAmount: "",
@@ -122,6 +133,13 @@ const DisputeForm = ({
     }
   }, [dataDebtor]);
 
+  // Efecto para limpiar campo cliente cuando no es Factoring
+  useEffect(() => {
+    if (!isFactoring) {
+      form.setValue("client", null);
+    }
+  }, [isFactoring, form]);
+
   const onSubmit = async (data: LitigationForm) => {
     try {
       const payload = {
@@ -133,7 +151,8 @@ const DisputeForm = ({
         contact: data.contact,
         debtor_id: data.debtorId,
         initial_comment: data.initial_comment ?? "",
-        company_id: data.client,
+        // Solo incluir company_id para clientes Factoring
+        ...(isFactoring && { company_id: data.client }),
       };
 
       const res = await createLitigation({
@@ -186,19 +205,23 @@ const DisputeForm = ({
     <>
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={control}
-              name="client"
-              render={({ field }) => (
-                <SelectClient
-                  field={field}
-                  title="Cliente"
-                  singleClient
-                  required
-                />
-              )}
-            />
+          <div
+            className={`grid ${isFactoring ? "grid-cols-2" : "grid-cols-1"} gap-4`}
+          >
+            {isFactoring && (
+              <FormField
+                control={control}
+                name="client"
+                render={({ field }) => (
+                  <SelectClient
+                    field={field}
+                    title="Cliente"
+                    singleClient
+                    required
+                  />
+                )}
+              />
+            )}
 
             <FormField
               control={control}
