@@ -777,3 +777,18 @@ export const LITIGATION_STATUS = [
   { code: "NORMALIZED", label: "Normalizado (resuelto)" },
   { code: "CANCELLED", label: "Cancelado" },
 ];
+
+export const PAYMENT_PLAN_STATUS = [
+  { code: "APPROVED", label: "Aprobado" },
+  { code: "REJECTED", label: "Rechazado" },
+  { code: "PENDING", label: "Pendiente" },
+  { code: "OBJECTED", label: "Objetado" },
+];
+
+export const PAYMENT_FREQUENCY = [
+  { code: "FREQ_7_DAYS", label: "Semanal" },
+  { code: "FREQ_15_DAYS", label: "Quincenal" },
+  { code: "FREQ_30_DAYS", label: "Mensual" },
+  { code: "FREQ_45_DAYS", label: "Trimestral" },
+  { code: "FREQ_60_DAYS", label: "Semestral" },
+];

@@ -65,7 +65,7 @@ export default function DataTableNormal<TData, TValue>({
   loadingComponent,
   emptyMessage = "No se encontraron datos",
   pageSize = 15,
-  pageSizeOptions = [15, 20, 25, 30, 40, 50],
+  pageSizeOptions = [10, 15, 20, 25, 30, 40, 50],
   showPagination = true,
   className = "",
   // Valores por defecto para búsqueda
@@ -144,7 +144,7 @@ export default function DataTableNormal<TData, TValue>({
   return (
     <>
       {enableGlobalFilter && (
-        <div className="flex items-center gap-2 ">
+        <div className="flex items-start gap-2 ">
           <div className="relative flex-1 max-w-sm bg-white">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -183,7 +183,7 @@ export default function DataTableNormal<TData, TValue>({
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="text-primary text-center"
+                      className="text-primary text-left"
                     >
                       {header.isPlaceholder
                         ? null
@@ -219,7 +219,7 @@ export default function DataTableNormal<TData, TValue>({
                         data-state={row.getIsSelected() && "selected"}
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id} className="text-center">
+                          <TableCell key={cell.id} className="text-left">
                             {flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext()

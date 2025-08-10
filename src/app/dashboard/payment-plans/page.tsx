@@ -1,13 +1,17 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Language from "@/components/ui/language";
 import { Coins } from "lucide-react";
 import Image from "next/image";
+
+import { useRouter } from "next/navigation";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 
 const PaymentPlansPage = () => {
+  const router = useRouter();
   const dataDummy = [
     {
       id: "12345678",
@@ -136,7 +140,12 @@ const PaymentPlansPage = () => {
               manera sencilla y eficiente. Crea tu primer plan de pago para
               comenzar a llevar un mejor control de tus finanzas.
             </span>
-            <Button className="bg-blue-600 text-white hover:bg-blue-600/80 w-sm">
+            <Button
+              className="bg-blue-600 text-white hover:bg-blue-600/80 w-sm"
+              onClick={() => {
+                router.push("/dashboard/payment-plans/create");
+              }}
+            >
               Crear plan de pago
             </Button>
           </div>

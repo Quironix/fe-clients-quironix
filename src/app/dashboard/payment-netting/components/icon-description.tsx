@@ -13,7 +13,7 @@ const IconDescription = ({
     <div className="flex items-center gap-2">
       {icon}
       <div className="flex flex-col">
-        <span className="text-sm  text-gray-300 font-medium">
+        <span className="text-sm  text-gray-400 font-medium">
           {description}
         </span>
         <span className="text-sm  text-black font-medium">{value}</span>
