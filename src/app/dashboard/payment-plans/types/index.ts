@@ -86,6 +86,9 @@ export interface PaymentPlanResponse {
   updatedAt: string;
   debtor: Debtor;
   history: any[];
+  rejectionReason?: string;
+  rejectedDate?: string;
+  rejectedBy?: string;
 }
 
 interface Debtor {
@@ -140,6 +143,7 @@ export interface PaginationParams {
   page?: number;
   limit?: number;
   search?: string;
+  status?: PaymentPlanStatus | "OTHERS";
 }
 
 export interface PaginatedPaymentPlansResponse {
@@ -173,8 +177,8 @@ export type PaymentMethod =
   | "CHECK";
 
 export type PaymentPlanStatus =
+  | "APPROVED"
+  | "REJECTED"
   | "PENDING"
-  | "ACTIVE"
-  | "COMPLETED"
-  | "CANCELLED"
-  | "DEFAULTED";
+  | "OBJECTED"
+  | "OTHERS";

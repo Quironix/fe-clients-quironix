@@ -74,6 +74,10 @@ export const getPaymentPlans = async (
       queryParams.append("search", params.search);
     }
 
+    if (params?.status) {
+      queryParams.append("status", params.status);
+    }
+
     const queryString = queryParams.toString();
     const url = `${API_URL}/v2/clients/${clientId}/payment-plans${queryString ? `?${queryString}` : ""}`;
 

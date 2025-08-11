@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -37,9 +36,9 @@ const DialogForm = <T,>({
       <DialogContent className="sm:max-w-[50vw] max-h-[calc(100vh-3rem)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-extrabold">{title}</DialogTitle>
-          <DialogDescription className="text-sm">
+          <div className="text-sm">
             <span>{description}</span>
-          </DialogDescription>
+          </div>
         </DialogHeader>
         {children}
       </DialogContent>

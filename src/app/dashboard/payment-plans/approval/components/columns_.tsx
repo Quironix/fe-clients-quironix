@@ -5,14 +5,7 @@ import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle, Clock, Eye, XCircle } from "lucide-react";
-import { PAYMENT_FREQUENCY } from "../../data";
-import { PaymentPlanResponse, PaymentPlanStatus } from "../types";
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("es-CL", {
-    style: "currency",
-  }).format((amount as number) || 0);
-};
+import { PaymentPlanResponse, PaymentPlanStatus } from "../../types";
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("es-CL", {
@@ -99,27 +92,22 @@ export const createColumns = (
   onDelete?: (paymentPlan: PaymentPlanResponse) => void
 ): ColumnDef<PaymentPlanResponse>[] => [
   {
-    accessorKey: "id",
-    header: "N° Solicitud",
+    accessorKey: "requestId",
+    header: "N° Documento",
     cell: ({ row }) => (
       <div className="font-medium text-sm">{row.original.requestId}</div>
     ),
   },
   {
-    accessorKey: "debtor_id",
-    header: "Deudor",
+    accessorKey: "clientId",
+    header: "Documento",
     cell: ({ row }) => (
-      <div className="font-medium text-sm">{row.original.debtor.name}</div>
+      <div className="font-medium text-sm">{row.original.clientId}</div>
     ),
   },
   {
-    accessorKey: "status",
-    header: "Estado",
-    cell: ({ row }) => getStatusBadge(row.getValue("status")),
-  },
-  {
     accessorKey: "total_debt",
-    header: "Deuda total",
+    header: "Monto",
     cell: ({ row }) => (
       <div className="font-bold text-sm">
         {formatNumber(row.original.totalDebt)}
@@ -127,56 +115,8 @@ export const createColumns = (
     ),
   },
   {
-    accessorKey: "number_of_installments",
-    header: "N° Cuotas",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm text-center">
-        {row.original.numberOfInstallments}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "installment_amount",
-    header: "Monto cuota",
-    cell: ({ row }) => (
-      <div className="font-bold text-sm">
-        {formatNumber(row.original.installmentAmount)}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "payment_frequency",
-    header: "Frecuencia",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm">
-        {(() => {
-          // Importa PAYMENT_FREQUENCY desde el archivo correspondiente
-          // import { PAYMENT_FREQUENCY } from "@/app/dashboard/data";
-          // Si ya está importado, omite la línea de importación
-
-          // Función para obtener la etiqueta de la frecuencia de pago
-          const getPaymentFrequencyLabel = (code: string) => {
-            const freq = PAYMENT_FREQUENCY.find((f) => f.code === code);
-            return freq ? freq.label : code;
-          };
-
-          return getPaymentFrequencyLabel(row.original.paymentFrequency);
-        })()}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "plan_start_date",
-    header: "Inicio pago",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm">
-        {formatDate(row.original.planStartDate)}
-      </div>
-    ),
-  },
-  {
     accessorKey: "payment_end_date",
-    header: "Término pago",
+    header: "Vencimiento",
     cell: ({ row }) => (
       <div className="font-medium text-sm">
         {formatDate(row.original.paymentEndDate)}
@@ -184,33 +124,13 @@ export const createColumns = (
     ),
   },
   {
-    accessorKey: "debt_concept",
-    header: "Comentario",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm">{row.original.debtConcept}</div>
-    ),
-  },
-  {
-    accessorKey: "annual_interest_rate",
-    header: "Tasa Interés",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm">
-        {row.original.annualInterestRate}%
-      </div>
-    ),
-  },
-  {
-    accessorKey: "created_at",
-    header: "Fecha Creación",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm">
-        {row.original.createdAt ? formatDate(row.original.createdAt) : "N/A"}
-      </div>
-    ),
+    accessorKey: "status",
+    header: "Fase",
+    cell: ({ row }) => getStatusBadge(row.getValue("status")),
   },
   {
     id: "actions",
-    header: "Acciones",
+    header: "Acción",
     cell: ({ row }) => {
       const paymentPlan = row.original;
 

@@ -11,10 +11,7 @@ import {
 
 export interface PaymentPlansFilters {
   search?: string;
-  status?: PaymentPlanStatus | "ALL";
-  dateFrom?: string;
-  dateTo?: string;
-  debtor_id?: string;
+  status?: PaymentPlanStatus | "OTHERS";
 }
 
 const adaptApiResponseToPaymentPlans = (

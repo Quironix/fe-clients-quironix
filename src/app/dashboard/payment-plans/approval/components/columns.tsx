@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle, Clock, Eye, XCircle } from "lucide-react";
-import { PAYMENT_FREQUENCY } from "../../data";
-import { PaymentPlanResponse, PaymentPlanStatus } from "../types";
+import { PAYMENT_FREQUENCY } from "../../../data";
+import { PaymentPlanResponse, PaymentPlanStatus } from "../../types";
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("es-CL", {

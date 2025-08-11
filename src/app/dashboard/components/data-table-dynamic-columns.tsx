@@ -364,6 +364,7 @@ export function DataTableDynamicColumns<TData, TValue>({
           </div>
 
           <div className="flex items-center gap-2">
+            {ctaNode && ctaNode}
             {enableColumnFilter && (
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
@@ -505,7 +506,6 @@ export function DataTableDynamicColumns<TData, TValue>({
                 </SheetContent>
               </Sheet>
             )}
-            {ctaNode && ctaNode}
           </div>
         </div>
 

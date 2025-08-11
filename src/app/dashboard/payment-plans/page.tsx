@@ -69,11 +69,6 @@ const PaymentPlansPage = () => {
     { name: "actions", is_visible: true },
   ]);
 
-  const selectedPaymentPlans = useMemo(() => {
-    if (!isHydrated) return [];
-    return getSelectedRows();
-  }, [getSelectedRows, isHydrated]);
-
   const columnVisibility = useMemo(() => {
     const visibility: VisibilityState = {};
     columnConfiguration.forEach((col) => {
@@ -294,7 +289,35 @@ const PaymentPlansPage = () => {
               open={openDetailModal}
               onOpenChange={setOpenDetailModal}
               title="Detalle del plan de pago"
-              description={`Nº ${selectedPaymentPlan?.requestId}`}
+              description={
+                <div className="flex justify-between items-center bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium text-gray-700">
+                    Nº {selectedPaymentPlan?.requestId}
+                  </span>
+                  <div className="flex gap-2">
+                    {selectedPaymentPlan?.status === "APPROVED" && (
+                      <span className="text-xs font-semibold border border-green-600 px-4 py-1 text-green-600 rounded-full bg-green-50">
+                        Aprobado
+                      </span>
+                    )}
+                    {selectedPaymentPlan?.status === "PENDING" && (
+                      <span className="text-xs font-semibold border border-blue-600 px-4 py-1 text-blue-600 rounded-full bg-blue-50">
+                        En revisión
+                      </span>
+                    )}
+                    {selectedPaymentPlan?.status === "REJECTED" && (
+                      <span className="text-xs font-semibold border border-red-600 px-4 py-1 text-red-600 rounded-full bg-red-50">
+                        Denegado
+                      </span>
+                    )}
+                    {selectedPaymentPlan?.status === "OBJECTED" && (
+                      <span className="text-xs font-semibold border border-purple-600 px-4 py-1 text-purple-600 rounded-full bg-purple-50">
+                        Con observaciones
+                      </span>
+                    )}
+                  </div>
+                </div>
+              }
             >
               <PendingModal detailPaymentPlan={selectedPaymentPlan} />
             </DialogForm>

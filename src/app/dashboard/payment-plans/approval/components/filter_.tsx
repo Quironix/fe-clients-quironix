@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { forwardRef, useImperativeHandle, useState } from "react";
-import { PaymentPlansFilters } from "../hooks/usePaymentPlans";
+import { PaymentPlansFilters } from "../../hooks/usePaymentPlans";
 
 export interface FilterInputsRef {
   getCurrentFilters: () => PaymentPlansFilters;
