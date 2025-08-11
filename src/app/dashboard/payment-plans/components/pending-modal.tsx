@@ -12,6 +12,7 @@ import {
   DollarSign,
   IdCard,
   Mail,
+  MessageSquare,
   Phone,
   User,
 } from "lucide-react";
@@ -119,7 +120,6 @@ const PendingModal = ({
           </CardContent>
         )}
       </Card>
-
       <Card>
         <CardHeader
           className="cursor-pointer"
@@ -227,6 +227,17 @@ const PendingModal = ({
           </CardContent>
         )}
       </Card>
+      {detailPaymentPlan.debtConcept && (
+        <div className="flex justify-start items-center gap-2 bg-amber-100 border border-amber-300 p-4 rounded-lg">
+          <MessageSquare className="w-6 h-6 text-amber-300 flex-shrink-0" />
+          <span className="text-sm text-gray-500 flex flex-col gap-0">
+            <span className="text-black text-xs">Comentario</span>
+            <span className="text-md text-gray-500">
+              {detailPaymentPlan.debtConcept}
+            </span>
+          </span>
+        </div>
+      )}
     </>
   );
 };
