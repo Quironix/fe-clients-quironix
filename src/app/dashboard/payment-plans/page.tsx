@@ -1,115 +1,221 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Language from "@/components/ui/language";
-import { Coins } from "lucide-react";
-import Image from "next/image";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import Language from "@/components/ui/language";
+import { useProfileContext } from "@/context/ProfileContext";
+import { VisibilityState } from "@tanstack/react-table";
+import { Archive, CheckCircle, Coins, Eye, Trash2 } from "lucide-react";
+
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { DataTableDynamicColumns } from "../components/data-table-dynamic-columns";
+import DialogForm from "../components/dialog-form";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
+import { createColumns } from "./components/columns";
+import FilterInputs, { FilterInputsRef } from "./components/filter";
+import PendingModal from "./components/pending-modal";
+import { usePaymentPlans } from "./hooks/usePaymentPlans";
+import { approvePaymentPlan, deletePaymentPlan } from "./services";
+import { PaymentPlan, PaymentPlanResponse } from "./types";
 
 const PaymentPlansPage = () => {
+  const { data: session }: any = useSession();
+  const { profile } = useProfileContext();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openDetailModal, setOpenDetailModal] = useState(false);
+  const [selectedPaymentPlan, setSelectedPaymentPlan] =
+    useState<PaymentPlanResponse | null>(null);
   const router = useRouter();
-  const dataDummy = [
-    {
-      id: "12345678",
-      requestNumber: "12345678",
-      debtor: "Nombre Deudor",
-      status: "Aprobado",
-      totalDebt: 999999999,
-      installments: 12,
-      installmentAmount: 999999999,
-      startDate: "2025-04-12",
-      startTime: "19:30",
-      endDate: "2025-04-12",
-      endTime: "19:30",
-      comment: "Lorem ipsum is dolor sit amet...",
-      approver: "Nombre Aprobador",
-      statusColor: "green",
-    },
-    {
-      id: "12345679",
-      requestNumber: "12345679",
-      debtor: "Nombre Deudor",
-      status: "Con observaciones",
-      totalDebt: 999999999,
-      installments: 12,
-      installmentAmount: 999999999,
-      startDate: "2025-04-12",
-      startTime: "19:30",
-      endDate: "2025-04-12",
-      endTime: "19:30",
-      comment: "Lorem ipsum is dolor sit amet...",
-      approver: "Nombre Aprobador",
-      statusColor: "purple",
-    },
-    {
-      id: "12345680",
-      requestNumber: "12345680",
-      debtor: "Nombre Deudor",
-      status: "Denegado",
-      totalDebt: 999999999,
-      installments: 12,
-      installmentAmount: 999999999,
-      startDate: "2025-04-12",
-      startTime: "19:30",
-      endDate: "2025-04-12",
-      endTime: "19:30",
-      comment: "Lorem ipsum is dolor sit amet...",
-      approver: "Nombre Aprobador",
-      statusColor: "red",
-    },
-    {
-      id: "12345681",
-      requestNumber: "12345681",
-      debtor: "Nombre Deudor",
-      status: "En revisión",
-      totalDebt: 999999999,
-      installments: 12,
-      installmentAmount: 999999999,
-      startDate: "2025-04-12",
-      startTime: "19:30",
-      endDate: "2025-04-12",
-      endTime: "19:30",
-      comment: "Lorem ipsum is dolor sit amet...",
-      approver: "Nombre Aprobador",
-      statusColor: "blue",
-    },
-    {
-      id: "12345682",
-      requestNumber: "12345682",
-      debtor: "Nombre Deudor",
-      status: "Aprobado",
-      totalDebt: 999999999,
-      installments: 12,
-      installmentAmount: 999999999,
-      startDate: "2025-04-12",
-      startTime: "19:30",
-      endDate: "2025-04-12",
-      endTime: "19:30",
-      comment: "Lorem ipsum is dolor sit amet...",
-      approver: "Nombre Aprobador",
-      statusColor: "green",
-    },
-    {
-      id: "12345683",
-      requestNumber: "12345683",
-      debtor: "Nombre Deudor",
-      status: "En revisión",
-      totalDebt: 999999999,
-      installments: 12,
-      installmentAmount: 999999999,
-      startDate: "2025-04-12",
-      startTime: "19:30",
-      endDate: "2025-04-12",
-      endTime: "19:30",
-      comment: "Lorem ipsum is dolor sit amet...",
-      approver: "Nombre Aprobador",
-      statusColor: "blue",
-    },
-  ];
+  const {
+    data,
+    isLoading,
+    isServerSideLoading,
+    pagination,
+    filters,
+    handlePaginationChange,
+    handleSearchChange,
+    handleFilterChange,
+    refetch,
+    rowSelection,
+    handleRowSelectionChange,
+    getSelectedRows,
+    clearRowSelection,
+    isHydrated,
+  } = usePaymentPlans(session?.token, profile?.client_id, false);
+  const filterInputsRef = useRef<FilterInputsRef>(null);
+  const [isApplyingFilters, setIsApplyingFilters] = useState(false);
+
+  const [columnConfiguration, setColumnConfiguration] = useState<
+    Array<{ name: string; is_visible: boolean }>
+  >([
+    { name: "id", is_visible: true },
+    { name: "debtor_id", is_visible: true },
+    { name: "status", is_visible: true },
+    { name: "total_debt", is_visible: true },
+    { name: "number_of_installments", is_visible: true },
+    { name: "installment_amount", is_visible: true },
+    { name: "payment_frequency", is_visible: true },
+    { name: "plan_start_date", is_visible: true },
+    { name: "payment_end_date", is_visible: true },
+    { name: "annual_interest_rate", is_visible: false },
+    { name: "created_at", is_visible: false },
+    { name: "debt_concept", is_visible: true },
+    { name: "actions", is_visible: true },
+  ]);
+
+  const selectedPaymentPlans = useMemo(() => {
+    if (!isHydrated) return [];
+    return getSelectedRows();
+  }, [getSelectedRows, isHydrated]);
+
+  const columnVisibility = useMemo(() => {
+    const visibility: VisibilityState = {};
+    columnConfiguration.forEach((col) => {
+      visibility[col.name] = col.is_visible;
+    });
+    return visibility;
+  }, [columnConfiguration]);
+
+  const columnLabels = useMemo(
+    () => ({
+      id: "ID",
+      debtor_id: "Deudor",
+      status: "Estado",
+      total_debt: "Deuda Total",
+      number_of_installments: "Cuotas",
+      installment_amount: "Monto Cuota",
+      payment_frequency: "Frecuencia",
+      plan_start_date: "Fecha Inicio",
+      payment_end_date: "Fecha Fin",
+      annual_interest_rate: "Tasa Interés",
+      created_at: "Fecha Creación",
+      actions: "Acciones",
+    }),
+    []
+  );
+
+  const bulkActions = useMemo(
+    () => [
+      {
+        label: "Ver detalles",
+        onClick: (selectedRows: PaymentPlan[]) => {
+          console.log("Ver detalles de planes seleccionados:", selectedRows);
+        },
+        variant: "outline" as const,
+        icon: <Eye className="h-4 w-4" />,
+      },
+      {
+        label: "Aprobar planes",
+        onClick: async (selectedRows: PaymentPlan[]) => {
+          if (!session?.token || !profile?.client_id) return;
+
+          try {
+            for (const plan of selectedRows) {
+              await approvePaymentPlan(
+                session.token,
+                profile.client_id,
+                plan.id
+              );
+            }
+            toast.success("Planes aprobados correctamente");
+            refetch();
+          } catch (error) {
+            toast.error("Error al aprobar los planes");
+          }
+        },
+        variant: "default" as const,
+        icon: <CheckCircle className="h-4 w-4" />,
+      },
+      {
+        label: "Archivar",
+        onClick: (selectedRows: PaymentPlanResponse[]) => {
+          console.log("Archivar planes seleccionados:", selectedRows);
+        },
+        variant: "secondary" as const,
+        icon: <Archive className="h-4 w-4" />,
+      },
+      {
+        label: "Eliminar",
+        onClick: async (selectedRows: PaymentPlanResponse[]) => {
+          if (!session?.token || !profile?.client_id) return;
+
+          try {
+            for (const plan of selectedRows) {
+              await deletePaymentPlan(
+                session.token,
+                profile.client_id,
+                plan.id
+              );
+            }
+            toast.success("Planes eliminados correctamente");
+            refetch();
+          } catch (error) {
+            toast.error("Error al eliminar los planes");
+          }
+        },
+        variant: "destructive" as const,
+        icon: <Trash2 className="h-4 w-4" />,
+      },
+    ],
+    [session?.token, profile?.client_id, refetch]
+  );
+
+  const handleUpdateColumns = async (
+    config?: Array<{ name: string; is_visible: boolean }>
+  ) => {
+    setIsApplyingFilters(true);
+    try {
+      const configToSave = config || columnConfiguration;
+      setColumnConfiguration(configToSave);
+
+      if (filterInputsRef.current) {
+        const currentFilters = filterInputsRef.current.getCurrentFilters();
+        await handleFilterChange(currentFilters);
+      }
+    } catch (error) {
+      console.error("Error al actualizar configuración de columnas:", error);
+      toast.error("Error al guardar la configuración de columnas");
+    } finally {
+      setIsApplyingFilters(false);
+    }
+  };
+
+  const handleOpenPaymentPlanDetail = (paymentPlan: PaymentPlanResponse) => {
+    setSelectedPaymentPlan(paymentPlan);
+    setOpenDetailModal(true);
+  };
+
+  const handleEditPaymentPlan = (paymentPlan: PaymentPlanResponse) => {
+    router.push(`/dashboard/payment-plans/create/${paymentPlan.id}`);
+  };
+
+  const handleDeletePaymentPlan = async (paymentPlan: PaymentPlanResponse) => {
+    if (!session?.token || !profile?.client_id) return;
+
+    try {
+      await deletePaymentPlan(session.token, profile.client_id, paymentPlan.id);
+      toast.success("Plan de pago eliminado correctamente");
+      refetch();
+    } catch (error) {
+      toast.error("Error al eliminar el plan de pago");
+    }
+  };
+
+  const columns = useMemo(
+    () =>
+      createColumns(
+        handleOpenPaymentPlanDetail,
+        handleEditPaymentPlan,
+        handleDeletePaymentPlan
+      ),
+    []
+  );
 
   return (
     <>
@@ -119,7 +225,7 @@ const PaymentPlansPage = () => {
       <Main>
         <TitleSection
           title="Planes de pago"
-          description="En esta sección podrás crear planes de pago para tus deudores."
+          description="En esta sección podrás crear y gestionar planes de pago para tus deudores."
           icon={<Coins color="white" />}
           subDescription="Planes de pago"
         />
@@ -150,16 +256,50 @@ const PaymentPlansPage = () => {
             </Button>
           </div>
         </div>
-        <div className="flex flex-col gap-5 mt-5">
-          <Card>
-            <CardHeader>
-              <CardTitle>Planes de pago</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <span>hola</span>
-            </CardContent>
-          </Card>
-        </div>
+
+        <Card>
+          <CardContent>
+            <DataTableDynamicColumns
+              columns={columns}
+              data={data}
+              isLoading={isLoading}
+              isServerSideLoading={isServerSideLoading}
+              pagination={pagination}
+              onPaginationChange={handlePaginationChange}
+              onSearchChange={handleSearchChange}
+              enableGlobalFilter={true}
+              searchPlaceholder="Buscar planes de pago..."
+              enableColumnFilter={true}
+              initialColumnVisibility={columnVisibility}
+              initialColumnConfiguration={columnConfiguration}
+              columnLabels={columnLabels}
+              enableRowSelection={true}
+              initialRowSelection={isHydrated ? rowSelection : {}}
+              onRowSelectionChange={handleRowSelectionChange}
+              bulkActions={bulkActions}
+              emptyMessage="No se encontraron planes de pago"
+              className="rounded-lg"
+              title="Planes de pago"
+              handleSuccessButton={handleUpdateColumns}
+              filterInputs={
+                <FilterInputs
+                  ref={filterInputsRef}
+                  onFilterChange={handleFilterChange}
+                  initialFilters={filters}
+                />
+              }
+              isApplyingFilters={isApplyingFilters}
+            />
+            <DialogForm
+              open={openDetailModal}
+              onOpenChange={setOpenDetailModal}
+              title="Detalle del plan de pago"
+              description={`Nº ${selectedPaymentPlan?.requestId}`}
+            >
+              <PendingModal detailPaymentPlan={selectedPaymentPlan} />
+            </DialogForm>
+          </CardContent>
+        </Card>
       </Main>
     </>
   );

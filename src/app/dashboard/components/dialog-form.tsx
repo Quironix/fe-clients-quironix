@@ -14,7 +14,7 @@ interface DialogFormProps<T> {
   description?: string | ReactNode;
   isEdit?: boolean;
   children: ReactNode;
-  trigger: ReactNode;
+  trigger?: ReactNode;
   onSubmit?: (data: T) => Promise<void>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;

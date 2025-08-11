@@ -42,6 +42,7 @@ export interface RejectPaymentPlanRequest {
 
 export interface PaymentPlan {
   id: string;
+  requestId: string;
   debtor_id: string;
   total_debt: number;
   installment_amount: number;
@@ -59,6 +60,68 @@ export interface PaymentPlan {
   status?: PaymentPlanStatus;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface PaymentPlanResponse {
+  id?: string;
+  requestId: string;
+  debtorId: string;
+  clientId: string;
+  status: string;
+  totalDebt: number;
+  installmentAmount: number;
+  paymentStartDate: string;
+  paymentEndDate: string;
+  invoiceIds: string[];
+  debtConcept: string;
+  totalPlanAmount: number;
+  initialPayment: number;
+  numberOfInstallments: number;
+  paymentFrequency: string;
+  annualInterestRate: number;
+  paymentMethod: string;
+  planStartDate: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  debtor: Debtor;
+  history: any[];
+}
+
+interface Debtor {
+  id: string;
+  name: string;
+  client_id: string;
+  channel: null;
+  debtor_code: string;
+  addresses: Address[];
+  payment_method: null;
+  dni_id: string;
+  currency: string;
+  email: string;
+  phone: string;
+  communication_channel: string;
+  contacts: Contact[];
+  category: null;
+  economic_activities: string[];
+  sales_person: string;
+  attention_days_hours: any[];
+  executive_id: null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Contact {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+interface Address {
+  street: string;
+  city: string;
+  state: string;
+  country: string;
 }
 
 export interface PaymentPlanResponse {
