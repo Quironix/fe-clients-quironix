@@ -1,12 +1,12 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle, Clock, Eye, XCircle } from "lucide-react";
+import { Clock } from "lucide-react";
 import { PAYMENT_FREQUENCY } from "../../../data";
 import { PaymentPlanResponse, PaymentPlanStatus } from "../../types";
+import SheetModal from "./sheet-modal";
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("es-CL", {
@@ -53,22 +53,17 @@ const getStatusBadge = (status: PaymentPlanStatus) => {
     PENDING: {
       label: "Pendiente",
       variant: WARNING_CLASS,
-      icon: <Clock className="h-3 w-3" />,
+      icon: null,
     },
-    ACTIVE: {
+    APPROVED: {
       label: "Aprobado",
       variant: SUCCESS_CLASS,
-      icon: <CheckCircle className="h-3 w-3" />,
-    },
-    COMPLETED: {
-      label: "Completado",
-      variant: SUCCESS_CLASS,
-      icon: <CheckCircle className="h-3 w-3" />,
+      icon: null,
     },
     REJECTED: {
       label: "Rechazado",
       variant: ERROR_CLASS,
-      icon: <XCircle className="h-3 w-3" />,
+      icon: null,
     },
     OBJECTED: {
       label: "Con observaciones",
@@ -214,17 +209,7 @@ export const createColumns = (
     cell: ({ row }) => {
       const paymentPlan = row.original;
 
-      return (
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0"
-          onClick={() => {
-            onViewDetails?.(paymentPlan);
-          }}
-        >
-          <Eye className="h-4 w-4 text-blue-600" />
-        </Button>
-      );
+      return <SheetModal detail={paymentPlan} />;
     },
   },
 ];

@@ -1,9 +1,10 @@
 import {
+  ApiResponse,
   ApprovePaymentPlanRequest,
   CreatePaymentPlanRequest,
   PaginatedPaymentPlansResponse,
   PaginationParams,
-  PaymentPlanResponse,
+  PaymentPlan,
   RejectPaymentPlanRequest,
   UpdatePaymentPlanRequest,
 } from "../types";
@@ -14,7 +15,7 @@ export const createPaymentPlan = async (
   accessToken: string,
   clientId: string,
   paymentPlanData: CreatePaymentPlanRequest
-): Promise<PaymentPlanResponse> => {
+): Promise<ApiResponse<PaymentPlan>> => {
   try {
     const response = await fetch(
       `${API_URL}/v2/clients/${clientId}/payment-plans`,
@@ -75,7 +76,11 @@ export const getPaymentPlans = async (
     }
 
     if (params?.status) {
-      queryParams.append("status", params.status);
+      const status =
+        params.status === "OTHERS"
+          ? "APPROVED,REJECTED,OBJECTED"
+          : params.status;
+      queryParams.append("status", status);
     }
 
     const queryString = queryParams.toString();
@@ -128,7 +133,7 @@ export const updatePaymentPlan = async (
   clientId: string,
   paymentPlanId: string,
   updateData: UpdatePaymentPlanRequest
-): Promise<PaymentPlanResponse> => {
+): Promise<ApiResponse<PaymentPlan>> => {
   try {
     const response = await fetch(
       `${API_URL}/v2/clients/${clientId}/payment-plans/${paymentPlanId}`,
@@ -171,7 +176,7 @@ export const deletePaymentPlan = async (
   accessToken: string,
   clientId: string,
   paymentPlanId: string
-): Promise<PaymentPlanResponse> => {
+): Promise<ApiResponse<PaymentPlan>> => {
   try {
     const response = await fetch(
       `${API_URL}/v2/clients/${clientId}/payment-plans/${paymentPlanId}`,
@@ -221,7 +226,7 @@ export const approvePaymentPlan = async (
   clientId: string,
   paymentPlanId: string,
   approvalData: ApprovePaymentPlanRequest = {}
-): Promise<PaymentPlanResponse> => {
+): Promise<ApiResponse<PaymentPlan>> => {
   try {
     const response = await fetch(
       `${API_URL}/v2/clients/${clientId}/payment-plans/${paymentPlanId}/approve`,
@@ -265,7 +270,7 @@ export const rejectPaymentPlan = async (
   clientId: string,
   paymentPlanId: string,
   rejectionData: RejectPaymentPlanRequest
-): Promise<PaymentPlanResponse> => {
+): Promise<ApiResponse<PaymentPlan>> => {
   try {
     const response = await fetch(
       `${API_URL}/v2/clients/${clientId}/payment-plans/${paymentPlanId}/reject`,

@@ -7,8 +7,7 @@ import { VisibilityState } from "@tanstack/react-table";
 import { Coins, Eye } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
@@ -16,10 +15,9 @@ import TitleSection from "../../components/title-section";
 import { usePaymentPlans } from "../hooks/usePaymentPlans";
 import { PaymentPlan } from "../types";
 import { columns } from "./components/columns";
-import FilterInputs, { FilterInputsRef } from "./components/filter_";
+import FilterInputs, { FilterInputsRef } from "./components/filter";
 
 const PageApproval = () => {
-  const router = useRouter();
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const [quickFilters, setQuickFilters] = useState<string>("PENDING");
@@ -38,7 +36,9 @@ const PageApproval = () => {
     getSelectedRows,
     clearRowSelection,
     isHydrated,
-  } = usePaymentPlans(session?.token, profile?.client_id, false);
+  } = usePaymentPlans(session?.token, profile?.client_id, false, {
+    status: "PENDING",
+  });
   const filterInputsRef = useRef<FilterInputsRef>(null);
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
 
@@ -100,6 +100,13 @@ const PageApproval = () => {
     [session?.token, profile?.client_id, refetch]
   );
 
+  // Sincronizar quickFilters con el estado actual del filtro
+  useEffect(() => {
+    if (filters.status) {
+      setQuickFilters(filters.status);
+    }
+  }, [filters.status]);
+
   return (
     <>
       <Header fixed>
@@ -154,7 +161,7 @@ const PageApproval = () => {
                 bulkActions={bulkActions}
                 emptyMessage="No se encontraron planes de pago"
                 className="rounded-lg w-full"
-                title="Solicitudes de planes de pago"
+                title="Solicitudes"
                 handleSuccessButton={() => {}}
                 ctaNode={
                   <div className="flex items-center gap-2">
@@ -164,9 +171,7 @@ const PageApproval = () => {
                       }
                       onClick={() => {
                         setQuickFilters("PENDING");
-                        handleFilterChange({
-                          status: "PENDING",
-                        });
+                        handleFilterChange({ ...filters, status: "PENDING" });
                       }}
                     >
                       Pendientes
@@ -178,6 +183,7 @@ const PageApproval = () => {
                       onClick={() => {
                         setQuickFilters("OTHERS");
                         handleFilterChange({
+                          ...filters,
                           status: "OTHERS",
                         });
                       }}

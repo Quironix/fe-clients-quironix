@@ -89,6 +89,54 @@ export interface PaymentPlanResponse {
   rejectionReason?: string;
   rejectedDate?: string;
   rejectedBy?: string;
+  originalInvoices: Invoice[];
+}
+
+export interface Invoice {
+  id: string;
+  type: string;
+  number: string;
+  external_number: string;
+  is_internal_document: boolean;
+  amount: string;
+  order_number: null;
+  issue_date: string;
+  is_fictitious: boolean;
+  company_id: null;
+  company: null;
+  reference: null;
+  file: string;
+  due_date: string;
+  operation_date: null;
+  reception_date: null;
+  folio: string;
+  balance: string;
+  litigation_balance: string;
+  number_of_installments: number;
+  observations: null;
+  order_code: null | string;
+  ref_1: null;
+  ref_2: null;
+  ref_3: null;
+  ref_4: null;
+  client_id: string;
+  client: null;
+  debtor_id: string;
+  debtor: null;
+  status: string;
+  phases: Phase[];
+  created_at: string;
+  updated_at: string;
+  payment_plan_id: null;
+}
+
+interface Phase {
+  id: string;
+  invoice_id: string;
+  invoice: null;
+  phase: number;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Debtor {
@@ -99,7 +147,7 @@ interface Debtor {
   debtor_code: string;
   addresses: Address[];
   payment_method: null;
-  dni_id: string;
+  dni: Dni;
   currency: string;
   email: string;
   phone: string;
@@ -110,6 +158,15 @@ interface Debtor {
   sales_person: string;
   attention_days_hours: any[];
   executive_id: null;
+  created_at: string;
+  updated_at: string;
+}
+interface Dni {
+  id: string;
+  type: string;
+  dni: string;
+  emit_date: null;
+  expiration_date: null;
   created_at: string;
   updated_at: string;
 }
@@ -127,10 +184,10 @@ interface Address {
   country: string;
 }
 
-export interface PaymentPlanResponse {
+export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
-  data: PaymentPlan | null;
+  data: T | null;
 }
 
 export interface PaymentPlansListResponse {

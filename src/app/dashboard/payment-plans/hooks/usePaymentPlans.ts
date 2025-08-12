@@ -1,7 +1,7 @@
 "use client";
 
 import { RowSelectionState } from "@tanstack/react-table";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getPaymentPlans } from "../services";
 import {
   PaginationParams,
@@ -24,7 +24,8 @@ const adaptApiResponseToPaymentPlans = (
 export function usePaymentPlans(
   accessToken?: string,
   clientId?: string,
-  useMockData: boolean = false
+  useMockData: boolean = false,
+  initialFilters: PaymentPlansFilters = {}
 ) {
   const [data, setData] = useState<PaymentPlanResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +38,9 @@ export function usePaymentPlans(
     hasNext: false,
     hasPrevious: false,
   });
-  const [filters, setFilters] = useState<PaymentPlansFilters>({});
+  const [filters, setFilters] = useState<PaymentPlansFilters>(initialFilters);
+  const initialFiltersRef = useRef(initialFilters);
+  const hasInitialized = useRef(false);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -64,6 +67,11 @@ export function usePaymentPlans(
       searchFilters: PaymentPlansFilters = {}
     ) => {
       setIsServerSideLoading(true);
+      console.log("fetchPaymentPlans called with:", {
+        page,
+        limit,
+        searchFilters,
+      });
 
       try {
         if (accessToken && clientId) {
@@ -71,7 +79,9 @@ export function usePaymentPlans(
             page,
             limit,
             search: searchFilters.search,
+            status: searchFilters.status,
           };
+          console.log("API params:", params);
 
           const apiResponse = await getPaymentPlans(
             accessToken,
@@ -95,6 +105,8 @@ export function usePaymentPlans(
               hasPrevious: page > 1,
             };
 
+            console.log("Setting data:", adaptedData);
+            console.log("Setting pagination:", newPagination);
             setData(adaptedData);
             setPagination(newPagination);
           } else {
@@ -124,7 +136,7 @@ export function usePaymentPlans(
         setIsServerSideLoading(false);
       }
     },
-    [accessToken, clientId, useMockData]
+    [accessToken, clientId]
   );
 
   const handlePaginationChange = useCallback(
@@ -182,10 +194,16 @@ export function usePaymentPlans(
     }
   }, []);
 
+  // Carga inicial de datos
   useEffect(() => {
-    setIsLoading(true);
-    fetchPaymentPlans().finally(() => setIsLoading(false));
-  }, [fetchPaymentPlans]);
+    if (accessToken && clientId && !hasInitialized.current) {
+      hasInitialized.current = true;
+      setIsLoading(true);
+      fetchPaymentPlans(1, 15, initialFiltersRef.current).finally(() =>
+        setIsLoading(false)
+      );
+    }
+  }, [accessToken, clientId, fetchPaymentPlans]);
 
   return {
     data,
