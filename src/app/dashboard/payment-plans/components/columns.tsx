@@ -4,15 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle, Clock, Eye, XCircle } from "lucide-react";
+import { Clock, Eye } from "lucide-react";
 import { PAYMENT_FREQUENCY } from "../../data";
 import { PaymentPlanResponse, PaymentPlanStatus } from "../types";
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("es-CL", {
-    style: "currency",
-  }).format((amount as number) || 0);
-};
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("es-CL", {
@@ -20,21 +14,6 @@ const formatDate = (dateString: string) => {
     month: "2-digit",
     day: "2-digit",
   });
-};
-
-const formatPaymentFrequency = (frequency: string) => {
-  const frequencyMap: Record<string, string> = {
-    FREQ_7_DAYS: "7 días",
-    FREQ_15_DAYS: "15 días",
-    FREQ_30_DAYS: "30 días",
-    FREQ_60_DAYS: "60 días",
-    FREQ_90_DAYS: "90 días",
-    MONTHLY: "Mensual",
-    WEEKLY: "Semanal",
-    BIWEEKLY: "Quincenal",
-    QUARTERLY: "Trimestral",
-  };
-  return frequencyMap[frequency] || frequency;
 };
 
 const ERROR_CLASS =
@@ -53,22 +32,17 @@ const getStatusBadge = (status: PaymentPlanStatus) => {
     PENDING: {
       label: "Pendiente",
       variant: WARNING_CLASS,
-      icon: <Clock className="h-3 w-3" />,
+      icon: null,
     },
-    ACTIVE: {
+    APPROVED: {
       label: "Aprobado",
       variant: SUCCESS_CLASS,
-      icon: <CheckCircle className="h-3 w-3" />,
-    },
-    COMPLETED: {
-      label: "Completado",
-      variant: SUCCESS_CLASS,
-      icon: <CheckCircle className="h-3 w-3" />,
+      icon: null,
     },
     REJECTED: {
       label: "Rechazado",
       variant: ERROR_CLASS,
-      icon: <XCircle className="h-3 w-3" />,
+      icon: null,
     },
     OBJECTED: {
       label: "Con observaciones",
@@ -94,9 +68,7 @@ const getStatusBadge = (status: PaymentPlanStatus) => {
 };
 
 export const createColumns = (
-  onViewDetails?: (paymentPlan: PaymentPlanResponse) => void,
-  onEdit?: (paymentPlan: PaymentPlanResponse) => void,
-  onDelete?: (paymentPlan: PaymentPlanResponse) => void
+  onViewDetails?: (paymentPlan: PaymentPlanResponse) => void
 ): ColumnDef<PaymentPlanResponse>[] => [
   {
     accessorKey: "id",
@@ -150,10 +122,6 @@ export const createColumns = (
     cell: ({ row }) => (
       <div className="font-medium text-sm">
         {(() => {
-          // Importa PAYMENT_FREQUENCY desde el archivo correspondiente
-          // import { PAYMENT_FREQUENCY } from "@/app/dashboard/data";
-          // Si ya está importado, omite la línea de importación
-
           // Función para obtener la etiqueta de la frecuencia de pago
           const getPaymentFrequencyLabel = (code: string) => {
             const freq = PAYMENT_FREQUENCY.find((f) => f.code === code);

@@ -119,7 +119,7 @@ const PageApproval = () => {
           icon={<Coins color="white" />}
           subDescription="Planes de pago"
         />
-        <div className="flex items-center justify-start gap-5 p-3 border border-gray-200 rounded-md h-[325px] w-full overflow-hidden">
+        <div className="flex items-start justify-start gap-5 p-3 border border-gray-200 rounded-md h-full w-full overflow-hidden">
           <div
             className="flex-shrink-0"
             style={{ minWidth: 300, maxWidth: 300, width: 300, height: "100%" }}

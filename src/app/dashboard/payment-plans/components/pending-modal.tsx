@@ -65,7 +65,7 @@ const PendingModal = ({
           <span className="text-sm text-gray-500 flex flex-col gap-0">
             <span className="text-black text-xs">Comentario supervisor</span>
             <span className="text-md text-gray-500">
-              Motivo del rechazo: {detailPaymentPlan.rejectionReason}
+              Motivo del rechazo: {detailPaymentPlan.rejectionComment}
             </span>
           </span>
         </div>

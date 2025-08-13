@@ -61,12 +61,13 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import CardUser from "../../components/card-user";
-import { approvePaymentPlan } from "../../services";
+import { approvePaymentPlan, rejectPaymentPlan } from "../../services";
 import { PaymentPlanResponse } from "../../types";
 
 const paymentPlanSchema = z
@@ -126,6 +127,7 @@ const paymentPlanSchema = z
 type PaymentPlanForm = z.infer<typeof paymentPlanSchema>;
 
 const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
+  const router = useRouter();
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const [debtorExpanded, setDebtorExpanded] = useState(false);
@@ -224,7 +226,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
             profile.client_id,
             detail.id,
             {
-              comments: data.reason,
+              approval_comment: data.reason,
             }
           );
 
@@ -234,7 +236,22 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
             toast.error("Error al aprobar el plan de pago");
           }
         }
-        console.log("Datos de aprobación/rechazo:", approvalData);
+        if (data.type === "reject") {
+          const responseReject = await rejectPaymentPlan(
+            session.token,
+            profile.client_id,
+            detail.id,
+            {
+              rejection_comment: data.reason,
+            }
+          );
+
+          if (responseReject.success) {
+            toast.success("Plan de pago rechazado correctamente");
+          } else {
+            toast.error("Error al rechazar el plan de pago");
+          }
+        }
 
         // Aquí implementarías la lógica para aprobar/rechazar
         // await processPaymentPlanDecision(detail.requestId, approvalData);
@@ -741,8 +758,8 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                     <span className="text-sm text-black font-bold">
                       Plan de pago aprobado
                     </span>
-                    <span className="text-xs text-gray-500">
-                      {detail.debtConcept}
+                    <span className="text-xs text-gray-500 capitalize">
+                      {detail?.approvalComment && detail?.approvalComment}
                     </span>
                   </div>
                 </div>
@@ -754,8 +771,8 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                     <span className="text-sm text-black font-bold">
                       Plan de pago denegado
                     </span>
-                    <span className="text-xs text-gray-500">
-                      {detail.debtConcept}
+                    <span className="text-xs text-gray-500 capitalize">
+                      {detail?.rejectionComment && detail?.rejectionComment}
                     </span>
                   </div>
                 </div>

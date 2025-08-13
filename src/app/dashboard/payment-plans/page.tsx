@@ -202,15 +202,7 @@ const PaymentPlansPage = () => {
     }
   };
 
-  const columns = useMemo(
-    () =>
-      createColumns(
-        handleOpenPaymentPlanDetail,
-        handleEditPaymentPlan,
-        handleDeletePaymentPlan
-      ),
-    []
-  );
+  const columns = useMemo(() => createColumns(handleOpenPaymentPlanDetail), []);
 
   return (
     <>
