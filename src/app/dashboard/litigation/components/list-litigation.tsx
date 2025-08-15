@@ -40,17 +40,19 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
 
   const [columnConfiguration, setColumnConfiguration] = useState<
     Array<{ name: string; is_visible: boolean }>
-  >([
-    { name: "id", is_visible: false },
-    { name: "invoice_id", is_visible: false },
-    { name: "debtor_id", is_visible: true },
-    { name: "litigation_amount", is_visible: true },
-    { name: "description", is_visible: true },
-    { name: "motivo", is_visible: true },
-    { name: "contact", is_visible: true },
-    { name: "submotivo", is_visible: true },
-    { name: "initial_comment", is_visible: true },
-  ]);
+  >(
+    profile?.profile?.litigations_table || [
+      { name: "id", is_visible: false },
+      { name: "invoice_id", is_visible: false },
+      { name: "debtor_id", is_visible: true },
+      { name: "litigation_amount", is_visible: true },
+      { name: "description", is_visible: true },
+      { name: "motivo", is_visible: true },
+      { name: "contact", is_visible: true },
+      { name: "submotivo", is_visible: true },
+      { name: "initial_comment", is_visible: true },
+    ]
+  );
 
   useEffect(() => {
     const savedConfig = profile?.profile?.litigations_table;
@@ -191,6 +193,7 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
             />
           }
           isApplyingFilters={isApplyingFilters}
+          initialColumnConfiguration={columnConfiguration}
         />
       </CardContent>
     </Card>

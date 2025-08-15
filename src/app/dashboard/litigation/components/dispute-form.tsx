@@ -29,12 +29,16 @@ import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
+import DebtorContactSelectFormItem from "../../components/debtor-contact-select-form-item";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
+import DteSelectFormItem from "../../components/dte-select-form-item";
 import LoaderTable from "../../components/loader-table";
 import SelectClient from "../../components/select-client";
 import { disputes, INVOICE_TYPES } from "../../data";
 import { useDebtorsStore } from "../../debtors/store";
 import { useDTEs } from "../../transactions/dte/hooks/useDTEs";
+import { getDTEsByDebtor } from "../../transactions/dte/services";
+import { DTE } from "../../transactions/dte/types";
 import { createLitigation, GetAllLitigationByDebtorId } from "../services";
 import { columnsLitigationEntry } from "./columns-litigation-entry";
 import EmptyLitigations from "./empty-litigations";
@@ -75,6 +79,8 @@ const DisputeForm = ({
   const [litigationsByDebtor, setLitigationsByDebtor] = useState([]);
   const [selectedDebtor, setSelectedDebtor] = useState<any>(null);
   const { fetchDebtorById, dataDebtor, isFetchingDebtor } = useDebtorsStore();
+  const [dteByDebtor, setDteByDebtor] = useState<any[]>([]);
+  const [litigationAmountDisplay, setLitigationAmountDisplay] = useState("");
 
   const isFactoring = profile?.client?.type === "FACTORING";
   const litigationFormSchema = useMemo(
@@ -192,7 +198,7 @@ const DisputeForm = ({
           profile.client_id,
           debtorId
         );
-        setLitigationsByDebtor(data);
+        setLitigationsByDebtor(data.data);
       } catch (error) {
         console.error("Error al obtener litigios anteriores", error);
       }
@@ -200,6 +206,35 @@ const DisputeForm = ({
 
     fetchLitigations();
   }, [debtorId, session?.token, profile?.client_id]);
+
+  const watchDocumentType = form.watch("documentType");
+  useEffect(() => {
+    if (debtorId && session?.token && profile?.client_id) {
+      getDTEsByDebtor(session.token, profile.client_id, debtorId, {
+        type: watchDocumentType,
+        balance: "1",
+      }).then((res) => {
+        setDteByDebtor(res);
+      });
+    }
+  }, [debtorId, session?.token, profile?.client_id, watchDocumentType]);
+
+  const handleDteSelect = (dte: DTE | null) => {
+    if (dte) {
+      const amount = dte.amount;
+      form.setValue("litigationAmount", amount.toString());
+      // Set formatted display value with proper formatting
+      const formattedAmount = new Intl.NumberFormat("es-CL", {
+        style: "decimal",
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
+      }).format(amount);
+      setLitigationAmountDisplay(formattedAmount);
+    } else {
+      form.setValue("litigationAmount", "");
+      setLitigationAmountDisplay("");
+    }
+  };
 
   return (
     <>
@@ -279,15 +314,13 @@ const DisputeForm = ({
               control={form.control}
               name="invoiceNumber"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Número de factura <Required />
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ej: 12345678" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                <DteSelectFormItem
+                  field={field}
+                  title="Número de factura"
+                  required
+                  dtes={dteByDebtor}
+                  onDteSelect={handleDteSelect}
+                />
               )}
             />
 
@@ -298,7 +331,37 @@ const DisputeForm = ({
                 <FormItem>
                   <FormLabel>Monto de factura</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: 12345678" {...field} />
+                    <Input
+                      type="text"
+                      placeholder="Ej: 12345678"
+                      value={litigationAmountDisplay}
+                      onChange={(e) => {
+                        // Remove non-numeric characters
+                        const rawValue = e.target.value.replace(/[^0-9]/g, "");
+                        const numericValue = parseInt(rawValue) || 0;
+
+                        // Update form value
+                        field.onChange(numericValue.toString());
+
+                        // Update display value
+                        setLitigationAmountDisplay(e.target.value);
+                      }}
+                      onBlur={() => {
+                        // Format value on blur
+                        const value = parseInt(field.value) || 0;
+                        const formattedAmount = new Intl.NumberFormat("es-CL", {
+                          style: "decimal",
+                          maximumFractionDigits: 0,
+                          minimumFractionDigits: 0,
+                        }).format(value);
+                        setLitigationAmountDisplay(formattedAmount);
+                      }}
+                      onFocus={() => {
+                        // Show raw number on focus for easier editing
+                        const value = parseInt(field.value) || 0;
+                        setLitigationAmountDisplay(value.toString());
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -411,47 +474,11 @@ const DisputeForm = ({
             control={form.control}
             name="contact"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contacto</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                  }}
-                  value={field.value}
-                  disabled={!selectedDebtor || isFetchingDebtor}
-                >
-                  <FormControl>
-                    <SelectTrigger className="truncate w-full">
-                      <SelectValue
-                        placeholder={
-                          isFetchingDebtor
-                            ? "Cargando contactos..."
-                            : !selectedDebtor
-                              ? "Selecciona un deudor primero"
-                              : selectedDebtor.contacts?.length === 0
-                                ? "Sin contactos disponibles"
-                                : "Selecciona contacto"
-                        }
-                        className="truncate"
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {selectedDebtor?.contacts?.length > 0 ? (
-                      selectedDebtor.contacts.map((contact: any) => (
-                        <SelectItem key={contact.name} value={contact.name}>
-                          {contact.name}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <div className="py-2 px-3 text-sm text-gray-500">
-                        No hay contactos disponibles
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
+              <DebtorContactSelectFormItem
+                field={field}
+                selectedDebtor={selectedDebtor}
+                isFetchingDebtor={isFetchingDebtor}
+              />
             )}
           />
 

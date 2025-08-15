@@ -21,9 +21,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
-import { DollarSign, Loader2 } from "lucide-react";
+import { getDocumentTypeCode } from "@/lib/getDocumentTypeCode";
+import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import DebtorContactSelectFormItem from "../../components/debtor-contact-select-form-item";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
 import SelectClient from "../../components/select-client";
 import { NORMALIZATION_REASONS } from "../../data";
@@ -35,16 +37,20 @@ import EmptyLitigations from "./empty-litigations";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const litigationSchema = z.object({
-  litigation_ids: z.array(z.string()).optional(),
-  normalization_reason: z.string().optional(),
-  normalization_by_contact: z.string().optional(),
-  comment: z.string().optional(),
-  debtorId: z.string().optional(),
-  client_id: z.string().optional(),
-});
+const litigationSchema = (isFactoring: boolean) => {
+  return z.object({
+    client_id: isFactoring
+      ? z.string().min(1, "El cliente es requerido")
+      : z.string().optional().nullable(),
+    litigation_ids: z.array(z.string()).optional(),
+    normalization_reason: z.string().optional(),
+    normalization_by_contact: z.string().optional(),
+    comment: z.string().optional(),
+    debtorId: z.string().optional(),
+  });
+};
 
-type LitigationForm = z.infer<typeof litigationSchema>;
+type LitigationForm = z.infer<ReturnType<typeof litigationSchema>>;
 
 interface NormalizeFormProps {
   onSuccess?: () => void;
@@ -55,6 +61,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
   const { profile } = useProfileContext();
   const { setField } = useDisputeStore();
   const { litigiosIngresados, addLitigio } = useLitigationStore();
+  const isFactoring = profile?.client?.type === "FACTORING";
 
   const [currentLitigation, setCurrentLitigation] = useState<LitigationItem[]>(
     []
@@ -64,7 +71,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
   );
 
   const form = useForm<LitigationForm>({
-    resolver: zodResolver(litigationSchema),
+    resolver: zodResolver(litigationSchema(isFactoring)),
     defaultValues: {
       litigation_ids: [],
       normalization_reason: "",
@@ -194,13 +201,15 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
         >
           {/* Cliente y Deudor */}
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={control}
-              name="client_id"
-              render={({ field }) => (
-                <SelectClient field={field} title="Cliente" singleClient />
-              )}
-            />
+            {isFactoring && (
+              <FormField
+                control={control}
+                name="client_id"
+                render={({ field }) => (
+                  <SelectClient field={field} title="Cliente" singleClient />
+                )}
+              />
+            )}
 
             <FormField
               control={control}
@@ -214,9 +223,9 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
           {currentLitigation.length === 0 ? (
             <EmptyLitigations />
           ) : (
-            <div className="border bg-gray-50 p-4 rounded mt-4">
+            <div className="border bg-[#F1F5F9] p-4 rounded mt-4">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-sm font-semibold">Litigios ingresados</h3>
+                <h3 className="text-sm font-semibold">Litigios abiertos</h3>
                 {selectedLitigationIds.length > 0 && (
                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                     {selectedLitigationIds.length} seleccionado
@@ -261,7 +270,9 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
                         />
                       </td>
                       <td className="p-2">{l?.invoice?.number}</td>
-                      <td className="p-2">{l?.motivo}</td>
+                      <td className="p-2">
+                        {getDocumentTypeCode(l?.invoice?.type)}
+                      </td>
                       <td className="p-2">
                         $
                         {new Intl.NumberFormat("es-ES").format(
@@ -280,6 +291,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
               </table>
             </div>
           )}
+
           {/* Motivo, submotivo, contacto */}
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -287,7 +299,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
               name="normalization_reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Motivo litigio</FormLabel>
+                  <FormLabel>Razón de Normalización</FormLabel>
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
@@ -319,32 +331,11 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
               name="normalization_by_contact"
               disabled={currentLitigation.length === 0}
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contacto</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                    }}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="truncate w-full">
-                        <SelectValue
-                          placeholder="Selecciona contacto"
-                          className="truncate"
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {currentLitigation.length > 0 &&
-                        currentLitigation[0].debtor.contacts.map((item) => (
-                          <SelectItem key={item.name} value={item.name}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
+                <DebtorContactSelectFormItem
+                  field={field}
+                  selectedDebtor={currentLitigation[0]?.debtor || []}
+                  isFetchingDebtor={false}
+                />
               )}
             />
           </div>
@@ -362,9 +353,6 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
           <div className="grid grid-cols-3 gap-4 items-center justify-center">
             <div className="col-span-2 bg-[#F1F5F9] px-5 py-2 rounded w-full">
               <div className="flex items-center">
-                <div className="items-center mr-2">
-                  <DollarSign className="w-6 h-6 text-gray-300" />
-                </div>
                 <div>
                   <span className="text-sm text-gray-500">Monto Factura</span>
                   <p className="text-[#2F6EFF] font-bold text-3xl">

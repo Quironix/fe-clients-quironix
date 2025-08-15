@@ -33,7 +33,7 @@ const DialogForm = <T,>({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[50vw] max-h-[calc(100vh-3rem)] overflow-y-auto">
+      <DialogContent className="sm:max-w-[50vw] max-h-[calc(100vh-3rem)] overflow-y-auto bg-white">
         <DialogHeader>
           <DialogTitle className="font-extrabold">{title}</DialogTitle>
           <div className="text-sm">

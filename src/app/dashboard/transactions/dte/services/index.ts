@@ -38,18 +38,18 @@ export const bulkData = async (
 };
 
 export const getDTEs = async (
-  accessToken: string, 
+  accessToken: string,
   clientId: string,
   params?: DTEPaginationParams
 ) => {
   const queryParams = new URLSearchParams();
-  
-  if (params?.page) queryParams.append('page', params.page.toString());
-  if (params?.limit) queryParams.append('limit', params.limit.toString());
-  
+
+  if (params?.page) queryParams.append("page", params.page.toString());
+  if (params?.limit) queryParams.append("limit", params.limit.toString());
+
   const queryString = queryParams.toString();
-  const url = `${API_URL}/v2/clients/${clientId}/invoices${queryString ? `?${queryString}` : ''}`;
-  
+  const url = `${API_URL}/v2/clients/${clientId}/invoices${queryString ? `?${queryString}` : ""}`;
+
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -136,5 +136,32 @@ export const deleteDTE = async (
       method: "DELETE",
     }
   );
+  return response.json();
+};
+
+export const getDTEsByDebtor = async (
+  accessToken: string,
+  clientId: string,
+  debtorId: string,
+  params?: { balance?: string; number?: string; type?: string }
+) => {
+  const queryParams = new URLSearchParams();
+  if (params?.balance) queryParams.append("balance", params.balance);
+  if (params?.number) queryParams.append("number", params.number);
+  if (params?.type) queryParams.append("document_type", params.type);
+
+  const queryString = queryParams.toString();
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/invoices/debtor/${debtorId}${queryString ? `?${queryString}` : ""}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch DTEs");
+  }
   return response.json();
 };

@@ -10,6 +10,7 @@ import BulletMenu, { BulletMenuItem } from "../../components/bullet-menu";
 import { format } from "date-fns";
 import { useState } from "react";
 import DialogForm from "../../components/dialog-form";
+import { TruncatedTextTooltip } from "../../components/truncated-text-tooltip";
 import { disputes } from "../../data";
 import { LitigationItem } from "../types";
 import LitigationDetail from "./modals/litigation-detail";
@@ -21,27 +22,47 @@ const getMotivoLabel = (code: string) => {
   switch (code) {
     case "COMMERCIAL_INVOICE":
       return (
-        <span className="text-green-600 border border-green-600 rounded-full px-2 py-0.4 text-xs">
-          Fac. comercial
-        </span>
+        <TruncatedTextTooltip
+          text={"Fac. comercial"}
+          maxLength={10}
+          className="text-center"
+          variant="chip"
+          tooltipBody="Factura comercial"
+          chipClassName="text-green-600 border border-green-600 rounded-full px-2 py-0.4 text-xs"
+        />
       );
     case "SETTLEMENT":
       return (
-        <span className="text-blue-600 border border-blue-600 rounded-full px-2 py-0.4 text-xs">
-          Finiquito
-        </span>
+        <TruncatedTextTooltip
+          text={"Finiquito"}
+          maxLength={10}
+          className="text-center"
+          variant="chip"
+          tooltipBody="Finiquito"
+          chipClassName="text-blue-600 border border-blue-600 rounded-full px-2 py-0.4 text-xs"
+        />
       );
     case "CREDIT_NOTE":
       return (
-        <span className="text-purple-600 border border-purple-600 rounded-full px-2 py-0.4 text-xs">
-          Nota de crédito
-        </span>
+        <TruncatedTextTooltip
+          text={"Nota de crédito"}
+          maxLength={10}
+          className="text-center"
+          variant="chip"
+          tooltipBody="Nota de crédito"
+          chipClassName="text-purple-600 border border-purple-600 rounded-full px-2 py-0.4 text-xs"
+        />
       );
     case "INVOICE_ISSUE":
       return (
-        <span className="text-orange-600 border border-orange-600 rounded-full px-2 py-0.4 text-xs">
-          Problemas con la fac.
-        </span>
+        <TruncatedTextTooltip
+          text={"Problemas con la fac."}
+          maxLength={10}
+          className="text-center"
+          variant="chip"
+          tooltipBody="Problemas con la fac."
+          chipClassName="text-orange-600 border border-orange-600 rounded-full px-2 py-0.4 text-xs"
+        />
       );
   }
 };
@@ -67,14 +88,18 @@ const EditModalWrapper = ({
 
   return (
     <DialogForm
-      title="Editar factura"
-      description={`Factura N° ${row?.invoice.number}`}
+      title="Editar litigio"
+      description={
+        <>
+          Factura N° <span className="font-bold">{row?.invoice.number}</span>
+        </>
+      }
       open={open}
       onOpenChange={setOpen}
       trigger={
         <div className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
           <Edit className="h-4 w-4 text-blue-600 flex-shrink-0" />
-          <span className="whitespace-nowrap">Editar factura</span>
+          <span className="whitespace-nowrap">Editar litigio</span>
         </div>
       }
     >
@@ -100,7 +125,11 @@ const NormalizeModalWrapper = ({
   return (
     <DialogForm
       title="Normalizar litigio"
-      description={`Litigio N° ${row?.invoice.number}`}
+      description={
+        <>
+          Litigio N° <span className="font-bold">{row?.invoice.number}</span>
+        </>
+      }
       open={open}
       onOpenChange={setOpen}
       trigger={
@@ -141,7 +170,12 @@ const createMenuItems = (
         >
           <DialogForm
             title="Detalle del litigio"
-            description={`Factura N° ${row?.invoice.number}`}
+            description={
+              <>
+                Factura N°{" "}
+                <span className="font-bold">{row?.invoice.number}</span>
+              </>
+            }
             trigger={
               <div className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
                 <Eye className="h-4 w-4 text-blue-600 flex-shrink-0" />
@@ -156,7 +190,7 @@ const createMenuItems = (
     },
     {
       id: "edit",
-      label: "Editar factura",
+      label: "Editar litigio",
       icon: Edit,
       component: (
         <DropdownMenuItem
