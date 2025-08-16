@@ -237,7 +237,7 @@ export interface UpdatePaymentPlanRequest {
   id?: string;
   name?: string;
   description?: string;
-  total_amount?: number;
+  total_plan_amount?: number;
   installment_amount?: number;
   number_of_installments?: number;
   annual_interest_rate?: number;

@@ -449,7 +449,7 @@ const CreatePaymentPlanPage = () => {
                                   icon={
                                     <Building2 className="w-8 h-8 text-blue-600" />
                                   }
-                                  description="Contacto"
+                                  description="Razón social"
                                   value={dataDebtor.name}
                                 />
                                 <IconDescription

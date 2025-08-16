@@ -209,12 +209,44 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
     detail.paymentFrequency,
   ]);
 
+  const calculatePaymentEndDate = (
+    startDate: Date,
+    numberOfInstallments: number,
+    frequency: string
+  ) => {
+    const endDate = new Date(startDate);
+
+    switch (frequency) {
+      case "weekly":
+        endDate.setDate(endDate.getDate() + numberOfInstallments * 7);
+        break;
+      case "biweekly":
+        endDate.setDate(endDate.getDate() + numberOfInstallments * 15);
+        break;
+      case "monthly":
+        endDate.setMonth(endDate.getMonth() + numberOfInstallments);
+        break;
+      case "quarterly":
+        endDate.setMonth(endDate.getMonth() + numberOfInstallments * 3);
+        break;
+      default:
+        endDate.setMonth(endDate.getMonth() + numberOfInstallments);
+    }
+
+    return endDate;
+  };
+
+  const paymentEndDate = calculatePaymentEndDate(
+    form.watch("startDate"),
+    form.watch("numberOfInstallments"),
+    form.watch("paymentFrequency")
+  );
   const onSubmit = async (data: PaymentPlanForm) => {
     try {
       if (data.type === "modify") {
         // Capturar datos del formulario de modificación
         const modificationData: UpdatePaymentPlanRequest = {
-          total_amount: data.totalAmount,
+          total_plan_amount: Math.round(metrics.totalToPay),
           installment_amount: Math.round(metrics.installmentAmount),
           number_of_installments: data.numberOfInstallments,
           annual_interest_rate: data.annualInterestRate,
@@ -222,11 +254,12 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
           payment_frequency: data.paymentFrequency as PaymentFrequency,
           start_date: data.startDate?.toISOString().split("T")[0],
           payment_start_date: data.startDate?.toISOString().split("T")[0],
-          payment_end_date: data.startDate?.toISOString().split("T")[0],
+          payment_end_date: paymentEndDate.toISOString().split("T")[0],
           comments: data.comments,
           objected_comment: data.reason,
           status: "OBJECTED",
         };
+        debugger;
 
         const response = await updatePaymentPlan(
           session.token,
@@ -235,7 +268,6 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
           modificationData
         );
 
-        debugger;
         console.log("Datos de modificación capturados:", modificationData);
 
         // Aquí implementarías la lógica para enviar los datos modificados
@@ -789,7 +821,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                       Colocación total:
                                     </span>
                                     <span className="text-sm font-semibold pr-5">
-                                      {formatNumber(detail.totalPlanAmount)}
+                                      {formatNumber(detail.totalDebt)}
                                     </span>
                                   </div>
 
@@ -857,7 +889,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 </span>
                                 <span className=" text-blue-700 text-2xl font-bold">
                                   {formatNumber(
-                                    Math.round(detail.totalPlanAmount as number)
+                                    Math.round(detail.totalDebt as number)
                                   )}
                                 </span>
                               </div>
