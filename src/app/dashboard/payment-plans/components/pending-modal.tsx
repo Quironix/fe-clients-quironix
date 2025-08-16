@@ -30,6 +30,23 @@ const PendingModal = ({
     detailPaymentPlan?.status === "OBJECTED" || false
   );
 
+  // Calcular cuotas pendientes una sola vez (antes de cualquier return condicional)
+  const pendingInstallments = useMemo(() => {
+    if (!detailPaymentPlan) return [];
+
+    return getPendingInstallments(
+      detailPaymentPlan.paymentStartDate,
+      detailPaymentPlan.paymentEndDate,
+      detailPaymentPlan.numberOfInstallments,
+      detailPaymentPlan.paymentFrequency
+    );
+  }, [
+    detailPaymentPlan?.paymentStartDate,
+    detailPaymentPlan?.paymentEndDate,
+    detailPaymentPlan?.numberOfInstallments,
+    detailPaymentPlan?.paymentFrequency,
+  ]);
+
   // Early return if detailPaymentPlan is null
   if (!detailPaymentPlan) {
     return (
@@ -40,21 +57,6 @@ const PendingModal = ({
       </div>
     );
   }
-
-  // Calcular cuotas pendientes una sola vez
-  const pendingInstallments = useMemo(() => {
-    return getPendingInstallments(
-      detailPaymentPlan.paymentStartDate,
-      detailPaymentPlan.paymentEndDate,
-      detailPaymentPlan.numberOfInstallments,
-      detailPaymentPlan.paymentFrequency
-    );
-  }, [
-    detailPaymentPlan.paymentStartDate,
-    detailPaymentPlan.paymentEndDate,
-    detailPaymentPlan.numberOfInstallments,
-    detailPaymentPlan.paymentFrequency,
-  ]);
   return (
     <>
       {/* Status badge section */}

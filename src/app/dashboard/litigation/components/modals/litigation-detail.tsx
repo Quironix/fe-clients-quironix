@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import {
   Building,
   Calendar,
@@ -7,7 +8,6 @@ import {
   SquareUserRound,
   User,
 } from "lucide-react";
-import Image from "next/image";
 import { disputes } from "../../../data";
 import { LitigationItem } from "../../types";
 
@@ -35,19 +35,10 @@ const LitigationDetail = ({ litigation }: LitigationDetailProps) => {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4 bg-[#EDF2F7] px-4 py-3 my-2 rounded-md">
         <div className="flex items-center">
-          <div className="items-center mr-2">
-            <Image
-              src="/img/dollar-sign.svg"
-              alt="Signo pesos"
-              width={6}
-              height={6}
-              className="w-5 h-5"
-            />
-          </div>
-
           <div>
             <p className="text-gray-600">Monto Factura</p>
             <p className="text-[#2F6EFF] font-bold text-md">
+              $
               {new Intl.NumberFormat("es-CL").format(
                 Number(litigation?.invoice.amount) || 0
               )}
@@ -118,7 +109,7 @@ const LitigationDetail = ({ litigation }: LitigationDetailProps) => {
             <p className="text-sm font-semibold">Fecha</p>
             <p className="text-md">
               <span className="font-semibold">
-                {litigation?.created_at ?? "Fecha"}
+                {format(litigation?.created_at, "dd/MM/yyyy HH:mm") || "-"}
               </span>
             </p>
           </div>

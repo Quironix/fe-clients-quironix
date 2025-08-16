@@ -20,6 +20,7 @@ export interface Litigation {
   code: string;
   description: string;
   comment: string;
+  invoice: Invoice;
 }
 
 export interface BulkUploadError {
@@ -109,7 +110,7 @@ export interface LitigationItem {
   updated_at: string;
 }
 
-interface Comment {
+export interface Comment {
   id: string;
   entity_type: string;
   entity_id: string;

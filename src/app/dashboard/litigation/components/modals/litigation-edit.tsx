@@ -1,5 +1,7 @@
 "use client";
 
+import CommentHistory from "@/app/dashboard/components/comment-history";
+import DebtorContactSelectFormItem from "@/app/dashboard/components/debtor-contact-select-form-item";
 import { disputes } from "@/app/dashboard/data";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,14 +23,7 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import {
-  Building,
-  Calendar,
-  DollarSign,
-  Loader2,
-  MessageSquare,
-  SquareUserRound,
-} from "lucide-react";
+import { Building, Calendar, Loader2, SquareUserRound } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -42,6 +37,7 @@ const litigationEditSchema = z.object({
   motivo: z.string(),
   submotivo: z.string(),
   contact: z.string(),
+  comment: z.string().optional().nullable(),
 });
 
 type LitigationEditForm = z.infer<typeof litigationEditSchema>;
@@ -63,6 +59,7 @@ const LitigationEditModal = ({
   const { profile } = useProfileContext();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [displayValue, setDisplayValue] = useState("");
 
   const form = useForm<LitigationEditForm>({
     resolver: zodResolver(litigationEditSchema),
@@ -75,12 +72,20 @@ const LitigationEditModal = ({
   });
   useEffect(() => {
     if (litigation) {
+      const amount = Number(litigation.litigation_amount ?? 0);
       form.reset({
-        litigation_amount: Number(litigation.litigation_amount ?? 0),
+        litigation_amount: amount,
         motivo: litigation.motivo ?? "",
         submotivo: litigation.submotivo ?? "",
         contact: litigation.contact ?? "",
       });
+      // Format the initial display value
+      setDisplayValue(
+        amount.toLocaleString("es-CL", {
+          maximumFractionDigits: 0,
+          useGrouping: true,
+        })
+      );
     }
   }, [litigation, form]);
 
@@ -103,16 +108,28 @@ const LitigationEditModal = ({
         throw new Error("Faltan datos necesarios para la actualización");
       }
 
+      const payload: {
+        litigation_amount: number;
+        motivo: string;
+        submotivo: string;
+        contact: string;
+        comment?: string;
+      } = {
+        litigation_amount: data.litigation_amount,
+        motivo: data.motivo,
+        submotivo: data.submotivo,
+        contact: data.contact,
+      };
+
+      if (data.comment) {
+        payload.comment = data.comment;
+      }
+
       const response = await updateLitigation(
         accessToken,
         clientId,
         litigationId,
-        {
-          litigation_amount: data.litigation_amount,
-          motivo: data.motivo,
-          submotivo: data.submotivo,
-          contact: data.contact,
-        }
+        payload
       );
 
       if (response.success) {
@@ -138,7 +155,6 @@ const LitigationEditModal = ({
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2 bg-[#EDF2F7] px-4 py-3 rounded-md">
             <div className="flex items-center">
-              <DollarSign className="w-5 h-5 text-gray-400" />
               <div className="">
                 <span className="text-sm text-gray-600">Monto factura</span>
                 <p className="text-[#2F6EFF] font-bold text-2xl">
@@ -156,9 +172,35 @@ const LitigationEditModal = ({
                 <FormItem>
                   <FormLabel>Monto litigio</FormLabel>
                   <Input
-                    type="number"
+                    type="text"
                     className="bg-white border-2"
-                    {...field}
+                    value={displayValue}
+                    onChange={(e) => {
+                      // Remove non-numeric characters except dots
+                      const rawValue = e.target.value.replace(/[^0-9]/g, "");
+                      const numericValue = parseInt(rawValue) || 0;
+
+                      // Update form value
+                      field.onChange(numericValue);
+
+                      // Update display value
+                      setDisplayValue(e.target.value);
+                    }}
+                    onBlur={() => {
+                      // Format value on blur
+                      const value = field.value || 0;
+                      setDisplayValue(
+                        value.toLocaleString("es-CL", {
+                          maximumFractionDigits: 0,
+                          useGrouping: true,
+                        })
+                      );
+                    }}
+                    onFocus={() => {
+                      // Show raw number on focus for easier editing
+                      const value = field.value || 0;
+                      setDisplayValue(value.toString());
+                    }}
                   />
                   <FormMessage />
                 </FormItem>
@@ -171,7 +213,7 @@ const LitigationEditModal = ({
               <SquareUserRound className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="text-sm">RUT</p>
-                <p> {litigation?.debtor.dni_id ?? "123123-1"} </p>
+                <p> {litigation?.debtor.dni.dni ?? "123123-1"} </p>
               </div>
             </div>
 
@@ -268,35 +310,30 @@ const LitigationEditModal = ({
             </div>
 
             <FormField
-              control={control}
+              control={form.control}
               name="contact"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contacto</FormLabel>
-                  <Input {...field} />
-                  <FormMessage />
-                </FormItem>
+                <DebtorContactSelectFormItem
+                  field={field}
+                  selectedDebtor={litigation?.debtor}
+                  isFetchingDebtor={false}
+                />
               )}
             />
           </div>
+          {/* Comments Section */}
 
-          <div className="flex items-center gap-1 border-2 border-[#EDF2F7] rounded-md p-4 text-sm my-4">
-            <MessageSquare className="w-6 h-6 text-gray-500" />
-            <div className="flex flex-col gap-1">
-              <span className="font-light text-sm">Comentario</span>
-              <div className="flex flex-col gap-2">
-                {litigation?.comments && litigation.comments.length > 0 ? (
-                  litigation.comments.map((comment, idx) => (
-                    <div key={idx} className=" text-gray-500">
-                      <span className="block text-sm">- {comment.content}</span>
-                    </div>
-                  ))
-                ) : (
-                  <span className="text-gray-400 italic">Sin comentarios</span>
-                )}
-              </div>
-            </div>
-          </div>
+          <FormField
+            control={form.control}
+            name="comment"
+            render={({ field }) => (
+              <CommentHistory
+                comments={litigation?.comments ?? []}
+                placeholder="Escriba su comentario aquí..."
+                field={field}
+              />
+            )}
+          />
 
           <div className=" bg-[#FF8113] h-0.5 max-w-full mt-5"></div>
 

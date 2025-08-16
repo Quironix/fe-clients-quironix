@@ -80,7 +80,6 @@ export const GetAllLitigationByDebtorId = async (
       },
     }
   );
-  console.log("GEtALldebtor", response);
   return response.json();
 };
 
@@ -143,6 +142,7 @@ export const updateLitigation = async (
     motivo: string;
     submotivo: string;
     contact: string;
+    comment?: string;
   }
 ) => {
   try {

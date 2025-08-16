@@ -67,10 +67,13 @@ export default function DebtorsSelectFormItem({
         <SearchInput
           value={field.value}
           onValueChange={(value: string) => field.onChange(value)}
-          options={debtors.map((debtor: any) => ({
-            value: debtor.id,
-            label: debtor.name,
-          }))}
+          options={debtors.map((debtor: any) => {
+            return {
+              value: debtor.id,
+              label: debtor.name,
+              custom: debtor.debtor_code,
+            };
+          })}
           placeholder="Selecciona un deudor"
           onSearchChange={(searchValue) => {
             setSearchText(searchValue);

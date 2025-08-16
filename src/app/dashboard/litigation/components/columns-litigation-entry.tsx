@@ -1,14 +1,13 @@
 "use client";
 import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
-import { typeDocuments } from "@/app/dashboard/data";
 import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
+import { getDocumentTypeCode } from "@/lib/getDocumentTypeCode";
 import { ColumnDef, Row } from "@tanstack/react-table";
-import { Edit, Eye, MoreVertical, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Litigation } from "../types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -20,7 +19,9 @@ const AcctionsCellComponent = ({ row }: { row: Row<Litigation> }) => {
   const [litigios, setLitigios] = useState([]);
 
   const fetchLitigios = async () => {
-    const res = await fetch( `${API_URL}/v2/clients/${profile.clientId}/litigations`);
+    const res = await fetch(
+      `${API_URL}/v2/clients/${profile.clientId}/litigations`
+    );
     const data = await res.json();
     setLitigios(data);
   };
@@ -42,7 +43,9 @@ const AcctionsCellComponent = ({ row }: { row: Row<Litigation> }) => {
         variant="ghost"
         size="icon"
         onClick={() =>
-          router.push(`/dashboard/companies/create?id=${row.original.debtor_id}`)
+          router.push(
+            `/dashboard/companies/create?id=${row.original.debtor_id}`
+          )
         }
         title="Editar"
         className="hover:bg-amber-500 hover:text-white text-primary"
@@ -81,23 +84,27 @@ export const columnsLitigationEntry: ColumnDef<Litigation>[] = [
     accessorKey: "invoice_number",
     header: "Número",
     cell: ({ row }) => {
-      const invoiceNumber = row.getValue("invoice_number") as string;
+      const invoiceNumber = row.original.invoice?.number as string;
       return <div className="font-medium">{invoiceNumber || "-"}</div>;
     },
-    }, 
-    {
-        accessorKey: "document_type",
-        header: "Documento",
-        cell: ({ row }) => {
-          const documentType = row.getValue("document_type") as string;
-          return <div className="font-medium">{documentType || "-"}</div>;
-        },
-      }, 
+  },
+  {
+    accessorKey: "document_type",
+    header: "Documento",
+    cell: ({ row }) => {
+      const documentType = row.original.invoice?.type as string;
+      return (
+        <div className="font-medium">
+          {getDocumentTypeCode(documentType) || "-"}
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "dispute_amount",
     header: "Monto de factura",
     cell: ({ row }) => {
-      const category = row.getValue("dispute_amount") as string;
+      const category = row.original.invoice?.amount as string;
       return (
         <div className="capitalize truncate max-w-[150px]" title={category}>
           {category || "-"}
@@ -116,5 +123,5 @@ export const columnsLitigationEntry: ColumnDef<Litigation>[] = [
         </div>
       );
     },
-  }
+  },
 ];
