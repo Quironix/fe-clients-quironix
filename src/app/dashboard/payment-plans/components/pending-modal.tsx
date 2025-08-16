@@ -157,6 +157,13 @@ const PendingModal = ({
                   }
                 />
                 <IconDescription
+                  icon={<Coins className="w-6 h-6 text-gray-400" />}
+                  description="Valor por cuotas"
+                  value={formatNumber(
+                    detailPaymentPlan.installmentAmount as unknown as number
+                  )}
+                />
+                <IconDescription
                   icon={<ChartBar className="w-6 h-6 text-gray-400" />}
                   description="Tasa de interés anual (%)"
                   value={

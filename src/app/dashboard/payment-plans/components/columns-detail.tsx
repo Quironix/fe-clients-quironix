@@ -1,5 +1,6 @@
 import { formatDate, formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
+import DocumentTypeBadge from "../../payment-netting/components/document-type-badge";
 import { Invoice } from "../types";
 
 export const ColumnsDetail = (): ColumnDef<Invoice>[] => [
@@ -14,7 +15,9 @@ export const ColumnsDetail = (): ColumnDef<Invoice>[] => [
     accessorKey: "type",
     header: "Documento",
     cell: ({ row }) => (
-      <div className="font-medium text-sm">{row.original.type}</div>
+      <div className="font-medium text-sm">
+        {<DocumentTypeBadge type={row.original.type} />}
+      </div>
     ),
   },
   {
@@ -40,7 +43,7 @@ export const ColumnsDetail = (): ColumnDef<Invoice>[] => [
     header: "Fase",
     cell: ({ row }) => (
       <div className="font-medium text-sm">
-        {row.original.phases[row.original.phases.length - 1].phase}
+        {row.original.phases[row.original.phases.length - 1]?.phase || "1"}
       </div>
     ),
   },

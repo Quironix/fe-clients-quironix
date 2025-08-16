@@ -234,16 +234,26 @@ export interface CreatePaymentPlanRequest {
 }
 
 export interface UpdatePaymentPlanRequest {
+  id?: string;
   name?: string;
   description?: string;
   total_amount?: number;
-  number_of_installments?: number;
   installment_amount?: number;
+  number_of_installments?: number;
+  annual_interest_rate?: number;
+  payment_method?: string;
   start_date?: string;
+  payment_start_date?: string;
+  payment_end_date?: string;
+  payment_frequency?: PaymentFrequency;
   end_date?: string;
-  frequency?: PaymentFrequency;
-  status?: PaymentPlanStatus;
   debtor_id?: string;
+  type?: string;
+  status?: PaymentPlanStatus;
+  reason?: string;
+  comments?: string;
+  frequency?: PaymentFrequency;
+  objected_comment?: string;
 }
 
 export interface ApprovePaymentPlanRequest {

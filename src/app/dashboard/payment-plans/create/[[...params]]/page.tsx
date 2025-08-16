@@ -106,7 +106,7 @@ const CreatePaymentPlanPage = () => {
   const { profile } = useProfileContext();
 
   // Usar el store para las facturas seleccionadas
-  const { selectedInvoices } = usePaymentPlansStore();
+  const { selectedInvoices, clearSelectedInvoices } = usePaymentPlansStore();
 
   const {
     debtors,
@@ -115,6 +115,7 @@ const CreatePaymentPlanPage = () => {
     isSearching,
     fetchDebtorById,
     dataDebtor,
+    clearDataDebtor,
   } = useDebtorsStore();
 
   // Configuración del formulario con react-hook-form
@@ -245,10 +246,36 @@ const CreatePaymentPlanPage = () => {
     console.log("Ver detalles del plan de pago");
   };
 
+  // Función para resetear el formulario y las métricas
+  const handleResetForm = () => {
+    // Resetear formulario
+    form.reset();
+    // Limpiar facturas seleccionadas
+    clearSelectedInvoices();
+    // Resetear estados del stepper
+    setCurrentStep(0);
+    setStepsState(steps);
+    setIsDebtorInfoExpanded(true);
+    setIsPaymentConfigExpanded(false);
+    clearDataDebtor();
+  };
+
+  useEffect(() => {
+    return () => {
+      handleResetForm();
+    };
+  }, []);
+
   // Función para formatear moneda con separador de miles
   const formatCurrency = (value: string) => {
     const numericValue = value.replace(/[^\d]/g, "");
     return numericValue;
+  };
+
+  const parseFormattedNumber = (value: string) => {
+    // Manejar el formato chileno: remover puntos (separadores de miles) y convertir comas a puntos decimales
+    const cleanValue = value.replace(/\./g, "").replace(/,/g, ".");
+    return parseFloat(cleanValue) || 0;
   };
 
   // Función para formatear números con separador de miles
@@ -263,7 +290,7 @@ const CreatePaymentPlanPage = () => {
         typeof invoice.amount === "string"
           ? parseFloat(invoice.amount)
           : invoice.amount;
-      return sum + (isNaN(amount) ? 0 : amount);
+      return Math.round(sum + (isNaN(amount) ? 0 : amount));
     }, 0);
   };
 
@@ -538,7 +565,7 @@ const CreatePaymentPlanPage = () => {
                                             e.target.value
                                           );
                                           field.onChange(
-                                            parseFloat(value) || 0
+                                            parseFormattedNumber(value)
                                           );
                                         }}
                                       />
@@ -789,6 +816,7 @@ const CreatePaymentPlanPage = () => {
                       comments: watch("comments"),
                     }}
                     onViewDetails={handleViewDetails}
+                    onReset={handleResetForm}
                   />
                 </div>
               </CardContent>

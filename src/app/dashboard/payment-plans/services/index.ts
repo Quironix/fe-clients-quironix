@@ -136,7 +136,7 @@ export const updatePaymentPlan = async (
 ): Promise<ApiResponse<PaymentPlan>> => {
   try {
     const response = await fetch(
-      `${API_URL}/v2/clients/${clientId}/payment-plans/${paymentPlanId}`,
+      `${API_URL}/v2/clients/${clientId}/payment-plans/${paymentPlanId}/object`,
       {
         method: "PUT",
         headers: {

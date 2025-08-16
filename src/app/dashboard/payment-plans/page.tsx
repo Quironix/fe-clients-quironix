@@ -216,7 +216,7 @@ const PaymentPlansPage = () => {
           icon={<Coins color="white" />}
           subDescription="Planes de pago"
         />
-        <div className="flex items-center justify-center gap-5 p-3 border border-gray-200 rounded-md h-[325px]">
+        <div className="flex items-center justify-center gap-5 p-3 border border-gray-200 rounded-md h-[325px] mb-5">
           <div className="flex-shrink-0">
             <Image
               src="/img/payment-plans.svg"
@@ -234,7 +234,7 @@ const PaymentPlansPage = () => {
               comenzar a llevar un mejor control de tus finanzas.
             </span>
             <Button
-              className="bg-blue-600 text-white hover:bg-blue-600/80 w-sm"
+              className="bg-blue-600 text-white hover:bg-blue-600/80 w-xs"
               onClick={() => {
                 router.push("/dashboard/payment-plans/create");
               }}
@@ -260,7 +260,7 @@ const PaymentPlansPage = () => {
               initialColumnVisibility={columnVisibility}
               initialColumnConfiguration={columnConfiguration}
               columnLabels={columnLabels}
-              enableRowSelection={true}
+              enableRowSelection={false}
               initialRowSelection={isHydrated ? rowSelection : {}}
               onRowSelectionChange={handleRowSelectionChange}
               bulkActions={bulkActions}

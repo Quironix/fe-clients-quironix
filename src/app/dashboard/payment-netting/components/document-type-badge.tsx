@@ -46,6 +46,7 @@ const getDocumentTypeDisplayData = (type: AllDocumentTypes) => {
     INTEREST: { text: "Intereses", color: "yellow" },
     CREDIT_NOTE: { text: "Abono", color: "pink" },
     PAYMENT: { text: "Abono", color: "pink" },
+    PAYMENT_PLAN_INSTALLMENT: { text: "Pago de cuota", color: "blue" },
   };
 
   // Mapeo para tipos legacy/strings en español (para compatibilidad)

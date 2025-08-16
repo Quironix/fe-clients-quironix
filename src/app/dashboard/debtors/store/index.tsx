@@ -72,6 +72,7 @@ interface DebtorsStore {
   ) => Promise<void>;
   clearSearch: () => void;
   resetPagination: () => void;
+  clearDataDebtor: () => void;
 }
 
 export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
@@ -318,5 +319,8 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   },
   clearBulkUploadErrors: () => {
     set({ bulkUploadErrors: null });
+  },
+  clearDataDebtor: () => {
+    set({ dataDebtor: {} as Debtor });
   },
 }));

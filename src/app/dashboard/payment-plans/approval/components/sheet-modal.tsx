@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -67,8 +68,16 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import CardUser from "../../components/card-user";
-import { approvePaymentPlan, rejectPaymentPlan } from "../../services";
-import { PaymentPlanResponse } from "../../types";
+import {
+  approvePaymentPlan,
+  rejectPaymentPlan,
+  updatePaymentPlan,
+} from "../../services";
+import {
+  PaymentFrequency,
+  PaymentPlanResponse,
+  UpdatePaymentPlanRequest,
+} from "../../types";
 
 const paymentPlanSchema = z
   .object({
@@ -142,10 +151,10 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
     defaultValues: {
       debtorId: detail?.debtorId || "",
       selectedInvoices: detail?.invoiceIds || [],
-      totalAmount: detail?.totalPlanAmount || 0,
-      downPayment: detail?.initialPayment || 0,
+      totalAmount: Math.round(detail?.totalPlanAmount || 0),
+      downPayment: Math.round(detail?.initialPayment || 0),
       numberOfInstallments: detail?.numberOfInstallments || 1,
-      annualInterestRate: detail?.annualInterestRate || 0,
+      annualInterestRate: Math.round(detail?.annualInterestRate || 0),
       paymentMethod: detail?.paymentMethod || "",
       paymentFrequency: detail?.paymentFrequency || "",
       startDate: detail?.planStartDate
@@ -176,8 +185,14 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
     return numericValue;
   };
 
+  const parseFormattedNumber = (value: string) => {
+    // Manejar el formato chileno: remover puntos (separadores de miles) y convertir comas a puntos decimales
+    const cleanValue = value.replace(/\./g, "").replace(/,/g, ".");
+    return parseFloat(cleanValue) || 0;
+  };
+
   const formatNumberWithThousands = (value: number) => {
-    return new Intl.NumberFormat("es-CL").format(value);
+    return new Intl.NumberFormat("es-CL").format(Math.round(value));
   };
 
   const pendingInstallments = useMemo(() => {
@@ -198,18 +213,29 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
     try {
       if (data.type === "modify") {
         // Capturar datos del formulario de modificación
-        const modificationData = {
-          type: data.type,
-          totalAmount: data.totalAmount,
-          downPayment: data.downPayment,
-          numberOfInstallments: data.numberOfInstallments,
-          annualInterestRate: data.annualInterestRate,
-          paymentMethod: data.paymentMethod,
-          paymentFrequency: data.paymentFrequency,
-          startDate: data.startDate,
+        const modificationData: UpdatePaymentPlanRequest = {
+          total_amount: data.totalAmount,
+          installment_amount: Math.round(metrics.installmentAmount),
+          number_of_installments: data.numberOfInstallments,
+          annual_interest_rate: data.annualInterestRate,
+          payment_method: data.paymentMethod,
+          payment_frequency: data.paymentFrequency as PaymentFrequency,
+          start_date: data.startDate?.toISOString().split("T")[0],
+          payment_start_date: data.startDate?.toISOString().split("T")[0],
+          payment_end_date: data.startDate?.toISOString().split("T")[0],
           comments: data.comments,
-          reason: data.reason,
+          objected_comment: data.reason,
+          status: "OBJECTED",
         };
+
+        const response = await updatePaymentPlan(
+          session.token,
+          profile.client_id,
+          detail.id,
+          modificationData
+        );
+
+        debugger;
         console.log("Datos de modificación capturados:", modificationData);
 
         // Aquí implementarías la lógica para enviar los datos modificados
@@ -265,6 +291,126 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       // TODO : ELIMINAR ESTO
       window.location.reload();
     }
+  };
+
+  const getFrequencyName = (frequency: string) => {
+    switch (frequency) {
+      case "weekly":
+        return "semanal";
+      case "monthly":
+        return "mensual";
+      case "quarterly":
+        return "trimestral";
+      case "semiannual":
+        return "semestral";
+      default:
+        return "mensual";
+    }
+  };
+
+  const getFrequencyFactor = (frequency: string) => {
+    switch (frequency) {
+      case "weekly":
+        return 52; // 52 semanas por año
+      case "monthly":
+        return 12; // 12 meses por año
+      case "quarterly":
+        return 4; // 4 trimestres por año
+      case "semiannual":
+        return 2; // 2 semestres por año
+      default:
+        return 12; // Por defecto mensual
+    }
+  };
+
+  const calculateFinancialMetrics = () => {
+    // Validación de datos básicos
+    if (!detail) {
+      return {
+        totalInvoices: 0,
+        downPayment: 0,
+        principalAmount: 0,
+        numberOfInstallments: 0,
+        installmentAmount: 0,
+        totalToPay: 0,
+        totalInterest: 0,
+        ctc: 0,
+        effectiveRate: 0,
+        paymentFrequency: "monthly",
+        frequencyName: "mensual",
+      };
+    }
+
+    // 1. Valores base del financiamiento
+    const totalInvoices = detail.originalInvoices.reduce(
+      (sum, invoice) => sum + parseFloat(invoice.amount),
+      0
+    );
+    const downPayment = form.watch("downPayment") || 0;
+    const principalAmount = totalInvoices - downPayment; // Capital a financiar
+
+    // 2. Parámetros del préstamo
+    const numberOfInstallments = form.watch("numberOfInstallments") || 1;
+    const annualInterestRate = form.watch("annualInterestRate") || 0;
+    const paymentFrequency = form.watch("paymentFrequency") || "monthly";
+    const frequencyName = getFrequencyName(paymentFrequency);
+
+    // 3. Cálculo de tasas
+    const frequencyFactor = getFrequencyFactor(paymentFrequency);
+    const nominalPeriodRate = annualInterestRate / 100 / frequencyFactor; // Tasa nominal por período
+
+    // 4. Cálculo de cuota usando fórmula PMT (Payment)
+    let installmentAmount = 0;
+
+    if (principalAmount <= 0) {
+      // No hay nada que financiar
+      installmentAmount = 0;
+    } else if (nominalPeriodRate === 0) {
+      // Sin intereses (tasa 0%)
+      installmentAmount = principalAmount / numberOfInstallments;
+    } else {
+      // Con intereses - Fórmula PMT estándar bancaria
+      const ratePower = Math.pow(1 + nominalPeriodRate, numberOfInstallments);
+      installmentAmount =
+        (principalAmount * (nominalPeriodRate * ratePower)) / (ratePower - 1);
+    }
+
+    // 5. Cálculos derivados
+    const totalInstallments = installmentAmount * numberOfInstallments;
+    const totalToPay = totalInstallments; // Solo las cuotas, el pie ya está pagado
+    const totalInterest = totalInstallments - principalAmount; // Intereses totales pagados
+    const ctc = totalInterest; // Costo Total del Crédito = solo los intereses
+
+    // 6. Tasa efectiva anual (TEA)
+    let effectiveRate = 0;
+    if (nominalPeriodRate > 0) {
+      effectiveRate =
+        (Math.pow(1 + nominalPeriodRate, frequencyFactor) - 1) * 100;
+    }
+
+    return {
+      totalInvoices,
+      downPayment,
+      principalAmount,
+      numberOfInstallments,
+      installmentAmount,
+      totalToPay,
+      totalInterest,
+      ctc,
+      effectiveRate,
+      paymentFrequency,
+      frequencyName,
+      // Métricas adicionales
+      loanToValue:
+        totalInvoices > 0 ? (principalAmount / totalInvoices) * 100 : 0, // LTV%
+      downPaymentRatio:
+        totalInvoices > 0 ? (downPayment / totalInvoices) * 100 : 0, // % pie
+    };
+  };
+  const metrics = calculateFinancialMetrics();
+
+  const formatPercentage = (value: number, decimals: number = 2) => {
+    return `${value.toFixed(decimals)}%`;
   };
 
   const typeSelected = form.watch("type");
@@ -345,395 +491,500 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                   </CardHeader>
 
                   {paymentPlanExpanded && (
-                    <CardContent className="space-y-6">
-                      {typeSelected === "modify" ? (
-                        <div>
-                          <div className="grid grid-cols-2 gap-4">
-                            {/* Colocación total */}
-                            <FormField
-                              control={control}
-                              name="totalAmount"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>
-                                    Colocación total{" "}
-                                    <span className="text-red-500">*</span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="Calculado automáticamente"
-                                      disabled={true}
-                                      value={
-                                        field.value
-                                          ? `$${formatNumberWithThousands(field.value)}`
-                                          : "$0"
-                                      }
-                                      className="bg-gray-100 text-gray-700 font-medium"
-                                    />
-                                  </FormControl>
-
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            {/* Pago contado */}
-                            <FormField
-                              control={control}
-                              name="downPayment"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Pago contado ($)</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="Ingresa un monto"
-                                      value={
-                                        field.value
-                                          ? formatNumberWithThousands(
-                                              field.value
-                                            )
-                                          : ""
-                                      }
-                                      onChange={(e) => {
-                                        const value = formatCurrency(
-                                          e.target.value
-                                        );
-                                        field.onChange(parseFloat(value) || 0);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            {/* Número de cuotas */}
-                            <FormField
-                              control={control}
-                              name="numberOfInstallments"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>
-                                    N° de cuotas{" "}
-                                    <span className="text-red-500">*</span>
-                                  </FormLabel>
-                                  <Select
-                                    value={field.value.toString()}
-                                    onValueChange={(value) =>
-                                      field.onChange(parseInt(value))
-                                    }
-                                  >
+                    <>
+                      <CardContent className="space-y-6">
+                        {typeSelected === "modify" ? (
+                          <div className="flex gap-4 items-start justify-between">
+                            <div className="grid grid-cols-2 gap-4 mt-5">
+                              {/* Colocación total */}
+                              <FormField
+                                control={control}
+                                name="totalAmount"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>
+                                      Colocación total{" "}
+                                      <span className="text-red-500">*</span>
+                                    </FormLabel>
                                     <FormControl>
-                                      <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {Array.from(
-                                        { length: 36 },
-                                        (_, i) => i + 1
-                                      ).map((num) => (
-                                        <SelectItem
-                                          key={num}
-                                          value={num.toString()}
-                                        >
-                                          {num} cuota{num > 1 ? "s" : ""}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            {/* Tasa de interés anual */}
-                            <FormField
-                              control={control}
-                              name="annualInterestRate"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>
-                                    Tasa de interés anual (%){" "}
-                                    <span className="text-red-500">*</span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      min="0"
-                                      max="100"
-                                      placeholder="Ej: 12.5"
-                                      value={field.value || ""}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Permitir números decimales
-                                        if (
-                                          value === "" ||
-                                          /^\d*\.?\d*$/.test(value)
-                                        ) {
-                                          field.onChange(
-                                            parseFloat(value) || 0
-                                          );
+                                      <Input
+                                        placeholder="Calculado automáticamente"
+                                        disabled={true}
+                                        value={
+                                          field.value
+                                            ? `$${formatNumberWithThousands(field.value)}`
+                                            : "$0"
                                         }
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            {/* Forma de pago */}
-                            <FormField
-                              control={control}
-                              name="paymentMethod"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>
-                                    Forma de pago{" "}
-                                    <span className="text-red-500">*</span>
-                                  </FormLabel>
-                                  <Select
-                                    value={field.value}
-                                    onValueChange={field.onChange}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona" />
-                                      </SelectTrigger>
+                                        className="bg-gray-100 text-gray-700 font-medium"
+                                      />
                                     </FormControl>
-                                    <SelectContent>
-                                      {DEBTOR_PAYMENT_METHODS.map((item) => (
-                                        <SelectItem
-                                          key={item.value}
-                                          value={item.value}
-                                        >
-                                          {item.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
 
-                            {/* Frecuencia de pago */}
-                            <FormField
-                              control={control}
-                              name="paymentFrequency"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>
-                                    Frecuencia de pago{" "}
-                                    <span className="text-red-500">*</span>
-                                  </FormLabel>
-                                  <Select
-                                    value={field.value}
-                                    onValueChange={field.onChange}
-                                  >
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              {/* Pago contado */}
+                              <FormField
+                                control={control}
+                                name="downPayment"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Pago contado ($)</FormLabel>
                                     <FormControl>
-                                      <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona" />
-                                      </SelectTrigger>
+                                      <Input
+                                        placeholder="Ingresa un monto"
+                                        value={
+                                          field.value
+                                            ? formatNumberWithThousands(
+                                                field.value
+                                              )
+                                            : ""
+                                        }
+                                        onChange={(e) => {
+                                          const value = formatCurrency(
+                                            e.target.value
+                                          );
+                                          field.onChange(
+                                            parseFormattedNumber(value)
+                                          );
+                                        }}
+                                      />
                                     </FormControl>
-                                    <SelectContent>
-                                      {PAYMENT_FREQUENCY.map((item) => (
-                                        <SelectItem
-                                          key={item.code}
-                                          value={item.code}
-                                        >
-                                          {item.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
 
-                          {/* Inicio de pago */}
-                          <FormField
-                            control={control}
-                            name="startDate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>
-                                  Inicio de pago{" "}
-                                  <span className="text-red-500">*</span>
-                                </FormLabel>
-                                <Popover>
-                                  <PopoverTrigger asChild>
+                              {/* Número de cuotas */}
+                              <FormField
+                                control={control}
+                                name="numberOfInstallments"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>
+                                      N° de cuotas{" "}
+                                      <span className="text-red-500">*</span>
+                                    </FormLabel>
+                                    <Select
+                                      value={field.value.toString()}
+                                      onValueChange={(value) =>
+                                        field.onChange(parseInt(value))
+                                      }
+                                    >
+                                      <FormControl>
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue placeholder="Selecciona" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {Array.from(
+                                          { length: 36 },
+                                          (_, i) => i + 1
+                                        ).map((num) => (
+                                          <SelectItem
+                                            key={num}
+                                            value={num.toString()}
+                                          >
+                                            {num} cuota{num > 1 ? "s" : ""}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              {/* Tasa de interés anual */}
+                              <FormField
+                                control={control}
+                                name="annualInterestRate"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>
+                                      Tasa de interés anual (%){" "}
+                                      <span className="text-red-500">*</span>
+                                    </FormLabel>
                                     <FormControl>
-                                      <Button
-                                        variant="outline"
-                                        className="w-full justify-start text-left font-normal"
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="100"
+                                        placeholder="Ej: 12.5"
+                                        value={field.value || ""}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          // Permitir números decimales
+                                          if (
+                                            value === "" ||
+                                            /^\d*\.?\d*$/.test(value)
+                                          ) {
+                                            field.onChange(
+                                              parseFloat(value) || 0
+                                            );
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              {/* Forma de pago */}
+                              <FormField
+                                control={control}
+                                name="paymentMethod"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>
+                                      Forma de pago{" "}
+                                      <span className="text-red-500">*</span>
+                                    </FormLabel>
+                                    <Select
+                                      value={field.value}
+                                      onValueChange={field.onChange}
+                                    >
+                                      <FormControl>
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue placeholder="Selecciona" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {DEBTOR_PAYMENT_METHODS.map((item) => (
+                                          <SelectItem
+                                            key={item.value}
+                                            value={item.value}
+                                          >
+                                            {item.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              {/* Frecuencia de pago */}
+                              <FormField
+                                control={control}
+                                name="paymentFrequency"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>
+                                      Frecuencia de pago{" "}
+                                      <span className="text-red-500">*</span>
+                                    </FormLabel>
+                                    <Select
+                                      value={field.value}
+                                      onValueChange={field.onChange}
+                                    >
+                                      <FormControl>
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue placeholder="Selecciona" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {PAYMENT_FREQUENCY.map((item) => (
+                                          <SelectItem
+                                            key={item.code}
+                                            value={item.code}
+                                          >
+                                            {item.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              {/* Inicio de pago */}
+                              <FormField
+                                control={control}
+                                name="startDate"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>
+                                      Inicio de pago{" "}
+                                      <span className="text-red-500">*</span>
+                                    </FormLabel>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <FormControl>
+                                          <Button
+                                            variant="outline"
+                                            className="w-full justify-start text-left font-normal"
+                                          >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {field.value
+                                              ? format(
+                                                  field.value,
+                                                  "dd/MM/yyyy",
+                                                  {
+                                                    locale: es,
+                                                  }
+                                                )
+                                              : "DD/MM/AAAA"}
+                                          </Button>
+                                        </FormControl>
+                                      </PopoverTrigger>
+                                      <PopoverContent
+                                        className="w-auto p-0"
+                                        align="start"
                                       >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {field.value
-                                          ? format(field.value, "dd/MM/yyyy", {
-                                              locale: es,
-                                            })
-                                          : "DD/MM/AAAA"}
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent
-                                    className="w-auto p-0"
-                                    align="start"
-                                  >
-                                    <Calendar
-                                      mode="single"
-                                      selected={field.value}
-                                      onSelect={field.onChange}
-                                      locale={es}
-                                      disabled={(date) => date < new Date()}
-                                      initialFocus
-                                    />
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                        <Calendar
+                                          mode="single"
+                                          selected={field.value}
+                                          onSelect={field.onChange}
+                                          locale={es}
+                                          disabled={(date) => date < new Date()}
+                                          initialFocus
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
 
-                          {/* Comentario */}
-                          <FormField
-                            control={control}
-                            name="comments"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Comentario</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    placeholder="Completa"
-                                    {...field}
-                                    rows={4}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <div className="bg-blue-100/30 p-4 rounded-lg grid grid-cols-3 items-center">
-                            <div className="flex flex-col gap-0">
-                              <span className="text-sm text-black">
-                                Colocación total
-                              </span>
-                              <span className=" text-blue-700 text-2xl font-bold">
-                                {formatNumber(detail.totalPlanAmount)}
-                              </span>
-                            </div>
-                            <div className="flex flex-col gap-0">
-                              <span className="text-sm text-black">
-                                Pago contado
-                              </span>
-                              <span className=" text-blue-700 text-2xl font-bold">
-                                {formatNumber(detail.initialPayment)}
-                              </span>
-                            </div>
-                            <div className="flex flex-col gap-0">
-                              <span className="text-xs text-black font-bold">
-                                Próximos vencimientos
-                              </span>
-                              <div className="text-sm text-black space-y-1">
-                                {pendingInstallments
-                                  .slice(0, 4)
-                                  .map((installment, index) => (
-                                    <div key={index} className="text-xs">
-                                      {installment}
-                                    </div>
-                                  ))}
-                                {pendingInstallments.length > 4 && (
-                                  <div className="text-xs text-gray-500">
-                                    +{pendingInstallments.length - 4} cuotas
-                                    más...
-                                  </div>
-                                )}
-                                {pendingInstallments.length === 0 && (
-                                  <div className="text-xs text-green-600">
-                                    No hay cuotas pendientes
-                                  </div>
-                                )}
+                              {/* Comentario */}
+                              <div className="col-span-2">
+                                <FormField
+                                  control={control}
+                                  name="comments"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Comentario</FormLabel>
+                                      <FormControl>
+                                        <Textarea
+                                          placeholder="Completa"
+                                          {...field}
+                                          rows={4}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                               </div>
                             </div>
+                            <Card className="bg-blue-50 border-blue-200 w-1/2">
+                              <CardHeader>
+                                <div className="flex items-center gap-3">
+                                  <DollarSign className="h-5 w-5 text-blue-600" />
+                                  <CardTitle className="text-lg">
+                                    Resumen financiero
+                                  </CardTitle>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                {/* Cálculos Financieros */}
+                                <div className="space-y-3">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-600 pl-5">
+                                      Colocación total:
+                                    </span>
+                                    <span className="text-sm font-semibold pr-5">
+                                      {formatNumber(detail.totalPlanAmount)}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-600 pl-5">
+                                      Pago contado (
+                                      {formatPercentage(
+                                        metrics.downPaymentRatio,
+                                        1
+                                      )}
+                                      ):
+                                    </span>
+                                    <span className="text-sm font-semibold pr-5">
+                                      {formatNumber(metrics.downPayment)}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-600 pl-5">
+                                      Capital a financiar:
+                                    </span>
+                                    <span className="text-sm font-semibold pr-5">
+                                      {formatNumber(metrics.principalAmount)}
+                                    </span>
+                                  </div>
+
+                                  <Separator color="bg-blue-600" />
+
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-600 pl-5">
+                                      Cuota {metrics.frequencyName}:
+                                    </span>
+                                    <span className="text-lg font-bold pr-5">
+                                      {formatNumber(metrics.installmentAmount)}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-600 pl-5">
+                                      Total intereses:
+                                    </span>
+                                    <span className="text-sm font-semibold pr-5">
+                                      {formatNumber(metrics.totalInterest)}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex justify-between items-center bg-blue-100 py-2 px-5 rounded-md">
+                                    <span className="text-sm font-medium text-gray-600">
+                                      Total a pagar:
+                                    </span>
+                                    <span className="text-lg font-bold">
+                                      {formatNumber(metrics.totalToPay)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <IconDescription
-                              icon={<Coins className="w-6 h-6 text-gray-400" />}
-                              description="Nº de cuotas"
-                              value={
-                                detail.numberOfInstallments as unknown as string
-                              }
-                            />
-                            <IconDescription
-                              icon={
-                                <ChartBar className="w-6 h-6 text-gray-400" />
-                              }
-                              description="Tasa de interés anual (%)"
-                              value={
-                                detail.annualInterestRate as unknown as string
-                              }
-                            />
-                            <IconDescription
-                              icon={
-                                <DollarSign className="w-6 h-6 text-gray-400" />
-                              }
-                              description="Forma de pago"
-                              value={
-                                DEBTOR_PAYMENT_METHODS.find(
-                                  (x) => x.value === detail.paymentMethod
-                                )?.label
-                              }
-                            />
-                            <IconDescription
-                              icon={
-                                <CalendarClock className="w-6 h-6 text-gray-400" />
-                              }
-                              description="Frecuencia de pago"
-                              value={
-                                PAYMENT_FREQUENCY.find(
-                                  (x) => x.code === detail.paymentFrequency
-                                )?.label
-                              }
-                            />
-                            <IconDescription
-                              icon={
-                                <CalendarIcon className="w-6 h-6 text-gray-400" />
-                              }
-                              description="Inicio de pago"
-                              value={detail.planStartDate as unknown as string}
-                            />
-                            <IconDescription
-                              icon={
-                                <CalendarCheck className="w-6 h-6 text-gray-400" />
-                              }
-                              description="Término de pago"
-                              value={detail.paymentEndDate as unknown as string}
-                            />
-                          </div>
-                          {detail.debtConcept && (
-                            <div className="flex justify-start items-center gap-2 bg-amber-100 border border-amber-300 p-4 rounded-lg">
-                              <MessageSquare className="w-6 h-6 text-amber-300 flex-shrink-0" />
-                              <span className="text-sm text-gray-500 flex flex-col gap-0">
-                                <span className="text-black text-xs">
-                                  Comentario
+                        ) : (
+                          <>
+                            <div className="bg-blue-100/30 p-4 rounded-lg grid grid-cols-3 items-center">
+                              <div className="flex flex-col gap-0">
+                                <span className="text-sm text-black">
+                                  Colocación total
                                 </span>
-                                <span className="text-md text-gray-500">
-                                  {detail.debtConcept}
+                                <span className=" text-blue-700 text-2xl font-bold">
+                                  {formatNumber(
+                                    Math.round(detail.totalPlanAmount as number)
+                                  )}
                                 </span>
-                              </span>
+                              </div>
+                              <div className="flex flex-col gap-0">
+                                <span className="text-sm text-black">
+                                  Pago contado
+                                </span>
+                                <span className=" text-blue-700 text-2xl font-bold">
+                                  {formatNumber(
+                                    Math.round(detail.initialPayment)
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex flex-col gap-0">
+                                <span className="text-xs text-black font-bold">
+                                  Próximos vencimientos
+                                </span>
+                                <div className="text-sm text-black space-y-1">
+                                  {pendingInstallments
+                                    .slice(0, 4)
+                                    .map((installment, index) => (
+                                      <div key={index} className="text-xs">
+                                        {installment}
+                                      </div>
+                                    ))}
+                                  {pendingInstallments.length > 4 && (
+                                    <div className="text-xs text-gray-500">
+                                      +{pendingInstallments.length - 4} cuotas
+                                      más...
+                                    </div>
+                                  )}
+                                  {pendingInstallments.length === 0 && (
+                                    <div className="text-xs text-green-600">
+                                      No hay cuotas pendientes
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                          )}
-                        </>
-                      )}
-                    </CardContent>
+                            <div className="grid grid-cols-2 gap-4">
+                              <IconDescription
+                                icon={
+                                  <Coins className="w-6 h-6 text-gray-400" />
+                                }
+                                description="Nº de cuotas"
+                                value={
+                                  detail.numberOfInstallments as unknown as string
+                                }
+                              />
+                              <IconDescription
+                                icon={
+                                  <Coins className="w-6 h-6 text-gray-400" />
+                                }
+                                description="Valor por cuotas"
+                                value={formatNumber(
+                                  Math.round(
+                                    detail.installmentAmount as unknown as number
+                                  )
+                                )}
+                              />
+                              <IconDescription
+                                icon={
+                                  <ChartBar className="w-6 h-6 text-gray-400" />
+                                }
+                                description="Tasa de interés anual (%)"
+                                value={
+                                  detail.annualInterestRate as unknown as string
+                                }
+                              />
+                              <IconDescription
+                                icon={
+                                  <DollarSign className="w-6 h-6 text-gray-400" />
+                                }
+                                description="Forma de pago"
+                                value={
+                                  DEBTOR_PAYMENT_METHODS.find(
+                                    (x) => x.value === detail.paymentMethod
+                                  )?.label
+                                }
+                              />
+                              <IconDescription
+                                icon={
+                                  <CalendarClock className="w-6 h-6 text-gray-400" />
+                                }
+                                description="Frecuencia de pago"
+                                value={
+                                  PAYMENT_FREQUENCY.find(
+                                    (x) => x.code === detail.paymentFrequency
+                                  )?.label
+                                }
+                              />
+                              <IconDescription
+                                icon={
+                                  <CalendarIcon className="w-6 h-6 text-gray-400" />
+                                }
+                                description="Inicio de pago"
+                                value={
+                                  detail.planStartDate as unknown as string
+                                }
+                              />
+                              <IconDescription
+                                icon={
+                                  <CalendarCheck className="w-6 h-6 text-gray-400" />
+                                }
+                                description="Término de pago"
+                                value={
+                                  detail.paymentEndDate as unknown as string
+                                }
+                              />
+                            </div>
+                            {detail.debtConcept && (
+                              <div className="flex justify-start items-center gap-2 bg-amber-100 border border-amber-300 p-4 rounded-lg">
+                                <MessageSquare className="w-6 h-6 text-amber-300 flex-shrink-0" />
+                                <span className="text-sm text-gray-500 flex flex-col gap-0">
+                                  <span className="text-black text-xs">
+                                    Comentario
+                                  </span>
+                                  <span className="text-md text-gray-500">
+                                    {detail.debtConcept}
+                                  </span>
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </CardContent>
+                    </>
                   )}
                 </Card>
               </ScrollArea>
@@ -751,6 +1002,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                 height={100}
                 className="w-full p-5"
               />
+
               {detail?.status === "APPROVED" && (
                 <div className="border border-green-300 bg-green-100 p-3 rounded-lg flex gap-2 items-start justify-start">
                   <Info className="w-4 h-4 text-green-600 flex-shrink-0" />{" "}
@@ -764,6 +1016,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                   </div>
                 </div>
               )}
+
               {detail?.status === "REJECTED" && (
                 <div className="border border-red-300 bg-red-100 p-3 rounded-lg flex gap-2 items-start justify-start">
                   <Info className="w-4 h-4 text-red-600 flex-shrink-0" />{" "}
@@ -777,6 +1030,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                   </div>
                 </div>
               )}
+
               {detail.status === "PENDING" && (
                 <ScrollArea className="h-[450px] pr-2 mb-20 pb-10 overflow-y-auto">
                   <div className="max-h-[450px] pr-5 mb-20 pb-10 overflow-y-auto">

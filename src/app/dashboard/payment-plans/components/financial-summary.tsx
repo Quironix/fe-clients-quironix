@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { useProfileContext } from "@/context/ProfileContext";
 import { DollarSign, Send } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createPaymentPlan } from "../services";
 import { CreatePaymentPlanRequest } from "../types";
@@ -21,6 +22,7 @@ interface FinancialSummaryProps {
   selectedInvoices?: Invoice[];
   paymentConfig?: PaymentPlanConfig;
   onViewDetails?: () => void;
+  onReset?: () => void;
 }
 
 export default function FinancialSummary({
@@ -28,7 +30,9 @@ export default function FinancialSummary({
   selectedInvoices = [],
   paymentConfig,
   onViewDetails,
+  onReset,
 }: FinancialSummaryProps) {
+  const router = useRouter();
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   // Función para obtener el factor de frecuencia (períodos por año)
@@ -209,15 +213,15 @@ export default function FinancialSummary({
     // Preparar el payload según la estructura del API
     const planData: CreatePaymentPlanRequest = {
       debtor_id: selectedDebtor.id,
-      total_debt: metrics.totalInvoices,
-      installment_amount: metrics.installmentAmount,
+      total_debt: Math.round(metrics.totalInvoices),
+      installment_amount: Math.round(metrics.installmentAmount),
       payment_start_date: paymentConfig.startDate.toISOString(),
       payment_end_date: paymentEndDate.toISOString(),
       invoice_ids: selectedInvoices.map((invoice) => invoice.id),
       debt_concept:
         paymentConfig.comments || "Plan de pago para facturas seleccionadas",
-      total_plan_amount: metrics.totalToPay + metrics.downPayment,
-      initial_payment: metrics.downPayment,
+      total_plan_amount: Math.round(metrics.totalToPay),
+      initial_payment: Math.round(metrics.downPayment),
       number_of_installments: metrics.numberOfInstallments,
       payment_frequency: metrics.paymentFrequency,
       annual_interest_rate: paymentConfig.annualInterestRate || 0,
@@ -233,11 +237,17 @@ export default function FinancialSummary({
       );
       if (response.success) {
         toast.success("Plan de pago creado correctamente");
+        // Llamar a la función de reset para limpiar las métricas
+        if (onReset) {
+          onReset();
+        }
       } else {
         toast.error("Error al crear el plan de pago");
       }
     } catch (error) {
       console.error("Error al crear el plan de pago:", error);
+    } finally {
+      router.push("/dashboard/payment-plans");
     }
   };
 

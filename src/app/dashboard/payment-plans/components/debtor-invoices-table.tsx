@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import DataTableNormal from "../../components/data-table-normal";
 import LoaderTable from "../../components/loader-table";
+import DocumentTypeBadge from "../../payment-netting/components/document-type-badge";
 import { getInvoices } from "../../payment-netting/services";
 import { Invoice as StoreInvoice, usePaymentPlansStore } from "../store";
 
@@ -82,8 +83,8 @@ const createColumns = (
     accessorKey: "document_type",
     header: "Tipo de documento",
     cell: ({ row }) => {
-      const type = row.getValue("document_type") as string;
-      return <div>{type || "-"}</div>;
+      const type = row.original.type;
+      return <DocumentTypeBadge type={type} />;
     },
   },
   {
