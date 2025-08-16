@@ -19,7 +19,7 @@ import * as React from "react";
 interface SearchInputProps {
   value: string;
   onValueChange: (value: string) => void;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; custom?: any }[];
   placeholder?: string;
   emptyMessage?: string;
   searchPlaceholder?: string;
@@ -103,7 +103,7 @@ export function SearchInput({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-        <Command>
+        <Command filter={() => 1}>
           <CommandInput
             placeholder={searchPlaceholder}
             className="h-9"
@@ -125,13 +125,15 @@ export function SearchInput({
               <>
                 <CommandEmpty>{emptyMessage}</CommandEmpty>
                 <CommandGroup>
-                  {options.map((option) => (
+                  {options.map((option, index) => (
                     <CommandItem
                       key={option.value}
-                      value={option.label}
+                      value={`${option.label}`}
                       onSelect={(currentValue) => {
                         const selectedOption = options.find(
-                          (opt) => opt.label === currentValue
+                          (opt) =>
+                            opt.label === currentValue ||
+                            opt.custom === currentValue
                         );
                         if (selectedOption) {
                           onValueChange(selectedOption.value);

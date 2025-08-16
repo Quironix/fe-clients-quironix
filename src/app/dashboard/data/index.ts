@@ -595,42 +595,52 @@ export const INVOICE_TYPES = [
       {
         label: "Factura Electrónica",
         value: "INVOICE",
+        code: "Fac. E",
       },
       {
         label: "Factura No Afecta o Exenta Electrónica",
         value: "EXEMPT_INVOICE",
+        code: "Fac. NE",
       },
       {
         label: "Factura de Compra Electrónica",
         value: "PURCHASE_INVOICE",
+        code: "Fac. CE",
       },
       {
         label: "Liquidación Factura Electrónica",
         value: "SETTLEMENT_INVOICE",
+        code: "Liq. Fac. E",
       },
       {
         label: "Nota de Débito Electrónica",
         value: "DEBIT_NOTE",
+        code: "ND E",
       },
       {
         label: "Nota de Crédito Electrónica",
         value: "CREDIT_NOTE",
+        code: "NC E",
       },
       {
         label: "Guía de Despacho Electrónica",
         value: "DISPATCH_GUIDE",
+        code: "GD E",
       },
       {
         label: "Factura de Exportación Electrónica",
         value: "EXPORT_INVOICE",
+        code: "Fac. Exp. E",
       },
       {
         label: "Nota de Crédito de Exportación Electrónica",
         value: "EXPORT_CREDIT_NOTE",
+        code: "NC Exp. E",
       },
       {
         label: "Nota de Débito de Exportación Electrónica",
         value: "EXPORT_DEBIT_NOTE",
+        code: "ND Exp. E",
       },
     ],
   },
