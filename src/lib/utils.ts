@@ -94,11 +94,17 @@ export function toISOString(date: string | Date | null | undefined): string {
   return parsedDate.toISOString();
 }
 
-export function formatNumber(numero: number): string {
+export function formatNumber(
+  numero: number,
+  isCurrency: boolean = true
+): string {
   if (typeof numero !== "number" || isNaN(numero)) {
     return "0";
   }
-  return "$" + new Intl.NumberFormat("es-CL").format(Math.round(numero));
+  return (
+    (isCurrency ? "$" : "") +
+    new Intl.NumberFormat("es-CL").format(Math.round(numero))
+  );
 }
 
 /**

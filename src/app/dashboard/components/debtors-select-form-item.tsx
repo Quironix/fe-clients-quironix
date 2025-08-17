@@ -11,7 +11,7 @@ import useDebounce from "../hooks/useDebounce";
 
 export interface DebtorsSelectFormItemProps {
   field: FieldValues;
-  title: string;
+  title?: string;
   required?: boolean;
 }
 
@@ -60,9 +60,11 @@ export default function DebtorsSelectFormItem({
 
   return (
     <FormItem>
-      <FormLabel>
-        {title} {required && <Required />}
-      </FormLabel>
+      {title && (
+        <FormLabel>
+          {title} {required && <Required />}
+        </FormLabel>
+      )}
       <FormControl className="w-full">
         <SearchInput
           value={field.value}
