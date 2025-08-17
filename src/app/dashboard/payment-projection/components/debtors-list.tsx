@@ -1,34 +1,73 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useQuery } from "@tanstack/react-query";
+import { X } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
+import { useDebtorsStore } from "../../debtors/store";
 import { getAllDebtors } from "../services";
+import { usePaymentProjectionStore } from "../store";
 import CardDebtorPP from "./card-debtor-pp";
 
 const DebtorsList = () => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
+  const { searchDebtorCode, setSearchDebtorCode } = usePaymentProjectionStore();
+  const { debtors: allDebtors } = useDebtorsStore();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["debtors"],
-    queryFn: () => getAllDebtors(session?.token, profile?.client_id),
+    queryKey: ["debtors", searchDebtorCode],
+    queryFn: () =>
+      getAllDebtors(
+        session?.token,
+        profile?.client_id,
+        searchDebtorCode || undefined
+      ),
     enabled: !!session?.token && !!profile?.client_id,
   });
+
   const form = useForm();
   const {
     handleSubmit,
     formState: { isSubmitting },
     reset,
     control,
+    watch,
   } = form;
+
+  // Observar cambios en el campo debtorId
+  const selectedDebtorId = watch("debtorId");
+
+  // Efecto para actualizar el filtro cuando se selecciona un deudor
+  useEffect(() => {
+    if (selectedDebtorId) {
+      // Buscar el deudor seleccionado para obtener su debtor_code
+      const selectedDebtor = allDebtors.find(
+        (debtor) => debtor.id === selectedDebtorId
+      );
+      if (selectedDebtor?.debtor_code) {
+        setSearchDebtorCode(selectedDebtor.debtor_code);
+      }
+    } else {
+      // Si no hay deudor seleccionado, limpiar el filtro
+      setSearchDebtorCode(null);
+    }
+  }, [selectedDebtorId, allDebtors, setSearchDebtorCode]);
+
   const onSubmit = (data: any) => {
     console.log(data);
+  };
+
+  const clearFilter = () => {
+    reset({ debtorId: "" });
+    setSearchDebtorCode(null);
   };
 
   return (
@@ -49,13 +88,31 @@ const DebtorsList = () => {
       <CardContent className="p-6 pt-0">
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-            <FormField
-              control={control}
-              name="debtorId"
-              render={({ field }) => (
-                <DebtorsSelectFormItem field={field} required />
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <FormField
+                  control={control}
+                  name="debtorId"
+                  render={({ field }) => (
+                    <DebtorsSelectFormItem
+                      field={field}
+                      title="Buscar deudor"
+                    />
+                  )}
+                />
+              </div>
+              {searchDebtorCode && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilter}
+                  className="px-3"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               )}
-            />
+            </div>
           </form>
         </Form>
         <div className="w-full mt-5 h-[450px]">

@@ -54,11 +54,13 @@ export const getIndicators = async (
  *
  * @param accessToken Token de acceso para autenticación Bearer
  * @param clientId ID del cliente
+ * @param search Código del deudor para filtrar (opcional)
  * @returns Respuesta con la lista de deudores o mensaje de error
  */
 export const getAllDebtors = async (
   accessToken: string,
-  clientId: string
+  clientId: string,
+  search?: string
 ): Promise<{
   success: boolean;
   message: string;
@@ -66,8 +68,10 @@ export const getAllDebtors = async (
 }> => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   try {
+    // Construir la URL con el parámetro de búsqueda si existe
+    const searchParam = search ? `?search=${encodeURIComponent(search)}` : "";
     const response = await fetch(
-      `${API_URL}/v2/clients/${clientId}/reports/dashboard/debtors`,
+      `${API_URL}/v2/clients/${clientId}/reports/dashboard/debtors${searchParam}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
