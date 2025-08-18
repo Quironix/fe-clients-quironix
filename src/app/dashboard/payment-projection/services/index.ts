@@ -143,6 +143,7 @@ export const getReportsByDebtor = async (
     }
 
     const data = await response.json();
+
     return {
       success: true,
       message: "Reportes mensuales obtenidos correctamente",

@@ -10,8 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useProfileContext } from "@/context/ProfileContext";
 import { cn, formatNumber } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { getReportsByDebtor } from "../services";
+import { usePaymentProjectionStore } from "../store";
 
 export interface WeeklyProjectionData {
   week: number;
@@ -29,10 +35,22 @@ interface WeeklyProjectionTableProps {
   isLoading?: boolean;
 }
 
-const WeeklyProjectionTable = ({
-  data = [],
-  isLoading = false,
-}: WeeklyProjectionTableProps) => {
+const WeeklyProjectionTable = () => {
+  const { data: session } = useSession();
+  const { profile } = useProfileContext();
+  const { debtorId } = usePaymentProjectionStore();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["debtors", debtorId],
+    queryFn: () =>
+      getReportsByDebtor(
+        session?.token,
+        profile?.client_id,
+        debtorId.toString()
+      ),
+    enabled: !!session?.token && !!profile?.client_id && !!debtorId,
+  });
+
   // Datos de ejemplo basados en la imagen
   const defaultData: WeeklyProjectionData[] = [
     {
@@ -87,7 +105,7 @@ const WeeklyProjectionTable = ({
     },
   ];
 
-  const tableData = data.length > 0 ? data : defaultData;
+  const tableData = data?.data.length > 0 ? data?.data : defaultData;
 
   // Calcular totales
   const totals = tableData.reduce(
@@ -160,6 +178,7 @@ const WeeklyProjectionTable = ({
       {/* Tabla principal */}
       <Card className="w-full">
         <CardContent className="p-0">
+          {/* <pre>{JSON.stringify(data?.data?.weekly_projections, null, 2)}</pre> */}
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50/50">
@@ -186,12 +205,13 @@ const WeeklyProjectionTable = ({
                 <TableHead className="text-left text-gray-600 text-sm px-6 py-2 w-32">
                   {/* Espacio para etiquetas */}
                 </TableHead>
-                {tableData.map((item) => (
+                {data?.data?.weekly_projections.map((item) => (
                   <TableHead
-                    key={item.week}
+                    key={item.week_number}
                     className="text-center text-gray-600 text-sm px-6 py-2"
                   >
-                    {item.dateRange}
+                    {format(item.week_start, "dd MMM")} -{" "}
+                    {format(item.week_end, "dd MMM")}
                   </TableHead>
                 ))}
               </TableRow>
@@ -202,13 +222,13 @@ const WeeklyProjectionTable = ({
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   N° Facturas
                 </TableCell>
-                {tableData.map((item, index) => (
+                {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`invoice-${index}`}
+                    key={`invoice-${item.week_number}`}
                     className="text-center py-4 px-6"
                   >
                     <span className="text-gray-600">
-                      {item.invoiceNumber || "–"}
+                      {item?.metadata?.totalInvoices || "0"}
                     </span>
                   </TableCell>
                 ))}
@@ -219,13 +239,13 @@ const WeeklyProjectionTable = ({
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   Proyectado
                 </TableCell>
-                {tableData.map((item, index) => (
+                {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`projected-${index}`}
+                    key={`projected-${item.week_number}`}
                     className="text-center py-4 px-6"
                   >
                     <span className="text-gray-900 font-medium">
-                      {formatNumber(item.projected)}
+                      {formatNumber(item.total_weekly_estimated)}
                     </span>
                   </TableCell>
                 ))}
@@ -236,9 +256,9 @@ const WeeklyProjectionTable = ({
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   Real
                 </TableCell>
-                {tableData.map((item, index) => (
+                {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`real-${index}`}
+                    key={`real-${item.week_number}`}
                     className="text-center py-4 px-6"
                   >
                     <span className="text-gray-900 font-medium">
@@ -253,9 +273,9 @@ const WeeklyProjectionTable = ({
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   Variación
                 </TableCell>
-                {tableData.map((item, index) => (
+                {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`variation-${index}`}
+                    key={`variation-${item.week_number}`}
                     className="text-center py-4 px-6"
                   >
                     <span
@@ -268,7 +288,7 @@ const WeeklyProjectionTable = ({
                             : "text-gray-900"
                       )}
                     >
-                      {formatNumber(item.variation)}
+                      {formatNumber(item.total_weekly_estimated - item.real)}
                     </span>
                   </TableCell>
                 ))}
@@ -279,12 +299,12 @@ const WeeklyProjectionTable = ({
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   Estado
                 </TableCell>
-                {tableData.map((item, index) => (
+                {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
                     key={`status-${index}`}
                     className="text-center py-4 px-6"
                   >
-                    {renderStatusBadge(item.status, item.variationPercentage)}
+                    {renderStatusBadge(item.status, 0)}
                   </TableCell>
                 ))}
               </TableRow>
@@ -301,7 +321,7 @@ const WeeklyProjectionTable = ({
                 <div>
                   <p className="text-sm text-gray-600">Total proyectado</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatNumber(totals.projected)}
+                    {formatNumber(data?.data?.total_monthly_collected)}
                   </p>
                 </div>
               </div>
@@ -322,7 +342,7 @@ const WeeklyProjectionTable = ({
                           : "text-gray-900"
                     )}
                   >
-                    {formatNumber(totals.variation)}
+                    {formatNumber(data?.data?.total_monthly_estimated)}
                   </p>
                 </div>
               </div>

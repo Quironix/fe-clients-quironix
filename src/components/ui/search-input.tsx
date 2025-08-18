@@ -26,6 +26,7 @@ interface SearchInputProps {
   className?: string;
   onSearchChange?: (searchValue: string) => void;
   isLoading?: boolean;
+  resetTrigger?: boolean; // Nueva prop para resetear el campo de búsqueda
 }
 
 export function SearchInput({
@@ -38,6 +39,7 @@ export function SearchInput({
   className,
   onSearchChange,
   isLoading = false,
+  resetTrigger = false,
 }: SearchInputProps) {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
@@ -80,6 +82,15 @@ export function SearchInput({
       setOpen(true);
     }
   }, [searchValue, open, justSelected]);
+
+  // Efecto para resetear el valor de búsqueda cuando se active resetTrigger
+  React.useEffect(() => {
+    if (resetTrigger) {
+      setSearchValue("");
+      setOpen(false);
+      setJustSelected(false);
+    }
+  }, [resetTrigger]);
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>

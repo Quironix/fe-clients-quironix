@@ -13,12 +13,14 @@ export interface DebtorsSelectFormItemProps {
   field: FieldValues;
   title?: string;
   required?: boolean;
+  resetTrigger?: boolean; // Nueva prop para disparar el reset
 }
 
 export default function DebtorsSelectFormItem({
   field,
   title,
   required,
+  resetTrigger,
 }: DebtorsSelectFormItemProps) {
   const { debtors, fetchDebtorsPaginated, loading, isSearching } =
     useDebtorsStore();
@@ -58,6 +60,22 @@ export default function DebtorsSelectFormItem({
     fetchDebtorsPaginated,
   ]);
 
+  // Efecto para resetear el estado interno cuando se active resetTrigger
+  useEffect(() => {
+    if (resetTrigger) {
+      setSearchText("");
+      // También cargar todos los deudores nuevamente
+      if (session?.token && profile?.client?.id) {
+        fetchDebtorsPaginated(session?.token, profile?.client?.id, 1);
+      }
+    }
+  }, [
+    resetTrigger,
+    session?.token,
+    profile?.client?.id,
+    fetchDebtorsPaginated,
+  ]);
+
   return (
     <FormItem>
       {title && (
@@ -81,6 +99,7 @@ export default function DebtorsSelectFormItem({
             setSearchText(searchValue);
           }}
           isLoading={isSearching}
+          resetTrigger={resetTrigger}
         />
       </FormControl>
       <FormMessage />

@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField } from "@/components/ui/form";
@@ -8,7 +7,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
 import { useDebtorsStore } from "../../debtors/store";
@@ -19,8 +18,10 @@ import CardDebtorPP from "./card-debtor-pp";
 const DebtorsList = () => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
-  const { searchDebtorCode, setSearchDebtorCode } = usePaymentProjectionStore();
+  const { searchDebtorCode, setSearchDebtorCode, setDebtorId } =
+    usePaymentProjectionStore();
   const { debtors: allDebtors } = useDebtorsStore();
+  const [resetTrigger, setResetTrigger] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["debtors", searchDebtorCode],
@@ -68,6 +69,11 @@ const DebtorsList = () => {
   const clearFilter = () => {
     reset({ debtorId: "" });
     setSearchDebtorCode(null);
+    setDebtorId(null); // Limpiar también el debtorId del store
+    // Activar el trigger para resetear el DebtorsSelectFormItem
+    setResetTrigger(true);
+    // Resetear el trigger después de un breve momento
+    setTimeout(() => setResetTrigger(false), 100);
   };
 
   return (
@@ -75,20 +81,20 @@ const DebtorsList = () => {
       <CardHeader>
         <CardTitle>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">Deudores</h2>
-            <Badge
+            <h2 className="text-lg font-bold">Deudores 117201</h2>
+            {/* <Badge
               variant="outline"
               className="bg-red-400 text-white rounded-full"
             >
               2 críticos
-            </Badge>
+            </Badge> */}
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6 pt-0">
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-            <div className="flex gap-2 items-end">
+            <div className="flex gap-2 items-center justify-between">
               <div className="flex-1">
                 <FormField
                   control={control}
@@ -96,15 +102,14 @@ const DebtorsList = () => {
                   render={({ field }) => (
                     <DebtorsSelectFormItem
                       field={field}
-                      title="Buscar deudor"
+                      resetTrigger={resetTrigger}
                     />
                   )}
                 />
               </div>
               {searchDebtorCode && (
                 <Button
-                  type="button"
-                  variant="outline"
+                  variant="default"
                   size="sm"
                   onClick={clearFilter}
                   className="px-3"
