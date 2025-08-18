@@ -60,7 +60,8 @@ export const getIndicators = async (
 export const getAllDebtors = async (
   accessToken: string,
   clientId: string,
-  search?: string
+  search?: string | null,
+  period_month?: string | null
 ): Promise<{
   success: boolean;
   message: string;
@@ -68,16 +69,25 @@ export const getAllDebtors = async (
 }> => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   try {
-    // Construir la URL con el parámetro de búsqueda si existe
-    const searchParam = search ? `?search=${encodeURIComponent(search)}` : "";
-    const response = await fetch(
-      `${API_URL}/v2/clients/${clientId}/reports/dashboard/debtors${searchParam}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    // Construir los query parameters de manera dinámica
+    const queryParams = new URLSearchParams();
+
+    if (search) {
+      queryParams.append("search", search);
+    }
+
+    if (period_month) {
+      queryParams.append("period_month", period_month);
+    }
+
+    const queryString = queryParams.toString();
+    const url = `${API_URL}/v2/clients/${clientId}/reports/dashboard/debtors${queryString ? `?${queryString}` : ""}`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     if (!response.ok) {
       const errorData = await response.json();

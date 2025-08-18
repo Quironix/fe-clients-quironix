@@ -20,10 +20,11 @@ import * as z from "zod";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
+import MonthlyTable from "./components/table-monthly";
 
 // Schema de validación para el formato AAAA-MM (formato month input)
 const formSchema = z.object({
-  period: z
+  period_month: z
     .string()
     .min(1, "El período es requerido")
     .regex(
@@ -35,12 +36,13 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const PageSettings = () => {
+  const [periodMonth, setPeriodMonth] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      period: "",
+      period_month: "",
     },
   });
 
@@ -55,16 +57,8 @@ const PageSettings = () => {
   const handleSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      console.log("Datos del formulario:", data);
-      // Aquí puedes agregar la lógica para procesar los datos
-      // Por ejemplo, llamar a una API o actualizar el estado
-
-      // Simular una operación asíncrona
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mostrar el período en formato legible MM/AAAA
-      const displayPeriod = formatPeriodForDisplay(data.period);
-      alert(`Período configurado: ${displayPeriod}`);
+      const displayPeriod = formatPeriodForDisplay(data.period_month);
+      setPeriodMonth(displayPeriod);
     } catch (error) {
       console.error("Error al procesar el formulario:", error);
       alert("Error al procesar el formulario");
@@ -108,7 +102,7 @@ const PageSettings = () => {
               >
                 <FormField
                   control={form.control}
-                  name="period"
+                  name="period_month"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Período (MM/AAAA)</FormLabel>
@@ -127,7 +121,8 @@ const PageSettings = () => {
           </div>
         </div>
 
-        <h1>Settings</h1>
+        {/* Tabla mensual */}
+        <MonthlyTable period_month={periodMonth} />
       </Main>
     </>
   );
