@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -15,8 +16,10 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { cn, formatNumber } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Edit, TrendingDown, TrendingUp } from "lucide-react";
+import { Edit, Search, TrendingDown, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
+import useDebounce from "../../../hooks/useDebounce";
 import { getAllDebtors } from "../../services";
 
 // Tipos para los datos de la tabla mensual
@@ -25,12 +28,60 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
 
+  // Estados para la paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Estados para la búsqueda
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms de debounce
+
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["debtors", period_month],
+    queryKey: [
+      "debtors",
+      period_month,
+      currentPage,
+      itemsPerPage,
+      debouncedSearchTerm,
+    ],
     queryFn: () =>
-      getAllDebtors(session?.token, profile?.client_id, null, period_month),
+      getAllDebtors(
+        session?.token,
+        profile?.client_id,
+        debouncedSearchTerm || null,
+        period_month,
+        currentPage,
+        itemsPerPage
+      ),
     enabled: !!session?.token && !!profile?.client_id && !!period_month,
   });
+
+  // Funciones para manejar la paginación
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleItemsPerPageChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newItemsPerPage = parseInt(event.target.value);
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Resetear a la primera página
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1); // Resetear a la primera página cuando se busque
+  };
+
+  const goToFirstPage = () => handlePageChange(1);
+  const goToPreviousPage = () => handlePageChange(Math.max(1, currentPage - 1));
+  const goToNextPage = () =>
+    handlePageChange(
+      Math.min(data?.data?.pagination?.totalPages || 1, currentPage + 1)
+    );
+  const goToLastPage = () =>
+    handlePageChange(data?.data?.pagination?.totalPages || 1);
 
   // Renderizar la celda de cada semana
   const renderWeekCell = (weekData: any) => {
@@ -131,6 +182,19 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
               </span>
             </div>
           </div>
+
+          {/* Campo de búsqueda */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              type="text"
+              placeholder="Buscar por código, nombre del deudor..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="pl-10 w-full max-w-md"
+            />
+          </div>
+
           <Card className="w-full">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -194,13 +258,13 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
 
                         <TableCell className="text-center py-3 px-4">
                           <span className="font-medium text-red-600">
-                            {row.overdue_debt}
+                            {formatNumber(row.overdue_debt)}
                           </span>
                         </TableCell>
 
                         <TableCell className="text-center py-3 px-4">
                           <span className="font-medium text-orange-600">
-                            {row.period_debt}
+                            {formatNumber(row.period_debt)}
                           </span>
                         </TableCell>
 
@@ -244,26 +308,56 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
               <div className="flex items-center justify-between px-6 py-4 border-t">
                 <div className="text-sm text-gray-600">Filas por página</div>
                 <div className="flex items-center gap-4">
-                  <select className="border border-gray-300 rounded px-3 py-1 text-sm">
+                  <select
+                    className="border border-gray-300 rounded px-3 py-1 text-sm"
+                    value={itemsPerPage}
+                    onChange={handleItemsPerPageChange}
+                  >
                     <option value="10">10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
                   </select>
                   <div className="text-sm text-gray-600">
-                    Página {data?.data?.pagination?.page} de{" "}
-                    {data?.data?.pagination?.totalPages}
+                    Página {currentPage} de{" "}
+                    {data?.data?.pagination?.totalPages || 1}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" disabled>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={currentPage === 1 || isLoading}
+                      onClick={goToFirstPage}
+                    >
                       {"<<"}
                     </Button>
-                    <Button variant="outline" size="sm" disabled>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={currentPage === 1 || isLoading}
+                      onClick={goToPreviousPage}
+                    >
                       {"<"}
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={
+                        currentPage ===
+                          (data?.data?.pagination?.totalPages || 1) || isLoading
+                      }
+                      onClick={goToNextPage}
+                    >
                       {">"}
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={
+                        currentPage ===
+                          (data?.data?.pagination?.totalPages || 1) || isLoading
+                      }
+                      onClick={goToLastPage}
+                    >
                       {">>"}
                     </Button>
                   </div>
