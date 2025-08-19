@@ -187,14 +187,14 @@ export const getReportsByDebtor = async (
  *
  * @param accessToken Token de acceso del usuario
  * @param clientId ID del cliente
- * @param projectionId ID de la proyección de pagos
+ * @param debtorCode Código del deudor
  * @param moves Array de movimientos, cada uno con targetDate y un array de IDs de facturas
  * @returns Respuesta con el resultado de la operación o mensaje de error
  */
 export const changeInvoices = async (
   accessToken: string,
   clientId: string,
-  projectionId: string,
+  debtorCode: string,
   moves: Array<{
     targetDate: string;
     invoices: string[];
@@ -207,7 +207,7 @@ export const changeInvoices = async (
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   try {
     const response = await fetch(
-      `${API_URL}/v2/clients/${clientId}/reports/payment-projections/${projectionId}/invoices`,
+      `${API_URL}/v2/clients/${clientId}/reports/payment-projections/${debtorCode}/invoices`,
       {
         method: "PUT",
         headers: {

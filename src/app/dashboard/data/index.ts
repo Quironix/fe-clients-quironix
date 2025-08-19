@@ -220,6 +220,18 @@ export const getSidebarData = (profile: any) => {
             icon: IconInfoTriangle,
             scope: "client.payment_plans.approval",
           },
+          {
+            title: "Proyección de pagos",
+            url: "/dashboard/payment-projection",
+            icon: IconInfoTriangle,
+            scope: "client.payment_projection",
+          },
+          {
+            title: "Config. Proyección de pagos",
+            url: "/dashboard/payment-projection/settings",
+            icon: IconInfoTriangle,
+            scope: "client.payment_projection.settings",
+          },
           // {
           //   title: "Seguimiento",
           //   url: "/dashboard/litigation",

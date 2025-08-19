@@ -23,7 +23,7 @@ const PageDetailDebtor = () => {
   const { profile } = useProfileContext();
   const { periodMonth } = usePaymentProjectionStore();
 
-  const { data: debtor } = useQuery({
+  const { data: debtor, refetch } = useQuery({
     queryKey: ["debtor", debtorCode],
     queryFn: () =>
       getAllDebtors(
@@ -71,6 +71,7 @@ const PageDetailDebtor = () => {
               <ListInvoicesProjection
                 debtor={debtor?.data?.data[0]}
                 periodMonth={periodMonth}
+                handleRefetch={refetch}
               />
             </div>
           </CardContent>

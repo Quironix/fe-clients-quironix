@@ -3,7 +3,9 @@
 import { INVOICE_TYPES } from "@/app/dashboard/data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { useProfileContext } from "@/context/ProfileContext";
 import { formatNumber } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useInvoiceDragAndDrop } from "../../../hooks/useInvoiceDragAndDrop";
 import { WeekColumn } from "../../../types/invoice-projection";
@@ -11,12 +13,17 @@ import { WeekColumn } from "../../../types/invoice-projection";
 interface ListInvoicesProjectionProps {
   debtor?: any;
   periodMonth?: string;
+  handleRefetch?: () => void;
 }
 
 const ListInvoicesProjection = ({
   debtor,
   periodMonth,
+  handleRefetch,
 }: ListInvoicesProjectionProps) => {
+  const { data: session } = useSession();
+  const { profile } = useProfileContext();
+
   // Función para transformar los datos del debtor al formato esperado
   const transformDebtorData = (debtorData: any): WeekColumn[] => {
     if (!debtorData?.weekly_projections) {
@@ -82,115 +89,127 @@ const ListInvoicesProjection = ({
     handleDragLeave,
     handleDrop,
     handleDragEnd,
-  } = useInvoiceDragAndDrop(weeks, setWeeks);
+  } = useInvoiceDragAndDrop(
+    weeks,
+    setWeeks,
+    session?.token as string,
+    profile?.client_id as string,
+    debtor?.id,
+    debtor
+  );
 
   return (
     <div className="space-y-6">
       {/* Columnas de semanas con scroll */}
       <div className="grid grid-cols-5 gap-4">
-        {weeks.map((week) => (
-          <div
-            key={week.week}
-            className={`bg-white rounded-lg border-2 transition-colors ${
-              dragState.draggedOverWeek === week.week
-                ? "border-blue-400 bg-blue-50"
-                : "border-gray-200"
-            }`}
-            onDragOver={(e) => handleDragOver(e, week.week)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, week.week)}
-          >
-            {/* Header de la columna */}
-            <div className="p-2 bg-blue-100 rounded-t-lg space-y-2  border-b-2 border-blue-700">
-              <div className="flex items-center justify-between mb-0 pb-1">
-                <span className=" text-sm font-semibold text-gray-900">
-                  {week.title}
-                </span>
-                <Badge
-                  variant="secondary"
-                  className="bg-white text-gray-800 rounded-full"
-                >
-                  {week.count}
-                </Badge>
-              </div>
-              <div className="text-xs text-gray-600">{week.dateRange}</div>
-              <div className="space-y-1 text-xs bg-white p-3 rounded-md">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Estimado:</span>
-                  <span className="font-medium text-blue-600">
-                    {formatNumber(week.estimated)}
+        {weeks
+          .sort((a, b) => a.week - b.week)
+          .map((week) => (
+            <div
+              key={week.week}
+              className={`bg-white rounded-lg border-2 transition-colors ${
+                dragState.draggedOverWeek === week.week
+                  ? "border-blue-400 bg-blue-50"
+                  : "border-gray-200"
+              }`}
+              onDragOver={(e) => handleDragOver(e, week.week)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, week.week)}
+            >
+              {/* Header de la columna */}
+              <div className="p-2 bg-blue-100 rounded-t-lg space-y-2  border-b-2 border-blue-700">
+                <div className="flex items-center justify-between mb-0 pb-1">
+                  <span className=" text-sm font-semibold text-gray-900">
+                    {week.title}
                   </span>
+                  <Badge
+                    variant="secondary"
+                    className="bg-white text-gray-800 rounded-full"
+                  >
+                    {week.count}
+                  </Badge>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Recaudado:</span>
-                  <span className="font-medium text-blue-600">
-                    {formatNumber(week.collected)}
-                  </span>
+                <div className="text-xs text-gray-600">{week.dateRange}</div>
+                <div className="space-y-1 text-xs bg-white p-3 rounded-md">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Estimado:</span>
+                    <span className="font-medium text-blue-600">
+                      {formatNumber(week.estimated)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Recaudado:</span>
+                    <span className="font-medium text-blue-600">
+                      {formatNumber(week.collected)}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Área de scroll para las facturas */}
-            <div className="p-2 max-h-96 overflow-y-auto">
-              {week.invoices.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  Sin facturas
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {week.invoices.map((invoice) => (
-                    <Card
-                      key={invoice.id}
-                      className={`cursor-move hover:shadow-md transition-shadow p-2 ${
-                        dragState.draggedInvoice?.id === invoice.id
-                          ? "opacity-50"
-                          : ""
-                      }`}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, invoice)}
-                      onDragEnd={handleDragEnd}
-                    >
-                      <CardContent className="p-1">
-                        <div className="flex items-start justify-end mb-2">
-                          <span className="text-[10px] truncate max-w-[80px] bg-pink-200 text-pink-600 rounded-full px-2 font-bold">
-                            {
-                              INVOICE_TYPES.find((t) =>
-                                t.types.find(
+              {/* Área de scroll para las facturas */}
+              <div className="p-2 max-h-96 overflow-y-auto">
+                {week.invoices.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    Sin facturas
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {week.invoices.map((invoice) => (
+                      <Card
+                        key={invoice.id}
+                        className={`cursor-move hover:shadow-md transition-shadow p-2 ${
+                          dragState.draggedInvoice?.id === invoice.id
+                            ? "opacity-50"
+                            : ""
+                        }`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, invoice)}
+                        onDragEnd={() => {
+                          handleDragEnd();
+                          handleRefetch?.();
+                        }}
+                      >
+                        <CardContent className="p-1">
+                          <div className="flex items-start justify-end mb-2">
+                            <span className="text-[10px] truncate max-w-[80px] bg-pink-200 text-pink-600 rounded-full px-2 font-bold">
+                              {
+                                INVOICE_TYPES.find((t) =>
+                                  t.types.find(
+                                    (t) => t.value === invoice.document_type
+                                  )
+                                )?.types.find(
                                   (t) => t.value === invoice.document_type
-                                )
-                              )?.types.find(
-                                (t) => t.value === invoice.document_type
-                              )?.label
-                            }
-                          </span>
-                        </div>
-                        <div className="space-y-1 text-xs">
-                          <div className="font-medium">
-                            N° {invoice.invoice_number}
-                          </div>
-                          <div className="text-gray-600">
-                            Fase: {invoice.phase}
-                          </div>
-                          <div className="text-gray-600">
-                            Vencimiento: {invoice.dueDate}
-                          </div>
-                          <div className="bg-blue-50 p-2 rounded text-center flex flex-col items-start justify-between">
-                            <span className="text-blue-800 font-medium">
-                              Saldo Documento:
-                            </span>
-                            <span className="text-blue-800 font-bold">
-                              {formatNumber(invoice.documentBalance)}
+                                )?.label
+                              }
                             </span>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                          <div className="space-y-1 text-xs">
+                            <div className="font-medium">
+                              N° {invoice.invoice_number}
+                            </div>
+                            <div className="text-gray-600">
+                              Fase: {invoice.phase}
+                            </div>
+                            <div className="text-gray-600">
+                              Vencimiento: {invoice.dueDate}
+                            </div>
+                            <div className="bg-blue-50 p-2 rounded text-center flex flex-col items-start justify-between">
+                              <span className="text-blue-800 font-medium">
+                                Saldo Documento:
+                              </span>
+                              <span className="text-blue-800 font-bold">
+                                {formatNumber(invoice.documentBalance)}
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );

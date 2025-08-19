@@ -81,7 +81,7 @@ const DebtorsList = () => {
       <CardHeader>
         <CardTitle>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">Deudores 117201</h2>
+            <h2 className="text-lg font-bold">Deudores</h2>
             {/* <Badge
               variant="outline"
               className="bg-red-400 text-white rounded-full"
