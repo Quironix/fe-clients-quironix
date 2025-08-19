@@ -20,6 +20,7 @@ import * as z from "zod";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
+import { usePaymentProjectionStore } from "../store";
 import MonthlyTable from "./components/table-monthly";
 
 // Schema de validación para el formato AAAA-MM (formato month input)
@@ -36,7 +37,8 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const PageSettings = () => {
-  const [periodMonth, setPeriodMonth] = useState("");
+  const { setPeriodMonth, periodMonth, setSearchDebtorCode } =
+    usePaymentProjectionStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
@@ -58,6 +60,7 @@ const PageSettings = () => {
     setIsLoading(true);
     try {
       const displayPeriod = formatPeriodForDisplay(data.period_month);
+      setSearchDebtorCode(null);
       setPeriodMonth(displayPeriod);
     } catch (error) {
       console.error("Error al procesar el formulario:", error);

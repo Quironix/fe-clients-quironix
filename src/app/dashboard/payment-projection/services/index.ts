@@ -181,3 +181,66 @@ export const getReportsByDebtor = async (
     };
   }
 };
+
+/**
+ * Cambia las facturas de semana en una proyección de pagos.
+ *
+ * @param accessToken Token de acceso del usuario
+ * @param clientId ID del cliente
+ * @param projectionId ID de la proyección de pagos
+ * @param moves Array de movimientos, cada uno con targetDate y un array de IDs de facturas
+ * @returns Respuesta con el resultado de la operación o mensaje de error
+ */
+export const changeInvoices = async (
+  accessToken: string,
+  clientId: string,
+  projectionId: string,
+  moves: Array<{
+    targetDate: string;
+    invoices: string[];
+  }>
+): Promise<{
+  success: boolean;
+  message: string;
+  data: any;
+}> => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/reports/payment-projections/${projectionId}/invoices`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ moves }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        message:
+          errorData?.message || "Error al cambiar las facturas de semana",
+        data: null,
+      };
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      message: "Facturas cambiadas de semana correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error("Error al cambiar las facturas de semana:", error);
+    return {
+      success: false,
+      message: "Error al cambiar las facturas de semana",
+      data: null,
+    };
+  }
+};

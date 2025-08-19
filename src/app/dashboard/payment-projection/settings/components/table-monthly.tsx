@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Edit, Search, TrendingDown, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import useDebounce from "../../../hooks/useDebounce";
 import { getAllDebtors } from "../../services";
@@ -25,6 +26,7 @@ import { getAllDebtors } from "../../services";
 // Tipos para los datos de la tabla mensual
 
 const MonthlyTable = ({ period_month }: { period_month: string }) => {
+  const router = useRouter();
   const { data: session } = useSession();
   const { profile } = useProfileContext();
 
@@ -275,28 +277,18 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                         {renderWeekCell(row.weekly_projections[4])}
 
                         <TableCell className="text-center py-3 px-4">
-                          {row.action ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 w-8 p-0 border-blue-300 text-blue-600 hover:bg-blue-50"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 w-8 p-0 border-blue-300 text-blue-600 hover:bg-blue-50"
-                              onClick={() => {
-                                alert(row.debtor_code);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 w-8 p-0 border-blue-300 text-blue-600 hover:bg-blue-50"
+                            onClick={() => {
+                              router.push(
+                                `/dashboard/payment-projection/settings/${row.debtor_code}`
+                              );
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
