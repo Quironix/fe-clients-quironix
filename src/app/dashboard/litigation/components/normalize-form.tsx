@@ -19,20 +19,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
-import { getDocumentTypeCode } from "@/lib/getDocumentTypeCode";
 import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import DebtorContactSelectFormItem from "../../components/debtor-contact-select-form-item";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
+import DocumentTypeBadge from "../../payment-netting/components/document-type-badge";
 import SelectClient from "../../components/select-client";
 import { NORMALIZATION_REASONS } from "../../data";
 import { bulkLitigatiions, getLitigationsByDebtor } from "../services";
 import { useDisputeStore } from "../store/disputeStore";
 import { useLitigationStore } from "../store/litigation-store";
 import { LitigationItem } from "../types";
+import { getMotivoLabel, getSubmotivoLabel } from "./columns";
 import EmptyLitigations from "./empty-litigations";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -219,12 +228,12 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
               )}
             />
           </div>
-          {/* Tabla de litigios */}
+          Tabla de litigios
           {currentLitigation.length === 0 ? (
             <EmptyLitigations />
           ) : (
             <div className="border bg-[#F1F5F9] p-4 rounded mt-4">
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-semibold">Litigios abiertos</h3>
                 {selectedLitigationIds.length > 0 && (
                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
@@ -233,65 +242,72 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
                   </span>
                 )}
               </div>
-              <table className="min-w-full border bg-white text-sm">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="p-2 text-left">
-                      <input
-                        type="checkbox"
-                        checked={areAllSelected}
-                        ref={(input) => {
-                          if (input) input.indeterminate = areSomeSelected;
-                        }}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                      />
-                    </th>
-                    <th className="p-2 text-left">Número</th>
-                    <th className="p-2 text-left">Documento</th>
-                    <th className="p-2 text-left">Monto Factura</th>
-                    <th className="p-2 text-left">Monto Litigio</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentLitigation.map((l, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2">
+              <div className="rounded-md border bg-white">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-primary text-center">
                         <input
                           type="checkbox"
-                          checked={selectedLitigationIds.includes(
-                            l.id.toString()
-                          )}
-                          onChange={(e) =>
-                            handleSelectLitigation(
-                              l.id.toString(),
-                              e.target.checked
-                            )
-                          }
+                          checked={areAllSelected}
+                          ref={(input) => {
+                            if (input) input.indeterminate = areSomeSelected;
+                          }}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
                         />
-                      </td>
-                      <td className="p-2">{l?.invoice?.number}</td>
-                      <td className="p-2">
-                        {getDocumentTypeCode(l?.invoice?.type)}
-                      </td>
-                      <td className="p-2">
-                        $
-                        {new Intl.NumberFormat("es-ES").format(
-                          Number(l?.invoice?.amount)
-                        )}
-                      </td>
-                      <td className="p-2">
-                        $
-                        {new Intl.NumberFormat("es-ES").format(
-                          Number(l?.litigation_amount)
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </TableHead>
+                      <TableHead className="text-primary text-center">Número</TableHead>
+                      <TableHead className="text-primary text-center">Documento</TableHead>
+                      <TableHead className="text-primary text-center">Monto Litigio</TableHead>
+                      <TableHead className="text-primary text-center">Motivo</TableHead>
+                      <TableHead className="text-primary text-center">Submotivo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentLitigation.map((l, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedLitigationIds.includes(
+                              l.id.toString()
+                            )}
+                            onChange={(e) =>
+                              handleSelectLitigation(
+                                l.id.toString(),
+                                e.target.checked
+                              )
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="text-center font-medium">{l?.invoice?.number || "-"}</TableCell>
+                        <TableCell className="text-center">
+                          <DocumentTypeBadge type={l?.invoice?.type} />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {new Intl.NumberFormat("es-CL", {
+                            style: "decimal",
+                            maximumFractionDigits: 0,
+                            minimumFractionDigits: 0,
+                          }).format(Number(l?.litigation_amount)) || "-"}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="capitalize truncate max-w-[150px]" title={l?.motivo}>
+                            {getMotivoLabel(l?.motivo) || "-"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="capitalize truncate max-w-[150px]" title={l?.submotivo}>
+                            {getSubmotivoLabel(l?.motivo, l?.submotivo) || "-"}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
-
           {/* Motivo, submotivo, contacto */}
           <div className="grid grid-cols-2 gap-4">
             <FormField

@@ -70,16 +70,23 @@ export const getLitigations = async ({
 export const GetAllLitigationByDebtorId = async (
   accessToken: string,
   clientId: string,
-  debtorId
+  debtorId: string,
+  invoiceNumbers?: string
 ) => {
-  const response = await fetch(
-    `${API_URL}/v2/clients/${clientId}/litigations/debtor/${debtorId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
+  const queryParams = new URLSearchParams();
+  if (invoiceNumbers) {
+    queryParams.append("invoice_number", invoiceNumbers);
+  }
+
+  const url = `${API_URL}/v2/clients/${clientId}/litigations/debtor/${debtorId}${
+    queryParams.toString() ? `?${queryParams.toString()}` : ""
+  }`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
   return response.json();
 };
 
@@ -338,6 +345,7 @@ export const getLitigationsByDebtor = async (
     };
   }
 };
+
 
 export const bulkLitigatiions = async (
   accessToken: string,

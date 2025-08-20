@@ -18,7 +18,7 @@ import LitigationEditModal from "./modals/litigation-edit";
 import NormalizationFormId from "./modals/normalization-id-form";
 
 // Funciones helper para mapear códigos a etiquetas
-const getMotivoLabel = (code: string) => {
+export const getMotivoLabel = (code: string) => {
   switch (code) {
     case "COMMERCIAL_INVOICE":
       return (
@@ -67,7 +67,10 @@ const getMotivoLabel = (code: string) => {
   }
 };
 
-const getSubmotivoLabel = (motivoCode: string, submotivoCode: string) => {
+export const getSubmotivoLabel = (
+  motivoCode: string,
+  submotivoCode: string
+) => {
   const dispute = disputes.find((d) => d.code === motivoCode);
   if (dispute) {
     const submotivo = dispute.submotivo.find((s) => s.code === submotivoCode);
@@ -237,14 +240,16 @@ export const getColumns = (
     accessorKey: "invoice_number",
     header: "N° Factura",
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.invoice.number || "-"}</div>
+      <div className="font-medium text-center">
+        {row.original.invoice.number || "-"}
+      </div>
     ),
   },
   {
     accessorKey: "debtor_name",
     header: "Deudor",
     cell: ({ row }) => (
-      <div className="font-medium max-w-[150px] truncate">
+      <div className="font-medium truncate text-center">
         {row.original.debtor.name || "-"}
       </div>
     ),
@@ -253,7 +258,9 @@ export const getColumns = (
     accessorKey: "created_at",
     header: "Ingreso de litigio",
     cell: ({ row }) => (
-      <div>{format(row.original.created_at, "dd/MM/yyyy HH:mm") || "-"}</div>
+      <div className="text-center">
+        {format(row.original.created_at, "dd/MM/yyyy HH:mm") || "-"}
+      </div>
     ),
   },
   {
@@ -273,7 +280,11 @@ export const getColumns = (
         return dias >= 0 ? dias : "-";
       };
 
-      return <div>{calcularDiasDesde(row.original.created_at)}</div>;
+      return (
+        <div className="text-center">
+          {calcularDiasDesde(row.original.created_at)}
+        </div>
+      );
     },
   },
   {
@@ -281,7 +292,7 @@ export const getColumns = (
     header: "Monto de litigio",
     cell: ({ row }) => {
       return (
-        <div className="truncate max-w-[150px]">
+        <div className="truncate text-center">
           {new Intl.NumberFormat("es-CL", {
             style: "currency",
             currency: "CLP",
@@ -295,7 +306,7 @@ export const getColumns = (
     header: "Saldo factura",
     cell: ({ row }) => {
       return (
-        <div className="truncate max-w-[150px]">
+        <div className="truncate text-center">
           {new Intl.NumberFormat("es-CL", {
             style: "currency",
             currency: "CLP",
@@ -310,7 +321,7 @@ export const getColumns = (
     cell: ({ row }) => {
       const value = row.getValue("approver");
       return (
-        <div className="truncate max-w-[150px]">
+        <div className="truncate text-center">
           {row.original?.approver ? (
             <>
               {row.original?.approver?.first_name +
@@ -329,7 +340,7 @@ export const getColumns = (
     header: "Motivo",
     cell: ({ row }) => {
       return (
-        <div className="truncate max-w-[150px]">
+        <div className="truncate text-center">
           {getMotivoLabel(row.original?.motivo)}
         </div>
       );
@@ -340,7 +351,7 @@ export const getColumns = (
     header: "Submotivo",
     cell: ({ row }) => {
       return (
-        <div className="truncate max-w-[150px]">
+        <div className="truncate text-center">
           {getSubmotivoLabel(row.original?.motivo, row.original?.submotivo)}
         </div>
       );
@@ -350,7 +361,9 @@ export const getColumns = (
     id: "actions",
     header: "Acción",
     cell: ({ row }) => (
-      <BulletMenu items={createMenuItems(row.original, onRefetch)} />
+      <div className="text-center">
+        <BulletMenu items={createMenuItems(row.original, onRefetch)} />
+      </div>
     ),
   },
 ];

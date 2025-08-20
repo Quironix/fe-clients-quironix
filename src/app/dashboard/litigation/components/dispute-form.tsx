@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -14,15 +14,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import Required from "@/components/ui/required";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Loader2 } from "lucide-react";
@@ -31,18 +22,47 @@ import { toast } from "sonner";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import DebtorContactSelectFormItem from "../../components/debtor-contact-select-form-item";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
-import DteSelectFormItem from "../../components/dte-select-form-item";
 import LoaderTable from "../../components/loader-table";
 import SelectClient from "../../components/select-client";
-import { disputes, INVOICE_TYPES } from "../../data";
 import { useDebtorsStore } from "../../debtors/store";
 import { useDTEs } from "../../transactions/dte/hooks/useDTEs";
-import { getDTEsByDebtor } from "../../transactions/dte/services";
-import { DTE } from "../../transactions/dte/types";
 import { createLitigation, GetAllLitigationByDebtorId } from "../services";
+import AccordionInvoiceDisputeForm from "./accordion-invoice-dispute-form";
 import { columnsLitigationEntry } from "./columns-litigation-entry";
 import EmptyLitigations from "./empty-litigations";
 import LitigationDialogConfirm from "./litigation-dialog-confirm";
+
+const invoiceSchema = z
+  .object({
+    documentType: z.string().min(1, "El tipo de factura es requerido"),
+    invoiceNumber: z.string().min(1, "El número de factura es requerido"),
+    invoiceAmount: z.string().min(1, "El monto de factura es requerido"),
+    litigationAmount: z
+      .string()
+      .min(1, "El monto de litigio es requerido")
+      .refine((val) => {
+        const num = Number(val);
+        return !isNaN(num) && num > 0;
+      }, "El monto debe ser mayor a 0"),
+    reason: z.string().min(1, "El motivo de litigio es requerido"),
+    subreason: z.string().min(1, "El submotivo es requerido"),
+  })
+  .refine(
+    (data) => {
+      const invoiceAmount = Number(data.invoiceAmount);
+      const litigationAmount = Number(data.litigationAmount);
+
+      if (isNaN(invoiceAmount) || isNaN(litigationAmount)) {
+        return true; // Let individual field validations handle invalid numbers
+      }
+
+      return litigationAmount <= invoiceAmount;
+    },
+    {
+      message: "El monto de litigio no puede ser mayor al monto de factura",
+      path: ["litigationAmount"], // This will show the error on the litigationAmount field
+    }
+  );
 
 const litigationSchema = (isFactoring: boolean) => {
   return z.object({
@@ -50,17 +70,12 @@ const litigationSchema = (isFactoring: boolean) => {
       ? z.string().min(1, "El cliente es requerido")
       : z.string().optional().nullable(),
     debtorId: z.string().min(1, "El deudor es requerido"),
-    invoiceNumber: z.string().min(1, "El número de factura es requerido"),
-    reason: z.string(),
-    subreason: z.string(),
-    contact: z.string(),
+    contact: z.string().min(1, "El contacto es requerido"),
     initial_comment: z.string().optional(),
-    number: z.string().optional(),
-    document: z.string().optional(),
-    invoiceId: z.string().optional(),
-    invoiceAmount: z.string(),
-    litigationAmount: z.string(),
-    documentType: z.string().min(1, "El tipo de factura es requerido"),
+    invoices: z
+      .array(invoiceSchema)
+      .min(1, "Al menos una factura es requerida")
+      .max(10, "No puedes agregar más de 10 facturas"),
   });
 };
 
@@ -79,8 +94,6 @@ const DisputeForm = ({
   const [litigationsByDebtor, setLitigationsByDebtor] = useState([]);
   const [selectedDebtor, setSelectedDebtor] = useState<any>(null);
   const { fetchDebtorById, dataDebtor, isFetchingDebtor } = useDebtorsStore();
-  const [dteByDebtor, setDteByDebtor] = useState<any[]>([]);
-  const [litigationAmountDisplay, setLitigationAmountDisplay] = useState("");
 
   const isFactoring = profile?.client?.type === "FACTORING";
   const litigationFormSchema = useMemo(
@@ -94,14 +107,18 @@ const DisputeForm = ({
     defaultValues: {
       client: isFactoring ? "" : null,
       debtorId: "",
-      invoiceNumber: "",
-      invoiceAmount: "",
-      litigationAmount: "",
-      reason: "",
-      subreason: "",
       contact: "",
       initial_comment: "",
-      documentType: "INVOICE",
+      invoices: [
+        {
+          documentType: "INVOICE",
+          invoiceNumber: "",
+          invoiceAmount: "",
+          litigationAmount: "",
+          reason: "",
+          subreason: "",
+        },
+      ],
     },
   });
   // Usar el nuevo hook useDTEs con paginación del servidor
@@ -148,23 +165,10 @@ const DisputeForm = ({
 
   const onSubmit = async (data: LitigationForm) => {
     try {
-      const payload = {
-        document_type: data.documentType,
-        invoice_number: data.invoiceNumber,
-        litigation_amount: Number(data.litigationAmount),
-        motivo: data.reason,
-        submotivo: data.subreason,
-        contact: data.contact,
-        debtor_id: data.debtorId,
-        initial_comment: data.initial_comment ?? "",
-        // Solo incluir company_id para clientes Factoring
-        ...(isFactoring && { company_id: data.client }),
-      };
-
       const res = await createLitigation({
         accessToken: session.token,
         clientId: profile.client_id,
-        dataToInsert: payload,
+        dataToInsert: data,
       });
 
       if (!res.success) {
@@ -189,52 +193,41 @@ const DisputeForm = ({
     setShowDialog(false);
     reset();
   };
+
+  const watchedInvoices = useWatch({
+    control: form.control,
+    name: "invoices",
+  });
   useEffect(() => {
     const fetchLitigations = async () => {
-      if (!debtorId || !session?.token || !profile?.client_id) return;
+      if (!debtorId || !session?.token || !profile?.client_id) {
+        setLitigationsByDebtor([]);
+        return;
+      }
+
+      // Extract invoice numbers directly from current form state
+      const currentInvoices = form.getValues("invoices") || [];
+      const invoiceNumbers = currentInvoices
+        .map((invoice) => invoice.invoiceNumber)
+        .filter((num) => num && num.trim() !== "")
+        .join(",");
+
       try {
         const data = await GetAllLitigationByDebtorId(
           session.token,
           profile.client_id,
-          debtorId
+          debtorId,
+          invoiceNumbers || undefined
         );
-        setLitigationsByDebtor(data.data);
+        setLitigationsByDebtor(data.data || []);
       } catch (error) {
-        console.error("Error al obtener litigios anteriores", error);
+        console.error("Error al obtener litigios por facturas", error);
+        setLitigationsByDebtor([]);
       }
     };
 
     fetchLitigations();
-  }, [debtorId, session?.token, profile?.client_id]);
-
-  const watchDocumentType = form.watch("documentType");
-  useEffect(() => {
-    if (debtorId && session?.token && profile?.client_id) {
-      getDTEsByDebtor(session.token, profile.client_id, debtorId, {
-        type: watchDocumentType,
-        balance: "1",
-      }).then((res) => {
-        setDteByDebtor(res);
-      });
-    }
-  }, [debtorId, session?.token, profile?.client_id, watchDocumentType]);
-
-  const handleDteSelect = (dte: DTE | null) => {
-    if (dte) {
-      const amount = dte.amount;
-      form.setValue("litigationAmount", amount.toString());
-      // Set formatted display value with proper formatting
-      const formattedAmount = new Intl.NumberFormat("es-CL", {
-        style: "decimal",
-        maximumFractionDigits: 0,
-        minimumFractionDigits: 0,
-      }).format(amount);
-      setLitigationAmountDisplay(formattedAmount);
-    } else {
-      form.setValue("litigationAmount", "");
-      setLitigationAmountDisplay("");
-    }
-  };
+  }, [watchedInvoices]);
 
   return (
     <>
@@ -267,107 +260,13 @@ const DisputeForm = ({
             />
           </div>
 
-          <p className="mb-2 font-semibold">Factura</p>
-          <div className="grid grid-cols-3 gap-2 items-end">
-            <div className="min-w-0">
-              <FormField
-                control={control}
-                name="documentType"
-                render={({ field }) => (
-                  <FormItem className="w-full max-w-full">
-                    <FormLabel className="py-1">
-                      Tipo de factura <Required />
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="truncate w-full">
-                          <SelectValue
-                            placeholder="Selecciona"
-                            className="truncate"
-                          />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {INVOICE_TYPES.find((t) => t.country === "CL")
-                          ?.types.filter((t) => t.value)
-                          .map((type) => (
-                            <SelectItem
-                              key={type.value}
-                              value={type.value}
-                              className="truncate"
-                            >
-                              {type.label}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="invoiceNumber"
-              render={({ field }) => (
-                <DteSelectFormItem
-                  field={field}
-                  title="Número de factura"
-                  required
-                  dtes={dteByDebtor}
-                  onDteSelect={handleDteSelect}
-                />
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="litigationAmount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Monto de factura</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Ej: 12345678"
-                      value={litigationAmountDisplay}
-                      onChange={(e) => {
-                        // Remove non-numeric characters
-                        const rawValue = e.target.value.replace(/[^0-9]/g, "");
-                        const numericValue = parseInt(rawValue) || 0;
-
-                        // Update form value
-                        field.onChange(numericValue.toString());
-
-                        // Update display value
-                        setLitigationAmountDisplay(e.target.value);
-                      }}
-                      onBlur={() => {
-                        // Format value on blur
-                        const value = parseInt(field.value) || 0;
-                        const formattedAmount = new Intl.NumberFormat("es-CL", {
-                          style: "decimal",
-                          maximumFractionDigits: 0,
-                          minimumFractionDigits: 0,
-                        }).format(value);
-                        setLitigationAmountDisplay(formattedAmount);
-                      }}
-                      onFocus={() => {
-                        // Show raw number on focus for easier editing
-                        const value = parseInt(field.value) || 0;
-                        setLitigationAmountDisplay(value.toString());
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <AccordionInvoiceDisputeForm
+            form={form}
+            control={control}
+            debtorId={debtorId}
+            session={session}
+            profile={profile}
+          />
 
           {/* Litigios anteriores */}
           {litigationsByDebtor.length > 0 ? (
@@ -394,93 +293,20 @@ const DisputeForm = ({
           ) : (
             <EmptyLitigations />
           )}
-          <p className="mb-2 font-semibold">Litigio</p>
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="mt-6">
             <FormField
-              control={control}
-              name="reason"
+              control={form.control}
+              name="contact"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Motivo litigio</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      // Resetear el submotivo cuando cambie el motivo
-                      form.setValue("subreason", "");
-                    }}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="truncate w-full">
-                        <SelectValue
-                          placeholder="Selecciona motivo"
-                          className="truncate"
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {disputes.map((item) => (
-                        <SelectItem key={item.code} value={item.code}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
+                <DebtorContactSelectFormItem
+                  field={field}
+                  selectedDebtor={selectedDebtor}
+                  isFetchingDebtor={isFetchingDebtor}
+                />
               )}
             />
-
-            <FormField
-              control={control}
-              name="subreason"
-              render={({ field }) => {
-                const selectedReason = form.watch("reason");
-                const selectedDispute = disputes.find(
-                  (item) => item.code === selectedReason
-                );
-
-                return (
-                  <FormItem>
-                    <FormLabel>Submotivo</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={!selectedReason}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="truncate w-full">
-                          <SelectValue
-                            placeholder="Selecciona submotivo"
-                            className="truncate"
-                          />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {selectedDispute?.submotivo.map((sub) => (
-                          <SelectItem key={sub.code} value={sub.code}>
-                            {sub.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
-            />
           </div>
-          <FormField
-            control={form.control}
-            name="contact"
-            render={({ field }) => (
-              <DebtorContactSelectFormItem
-                field={field}
-                selectedDebtor={selectedDebtor}
-                isFetchingDebtor={isFetchingDebtor}
-              />
-            )}
-          />
 
           <FormField
             control={form.control}

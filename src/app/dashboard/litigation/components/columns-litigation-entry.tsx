@@ -2,13 +2,14 @@
 import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
 import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
-import { getDocumentTypeCode } from "@/lib/getDocumentTypeCode";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import DocumentTypeBadge from "../../payment-netting/components/document-type-badge";
 import { Litigation } from "../types";
+import { getMotivoLabel, getSubmotivoLabel } from "./columns";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -95,19 +96,7 @@ export const columnsLitigationEntry: ColumnDef<Litigation>[] = [
       const documentType = row.original.invoice?.type as string;
       return (
         <div className="font-medium">
-          {getDocumentTypeCode(documentType) || "-"}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "dispute_amount",
-    header: "Monto de factura",
-    cell: ({ row }) => {
-      const category = row.original.invoice?.amount as string;
-      return (
-        <div className="capitalize truncate max-w-[150px]" title={category}>
-          {category || "-"}
+          <DocumentTypeBadge type={documentType} />
         </div>
       );
     },
@@ -117,9 +106,40 @@ export const columnsLitigationEntry: ColumnDef<Litigation>[] = [
     header: "Monto litigio",
     cell: ({ row }) => {
       const category = row.getValue("litigation_amount") as string;
+
+      const formattedAmount = new Intl.NumberFormat("es-CL", {
+        style: "decimal",
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
+      }).format(Number(category));
       return (
         <div className="capitalize truncate max-w-[150px]" title={category}>
-          {category || "-"}
+          {formattedAmount || "-"}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "motivo",
+    header: "Motivo",
+    cell: ({ row }) => {
+      const category = row.getValue("motivo") as string;
+      return (
+        <div className="capitalize truncate max-w-[150px]" title={category}>
+          {getMotivoLabel(category) || "-"}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "submotivo",
+    header: "Submotivo",
+    cell: ({ row }) => {
+      const category = row.getValue("submotivo") as string;
+      const motivo = row.getValue("motivo") as string;
+      return (
+        <div className="capitalize truncate max-w-[150px]" title={category}>
+          {getSubmotivoLabel(motivo, category) || "-"}
         </div>
       );
     },
