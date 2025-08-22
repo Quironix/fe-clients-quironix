@@ -9,8 +9,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, MoreVertical, Trash } from "lucide-react";
+import { Eye, MessageCircle, MoreVertical, Trash } from "lucide-react";
 import { BankMovementStatusEnum, PaymentNetting } from "../types";
 
 const formatCurrency = (amount: number, currency: string) => {
@@ -31,12 +37,11 @@ const formatDate = (dateString: string) => {
 const ERROR_CLASS =
   "bg-white border-red-500 rounded-md gap-2 text-red-500 text-[10px]";
 const SUCCESS_CLASS =
-  "bg-white border-green-500 rounded-md gap-2 text-green-500 text-[10px]";
+  "bg-white border-green-600 rounded-md gap-2 text-green-600 text-[10px]";
 const WARNING_CLASS =
   "bg-white border-orange-500 rounded-md gap-2 text-orange-500 text-[10px]";
 
 const getStatusBadge = (status: PaymentNetting["status"]) => {
-  console.log(status);
   const statusConfig = {
     [BankMovementStatusEnum.PENDING]: {
       label: "Pendiente",
@@ -95,18 +100,12 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
     variant: WARNING_CLASS as string,
   };
 
-  return <Badge className={config.variant}>{config.label}</Badge>;
+  return (
+    <Badge className={cn("w-full min-w-[100px] p-0", config.variant)}>
+      {config.label}
+    </Badge>
+  );
 };
-
-// Estado => status
-// Importe => amount
-// Banco => bank_information.bank
-// Nº de cuenta => bank_information.account_number
-// Código => Vacío
-// Fecha => created_at
-// Descripción => description
-// Comentario => comment
-// Acción ---
 
 export const createColumns = (
   onViewDetails?: (transaction: PaymentNetting) => void
@@ -143,10 +142,10 @@ export const createColumns = (
   },
   {
     id: "code",
-    header: "Código",
+    header: "Código deudor",
     cell: ({ row }) => (
       <div className="font-medium text-sm">
-        {row.original?.payment?.debtor?.name || "N/A"}
+        {row.original?.payment?.debtor?.debtor_code || "N/A"}
       </div>
     ),
   },
@@ -163,19 +162,42 @@ export const createColumns = (
     accessorKey: "description",
     header: "Descripción",
     cell: ({ row }) => (
-      <div className="max-w-[200px] truncate text-sm">
-        {row.getValue("description")}
-      </div>
+      <Popover>
+        <div className="p-0 flex items-center gap-2">
+          <PopoverTrigger className="cursor-pointer">
+            <Eye className="h-4 w-4 text-blue-700" />
+          </PopoverTrigger>
+          <span className="max-w-[200px] truncate text-sm">
+            {row.getValue("description")}
+          </span>
+        </div>
+        <PopoverContent className="text-xs max-w-[400px] max-h-[300px] overflow-y-auto">
+          {row.getValue("description")}
+        </PopoverContent>
+      </Popover>
     ),
   },
   {
     accessorKey: "comment",
     header: "Comentario",
-    cell: ({ row }) => (
-      <div className="max-w-[200px] truncate text-sm">
-        {row.getValue("comment")}
-      </div>
-    ),
+    cell: ({ row }) =>
+      row.getValue("comment") ? (
+        <Popover>
+          <div className="p-0 flex items-center gap-2">
+            <PopoverTrigger className="cursor-pointer">
+              <MessageCircle className="h-4 w-4 text-blue-700" />
+            </PopoverTrigger>
+            <span className="max-w-[200px] truncate text-sm">
+              {row.getValue("comment")}
+            </span>
+          </div>
+          <PopoverContent className="text-xs max-w-[400px] max-h-[300px] overflow-y-auto">
+            {row.getValue("comment")}
+          </PopoverContent>
+        </Popover>
+      ) : (
+        "-"
+      ),
   },
   {
     id: "actions",

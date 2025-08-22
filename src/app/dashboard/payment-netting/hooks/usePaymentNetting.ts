@@ -158,6 +158,7 @@ export function usePaymentNetting(
       if (search === filters.search) return;
 
       const newFilters = { ...filters, search };
+      debugger;
       setFilters(newFilters);
       fetchPaymentNettings(1, pagination.limit, newFilters);
     },

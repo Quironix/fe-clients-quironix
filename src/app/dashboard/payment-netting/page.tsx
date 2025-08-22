@@ -117,7 +117,7 @@ export default function PaymentNettingPage() {
       amount: "Importe",
       bank: "Banco",
       account_number: "Nº de cuenta",
-      code: "Código",
+      code: "Códigode deudor",
       description: "Descripción",
       comment: "Comentario",
       actions: "Acciones",
@@ -246,10 +246,10 @@ export default function PaymentNettingPage() {
                     onOpenChange={setOpenDialog}
                     trigger={
                       <Button
-                        disabled={
-                          selectedPayments.length !== 1 ||
-                          !!selectedPayments[0]?.payment?.debtor
-                        }
+                        // disabled={
+                        //   selectedPayments.length !== 1 ||
+                        //   !!selectedPayments[0]?.payment?.debtor
+                        // }
                         className="bg-orange-400 text-white hover:bg-orange-400/90"
                         onClick={() => setOpenDialog(true)}
                       >
