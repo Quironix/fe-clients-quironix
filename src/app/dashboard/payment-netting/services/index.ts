@@ -7,6 +7,8 @@ export const getPaymentNetting = async ({
   status = "PENDING",
   createdAtToFrom,
   createdAtTo,
+  amount,
+  description,
 }: {
   accessToken: string;
   clientId: string;
@@ -15,6 +17,8 @@ export const getPaymentNetting = async ({
   status?: string;
   createdAtToFrom?: string;
   createdAtTo?: string;
+  amount?: string;
+  description?: string;
 }) => {
   try {
     // Convertir fechas a formato ISO
@@ -39,6 +43,14 @@ export const getPaymentNetting = async ({
     // Agregar filtro de status solo si no es vacío o "ALL"
     if (status && status !== "ALL") {
       queryParams.append("status", status);
+    }
+
+    // Agregar filtros de búsqueda por amount y description
+    if (amount) {
+      queryParams.append("amount", amount);
+    }
+    if (description) {
+      queryParams.append("description", description);
     }
 
     const response = await fetch(

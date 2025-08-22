@@ -168,6 +168,9 @@ export interface PaymentNettingFilters {
   // Alias para compatibilidad con el servicio API
   createdAtFrom?: string;
   createdAtTo?: string;
+  // Nuevos parámetros para búsqueda específica
+  amount?: string;
+  description?: string;
 }
 
 export interface PaymentNettingPagination {

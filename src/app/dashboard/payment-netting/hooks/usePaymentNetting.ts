@@ -98,6 +98,8 @@ export function usePaymentNetting(
             createdAtToFrom:
               searchFilters.dateFrom || searchFilters.createdAtFrom,
             createdAtTo: searchFilters.dateTo || searchFilters.createdAtTo,
+            amount: searchFilters.amount,
+            description: searchFilters.description,
           });
 
           if (apiResponse.data.length > 0) {
@@ -157,8 +159,31 @@ export function usePaymentNetting(
     (search: string) => {
       if (search === filters.search) return;
 
-      const newFilters = { ...filters, search };
-      debugger;
+      // Limpiar filtros previos de búsqueda específica
+      const baseFilters = { ...filters };
+      delete baseFilters.amount;
+      delete baseFilters.description;
+      delete baseFilters.search;
+
+      // Determinar si la búsqueda es numérica o textual
+      const isNumericSearch = /^\d+\.?\d*$/.test(search.trim());
+      
+      let newFilters: PaymentNettingFilters;
+      
+      if (search.trim() === "") {
+        // Si la búsqueda está vacía, reiniciar con filtros vacíos (solo paginado)
+        newFilters = {};
+      } else if (isNumericSearch) {
+        // Si es numérico, buscar por amount
+        newFilters = { ...baseFilters, amount: search };
+      } else {
+        // Si es texto, buscar por description
+        newFilters = { ...baseFilters, description: search };
+      }
+
+      // Mantener search para compatibilidad con la UI
+      newFilters.search = search;
+
       setFilters(newFilters);
       fetchPaymentNettings(1, pagination.limit, newFilters);
     },

@@ -166,14 +166,12 @@ export function DataTableDynamicColumns<TData, TValue>({
   }, [initialColumnConfiguration]);
 
   useEffect(() => {
-    if (searchValue === initialSearchValue) return;
-
     const timer = setTimeout(() => {
       onSearchChange?.(searchValue);
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  }, [searchValue, debounceMs, onSearchChange, initialSearchValue]);
+  }, [searchValue, debounceMs, onSearchChange]);
 
   useEffect(() => {
     onRowSelectionChange?.(rowSelection);
