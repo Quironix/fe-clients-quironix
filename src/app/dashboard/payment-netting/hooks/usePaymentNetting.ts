@@ -11,11 +11,16 @@ import {
 
 const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
   if (!apiData?.data) return [];
-  return apiData.data.map((item: any) => ({
+  
+  const adaptedData = apiData.data.map((item: any) => ({
     ...item,
     id: item.id,
     date: item?.created_at
-      ? new Date(item.created_at).toISOString().split("T")[0]
+      ? new Date(item.created_at).toLocaleDateString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
       : "",
     amount: parseFloat(item.amount) || 0,
     bank: item.bank_information.bank || "",
@@ -25,6 +30,27 @@ const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
     description: item.description || "",
     comment: item.comment || "",
   }));
+
+  // Ordenar por estado: "Pago creado" primero, luego "Pendiente"
+  return adaptedData.sort((a, b) => {
+    const statusOrder = {
+      [BankMovementStatusEnum.PAYMENT_CREATED]: 1,
+      [BankMovementStatusEnum.PENDING]: 2,
+      [BankMovementStatusEnum.PROCESSED]: 3,
+      [BankMovementStatusEnum.COMPENSATED]: 4,
+      [BankMovementStatusEnum.MAINTAINED]: 5,
+      [BankMovementStatusEnum.REJECTED]: 6,
+      [BankMovementStatusEnum.ELIMINATED]: 7,
+      [BankMovementStatusEnum.REJECTED_DUPLICATE]: 8,
+      [BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT]: 9,
+      [BankMovementStatusEnum.ELIMINATED_NO_TRACKING]: 10
+    };
+    
+    const orderA = statusOrder[a.status as keyof typeof statusOrder] || 999;
+    const orderB = statusOrder[b.status as keyof typeof statusOrder] || 999;
+    
+    return orderA - orderB;
+  });
 };
 const mapApiStatusToLocal = (apiStatus: string): BankMovementStatusEnum => {
   const statusMap: Record<string, BankMovementStatusEnum> = {

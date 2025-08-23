@@ -27,10 +27,10 @@ const formatCurrency = (amount: number, currency: string) => {
 };
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("es-CL", {
+  return new Date(dateString).toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
     year: "numeric",
-    month: "numeric",
-    day: "numeric",
   });
 };
 

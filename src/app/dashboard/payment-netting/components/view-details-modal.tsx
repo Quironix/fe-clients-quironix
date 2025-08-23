@@ -115,7 +115,11 @@ export default function ViewDetailsModal({
                   description="Fecha"
                   value={
                     row?.date
-                      ? new Date(row.date).toLocaleDateString("es-CL")
+                      ? new Date(row.date).toLocaleDateString("es-ES", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric"
+                        })
                       : "N/A"
                   }
                 />
@@ -277,7 +281,11 @@ export default function ViewDetailsModal({
                   paymentHistory?.data?.payment?.deposit_at
                     ? new Date(
                         paymentHistory.data.payment.deposit_at
-                      ).toLocaleDateString("es-CL")
+                      ).toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric"
+                      })
                     : "N/A"
                 }
               />
@@ -385,7 +393,14 @@ export default function ViewDetailsModal({
                             </span>
                             <span className="text-xs text-gray-500">
                               {new Date(event.timestamp).toLocaleString(
-                                "es-CL"
+                                "es-ES", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: false
+                                }
                               )}
                             </span>
                           </div>
@@ -402,7 +417,11 @@ export default function ViewDetailsModal({
                                 Fecha:{" "}
                                 {new Date(
                                   event.invoice.issue_date
-                                ).toLocaleDateString("es-CL")}{" "}
+                                ).toLocaleDateString("es-ES", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric"
+                                })}{" "}
                                 • Estado:{" "}
                                 <span className="text-green-600 font-medium">
                                   {event.invoice.status}

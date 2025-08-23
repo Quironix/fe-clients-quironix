@@ -49,8 +49,6 @@ const ItemListPayment = ({
     selectedPayments,
   } = usePaymentNettingStore();
 
-  debugger;
-
   const [popOver, setPopOver] = useState(false);
 
   const handleClick = () => {
@@ -166,7 +164,7 @@ const ItemListPayment = ({
                       )}
                     </p>
                     <p>
-                      <span className="font-medium">Balance:</span> $
+                      <span className="font-medium">Saldo:</span> $
                       {new Intl.NumberFormat("es-CL").format(
                         Number(row.balance || 0)
                       )}
@@ -241,7 +239,7 @@ const ItemListPayment = ({
           </span>
         </div>
         <div className="flex items-center justify-between gap-1 mt-1 w-full">
-          <span className="text-xs text-gray-500">Balance</span>
+          <span className="text-xs text-gray-500">Saldo</span>
           <span className="text-xs font-bold text-gray-500">
             ${new Intl.NumberFormat("es-CL").format(Number(row.balance || 0))}
           </span>

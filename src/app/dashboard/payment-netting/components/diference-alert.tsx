@@ -23,7 +23,7 @@ const DiferenceAlert = () => {
           <span className="text-sm font-semibold">Abonos:</span>
           <span className="text-sm font-bold">
             <span className="text-black">
-              -${new Intl.NumberFormat("es-CL").format(totalPayments)}
+              ${new Intl.NumberFormat("es-CL").format(totalPayments)}
             </span>
           </span>
         </div>
@@ -31,7 +31,7 @@ const DiferenceAlert = () => {
           <span className="text-sm font-semibold">Diferencia:</span>
           <span className="text-sm font-bold">
             <span className="text-black">
-              +$
+              $
               {new Intl.NumberFormat("es-CL").format(
                 Math.abs(totalPayments - totalInvoices)
               )}

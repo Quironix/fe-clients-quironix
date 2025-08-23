@@ -1,9 +1,12 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { ArrowUpCircle, FileBadge } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { usePaymentNettingStore } from "../store";
 import CommentAlert from "./comment-alert";
 
 const PendingAlert = () => {
+  const router = useRouter();
   const { totalInvoices, totalPayments } = usePaymentNettingStore();
   return (
     <div className="border border-red-400 bg-red-50 rounded-lg p-4">
@@ -32,7 +35,7 @@ const PendingAlert = () => {
           <span className="text-sm font-semibold">Diferencia:</span>
           <span className="text-sm font-bold">
             <span className="text-black">
-              -$
+              $
               {new Intl.NumberFormat("es-CL").format(
                 Math.abs(totalInvoices - totalPayments)
               )}
@@ -52,6 +55,9 @@ const PendingAlert = () => {
             <Button
               variant="outline"
               className="border-orange-400 flex items-center gap-2"
+              onClick={() => {
+                router.push("/dashboard/litigation");
+              }}
             >
               <FileBadge className="w-4 h-4 text-orange-400" /> Ingresar litigio
             </Button>

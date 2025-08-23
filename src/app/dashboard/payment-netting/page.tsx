@@ -247,10 +247,7 @@ export default function PaymentNettingPage() {
                     onOpenChange={setOpenDialog}
                     trigger={
                       <Button
-                        disabled={
-                          selectedPayments.length !== 1 ||
-                          !!selectedPayments[0]?.payment?.debtor
-                        }
+                        disabled={selectedPayments.length === 0}
                         className="bg-orange-400 text-white hover:bg-orange-400/90"
                         onClick={() => setOpenDialog(true)}
                       >
@@ -262,7 +259,9 @@ export default function PaymentNettingPage() {
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-blue-400" />
                         <span className="font-medium">
-                          MOV-{selectedPayments[0]?.id}
+                          {selectedPayments.length === 1
+                            ? `MOV-${selectedPayments[0]?.id}`
+                            : `${selectedPayments.length} movimientos seleccionados`}
                         </span>
                       </div>
                     </div>
@@ -275,12 +274,26 @@ export default function PaymentNettingPage() {
                       <IconDescription
                         icon={<Building2 className="w-4 h-4 text-gray-400" />}
                         description="Banco"
-                        value={selectedPayments[0]?.bank_information?.bank}
+                        value={
+                          selectedPayments.length === 1
+                            ? selectedPayments[0]?.bank_information?.bank
+                            : "Múltiples bancos"
+                        }
                       />
                       <IconDescription
                         icon={<Calendar className="w-4 h-4 text-gray-400" />}
                         description="Fecha de depósito"
-                        value={selectedPayments[0]?.created_at}
+                        value={
+                          selectedPayments.length === 1
+                            ? selectedPayments[0]?.created_at 
+                              ? new Date(selectedPayments[0].created_at).toLocaleDateString("es-ES", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric"
+                                })
+                              : "N/A"
+                            : "Múltiples fechas"
+                        }
                       />
                       <IconDescription
                         icon={
@@ -288,7 +301,11 @@ export default function PaymentNettingPage() {
                         }
                         description="Transferencia"
                         value={`$ ${new Intl.NumberFormat("es-ES", {}).format(
-                          Number(selectedPayments[0]?.amount)
+                          selectedPayments.reduce(
+                            (sum, payment) =>
+                              sum + Number(payment?.amount || 0),
+                            0
+                          )
                         )}`}
                       />
                     </div>
@@ -301,14 +318,14 @@ export default function PaymentNettingPage() {
                           </span>
                         </div>
                         <span>
-                          No hemos podido identificar la procedencia de este
-                          depósito. Por favor completa los datos requeridos para
-                          poder el proceso
+                          No hemos logrado asociar este pago a un deudor
+                          registrado. Por favor completa los datos requeridos
+                          para poder avanzar con el proceso.
                         </span>
                       </div>
                     </div>
                     <FormAssignDebtor
-                      detailMovement={selectedPayments[0]}
+                      selectedMovements={selectedPayments}
                       handleClose={() => {
                         setOpenDialog(false);
                         refetch();
