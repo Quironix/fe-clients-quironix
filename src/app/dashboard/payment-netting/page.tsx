@@ -31,6 +31,7 @@ import { createColumns } from "./components/columns";
 import FilterInputs, { FilterInputsRef } from "./components/filter";
 import FormAssignDebtor from "./components/form-assign-debtor";
 import IconDescription from "./components/icon-description";
+import ViewDetailsModal from "./components/view-details-modal";
 import { usePaymentNetting } from "./hooks/usePaymentNetting";
 import { updateReconciliationTableProfile } from "./services";
 
@@ -246,10 +247,10 @@ export default function PaymentNettingPage() {
                     onOpenChange={setOpenDialog}
                     trigger={
                       <Button
-                        // disabled={
-                        //   selectedPayments.length !== 1 ||
-                        //   !!selectedPayments[0]?.payment?.debtor
-                        // }
+                        disabled={
+                          selectedPayments.length !== 1 ||
+                          !!selectedPayments[0]?.payment?.debtor
+                        }
                         className="bg-orange-400 text-white hover:bg-orange-400/90"
                         onClick={() => setOpenDialog(true)}
                       >
@@ -347,6 +348,15 @@ export default function PaymentNettingPage() {
             />
           </CardContent>
         </Card>
+
+        {/* Modal para ver detalles */}
+        <div className="opacity-0">
+          <ViewDetailsModal
+            row={selectedTransaction}
+            open={openDetailModal}
+            onOpenChange={setOpenDetailModal}
+          />
+        </div>
       </Main>
     </>
   );

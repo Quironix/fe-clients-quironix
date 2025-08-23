@@ -365,3 +365,55 @@ export const createConciliation = async ({
     };
   }
 };
+
+/**
+ * Obtiene el historial de un pago específico de conciliación.
+ * @param accessToken Token de acceso para autenticación.
+ * @param clientId ID del cliente.
+ * @param paymentId ID del pago.
+ * @returns Historial del pago.
+ */
+export const getPaymentHistory = async ({
+  accessToken,
+  clientId,
+  paymentId,
+}: {
+  accessToken: string;
+  clientId: string;
+  paymentId: string;
+}) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/reconciliation/payments/${paymentId}/history`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: data?.message || "Error al obtener el historial del pago",
+        data: null,
+      };
+    }
+
+    return {
+      success: true,
+      message: "Historial del pago obtenido correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al obtener el historial del pago",
+      data: null,
+    };
+  }
+};
