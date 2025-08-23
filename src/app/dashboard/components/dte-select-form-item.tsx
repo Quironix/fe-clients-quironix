@@ -43,16 +43,18 @@ export default function DteSelectFormItem({
               );
             }
           }}
-          options={dtes.map((dte: DTE) => {
-            return {
-              value: dte.number,
-              label: `${dte.number} - ${new Intl.NumberFormat("es-CL", {
-                style: "currency",
-                currency: "CLP",
-              }).format(dte.amount)}`,
-              debtor_code: "as",
-            };
-          })}
+          options={dtes
+            .filter((dte: DTE) => 
+              dte.number.toLowerCase().includes(searchText.toLowerCase())
+            )
+            .sort((a, b) => Number(a.number) - Number(b.number))
+            .map((dte: DTE) => {
+              return {
+                value: dte.number,
+                label: dte.number,
+                debtor_code: "as",
+              };
+            })}
           placeholder="Selecciona un documento"
           onSearchChange={(searchValue) => {
             setSearchText(searchValue);

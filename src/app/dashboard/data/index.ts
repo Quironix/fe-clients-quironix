@@ -787,13 +787,20 @@ export enum DISPUTE_MESSAGES {
 
 // Motivos de normalización como un JSON constante
 export const NORMALIZATION_REASONS = [
-  { code: "PAYMENT_RECEIVED", label: "Pago recibido" },
-  { code: "PAYMENT_AGREEMENT", label: "Acuerdo de pago" },
-  { code: "PARTIAL_PAYMENT", label: "Pago parcial" },
-  { code: "DEBT_FORGIVENESS", label: "Condonación de deuda" },
-  { code: "LEGAL_SETTLEMENT", label: "Acuerdo legal" },
-  { code: "ADMINISTRATIVE_ERROR", label: "Error administrativo" },
-  { code: "DUPLICATE_INVOICE", label: "Factura duplicada" },
+  { code: "DUE_DATE_CHANGE", label: "Cambio de vencimiento." },
+  {
+    code: "RECEPTION_RECEIPT_FOUND",
+    label: "Comprobante de recepción encontrado.",
+  },
+  { code: "DISCOUNT_NOT_APPLICABLE", label: "Descuento no corresponde." },
+  {
+    code: "COMMERCIAL_INVOICE_NOT_APPLICABLE",
+    label: "Factura Comercial no corresponde.",
+  },
+  {
+    code: "ADMINISTRATIVE_CREDIT_NOTE_ISSUED",
+    label: "Nota de Crédito Administrativa emitida.",
+  },
 ];
 
 // Estado de litigio como un JSON constante
