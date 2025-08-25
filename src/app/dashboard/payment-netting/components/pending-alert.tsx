@@ -1,13 +1,12 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { ArrowUpCircle, FileBadge } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ArrowUpCircle } from "lucide-react";
+import CreateLitigation from "../../litigation/components/create-litigation";
 import { usePaymentNettingStore } from "../store";
 import CommentAlert from "./comment-alert";
 
 const PendingAlert = () => {
-  const router = useRouter();
   const { totalInvoices, totalPayments } = usePaymentNettingStore();
+
   return (
     <div className="border border-red-400 bg-red-50 rounded-lg p-4">
       <div className="flex items-center gap-2 mb-2">
@@ -52,15 +51,16 @@ const PendingAlert = () => {
             </span>
           }
           cta={
-            <Button
-              variant="outline"
-              className="border-orange-400 flex items-center gap-2"
-              onClick={() => {
-                router.push("/dashboard/litigation");
-              }}
-            >
-              <FileBadge className="w-4 h-4 text-orange-400" /> Ingresar litigio
-            </Button>
+            // <Button
+            //   variant="outline"
+            //   className="border-orange-400 flex items-center gap-2"
+            //   onClick={() => {
+            //     router.push("/dashboard/litigation");
+            //   }}
+            // >
+            //   <FileBadge className="w-4 h-4 text-orange-400" /> Ingresar litigio
+            // </Button>
+            <CreateLitigation onlyButton />
           }
         />
       </div>

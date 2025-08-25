@@ -56,6 +56,7 @@ const ListCreditFavor = () => {
     debtor: invoice.debtor || { name: "N/A" },
     phases: invoice.phases || [],
     due_date: invoice.due_at || "",
+    received_at: invoice.received_at || "",
     amount: invoice.amount?.toString() || "0",
     type: invoice.type || "PAYMENT",
   });
@@ -85,6 +86,12 @@ const ListCreditFavor = () => {
 
     // Procesar pagos seleccionados
     selectedPaymentsList.forEach((payment) => {
+      // Validar que payment y payment.payment no sean null/undefined
+      if (!payment || !payment.payment) {
+        console.warn("⚠️ Payment o payment.payment es null/undefined:", payment);
+        return;
+      }
+
       const selectedPaymentData = {
         id: payment.id,
         number: payment.payment.payment_number || "N/A",
@@ -121,7 +128,7 @@ const ListCreditFavor = () => {
         // }
       } else {
         // Si no existe, agregarlo
-        mappedData.push(selectedPaymentData);
+        // mappedData.push(selectedPaymentData);
         console.log(
           `➕ Agregando nuevo elemento: ${JSON.stringify(selectedPaymentData)}`
         );
@@ -168,7 +175,6 @@ const ListCreditFavor = () => {
         <div className="mt-4 space-y-4 pr-4 pt-2 max-h-[32rem] min-h-[32rem] overflow-y-auto">
           {paymentsData.length > 0 ? (
             paymentsData.map((row: any) => {
-              console.log("🎯 Renderizando item:", row);
               // Validar que row no sea null antes de renderizar
               if (!row || !row.id) {
                 return null;

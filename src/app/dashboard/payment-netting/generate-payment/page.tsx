@@ -19,7 +19,7 @@ import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { FileCheck2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
@@ -30,15 +30,22 @@ import ListCreditFavor from "../components/list-credit-favor";
 import StepperPN from "../components/stepper";
 import SummaryPaymentNetting from "../components/summary-payment-netting";
 import { usePaymentNetting } from "../hooks/usePaymentNetting";
+import { usePaymentNettingStore } from "../store";
 
 const GeneratePayment = () => {
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
+  const { resetSelected } = usePaymentNettingStore();
   const { getSelectedRows, isHydrated } = usePaymentNetting(
     session?.token,
     profile?.client_id,
     false
   );
+
+  // Reset selections when entering this page
+  useEffect(() => {
+    resetSelected();
+  }, [resetSelected]);
 
   const selectedPayments = useMemo(() => {
     if (!isHydrated) return [];

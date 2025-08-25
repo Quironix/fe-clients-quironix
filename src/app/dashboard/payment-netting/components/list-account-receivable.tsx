@@ -78,21 +78,31 @@ const ListAccountReceivable = () => {
     // Ordenar por morosidad: facturas más atrasadas con montos más altos primero
     const sortedData = mappedData.sort((a, b) => {
       const today = new Date();
-      
+
       // Calcular días de atraso para cada factura
       const dueDateA = a.due_date ? new Date(a.due_date) : today;
       const dueDateB = b.due_date ? new Date(b.due_date) : today;
-      
-      const daysOverdueA = Math.max(0, Math.floor((today.getTime() - dueDateA.getTime()) / (1000 * 60 * 60 * 24)));
-      const daysOverdueB = Math.max(0, Math.floor((today.getTime() - dueDateB.getTime()) / (1000 * 60 * 60 * 24)));
-      
+
+      const daysOverdueA = Math.max(
+        0,
+        Math.floor(
+          (today.getTime() - dueDateA.getTime()) / (1000 * 60 * 60 * 24)
+        )
+      );
+      const daysOverdueB = Math.max(
+        0,
+        Math.floor(
+          (today.getTime() - dueDateB.getTime()) / (1000 * 60 * 60 * 24)
+        )
+      );
+
       // Si ambas tienen el mismo nivel de atraso, ordenar por monto descendente
       if (daysOverdueA === daysOverdueB) {
         const balanceA = parseFloat(a.balance?.toString() || "0");
         const balanceB = parseFloat(b.balance?.toString() || "0");
         return balanceB - balanceA; // Mayor monto primero
       }
-      
+
       // Ordenar por días de atraso descendente (más atrasadas primero)
       return daysOverdueB - daysOverdueA;
     });
@@ -138,7 +148,6 @@ const ListAccountReceivable = () => {
         <div className="mt-4 space-y-4 pr-4 pt-2 max-h-[32rem] min-h-[32rem] overflow-y-auto">
           {invoicesData.length > 0 ? (
             invoicesData.map((row: any) => {
-              console.log("🎯 Renderizando item:", row);
               // Validar que row no sea null antes de continuar
               if (!row || !row.id) {
                 return null;

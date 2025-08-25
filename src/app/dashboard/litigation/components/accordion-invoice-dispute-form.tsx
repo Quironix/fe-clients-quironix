@@ -37,6 +37,7 @@ interface AccordionInvoiceDisputeFormProps {
   debtorId?: string;
   session?: any;
   profile?: any;
+  dataToAdd?: any;
 }
 
 const AccordionInvoiceDisputeForm = ({
@@ -45,6 +46,7 @@ const AccordionInvoiceDisputeForm = ({
   debtorId,
   session,
   profile,
+  dataToAdd,
 }: AccordionInvoiceDisputeFormProps) => {
   // State management
   const [activeAccordion, setActiveAccordion] = useState<string>("invoice-0");
@@ -70,6 +72,22 @@ const AccordionInvoiceDisputeForm = ({
     control,
     name: "invoices",
   });
+
+  // Initialize display values when dataToAdd exists
+  useEffect(() => {
+    if (dataToAdd && dataToAdd.amount) {
+      const formattedAmount = new Intl.NumberFormat("es-CL", {
+        style: "decimal",
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
+      }).format(parseInt(dataToAdd.amount));
+      
+      setLitigationAmountDisplays(prev => ({
+        ...prev,
+        [0]: formattedAmount,
+      }));
+    }
+  }, [dataToAdd]);
 
   // Watch all document types for all invoices
   const watchedDocumentTypes = fields.map((_, index) => 
@@ -253,17 +271,19 @@ const AccordionInvoiceDisputeForm = ({
     <>
       <div className="flex justify-between items-center mb-4">
         <p className="font-semibold">Factura</p>
-        <Button
-          type="button"
-          onClick={addInvoice}
-          variant="outline"
-          size="sm"
-          disabled={!debtorId}
-          className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white w-40 h-8 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
-        >
-          <Plus className="w-4 h-4 text-orange-500" />
-          Agregar factura
-        </Button>
+        {!dataToAdd && (
+          <Button
+            type="button"
+            onClick={addInvoice}
+            variant="outline"
+            size="sm"
+            disabled={!debtorId}
+            className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white w-40 h-8 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+          >
+            <Plus className="w-4 h-4 text-orange-500" />
+            Agregar factura
+          </Button>
+        )}
       </div>
 
       <Accordion
@@ -310,6 +330,7 @@ const AccordionInvoiceDisputeForm = ({
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          disabled={dataToAdd && index === 0}
                         >
                           <FormControl>
                             <SelectTrigger className="truncate w-full">
@@ -364,6 +385,7 @@ const AccordionInvoiceDisputeForm = ({
                           type="text"
                           placeholder="Ej: 12345678"
                           value={litigationAmountDisplays[index] || ""}
+                          disabled={dataToAdd && index === 0}
                           onChange={(e) => {
                             // Remove non-numeric characters
                             const rawValue = e.target.value.replace(

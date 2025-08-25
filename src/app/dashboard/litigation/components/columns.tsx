@@ -24,44 +24,44 @@ export const getMotivoLabel = (code: string) => {
       return (
         <TruncatedTextTooltip
           text={"Fac. comercial"}
-          maxLength={10}
-          className="text-center"
+          maxLength={50}
+          className="text-center w-full"
           variant="chip"
           tooltipBody="Factura comercial"
-          chipClassName="text-green-600 border border-green-600 rounded-full px-2 py-0.4 text-xs"
+          chipClassName="text-green-600 border border-green-600 rounded-full px-2 py-0.4 text-xs w-full inline-block text-center"
         />
       );
     case "SETTLEMENT":
       return (
         <TruncatedTextTooltip
           text={"Finiquito"}
-          maxLength={10}
-          className="text-center"
+          maxLength={50}
+          className="text-center w-full"
           variant="chip"
           tooltipBody="Finiquito"
-          chipClassName="text-blue-600 border border-blue-600 rounded-full px-2 py-0.4 text-xs"
+          chipClassName="text-blue-600 border border-blue-600 rounded-full px-2 py-0.4 text-xs w-full inline-block text-center"
         />
       );
     case "CREDIT_NOTE":
       return (
         <TruncatedTextTooltip
           text={"Nota de crédito"}
-          maxLength={10}
-          className="text-center"
+          maxLength={50}
+          className="text-center w-full"
           variant="chip"
           tooltipBody="Nota de crédito"
-          chipClassName="text-purple-600 border border-purple-600 rounded-full px-2 py-0.4 text-xs"
+          chipClassName="text-purple-600 border border-purple-600 rounded-full px-2 py-0.4 text-xs w-full inline-block text-center"
         />
       );
     case "INVOICE_ISSUE":
       return (
         <TruncatedTextTooltip
           text={"Problemas con la fac."}
-          maxLength={10}
-          className="text-center"
+          maxLength={50}
+          className="text-center w-full"
           variant="chip"
           tooltipBody="Problemas con la fac."
-          chipClassName="text-orange-600 border border-orange-600 rounded-full px-2 py-0.4 text-xs"
+          chipClassName="text-orange-600 border border-orange-600 rounded-full px-2 py-0.4 text-xs w-full inline-block text-center"
         />
       );
   }

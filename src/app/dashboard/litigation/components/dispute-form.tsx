@@ -27,6 +27,7 @@ import SelectClient from "../../components/select-client";
 import { useDebtorsStore } from "../../debtors/store";
 import { useDTEs } from "../../transactions/dte/hooks/useDTEs";
 import { createLitigation, GetAllLitigationByDebtorId } from "../services";
+import { usePaymentNettingStore } from "../../payment-netting/store";
 import AccordionInvoiceDisputeForm from "./accordion-invoice-dispute-form";
 import { columnsLitigationEntry } from "./columns-litigation-entry";
 import EmptyLitigations from "./empty-litigations";
@@ -84,9 +85,11 @@ type LitigationForm = z.infer<ReturnType<typeof litigationSchema>>;
 const DisputeForm = ({
   handleClose,
   onRefetch,
+  dataToAdd,
 }: {
   handleClose: () => void;
   onRefetch?: () => void;
+  dataToAdd?: any;
 }) => {
   const { data: session } = useSession();
   const [showDialog, setShowDialog] = useState(false);
@@ -94,6 +97,7 @@ const DisputeForm = ({
   const [litigationsByDebtor, setLitigationsByDebtor] = useState([]);
   const [selectedDebtor, setSelectedDebtor] = useState<any>(null);
   const { fetchDebtorById, dataDebtor, isFetchingDebtor } = useDebtorsStore();
+  const { totalInvoices, totalPayments } = usePaymentNettingStore();
 
   const isFactoring = profile?.client?.type === "FACTORING";
   const litigationFormSchema = useMemo(
@@ -121,6 +125,46 @@ const DisputeForm = ({
       ],
     },
   });
+
+  useEffect(() => {
+    console.log("🔍 DisputeForm - dataToAdd received:", dataToAdd);
+
+    if (dataToAdd) {
+      console.log("✅ dataToAdd exists, processing...");
+      console.log("📋 debtor_id:", dataToAdd.debtor_id);
+      console.log("📄 invoice_number:", dataToAdd.invoice_number);
+      console.log("💰 amount:", dataToAdd.amount);
+      
+      // Calcular la diferencia totalInvoices - totalPayments
+      const litigationDifference = totalInvoices - totalPayments;
+      console.log("🔢 totalInvoices:", totalInvoices);
+      console.log("🔢 totalPayments:", totalPayments);
+      console.log("🔢 litigationDifference:", litigationDifference);
+
+      form.setValue("invoices", [
+        {
+          documentType: "INVOICE",
+          invoiceNumber: dataToAdd.number,
+          invoiceAmount: dataToAdd?.amount,
+          litigationAmount: litigationDifference > 0 ? litigationDifference.toString() : "0",
+          reason: "Pago pendiente",
+          subreason: "Pago pendiente",
+        },
+      ]);
+      console.log("✅ Invoices setValue completed");
+
+      form.setValue("debtorId", dataToAdd?.debtor?.id);
+      console.log("✅ DebtorId setValue completed:", dataToAdd.debtor_id);
+
+      // Forzar re-renderizado y validación del formulario
+      form.trigger();
+      console.log("🔄 Form trigger executed");
+
+      console.log("🎯 Form values after setValue:", form.getValues());
+    } else {
+      console.log("❌ dataToAdd is null/undefined");
+    }
+  }, [dataToAdd, totalInvoices, totalPayments]);
   // Usar el nuevo hook useDTEs con paginación del servidor
   const { isLoading, handlePaginationChange } = useDTEs({
     accessToken: session?.token || "",
@@ -255,7 +299,18 @@ const DisputeForm = ({
               control={control}
               name="debtorId"
               render={({ field }) => (
-                <DebtorsSelectFormItem field={field} title="Deudor" required />
+                dataToAdd?.debtor?.name ? (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      Deudor *
+                    </label>
+                    <div className="flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
+                      {dataToAdd.debtor.name}
+                    </div>
+                  </div>
+                ) : (
+                  <DebtorsSelectFormItem field={field} title="Deudor" required />
+                )
               )}
             />
           </div>
@@ -266,6 +321,7 @@ const DisputeForm = ({
             debtorId={debtorId}
             session={session}
             profile={profile}
+            dataToAdd={dataToAdd}
           />
 
           {/* Litigios anteriores */}

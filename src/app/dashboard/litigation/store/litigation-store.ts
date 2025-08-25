@@ -1,18 +1,18 @@
 import { create } from "zustand";
 
 type Litigio = {
- client: string,
-      debtorId: string
-      invoiceType: string,
-      invoiceId: string,
-      invoiceAmount: string,
-      reason: string,
-      subreason: string,
-      contact: string,
-      initialComment?: string ,
-      document?: string ,
-    litigationAmount?: string,
-    description?: string,
+  client: string;
+  debtorId: string;
+  invoiceType: string;
+  invoiceId: string;
+  invoiceAmount: string;
+  reason: string;
+  subreason: string;
+  contact: string;
+  initialComment?: string;
+  document?: string;
+  litigationAmount?: string;
+  description?: string;
 };
 
 type LitigationStore = {
@@ -20,6 +20,8 @@ type LitigationStore = {
   addLitigio: (litigio: Litigio) => void;
   removeLitigio: (invoiceId: string) => void;
   clearLitigios: () => void;
+  setDataToAdd: (data: any) => void;
+  dataToAdd: any;
 };
 
 export const useLitigationStore = create<LitigationStore>((set) => ({
@@ -32,9 +34,12 @@ export const useLitigationStore = create<LitigationStore>((set) => ({
 
   removeLitigio: (numero) =>
     set((state) => ({
-      litigiosIngresados: state.litigiosIngresados.filter((l) => l.invoiceId !== numero),
+      litigiosIngresados: state.litigiosIngresados.filter(
+        (l) => l.invoiceId !== numero
+      ),
     })),
 
   clearLitigios: () => set({ litigiosIngresados: [] }),
+  setDataToAdd: (data) => set({ dataToAdd: data }),
+  dataToAdd: null,
 }));
-

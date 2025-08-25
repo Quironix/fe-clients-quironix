@@ -10,7 +10,7 @@ interface TruncatedTextTooltipProps {
   text: string | null;
   maxLength?: number;
   className?: string;
-  variant?: 'text' | 'chip';
+  variant?: "text" | "chip";
   chipClassName?: string;
   tooltipBody?: string | React.ReactNode;
 }
@@ -32,8 +32,9 @@ export const TruncatedTextTooltip = ({
 
   const renderContent = (content: string) => {
     if (variant === "chip") {
-      const chipClasses = chipClassName || "rounded-full px-2 py-0.5 text-xs border";
-      return <span className={`${chipClasses} ${className}`}>{content}</span>;
+      const chipClasses =
+        chipClassName || "rounded-full px-2 py-0.5 text-xs border";
+      return <span className={chipClasses}>{content}</span>;
     }
     return <div className={className}>{content}</div>;
   };
@@ -46,7 +47,9 @@ export const TruncatedTextTooltip = ({
       <Tooltip>
         <TooltipTrigger asChild>
           {variant === "chip" ? (
-            <span className={`cursor-help ${chipClassName || "rounded-full px-2 py-0.5 text-xs border"} ${className}`}>
+            <span
+              className={`cursor-help ${chipClassName || "rounded-full px-2 py-0.5 text-xs border"} ${className}`}
+            >
               {truncatedText}
             </span>
           ) : (

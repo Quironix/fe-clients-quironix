@@ -14,7 +14,7 @@ const CommentAlert = ({
         <InfoIcon className="w-4 h-4 text-blue-600" />
         <span className="text-md font-bold text-blue-600">Comentario</span>
       </div>
-      <div className="flex items-center justify-between gap-2 w-full">
+      <div className="flex items-start justify-between gap-5 w-full">
         <span className="text-xs">{comment}</span>
         {cta && <div className="flex items-center gap-2">{cta}</div>}
       </div>

@@ -4,6 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { format } from "date-fns";
 import {
   CheckCircle2,
   Clock2,
@@ -24,6 +25,7 @@ interface ItemListPaymentProps {
     due_date: string;
     amount: string;
     type: DocumentType;
+    received_at?: string;
     created_at?: string;
     balance: string;
   };
@@ -221,14 +223,16 @@ const ItemListPayment = ({
             <div className="flex items-start gap-1">
               <span className="font-bold text-xs">F. Depósito</span>
               <span className="text-xs text-gray-500">
-                {row?.created_at?.split("T")[0]}
+                {format(row?.received_at, "dd/MM/yyyy")}
               </span>
             </div>
           )}
           <div className="flex items-start gap-1">
             <span className="font-bold text-xs">Vencimiento</span>
             <span className="text-xs text-gray-500">
-              {row?.due_date?.split("T")[0]}
+              {row?.due_date
+                ? format(row?.due_date, "dd/MM/yyyy")
+                : "Sin fecha"}
             </span>
           </div>
         </div>
