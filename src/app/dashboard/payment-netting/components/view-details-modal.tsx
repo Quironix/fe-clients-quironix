@@ -106,7 +106,13 @@ export default function ViewDetailsModal({
                 <IconDescription
                   icon={<History />}
                   description="Estado"
-                  value={row?.status}
+                  value={
+                    row?.status === "PAID"
+                      ? "Pagado"
+                      : row?.status === "PENDING"
+                        ? "Pendiente"
+                        : "Reversado"
+                  }
                 />
               </div>
               <div>
@@ -118,7 +124,7 @@ export default function ViewDetailsModal({
                       ? new Date(row.date).toLocaleDateString("es-ES", {
                           day: "2-digit",
                           month: "2-digit",
-                          year: "numeric"
+                          year: "numeric",
                         })
                       : "N/A"
                   }
@@ -270,7 +276,11 @@ export default function ViewDetailsModal({
               <IconDescription
                 icon={<Keyboard />}
                 description="Tipo de ingreso"
-                value={paymentHistory?.data?.payment?.ingress_type}
+                value={
+                  paymentHistory?.data?.payment?.ingress_type === "AUTOMATIC"
+                    ? "Automático"
+                    : "Manual"
+                }
               />
             </div>
             <div>
@@ -284,7 +294,7 @@ export default function ViewDetailsModal({
                       ).toLocaleDateString("es-ES", {
                         day: "2-digit",
                         month: "2-digit",
-                        year: "numeric"
+                        year: "numeric",
                       })
                     : "N/A"
                 }
@@ -332,7 +342,7 @@ export default function ViewDetailsModal({
 
         {/* Resumen de Aplicaciones */}
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div className="bg-white p-3 rounded-lg border border-gray-100 text-center shadow-sm">
             <div className="text-lg font-bold">
               {paymentHistory?.data?.summary?.total_applications || 0}
@@ -348,12 +358,14 @@ export default function ViewDetailsModal({
             </div>
             <div className="text-xs mt-1 text-gray-500">Monto aplicado</div>
           </div>
-          <div className="bg-white p-3 rounded-lg border border-gray-100 text-center shadow-sm">
+          {/* <div className="bg-white p-3 rounded-lg border border-gray-100 text-center shadow-sm">
             <div className="text-lg font-bold">
-              {paymentHistory?.data?.summary?.reconciliation_type || "N/A"}
+              {paymentHistory?.data?.summary?.reconciliation_type
+                ? "Automático"
+                : "Manual"}
             </div>
             <div className="text-xs text-gray-600 mt-1">Tipo aplicado</div>
-          </div>
+          </div> */}
         </div>
 
         {/* Historial de Aplicaciones */}
@@ -393,13 +405,14 @@ export default function ViewDetailsModal({
                             </span>
                             <span className="text-xs text-gray-500">
                               {new Date(event.timestamp).toLocaleString(
-                                "es-ES", {
+                                "es-ES",
+                                {
                                   day: "2-digit",
                                   month: "2-digit",
                                   year: "numeric",
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                  hour12: false
+                                  hour12: false,
                                 }
                               )}
                             </span>
@@ -420,11 +433,15 @@ export default function ViewDetailsModal({
                                 ).toLocaleDateString("es-ES", {
                                   day: "2-digit",
                                   month: "2-digit",
-                                  year: "numeric"
+                                  year: "numeric",
                                 })}{" "}
                                 • Estado:{" "}
                                 <span className="text-green-600 font-medium">
-                                  {event.invoice.status}
+                                  {event.invoice.status === "PAID"
+                                    ? "Pagado"
+                                    : event.invoice.status === "PENDING"
+                                      ? "Pendiente"
+                                      : "Reversado"}
                                 </span>
                               </div>
                             </div>
@@ -483,18 +500,6 @@ export default function ViewDetailsModal({
             </div>
           </div>
         </div>
-
-        {/* JSON Raw Data (Collapsible) */}
-        <details className="bg-gray-100 rounded-lg">
-          <summary className="p-4 cursor-pointer font-medium text-gray-700 hover:bg-gray-200 rounded-lg">
-            Ver datos técnicos (JSON)
-          </summary>
-          <div className="p-4 pt-0">
-            <pre className="text-xs bg-white p-3 rounded border overflow-auto max-h-96 whitespace-pre-wrap">
-              {JSON.stringify(paymentHistory, null, 2)}
-            </pre>
-          </div>
-        </details>
       </div>
     );
   };

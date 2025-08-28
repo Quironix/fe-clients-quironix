@@ -16,8 +16,15 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, MessageCircle, MoreVertical, Trash } from "lucide-react";
-import { BankMovementStatusEnum, PaymentNetting } from "../types";
+import {
+  ArrowLeftRight,
+  Eye,
+  MessageCircle,
+  MoreVertical,
+  Trash,
+} from "lucide-react";
+import DialogConfirm from "../../components/dialog-confirm";
+import { PaymentNetting } from "../types";
 
 const formatCurrency = (amount: number, currency: string) => {
   return new Intl.NumberFormat("es-CL", {
@@ -42,36 +49,41 @@ const WARNING_CLASS =
   "bg-white border-orange-500 rounded-md gap-2 text-orange-500 text-[10px]";
 
 const getStatusBadge = (status: PaymentNetting["status"]) => {
+  console.log("status", status);
   const statusConfig = {
-    [BankMovementStatusEnum.PENDING]: {
+    PENDING: {
       label: "Pendiente",
       variant: WARNING_CLASS as string,
     },
-    [BankMovementStatusEnum.PROCESSED]: {
+    PROCESSED: {
       label: "Procesado",
       variant: SUCCESS_CLASS as string,
     },
-    [BankMovementStatusEnum.PAYMENT_CREATED]: {
+    PAYMENT_CREATED: {
       label: "Pago creado",
       variant: SUCCESS_CLASS as string,
     },
-    [BankMovementStatusEnum.REJECTED]: {
+    REJECTED: {
       label: "Rechazado",
       variant: ERROR_CLASS as string,
     },
-    [BankMovementStatusEnum.ELIMINATED]: {
+    ELIMINATED: {
       label: "Eliminado",
       variant: ERROR_CLASS as string,
     },
-    [BankMovementStatusEnum.COMPENSATED]: {
+    COMPENSATED: {
       label: "Compensado",
       variant: SUCCESS_CLASS as string,
     },
-    [BankMovementStatusEnum.REJECTED_DUPLICATE]: {
+    REJECTED_DUPLICATE: {
       label: "Rechazado duplicado",
       variant: ERROR_CLASS as string,
     },
-    [BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT]: {
+    MULTIPLE_SUGGESTIONS: {
+      label: "Múltiples sugerencias",
+      variant: WARNING_CLASS as string,
+    },
+    ELIMINATED_NEGATIVE_AMOUNT: {
       label: (
         <span className="flex items-center gap-1">
           <Trash className="h-3 w-3" />
@@ -80,7 +92,7 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
       ),
       variant: ERROR_CLASS as string,
     },
-    [BankMovementStatusEnum.ELIMINATED_NO_TRACKING]: {
+    ELIMINATED_NO_TRACKING: {
       label: (
         <span className="flex items-center gap-1">
           <Trash className="h-3 w-3" />
@@ -89,7 +101,7 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
       ),
       variant: ERROR_CLASS as string,
     },
-    [BankMovementStatusEnum.MAINTAINED]: {
+    MAINTAINED: {
       label: "Mantenido",
       variant: SUCCESS_CLASS as string,
     },
@@ -108,12 +120,13 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
 };
 
 export const createColumns = (
-  onViewDetails?: (transaction: PaymentNetting) => void
+  onViewDetails?: (transaction: PaymentNetting) => void,
+  onReversePayment?: (transaction: PaymentNetting) => void
 ): ColumnDef<PaymentNetting>[] => [
   {
     accessorKey: "status",
     header: "Estado",
-    cell: ({ row }) => getStatusBadge(row.getValue("status")),
+    cell: ({ row }) => getStatusBadge(row.original.status),
   },
   {
     accessorKey: "amount",
@@ -216,11 +229,29 @@ export const createColumns = (
               <Eye className="mr-2 h-4 w-4" />
               Ver detalles
             </DropdownMenuItem>
-            {/* <DropdownMenuItem>
-              <Edit className="mr-2 h-4 w-4" />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
+            {row.original.status === "COMPENSATED" && (
+              <DropdownMenuItem
+                className="text-destructive"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <DialogConfirm
+                  title="Reversar pago"
+                  description="¿Estás seguro de querer reversar el pago?"
+                  onConfirm={() => {
+                    onReversePayment?.(row.original);
+                  }}
+                  triggerButton={
+                    <div className="flex items-center gap-2">
+                      <ArrowLeftRight className="h-4 w-4 mr-2" />
+                      Reversar
+                    </div>
+                  }
+                  confirmButtonText="Reversar"
+                  type="danger"
+                />
+              </DropdownMenuItem>
+            )}
+            {/*<DropdownMenuItem className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               Eliminar
             </DropdownMenuItem> */}

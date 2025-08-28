@@ -33,7 +33,7 @@ import FormAssignDebtor from "./components/form-assign-debtor";
 import IconDescription from "./components/icon-description";
 import ViewDetailsModal from "./components/view-details-modal";
 import { usePaymentNetting } from "./hooks/usePaymentNetting";
-import { updateReconciliationTableProfile } from "./services";
+import { reversePayment, updateReconciliationTableProfile } from "./services";
 
 export default function PaymentNettingPage() {
   const { data: session }: any = useSession();
@@ -204,9 +204,32 @@ export default function PaymentNettingPage() {
     setOpenDetailModal(true);
   };
 
+  const handleReversePayment = async (row: any) => {
+    // const response = await getPaymentHistory({
+    //   accessToken: session?.token,
+    //   clientId: profile?.client_id,
+    //   paymentId: row.payment.id,
+    // });
+    // console.log("Respuesta:", response);
+    try {
+      const response = await reversePayment({
+        accessToken: session?.token,
+        clientId: profile?.client_id,
+        paymentId: row.payment.id,
+      });
+
+      toast.success(response.message);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      refetch();
+      window.location.reload();
+    }
+  };
+
   const columns = useMemo(
-    () => createColumns(handleOpenTransactionDetail),
-    [handleOpenTransactionDetail]
+    () => createColumns(handleOpenTransactionDetail, handleReversePayment),
+    [handleOpenTransactionDetail, handleReversePayment]
   );
 
   return (
@@ -285,11 +308,13 @@ export default function PaymentNettingPage() {
                         description="Fecha de depósito"
                         value={
                           selectedPayments.length === 1
-                            ? selectedPayments[0]?.created_at 
-                              ? new Date(selectedPayments[0].created_at).toLocaleDateString("es-ES", {
+                            ? selectedPayments[0]?.created_at
+                              ? new Date(
+                                  selectedPayments[0].created_at
+                                ).toLocaleDateString("es-ES", {
                                   day: "2-digit",
                                   month: "2-digit",
-                                  year: "numeric"
+                                  year: "numeric",
                                 })
                               : "N/A"
                             : "Múltiples fechas"

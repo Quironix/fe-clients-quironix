@@ -9,7 +9,7 @@ import {
   IdCard,
 } from "lucide-react";
 import DialogForm from "../../components/dialog-form";
-import { BankMovementStatusEnum, PaymentNetting } from "../types";
+import { PaymentNetting } from "../types";
 import IconDescription from "./icon-description";
 
 interface TransactionDetailModalProps {
@@ -18,65 +18,53 @@ interface TransactionDetailModalProps {
   transaction: PaymentNetting | null;
 }
 
-const formatCurrency = (amount: string | number) => {
-  const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat("es-CL", {
-    style: "currency",
-    currency: "CLP",
-  }).format(numAmount);
-};
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
-
-const getStatusBadge = (status: BankMovementStatusEnum) => {
+const getStatusBadge = (status: PaymentNetting["status"]) => {
   const ERROR_CLASS = "bg-red-100 border-red-500 text-red-700";
   const SUCCESS_CLASS = "bg-green-100 border-green-500 text-green-700";
   const WARNING_CLASS = "bg-orange-100 border-orange-500 text-orange-700";
 
   const statusConfig = {
-    [BankMovementStatusEnum.PENDING]: {
+    PENDING: {
       label: "Pendiente",
       variant: WARNING_CLASS,
     },
-    [BankMovementStatusEnum.PROCESSED]: {
+    PROCESSED: {
       label: "Procesado",
       variant: SUCCESS_CLASS,
     },
-    [BankMovementStatusEnum.PAYMENT_CREATED]: {
+    PAYMENT_CREATED: {
       label: "Pago creado",
       variant: SUCCESS_CLASS,
     },
-    [BankMovementStatusEnum.REJECTED]: {
+    REJECTED: {
       label: "Rechazado",
       variant: ERROR_CLASS,
     },
-    [BankMovementStatusEnum.ELIMINATED]: {
+    ELIMINATED: {
       label: "Eliminado",
       variant: ERROR_CLASS,
     },
-    [BankMovementStatusEnum.COMPENSATED]: {
+    COMPENSATED: {
       label: "Compensado",
       variant: SUCCESS_CLASS,
     },
-    [BankMovementStatusEnum.REJECTED_DUPLICATE]: {
+    REJECTED_DUPLICATE: {
       label: "Rechazado duplicado",
       variant: ERROR_CLASS,
     },
-    [BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT]: {
+    MULTIPLE_SUGGESTIONS: {
+      label: "Múltiples sugerencias",
+      variant: WARNING_CLASS,
+    },
+    ELIMINATED_NEGATIVE_AMOUNT: {
       label: "Eliminado monto negativo",
       variant: ERROR_CLASS,
     },
-    [BankMovementStatusEnum.ELIMINATED_NO_TRACKING]: {
+    ELIMINATED_NO_TRACKING: {
       label: "Eliminado sin tracking",
       variant: ERROR_CLASS,
     },
-    [BankMovementStatusEnum.MAINTAINED]: {
+    MAINTAINED: {
       label: "Mantenido",
       variant: SUCCESS_CLASS,
     },
