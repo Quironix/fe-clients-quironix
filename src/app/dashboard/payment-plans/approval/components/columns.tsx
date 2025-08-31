@@ -38,15 +38,15 @@ const formatPaymentFrequency = (frequency: string) => {
 };
 
 const ERROR_CLASS =
-  "bg-white border-red-500 rounded-full gap-2 text-red-500 text-[10px]";
+  "bg-white border-red-500 rounded-full gap-2 text-red-500 text-[10px] min-w-[100px] max-w-[100px] truncate text-center text-[10px] p-0";
 const SUCCESS_CLASS =
-  "bg-white border-green-500 rounded-full gap-2 text-green-500 text-[10px]";
+  "bg-white border-green-500 rounded-full gap-2 text-green-500 text-[10px] min-w-[100px] max-w-[100px] truncate text-center text-[10px] p-0";
 const WARNING_CLASS =
-  "bg-white border-blue-500 rounded-full gap-2 text-blue-500 text-[10px]";
+  "bg-white border-blue-500 rounded-full gap-2 text-blue-500 text-[10px] min-w-[100px] max-w-[100px] truncate text-center text-[10px] p-0";
 const INFO_CLASS =
-  "bg-white border-blue-500 rounded-full gap-2 text-blue-500 text-[10px]";
+  "bg-white border-blue-500 rounded-full gap-2 text-blue-500 text-[10px] min-w-[100px] max-w-[100px] truncate text-center text-[10px] p-0";
 const OBJECTED_CLASS =
-  "bg-white border-purple-500 rounded-full gap-2 text-purple-500 text-[10px]";
+  "bg-white border-purple-500 rounded-full gap-2 text-purple-500 text-[10px] min-w-[100px] max-w-[100px] truncate text-center text-[10px] p-0";
 
 const getStatusBadge = (status: PaymentPlanStatus) => {
   const statusConfig = {
@@ -80,8 +80,7 @@ const getStatusBadge = (status: PaymentPlanStatus) => {
 
   return (
     <Badge className={config.variant}>
-      <span className="flex items-center gap-1">
-        {config.icon}
+      <span className="flex items-center justify-center gap-1 min-w-[100px] max-w-[100px] truncate text-center p-0">
         {config.label}
       </span>
     </Badge>
@@ -116,7 +115,7 @@ export const createColumns = (
     accessorKey: "total_debt",
     header: "Deuda total",
     cell: ({ row }) => (
-      <div className="font-bold text-sm">
+      <div className="font-bold text-sm text-right">
         {formatNumber(row.original.totalDebt)}
       </div>
     ),

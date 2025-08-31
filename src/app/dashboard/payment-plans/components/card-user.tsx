@@ -54,7 +54,7 @@ const CardUser = ({
               <div className="space-y-5 grid grid-cols-2">
                 <IconDescription
                   icon={<IdCard className="w-6 h-6 text-blue-600" />}
-                  description="Documento"
+                  description="RUT"
                   value={detail.debtor.dni.dni}
                 />
                 <IconDescription

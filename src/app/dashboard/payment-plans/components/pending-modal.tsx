@@ -1,5 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { formatNumber, getPendingInstallments } from "@/lib/utils";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import {
   Calculator,
   Calendar,
@@ -138,9 +147,30 @@ const PendingModal = ({
                         </div>
                       ))}
                     {pendingInstallments.length > 4 && (
-                      <div className="text-xs text-gray-500">
-                        +{pendingInstallments.length - 4} cuotas más...
-                      </div>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <div className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">
+                            +{pendingInstallments.length - 4} cuotas más...
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>
+                              Todas las cuotas pendientes
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="max-h-[350px] overflow-y-auto space-y-2">
+                            {pendingInstallments.map((installment, index) => (
+                              <div
+                                key={index}
+                                className="text-xs text-gray-700 p-2 bg-gray-50 rounded"
+                              >
+                                {installment}
+                              </div>
+                            ))}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     )}
                     {pendingInstallments.length === 0 && (
                       <div className="text-xs text-green-600">
@@ -181,6 +211,29 @@ const PendingModal = ({
                     )?.label
                   }
                 />
+
+                <IconDescription
+                  icon={<Calendar className="w-6 h-6 text-gray-400" />}
+                  description="Inicio de pago"
+                  value={
+                    detailPaymentPlan.planStartDate
+                      ? format(detailPaymentPlan.planStartDate, "dd-MM-yyyy", {
+                          locale: es,
+                        })
+                      : "-"
+                  }
+                />
+                <IconDescription
+                  icon={<CalendarCheck className="w-6 h-6 text-gray-400" />}
+                  description="Término de pago"
+                  value={
+                    detailPaymentPlan.paymentEndDate
+                      ? format(detailPaymentPlan.paymentEndDate, "dd-MM-yyyy", {
+                          locale: es,
+                        })
+                      : "-"
+                  }
+                />
                 <IconDescription
                   icon={<CalendarClock className="w-6 h-6 text-gray-400" />}
                   description="Frecuencia de pago"
@@ -190,21 +243,12 @@ const PendingModal = ({
                     )?.label
                   }
                 />
-                <IconDescription
-                  icon={<Calendar className="w-6 h-6 text-gray-400" />}
-                  description="Inicio de pago"
-                  value={detailPaymentPlan.planStartDate as unknown as string}
-                />
-                <IconDescription
-                  icon={<CalendarCheck className="w-6 h-6 text-gray-400" />}
-                  description="Término de pago"
-                  value={detailPaymentPlan.paymentEndDate as unknown as string}
-                />
               </div>
             </CardContent>
           )}
         </Card>
       )}
+
       {detailPaymentPlan.status === "OBJECTED" && (
         <div className="space-y-4">
           <Card>
@@ -257,9 +301,30 @@ const PendingModal = ({
                           </div>
                         ))}
                       {pendingInstallments.length > 4 && (
-                        <div className="text-xs text-gray-500">
-                          +{pendingInstallments.length - 4} cuotas más...
-                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <div className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">
+                              +{pendingInstallments.length - 4} cuotas más...
+                            </div>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>
+                                Todas las cuotas pendientes
+                              </DialogTitle>
+                            </DialogHeader>
+                            <div className="max-h-[350px] overflow-y-auto space-y-2">
+                              {pendingInstallments.map((installment, index) => (
+                                <div
+                                  key={index}
+                                  className="text-xs text-gray-700 p-2 bg-gray-50 rounded"
+                                >
+                                  {installment}
+                                </div>
+                              ))}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       )}
                       {pendingInstallments.length === 0 && (
                         <div className="text-xs text-green-600">
@@ -305,13 +370,31 @@ const PendingModal = ({
                   <IconDescription
                     icon={<Calendar className="w-6 h-6 text-gray-400" />}
                     description="Inicio de pago"
-                    value={detailPaymentPlan.planStartDate as unknown as string}
+                    value={
+                      detailPaymentPlan.planStartDate
+                        ? format(
+                            detailPaymentPlan.planStartDate,
+                            "dd-MM-yyyy",
+                            {
+                              locale: es,
+                            }
+                          )
+                        : "-"
+                    }
                   />
                   <IconDescription
                     icon={<CalendarCheck className="w-6 h-6 text-gray-400" />}
                     description="Término de pago"
                     value={
-                      detailPaymentPlan.paymentEndDate as unknown as string
+                      detailPaymentPlan.paymentEndDate
+                        ? format(
+                            detailPaymentPlan.paymentEndDate,
+                            "dd-MM-yyyy",
+                            {
+                              locale: es,
+                            }
+                          )
+                        : "-"
                     }
                   />
                 </div>
@@ -368,9 +451,30 @@ const PendingModal = ({
                           </div>
                         ))}
                       {pendingInstallments.length > 4 && (
-                        <div className="text-xs text-gray-500">
-                          +{pendingInstallments.length - 4} cuotas más...
-                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <div className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">
+                              +{pendingInstallments.length - 4} cuotas más...
+                            </div>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>
+                                Todas las cuotas pendientes
+                              </DialogTitle>
+                            </DialogHeader>
+                            <div className="max-h-[350px] overflow-y-auto space-y-2">
+                              {pendingInstallments.map((installment, index) => (
+                                <div
+                                  key={index}
+                                  className="text-xs text-gray-700 p-2 bg-gray-50 rounded"
+                                >
+                                  {installment}
+                                </div>
+                              ))}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       )}
                       {pendingInstallments.length === 0 && (
                         <div className="text-xs text-green-600">
@@ -416,13 +520,31 @@ const PendingModal = ({
                   <IconDescription
                     icon={<Calendar className="w-6 h-6 text-gray-400" />}
                     description="Inicio de pago"
-                    value={detailPaymentPlan.planStartDate as unknown as string}
+                    value={
+                      detailPaymentPlan.planStartDate
+                        ? format(
+                            detailPaymentPlan.planStartDate,
+                            "dd-MM-yyyy",
+                            {
+                              locale: es,
+                            }
+                          )
+                        : "-"
+                    }
                   />
                   <IconDescription
                     icon={<CalendarCheck className="w-6 h-6 text-gray-400" />}
                     description="Término de pago"
                     value={
-                      detailPaymentPlan.paymentEndDate as unknown as string
+                      detailPaymentPlan.paymentEndDate
+                        ? format(
+                            detailPaymentPlan.paymentEndDate,
+                            "dd-MM-yyyy",
+                            {
+                              locale: es,
+                            }
+                          )
+                        : "-"
                     }
                   />
                 </div>
@@ -444,6 +566,7 @@ const PendingModal = ({
           </Card>
         </div>
       )}
+
       {detailPaymentPlan.debtConcept && (
         <div className="flex justify-start items-center gap-2 bg-amber-100 border border-amber-300 p-4 rounded-lg">
           <MessageSquare className="w-6 h-6 text-amber-300 flex-shrink-0" />

@@ -223,8 +223,8 @@ export default function PaymentPlanConfigForm({
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {config.startDate
-                    ? format(config.startDate, "dd/MM/yyyy", { locale: es })
-                    : "DD/MM/AAAA"}
+                    ? format(config.startDate, "dd-MM-yyyy", { locale: es })
+                    : "DD-MM-AAAA"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">

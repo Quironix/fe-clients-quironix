@@ -95,8 +95,11 @@ const DocumentTypeBadge = ({ type }: DocumentTypeBadgeProps) => {
   const colorClasses = getColorClasses(color);
 
   return (
-    <Badge variant="outline" className={`${colorClasses} border rounded-full`}>
-      <span className="text-xs font-bold">{text}</span>
+    <Badge
+      variant="outline"
+      className={`${colorClasses} border rounded-full min-w-[100px] max-w-[100px] truncate text-center p-0`}
+    >
+      <span className="text-[10px] font-bold">{text}</span>
     </Badge>
   );
 };

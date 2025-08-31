@@ -18,9 +18,9 @@ export function formatDate(date: string) {
   if (/^\d{2}-\d{2}-\d{4}$/.test(date)) {
     inputDate = parse(date, "dd-MM-yyyy", new Date());
   }
-  // Formato dd/MM/yyyy (ej: 19/11/2018)
+  // Formato dd-MM-yyyy (ej: 19/11/2018)
   else if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
-    inputDate = parse(date, "dd/MM/yyyy", new Date());
+    inputDate = parse(date, "dd-MM-yyyy", new Date());
   }
   // Formato ISO o otros formatos que JavaScript reconoce
   else {
@@ -79,7 +79,7 @@ export function toISOString(date: string | Date | null | undefined): string {
     if (/^\d{2}-\d{2}-\d{4}$/.test(date)) {
       parsedDate = parse(date, "dd-MM-yyyy", new Date());
     } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
-      parsedDate = parse(date, "dd/MM/yyyy", new Date());
+      parsedDate = parse(date, "dd-MM-yyyy", new Date());
     } else {
       parsedDate = new Date(date);
     }
@@ -109,8 +109,8 @@ export function formatNumber(
 
 /**
  * Calcula las cuotas pendientes de pago basándose en las fechas de inicio, fin y número de cuotas
- * @param paymentStartDate - Fecha de inicio de pagos (formato ISO o dd-MM-yyyy o dd/MM/yyyy)
- * @param paymentEndDate - Fecha de fin de pagos (formato ISO o dd-MM-yyyy o dd/MM/yyyy)
+ * @param paymentStartDate - Fecha de inicio de pagos (formato ISO o dd-MM-yyyy o dd-MM-yyyy)
+ * @param paymentEndDate - Fecha de fin de pagos (formato ISO o dd-MM-yyyy o dd-MM-yyyy)
  * @param numberOfInstallments - Número total de cuotas
  * @param paymentFrequency - Frecuencia de pago (MONTHLY, WEEKLY, etc.)
  * @returns Array de strings con las cuotas pendientes en formato "Cuota X/Y (DD/MM/AAAA)"
@@ -134,7 +134,7 @@ export function getPendingInstallments(
     if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
       return parse(dateStr, "dd-MM-yyyy", new Date());
     } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
-      return parse(dateStr, "dd/MM/yyyy", new Date());
+      return parse(dateStr, "dd-MM-yyyy", new Date());
     } else {
       return new Date(dateStr);
     }
@@ -211,7 +211,7 @@ export function getPendingInstallments(
 
     if (installmentDateOnly >= currentDateOnly) {
       const installmentNumber = index + 1;
-      const formattedDate = format(installmentDate, "dd/MM/yyyy", {
+      const formattedDate = format(installmentDate, "dd-MM-yyyy", {
         locale: es,
       });
       pendingInstallments.push(
