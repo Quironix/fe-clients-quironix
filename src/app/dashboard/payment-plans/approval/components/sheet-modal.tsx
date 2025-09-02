@@ -69,7 +69,6 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -99,7 +98,7 @@ const paymentPlanSchema = z
 
     // Configuración del plan de pago
     totalAmount: z.number().optional(),
-    downPayment: z
+    initialPayment: z
       .number()
       .min(0, "El pago contado debe ser mayor o igual a 0")
       .optional(),
@@ -143,7 +142,6 @@ const paymentPlanSchema = z
 type PaymentPlanForm = z.infer<typeof paymentPlanSchema>;
 
 const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
-  const router = useRouter();
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const [debtorExpanded, setDebtorExpanded] = useState(false);
@@ -159,7 +157,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       debtorId: detail?.debtorId || "",
       selectedInvoices: detail?.invoiceIds || [],
       totalAmount: Math.round(detail?.totalPlanAmount || 0),
-      downPayment: Math.round(detail?.initialPayment || 0),
+      initialPayment: Math.round(detail?.initialPayment || 0),
       numberOfInstallments: detail?.numberOfInstallments || 1,
       annualInterestRate: Math.round(detail?.annualInterestRate || 0),
       paymentMethod: detail?.paymentMethod || "",
@@ -264,6 +262,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
           payment_end_date: paymentEndDate.toISOString().split("T")[0],
           comments: data.comments,
           objected_comment: data.reason,
+          initial_payment: data.initialPayment,
           status: "OBJECTED",
         };
         debugger;
@@ -367,7 +366,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
     if (!detail) {
       return {
         totalInvoices: 0,
-        downPayment: 0,
+        initialPayment: 0,
         principalAmount: 0,
         numberOfInstallments: 0,
         installmentAmount: 0,
@@ -385,8 +384,8 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       (sum, invoice) => sum + parseFloat(invoice.amount),
       0
     );
-    const downPayment = form.watch("downPayment") || 0;
-    const principalAmount = totalInvoices - downPayment; // Capital a financiar
+    const initialPayment = form.watch("initialPayment") || 0;
+    const principalAmount = totalInvoices - initialPayment; // Capital a financiar
 
     // 2. Parámetros del préstamo
     const numberOfInstallments = form.watch("numberOfInstallments") || 1;
@@ -429,7 +428,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
 
     return {
       totalInvoices,
-      downPayment,
+      initialPayment,
       principalAmount,
       numberOfInstallments,
       installmentAmount,
@@ -442,8 +441,8 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       // Métricas adicionales
       loanToValue:
         totalInvoices > 0 ? (principalAmount / totalInvoices) * 100 : 0, // LTV%
-      downPaymentRatio:
-        totalInvoices > 0 ? (downPayment / totalInvoices) * 100 : 0, // % pie
+      initialPaymentRatio:
+        totalInvoices > 0 ? (initialPayment / totalInvoices) * 100 : 0, // % pie
     };
   };
   const metrics = calculateFinancialMetrics();
@@ -462,7 +461,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       </SheetTrigger>
       <SheetContent className="min-w-[90%] rounded-l-xl p-0 m-0">
         <SheetHeader className="sr-only">
-          <SheetTitle>Detalles del plan de pago 2</SheetTitle>
+          <SheetTitle>Detalles del plan de pago</SheetTitle>
 
           <SheetDescription>
             <span>Solicitud Nº{detail?.requestId}</span>
@@ -566,7 +565,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                               {/* Pago contado */}
                               <FormField
                                 control={control}
-                                name="downPayment"
+                                name="initialPayment"
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>Pago contado ($)</FormLabel>
@@ -831,13 +830,13 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                     <span className="text-sm font-medium text-gray-600 pl-5">
                                       Pago contado (
                                       {formatPercentage(
-                                        metrics.downPaymentRatio,
+                                        metrics.initialPaymentRatio,
                                         1
                                       )}
                                       ):
                                     </span>
                                     <span className="text-sm font-semibold pr-5">
-                                      {formatNumber(metrics.downPayment)}
+                                      {formatNumber(metrics.initialPayment)}
                                     </span>
                                   </div>
 
