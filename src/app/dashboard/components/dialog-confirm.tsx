@@ -18,7 +18,7 @@ interface DialogConfirmProps {
   triggerButton?: React.ReactNode;
   cancelButtonText?: string;
   confirmButtonText?: string;
-  onConfirm: () => void;
+  onConfirm?: () => void;
   onCancel?: () => void;
   type?: "danger" | "warning";
   isOpen?: boolean;

@@ -1,13 +1,14 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Language from "@/components/ui/language";
-import { ChartSpline, PhoneCall } from "lucide-react";
+import { PhoneCall } from "lucide-react";
 import { Suspense } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import IndicatorsDebtor from "./components/indicators-debtors";
+import { TaskFilters } from "./components/task-filters";
+import { TasksList } from "./components/tasks-list";
 
 const Content = () => {
   return (
@@ -22,11 +23,14 @@ const Content = () => {
           icon={<PhoneCall color="white" />}
           subDescription="Gestión de deudores"
         />
-        <div className="flex gap-5 h-screen">
-          <div className="w-1/4">
+        <div className="flex gap-5">
+          <div className="w-[240px]">
             <IndicatorsDebtor />
           </div>
-          <div className="flex-1 bg-white p-5 rounded-md shadow-xl">list</div>
+          <div className="flex-1 bg-white p-5 rounded-md shadow-xl">
+            <TaskFilters />
+            <TasksList />
+          </div>
         </div>
       </Main>
     </>

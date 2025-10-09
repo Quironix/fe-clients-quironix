@@ -18,7 +18,7 @@ const IndicatorsDebtor = () => {
           <span>Estado</span>
         </div>
         <div>
-          <div className="bg-[#43C41133] text-green-800 w-[100px] flex font-bold text-sm rounded-full items-center justify-start gap-1 px-2">
+          <div className="bg-[#43C41133] text-green-800 flex font-bold text-xs rounded-full items-center justify-start gap-1 px-3 text-center">
             <span className="w-2 h-2 bg-green-700 rounded-full" /> Activo
           </div>
         </div>
@@ -51,21 +51,30 @@ const IndicatorsDebtor = () => {
     <section className="flex flex-col gap-5 pb-10">
       <FirstCard />
 
-      <IndicatorCard icon={<Target className="text-blue-600" />} title="Avance del ejecutivo">
+      <IndicatorCard
+        icon={<Target className="text-blue-600" />}
+        title="Avance del ejecutivo"
+      >
         <div className="flex flex-col">
           <span className="text-3xl text-black font-black">68%</span>
           <span className="text-sm text-black -mt-1">16/24 tareas</span>
         </div>
       </IndicatorCard>
 
-      <IndicatorCard icon={<DollarSign className="text-blue-600" />} title="Meta del día">
+      <IndicatorCard
+        icon={<DollarSign className="text-blue-600" />}
+        title="Meta del día"
+      >
         <div className="flex flex-col">
           <span className="text-3xl text-black font-black">$288M</span>
           <span className="text-sm text-black -mt-1">de $425M</span>
         </div>
       </IndicatorCard>
 
-      <IndicatorCard icon={<ChartLine className="text-blue-600" />} title="Reducción de morosidad">
+      <IndicatorCard
+        icon={<ChartLine className="text-blue-600" />}
+        title="Reducción de morosidad"
+      >
         <div className="flex flex-col w-full">
           <span className="text-3xl text-black font-black">67%</span>
           <ProgressBarChart
@@ -77,7 +86,10 @@ const IndicatorsDebtor = () => {
         </div>
       </IndicatorCard>
 
-      <IndicatorCard icon={<DollarSign className="text-blue-600" />} title="Compromisos de pago">
+      <IndicatorCard
+        icon={<DollarSign className="text-blue-600" />}
+        title="Compromisos de pago"
+      >
         <div className="flex flex-col">
           <span className="text-3xl text-black font-black">
             {formatValue(288000000)}
@@ -88,7 +100,10 @@ const IndicatorsDebtor = () => {
         </div>
       </IndicatorCard>
 
-      <IndicatorCard icon={<FileChartLine className="text-blue-600" />} title="Meta del mes">
+      <IndicatorCard
+        icon={<FileChartLine className="text-blue-600" />}
+        title="Meta del mes"
+      >
         <div className="flex flex-col w-full">
           <span className="text-3xl text-black font-black">30%</span>
           <ProgressBarChart
