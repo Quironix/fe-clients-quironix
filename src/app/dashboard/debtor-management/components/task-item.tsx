@@ -1,9 +1,13 @@
+"use client";
+
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import DialogConfirm from "../../components/dialog-confirm";
 
 interface TaskItemProps {
-  code: string;
+  debtorId: string; // UUID del deudor
+  code: string; // debtor_code para mostrar
   name: string;
   incidents: number;
   incidentsLabel: string;
@@ -17,6 +21,7 @@ interface TaskItemProps {
 }
 
 export const TaskItem = ({
+  debtorId,
   code,
   name,
   incidents,
@@ -29,16 +34,26 @@ export const TaskItem = ({
   highlighted = false,
   borderColor = "border-gray-200",
 }: TaskItemProps) => {
+  const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  const navigateToDebtor = () => {
+    router.push(`/dashboard/debtor-management/${debtorId}`);
+  };
+
   const handleClick = () => {
-    if (!highlighted) {
+    if (highlighted) {
+      // Si está destacado, navegar directamente
+      navigateToDebtor();
+    } else {
+      // Si no está destacado, mostrar el diálogo de confirmación
       setIsDialogOpen(true);
     }
   };
 
   const handleCancel = () => {
-    // Aquí puedes agregar la lógica cuando confirman
+    // Cuando confirman "Continuar", navegar al deudor
+    navigateToDebtor();
     setIsDialogOpen(false);
   };
 

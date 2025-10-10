@@ -1,3 +1,5 @@
+"use client";
+
 import { IconCalendarTime } from "@tabler/icons-react";
 import {
   ChartLine,
@@ -10,6 +12,12 @@ import { IndicatorCard } from "./indicator-card";
 import { formatValue, ProgressBarChart } from "./progress-bar-chart";
 
 const IndicatorsDebtor = () => {
+  // TODO: Integrar con el API cuando esté disponible la información de métricas
+  // const { session, profile } = useProfileContext();
+  // const { data } = useCollectorQuadrants({
+  //   accessToken: session?.token || "",
+  //   clientId: profile?.client?.id || "",
+  // });
   const FirstCard = () => (
     <div className="bg-white shadow-xl rounded-md p-3 space-y-2">
       <div className="flex gap-3 justify-between items-center">
