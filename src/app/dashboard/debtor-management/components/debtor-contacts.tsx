@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Clock, Phone, Plus, User, Mail } from "lucide-react";
+import { Clock, Phone, Plus, User, Mail, PhoneOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import DialogForm from "../../components/dialog-form";
 import CreateContactForm from "../../components/create-contact-from";
@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/hover-card";
 import { useDebtorsStore } from "../../debtors/store";
 import type { Contact } from "../../debtors/types";
+import { useWebRTCPhone } from "@/hooks/useWebRTCPhone";
+import { toast } from "sonner";
 
 interface DebtorContactsProps {
   mainContact: Contact;
@@ -26,6 +28,7 @@ export const DebtorContacts = ({
 }: DebtorContactsProps) => {
   const [openAdd, setOpenAdd] = useState<boolean>(false);
   const { dataDebtor } = useDebtorsStore();
+  const { isRegistered, callStatus, makeCall, hangup } = useWebRTCPhone();
 
   // Usar los contactos del store si están disponibles, sino usar las props
   const contacts = dataDebtor?.contacts && dataDebtor.contacts.length > 0
@@ -52,6 +55,28 @@ export const DebtorContacts = ({
     setCurrentMainContact(selectedContact);
     setCurrentAdditionalContacts(newAdditionalContacts);
   };
+
+  const handleCall = () => {
+    if (!isRegistered) {
+      toast.error("No estás conectado a la central telefónica");
+      return;
+    }
+
+    if (callStatus === "in-call" || callStatus === "calling" || callStatus === "ringing") {
+      // Si ya hay una llamada en curso, colgar
+      hangup();
+    } else {
+      // Realizar nueva llamada
+      const phoneNumber = currentMainContact.phone;
+      if (phoneNumber) {
+        makeCall(phoneNumber);
+      } else {
+        toast.error("El contacto no tiene número de teléfono");
+      }
+    }
+  };
+
+  const isInCall = callStatus === "in-call" || callStatus === "calling" || callStatus === "ringing";
 
   return (
     <div className="bg-[#EFF5FF] rounded-lg px-6 py-4 flex flex-col">
@@ -158,10 +183,25 @@ export const DebtorContacts = ({
 
           <Button
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className={
+              isInCall
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }
+            onClick={handleCall}
+            disabled={!isRegistered && !isInCall}
           >
-            <Phone className="w-4 h-4 mr-2" />
-            Llamar
+            {isInCall ? (
+              <>
+                <PhoneOff className="w-4 h-4 mr-2" />
+                Colgar
+              </>
+            ) : (
+              <>
+                <Phone className="w-4 h-4 mr-2" />
+                {isRegistered ? "Llamar" : "Conectando..."}
+              </>
+            )}
           </Button>
         </div>
       </div>

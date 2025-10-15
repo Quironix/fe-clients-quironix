@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Softphone WebRTC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script src="jssip.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body { margin:0; font-family:sans-serif; background:#121212; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; }
+  #overlay { position:fixed; inset:0; background:rgba(0,0,0,0.9); display:flex; justify-content:center; align-items:center; z-index:999; }
+  #loginBox { background:#1e1e1e; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center; }
+  #loginBox h2 { margin-bottom:20px; font-size:1.6rem; }
+  .small-input { font-size:1.2rem; padding:12px; margin-bottom:15px; width:100%; border-radius:6px; border:none; }
+  #phoneUI { display:none; flex-direction:column; align-items:center; width:100%; max-width:420px; }
+  #display { background:#000; color:#0f0; font-size:1.5rem; text-align:center; padding:10px; border-radius:8px; min-height:40px; width:100%; margin-bottom:10px; }
+  .dialpad { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:15px; width:100%; }
+  .dialpad button { background:#2d2d2d; border:none; padding:20px; font-size:1.4rem; border-radius:12px; color:#fff; transition:all .2s; }
+  .dialpad button:active { background:#444; transform:scale(0.95); }
+  #callControls { display:flex; justify-content:center; gap:15px; margin-bottom:10px; }
+  #callControls button { border:none; border-radius:50%; padding:18px; font-size:1.2rem; color:#fff; transition:all .2s; }
+  #btnCall { background:#28a745; }
+  #btnHangup { background:#dc3545; display:none; }
+  #btnHold { background:#ffc107; color:#000; display:none; }
+  #statusDisplay { font-size:1rem; margin-top:10px; text-align:center; color:#0f0; min-height:20px; }
+  #btnExit { margin-top:10px; }
+</style>
+</head>
+<body>
+
+<!-- Overlay Login -->
+<div id="overlay">
+  <div id="loginBox">
+    <h2>Iniciar sesión LiderIP</h2>
+    <input id="provUser" class="small-input" placeholder="Usuario"><br>
+    <input id="provPass" class="small-input" type="password" placeholder="Contraseña"><br>
+    <button id="loginBtn" class="btn btn-primary w-100">Entrar</button>
+    <p id="provMsg" style="color:#f88; margin-top:10px;"></p>
+  </div>
+</div>
+
+<!-- Softphone -->
+<div id="phoneUI">
+  <div id="display"></div>
+  <div class="dialpad">
+    <button>1</button><button>2</button><button>3</button>
+    <button>4</button><button>5</button><button>6</button>
+    <button>7</button><button>8</button><button>9</button>
+    <button>*</button><button>0</button><button id="btnDel">⌫</button>
+  </div>
+  <div id="callControls">
+    <button id="btnCall">📞</button>
+    <button id="btnHangup">❌</button>
+    <button id="btnHold">⏸</button>
+  </div>
+  <div id="statusDisplay">✅ Registrado</div>
+  <button id="btnExit" class="btn btn-secondary w-100">Salir</button>
+</div>
+
+<audio id="remoteAudio" autoplay playsinline></audio>
+
+<script>
+const PROVISION_URL = "api/provision.php";
+let ua, currentSession;
+let localStream = null;
+let dialNumber = '';
+const display = document.getElementById("display");
+const statusDisplay = document.getElementById("statusDisplay");
+const btnHangup = document.getElementById("btnHangup");
+const btnHold = document.getElementById("btnHold");
+
+// ====== Inicializar micrófono ======
+async function initMedia(){
+  if(localStream) return;
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio:true, video:false });
+  } catch(err){
+    console.error("Error al capturar micro:", err);
+    alert("Debes permitir acceso al micrófono");
+  }
+}
+
+// ====== Provision/Login ======
+async function provisionLogin(){
+  const user = document.getElementById("provUser").value.trim();
+  const pass = document.getElementById("provPass").value.trim();
+  document.getElementById("provMsg").textContent = "";
+
+  if(!user || !pass){ document.getElementById("provMsg").textContent="Usuario y contraseña requeridos"; return; }
+
+  try{
+    const res = await fetch(PROVISION_URL,{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username:user,password:pass})
+    });
+    const data = await res.json();
+
+    if(data.status!=="ok"){ document.getElementById("provMsg").textContent=data.message; return; }
+
+    startUAFromProvision(data);
+    document.getElementById("overlay").style.display="none";
+    document.getElementById("phoneUI").style.display="flex";
+    requestFullscreenSafe();
+  } catch(err){
+    document.getElementById("provMsg").textContent="Error de red";
+    console.error(err);
+  }
+}
+document.getElementById("loginBtn").onclick = provisionLogin;
+
+// ====== JsSIP ======
+function startUAFromProvision(data){
+  const socket = new JsSIP.WebSocketInterface(data.ws_uri);
+  const configuration = {
+    sockets:[socket],
+    uri:`sip:${data.sip_user}@${data.sip_domain}`,
+    password:data.sip_pass,
+    register:true,
+    session_timers:false,
+    register_expires:300,
+    contact_uri: `sip:${data.sip_user}@${data.sip_domain}`    
+  };
+  ua = new JsSIP.UA(configuration);
+  ua.on('registered', ()=>statusDisplay.textContent="✅ Registrado");
+  ua.on('registrationFailed', e=>statusDisplay.textContent="❌ Registro fallido");
+  ua.on('newRTCSession', e => {
+  console.log("Nueva sesión:", e);
+  });
+  ua.start();
+}
+
+// ====== Dialpad ======
+document.querySelectorAll(".dialpad button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    if(btn.id==="btnDel"){ dialNumber=dialNumber.slice(0,-1); }
+    else{ dialNumber += btn.textContent; }
+    display.textContent = dialNumber;
+  });
+});
+
+// ====Marca desde el boton======
+document.getElementById("btnCall").addEventListener("click", function(e){
+  e.preventDefault();  // evita que el form se envíe
+  makeCall();
+});
+
+// ====== Teclado del PC ======
+document.addEventListener("keydown", (e)=>{
+  if(e.key >= '0' && e.key <= '9' || e.key==='*' || e.key==='#'){ dialNumber+=e.key; display.textContent=dialNumber; }
+  if(e.key==='Backspace'){ dialNumber=dialNumber.slice(0,-1); display.textContent=dialNumber; }
+  if(e.key==='Enter') makeCall();
+});
+
+// ====== Call controls ======
+async function makeCall(){
+  if (!ua) { alert("Primero registra"); return; }
+  if(!ua){ statusDisplay.textContent="Primero registra"; return; }
+  if(!dialNumber){ statusDisplay.textContent="Ingresa un número"; return; }
+
+  await initMedia();
+  const numberToCall = dialNumber.trim();
+
+  const targetUri = `sip:${numberToCall}@${ua.configuration.uri.host}`;
+  console.log("Llamando a:", targetUri);
+
+  const options = {
+    mediaConstraints: { audio: true, video: false },
+    eventHandlers: {
+      progress: ()=>statusDisplay.textContent="☎ Sonando...",
+      failed: e=>{
+        statusDisplay.textContent="❌ Llamada fallida";
+        console.error("Error en llamada:", e);
+        setTimeout(()=>statusDisplay.textContent="✅ Registrado", 3000);
+      },
+      ended: ()=>{
+        statusDisplay.textContent="📴 Llamada finalizada";
+        btnHangup.style.display="none";
+        btnHold.style.display="none";
+        currentSession=null;
+        setTimeout(()=>statusDisplay.textContent="✅ Registrado", 2000);
+      },
+      confirmed: ()=>statusDisplay.textContent="✅ En llamada"
+    }
+  };
+
+  currentSession = ua.call(targetUri, options);
+
+  // Captura de audio remoto
+  currentSession.connection.addEventListener("track", e=>{
+    if(e.track.kind==="audio"){
+      const remoteAudio = document.getElementById("remoteAudio");
+      if(!remoteAudio.srcObject) remoteAudio.srcObject = new MediaStream();
+      remoteAudio.srcObject.addTrack(e.track);
+      remoteAudio.play().catch(err=>console.warn("Autoplay bloqueado:", err));
+    }
+  });
+
+  btnHangup.style.display="inline-block";
+  btnHold.style.display="inline-block";
+  statusDisplay.textContent="☎ Marcando " + numberToCall;
+}
+btnHangup.onclick = ()=>{
+  if(currentSession){ currentSession.terminate(); display.textContent=""; btnHangup.style.display="none"; btnHold.style.display="none"; }
+};
+
+let isOnHold = false;
+
+document.getElementById("btnHold").onclick = () => {
+  if(!currentSession) return;
+
+  if(!isOnHold){
+    currentSession.hold();  // Poner en hold
+    display.textContent = "⏸ En espera";
+    isOnHold = true;
+  } else {
+    currentSession.unhold(); // Reanudar
+    display.textContent = "✅ En llamada";
+    isOnHold = false;
+  }
+};
+
+// ====== Exit ======
+document.getElementById("btnExit").onclick = ()=>{
+  if(ua) ua.stop();
+  document.exitFullscreen?.();
+  document.getElementById("phoneUI").innerHTML="<h2>Desconectado</h2><p>Gracias por usar nuestro servicio</p>";
+  document.getElementById("overlay").style.display="flex";
+  display.textContent=""; dialNumber="";
+};
+function requestFullscreenSafe(){
+  const elem = document.documentElement;
+  if(elem.requestFullscreen) elem.requestFullscreen();
+  else if(elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+  else if(elem.msRequestFullscreen) elem.msRequestFullscreen();
+}
+</script>
+</body>
+</html>
