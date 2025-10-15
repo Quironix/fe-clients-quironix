@@ -1,6 +1,8 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Clock, Phone, Plus, User, Mail } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DialogForm from "../../components/dialog-form";
 import CreateContactForm from "../../components/create-contact-from";
 import {
@@ -8,15 +10,8 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-
-interface Contact {
-  name: string;
-  role: string;
-  function: string;
-  email: string;
-  phone: string;
-  channel: string;
-}
+import { useDebtorsStore } from "../../debtors/store";
+import type { Contact } from "../../debtors/types";
 
 interface DebtorContactsProps {
   mainContact: Contact;
@@ -30,8 +25,25 @@ export const DebtorContacts = ({
   callSchedule,
 }: DebtorContactsProps) => {
   const [openAdd, setOpenAdd] = useState<boolean>(false);
-  const [currentMainContact, setCurrentMainContact] = useState<Contact>(mainContact);
-  const [currentAdditionalContacts, setCurrentAdditionalContacts] = useState<Contact[]>(additionalContacts);
+  const { dataDebtor } = useDebtorsStore();
+
+  // Usar los contactos del store si están disponibles, sino usar las props
+  const contacts = dataDebtor?.contacts && dataDebtor.contacts.length > 0
+    ? dataDebtor.contacts
+    : [mainContact, ...additionalContacts];
+
+  const [currentMainContact, setCurrentMainContact] = useState<Contact>(contacts[0] || mainContact);
+  const [currentAdditionalContacts, setCurrentAdditionalContacts] = useState<Contact[]>(
+    contacts.slice(1) || additionalContacts
+  );
+
+  // Actualizar cuando cambian los contactos en el store
+  useEffect(() => {
+    if (dataDebtor?.contacts && dataDebtor.contacts.length > 0) {
+      setCurrentMainContact(dataDebtor.contacts[0]);
+      setCurrentAdditionalContacts(dataDebtor.contacts.slice(1));
+    }
+  }, [dataDebtor?.contacts]);
 
   const handleContactSwap = (index: number) => {
     const selectedContact = currentAdditionalContacts[index];
@@ -136,7 +148,12 @@ export const DebtorContacts = ({
               </Button>
             }
           >
-            <CreateContactForm />
+            <CreateContactForm
+              onSuccess={() => {
+                setOpenAdd(false);
+                // La UI se actualizará automáticamente porque el store de debtors se actualizó
+              }}
+            />
           </DialogForm>
 
           <Button

@@ -24,33 +24,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { functionsContact } from "../data";
+import { useProfileContext } from "@/context/ProfileContext";
+import { toast } from "sonner";
+import { useState } from "react";
 
-const CreateContactForm = () => {
+interface CreateContactFormProps {
+  onSuccess?: () => void;
+}
+
+const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
+  const { session, profile } = useProfileContext();
   const { dataDebtor, updateDebtor, setDataDebtor } = useDebtorsStore();
-  const debtorFormSchema = z.object({
-    contact_info: z.array(
-      z.object({
-        name: z.string().min(1, "Nombre es requerido"),
-        role: z.string().min(1, "Rol es requerido"),
-        function: z.string().min(1, "Función es requerida"),
-        email: z.string().email("Email inválido"),
-        phone: z
-          .string()
-          .min(8, "Campo requerido")
-          .max(15, "Máximo 15 caracteres")
-          .transform((value) => {
-            // Normalizar el número agregando + si no lo tiene
-            if (!value) return value;
-            return value.startsWith("+") ? value : `+${value}`;
-          })
-          .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
-            message: "Número de teléfono inválido",
-          }),
-        channel: z.string(),
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Schema para un solo contacto
+  const contactFormSchema = z.object({
+    name: z.string().min(1, "Nombre es requerido"),
+    role: z.string().min(1, "Rol es requerido"),
+    function: z.string().min(1, "Función es requerida"),
+    email: z.string().email("Email inválido"),
+    phone: z
+      .string()
+      .min(8, "Campo requerido")
+      .max(15, "Máximo 15 caracteres")
+      .transform((value) => {
+        // Normalizar el número agregando + si no lo tiene
+        if (!value) return value;
+        return value.startsWith("+") ? value : `+${value}`;
+      })
+      .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
+        message: "Número de teléfono inválido",
       }),
-    ),
+    channel: z.string().min(1, "Canal de comunicación es requerido"),
   });
-  type DebtorFormValues = z.infer<typeof debtorFormSchema>;
+
+  type ContactFormValues = z.infer<typeof contactFormSchema>;
 
   // Función para normalizar el número de teléfono
   const normalizePhoneNumber = (phone: string): string => {
@@ -65,41 +72,69 @@ const CreateContactForm = () => {
     return `+${phone}`;
   };
 
-  // Función para procesar los contactos y normalizar los teléfonos
-  const processContacts = (contacts: any[]) => {
-    return contacts.map((contact) => ({
-      name: contact?.name || "",
-      role: contact?.role || "",
-      function: contact?.function || "",
-      email: contact?.email || "",
-      phone: normalizePhoneNumber(contact?.phone || ""),
-      channel: contact?.channel || "",
-    }));
-  };
-
-  const form = useForm<DebtorFormValues>({
-    resolver: zodResolver(debtorFormSchema),
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactFormSchema),
     mode: "onChange",
     defaultValues: {
-      contact_info:
-        dataDebtor?.contacts && dataDebtor.contacts.length > 0
-          ? processContacts(dataDebtor.contacts)
-          : [
-              {
-                name: "",
-                role: "",
-                function: "",
-                email: "",
-                phone: "",
-                channel: "",
-              },
-            ],
+      name: "",
+      role: "",
+      function: "",
+      email: "",
+      phone: "",
+      channel: "",
     },
   });
-  const index = 0;
 
-  const handleSubmit = async (data: DebtorFormValues): Promise<void> => {
-    console.log(data);
+  const handleSubmit = async (data: ContactFormValues): Promise<void> => {
+    if (!dataDebtor?.id || !session?.token || !profile?.client?.id) {
+      toast.error("Error: No se encontró información del deudor");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Normalizar el teléfono del nuevo contacto
+      const newContact = {
+        name: data.name,
+        role: data.role,
+        function: data.function,
+        email: data.email,
+        phone: normalizePhoneNumber(data.phone),
+        channel: data.channel,
+      };
+
+      // Agregar el nuevo contacto al array existente de contactos
+      const updatedContacts = [...(dataDebtor.contacts || []), newContact];
+
+      // Actualizar el deudor con los contactos actualizados
+      const updatedDebtor = {
+        ...dataDebtor,
+        contacts: updatedContacts,
+      };
+
+      // Actualizar el store localmente primero (optimistic update)
+      setDataDebtor(updatedDebtor);
+
+      // Luego hacer el update en el backend
+      await updateDebtor(session.token, profile.client.id, updatedDebtor);
+
+      toast.success("Contacto agregado correctamente");
+      form.reset();
+
+      // Llamar al callback de éxito si existe
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Error al agregar contacto:", error);
+      toast.error("Error al agregar el contacto");
+
+      // Revertir el cambio optimista en caso de error
+      // Recargar el deudor original
+      setDataDebtor(dataDebtor);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -119,7 +154,7 @@ const CreateContactForm = () => {
               <div className="grid grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name={`contact_info.${index}.name`}
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Nombre </FormLabel>
@@ -132,7 +167,7 @@ const CreateContactForm = () => {
                 />
                 <FormField
                   control={form.control}
-                  name={`contact_info.${index}.role`}
+                  name="role"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Rol</FormLabel>
@@ -145,7 +180,7 @@ const CreateContactForm = () => {
                 />
                 <FormField
                   control={form.control}
-                  name={`contact_info.${index}.function`}
+                  name="function"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Función</FormLabel>
@@ -172,7 +207,7 @@ const CreateContactForm = () => {
                 />
                 <FormField
                   control={form.control}
-                  name={`contact_info.${index}.channel`}
+                  name="channel"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Canal preferente de comunicación</FormLabel>
@@ -197,7 +232,7 @@ const CreateContactForm = () => {
                 />
                 <FormField
                   control={form.control}
-                  name={`contact_info.${index}.email`}
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Email</FormLabel>
@@ -210,7 +245,7 @@ const CreateContactForm = () => {
                 />
                 <FormField
                   control={form.control}
-                  name={`contact_info.${index}.phone`}
+                  name="phone"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Teléfono</FormLabel>
@@ -222,9 +257,7 @@ const CreateContactForm = () => {
                           onChange={(value: E164Number | undefined) =>
                             field.onChange(value || "")
                           }
-                          error={
-                            !!form.formState.errors.contact_info?.[0]?.phone
-                          }
+                          error={!!form.formState.errors.phone}
                         />
                       </FormControl>
                       <FormMessage />
@@ -234,7 +267,9 @@ const CreateContactForm = () => {
               </div>
             </div>
             <div className="flex justify-end w-full">
-              <Button type="submit">Guardar contacto</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Guardando..." : "Guardar contacto"}
+              </Button>
             </div>
           </form>
         </FormProvider>

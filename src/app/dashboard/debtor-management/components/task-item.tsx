@@ -4,6 +4,12 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import DialogConfirm from "../../components/dialog-confirm";
+import { Popover } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TaskItemProps {
   debtorId: string; // UUID del deudor
@@ -62,45 +68,58 @@ export const TaskItem = ({
       <div
         onClick={handleClick}
         className={cn(
-          "flex items-center justify-between px-5 py-2 last:border-b-0 hover:bg-gray-100 transition-colors bg-white shadow-lg mb-2 cursor-pointer",
+          "flex items-center px-5 py-3 last:border-b-0 hover:bg-gray-100 transition-colors bg-white shadow-lg mb-2 cursor-pointer",
           highlighted && `border-l-4 ${borderColor} bg-gray-50/50`,
           !highlighted && ` opacity-50`,
         )}
       >
-        <div className="flex items-center gap-4 flex-1">
-          <div className="flex flex-col min-w-[100px]">
-            <span
-              className={cn(
-                "text-sm font-semibold",
-                highlighted ? "text-gray-900" : "text-gray-500",
-              )}
-            >
-              {code}
-            </span>
-            <span className="text-xs text-gray-600">{name}</span>
-          </div>
-
-          <div className="h-10 w-px bg-gray-200" />
-
-          <div className="flex flex-col min-w-[80px]">
-            <span className="text-lg font-bold text-red-500">{incidents}</span>
-            <span className="text-[10px] text-gray-600 -mt-1">
-              {incidentsLabel}
-            </span>
-          </div>
-
-          <div className="h-10 w-px bg-gray-200" />
-
-          <div className="flex flex-col min-w-[100px]">
-            <span className="text-sm font-semibold text-gray-900">{debt}</span>
-            <span className="text-[10px] text-gray-600 -mt-1">{debtLabel}</span>
-          </div>
-        </div>
-
-        <div className="ml-4">
+        {/* Código del deudor - ancho fijo */}
+        <div className="flex flex-col w-[100px] flex-shrink-0">
           <span
             className={cn(
-              "px-3 py-1 rounded-full text-[10px] font-medium whitespace-nowrap",
+              "text-base font-bold",
+              highlighted ? "text-gray-900" : "text-gray-500",
+            )}
+          >
+            {code}
+          </span>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-xs text-gray-500 truncate">{name}</span>
+            </TooltipTrigger>
+            <TooltipContent>{name}</TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Separador */}
+        <div className="h-10 w-px bg-gray-200 mx-4 flex-shrink-0" />
+
+        {/* Incumplimientos - ancho fijo centrado */}
+        <div className="flex flex-col items-center w-[120px] flex-shrink-0">
+          <span className="text-2xl font-bold text-red-500">{incidents}</span>
+          <span className="text-[10px] text-gray-500 -mt-1">
+            {incidentsLabel}
+          </span>
+        </div>
+
+        {/* Separador */}
+        <div className="h-10 w-px bg-gray-200 mx-4 flex-shrink-0" />
+
+        {/* Deuda vencida - ancho fijo centrado */}
+        <div className="flex flex-col items-center w-[140px] flex-shrink-0">
+          <span className="text-base font-semibold text-gray-900">{debt}</span>
+          <span className="text-[10px] text-gray-500 -mt-1">{debtLabel}</span>
+        </div>
+
+        {/* Espacio flexible para empujar el status a la derecha */}
+        <div className="flex-1" />
+
+        {/* Status - alineado a la derecha */}
+        <div className="flex-shrink-0">
+          <span
+            className={cn(
+              "px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap",
               statusBgColor,
               statusTextColor,
             )}

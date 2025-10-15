@@ -2,7 +2,7 @@
 
 import Language from "@/components/ui/language";
 import { ArrowLeft, PhoneCall } from "lucide-react";
-import { Suspense, useEffect } from "react";
+import { use, useEffect } from "react";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
@@ -23,25 +23,28 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { SkeletonFormDebtor } from "@/components/ui/skeleton-form-debtor";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const Content = ({ params }: PageProps) => {
+  // Unwrap params usando React.use()
+  const { id } = use(params);
+
   const { profile, session } = useProfileContext();
   const { fetchDebtorById, dataDebtor, isFetchingDebtor, clearDataDebtor } = useDebtorsStore();
 
   useEffect(() => {
-    if (params.id && profile?.client?.id && session?.token) {
-      fetchDebtorById(session.token, profile.client.id, params.id);
+    if (id && profile?.client?.id && session?.token) {
+      fetchDebtorById(session.token, profile.client.id, id);
     }
 
     // Limpiar datos al desmontar
     return () => {
       clearDataDebtor();
     };
-  }, [params.id, profile?.client?.id, session?.token]);
+  }, [id, profile?.client?.id, session?.token]);
 
   if (isFetchingDebtor) {
     return (
@@ -104,7 +107,7 @@ const Content = ({ params }: PageProps) => {
           </Button>
         </div>
 
-        {dataDebtor?.contacts && dataDebtor.contacts.length > 0 && (
+        {dataDebtor?.contacts && dataDebtor.contacts.length > 0 ? (
           <DebtorContacts
             mainContact={{
               name: dataDebtor.contacts[0]?.name || "Sin nombre",
@@ -123,6 +126,19 @@ const Content = ({ params }: PageProps) => {
               channel: (contact.channel as "email" | "phone" | "whatsapp") || "email",
             }))}
             callSchedule={dataDebtor.attention_days_hours || "No definido"}
+          />
+        ) : (
+          <DebtorContacts
+            mainContact={{
+              name: "Sin contacto principal",
+              role: "N/A",
+              function: "N/A",
+              email: "N/A",
+              phone: "N/A",
+              channel: "email",
+            }}
+            additionalContacts={[]}
+            callSchedule="No definido"
           />
         )}
 
@@ -144,11 +160,7 @@ const Content = ({ params }: PageProps) => {
 };
 
 const Page = ({ params }: PageProps) => {
-  return (
-    <Suspense fallback={<div>Cargando...</div>}>
-      <Content params={params} />
-    </Suspense>
-  );
+  return <Content params={params} />;
 };
 
 export default Page;

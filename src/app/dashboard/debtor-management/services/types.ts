@@ -46,3 +46,37 @@ export interface CollectorQuadrantsResponse {
 export interface CollectorQuadrantsParams extends PaginationParams {
   quadrant?: QuadrantType;
 }
+
+// Tipos para indicadores de gestión
+export interface ManagementIndicators {
+  status: {
+    state: "active" | "inactive";
+    last_updated?: string;
+    last_updated_time?: string;
+  };
+  tasks: {
+    completed: number;
+    pending: number;
+    total: number;
+    progress_percent: number;
+  };
+  payment_commitments: {
+    amount: number;
+    commitments_count: number;
+  };
+  daily_goal: {
+    current_amount: number;
+    target_amount: number;
+    percentage: number;
+  };
+  overdue_reduction: {
+    percentage: number;
+    current_amount: number;
+    total_amount: number;
+  };
+  monthly_goal: {
+    current_amount: number;
+    target_amount: number;
+    percentage: number;
+  };
+}

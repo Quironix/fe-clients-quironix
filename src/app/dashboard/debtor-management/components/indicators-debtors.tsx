@@ -1,5 +1,6 @@
 "use client";
 
+import { useProfileContext } from "@/context/ProfileContext";
 import { IconCalendarTime } from "@tabler/icons-react";
 import {
   ChartLine,
@@ -8,16 +9,61 @@ import {
   Target,
   User,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+import { useManagementIndicators } from "../hooks/useManagementIndicators";
 import { IndicatorCard } from "./indicator-card";
 import { formatValue, ProgressBarChart } from "./progress-bar-chart";
 
+dayjs.locale("es");
+
 const IndicatorsDebtor = () => {
-  // TODO: Integrar con el API cuando esté disponible la información de métricas
-  // const { session, profile } = useProfileContext();
-  // const { data } = useCollectorQuadrants({
-  //   accessToken: session?.token || "",
-  //   clientId: profile?.client?.id || "",
-  // });
+  const { session, profile } = useProfileContext();
+  const { data, isLoading, isError } = useManagementIndicators({
+    accessToken: session?.token || "",
+    clientId: profile?.client?.id || "",
+  });
+
+  const [currentTime, setCurrentTime] = useState(dayjs());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(dayjs());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Mostrar loading state
+  if (isLoading) {
+    return (
+      <div className="bg-white shadow-xl rounded-md p-3 space-y-2">
+        <div className="text-gray-500 text-center py-4">Cargando...</div>
+      </div>
+    );
+  }
+
+  // Mostrar error state
+  if (isError || !data) {
+    return (
+      <div className="bg-white shadow-xl rounded-md p-3 space-y-2">
+        <div className="text-red-500 text-center py-4">
+          Error al cargar indicadores
+        </div>
+      </div>
+    );
+  }
+
+  const isActive = data.status.state === "active";
+  const statusColor = isActive ? "green" : "gray";
+  const statusBgColor = isActive ? "#43C41133" : "#f3f4f6";
+  const statusTextColor = isActive ? "text-green-800" : "text-gray-800";
+  const statusDotColor = isActive ? "bg-green-700" : "bg-gray-700";
+
+  const date = currentTime.format("DD/MM/YYYY");
+  const time = currentTime.format("HH:mm");
+
   const FirstCard = () => (
     <div className="bg-white shadow-xl rounded-md p-3 space-y-2">
       <div className="flex gap-3 justify-between items-center">
@@ -26,30 +72,37 @@ const IndicatorsDebtor = () => {
           <span>Estado</span>
         </div>
         <div>
-          <div className="bg-[#43C41133] text-green-800 flex font-bold text-xs rounded-full items-center justify-start gap-1 px-3 text-center">
-            <span className="w-2 h-2 bg-green-700 rounded-full" /> Activo
+          <div
+            className={`flex font-bold text-xs rounded-full items-center justify-start gap-1 px-3 text-center ${statusTextColor}`}
+            style={{ backgroundColor: statusBgColor }}
+          >
+            <span className={`w-2 h-2 rounded-full ${statusDotColor}`} />{" "}
+            {isActive ? "Activo" : "Inactivo"}
           </div>
         </div>
       </div>
+
       <div className="flex gap-3 justify-between items-center">
         <div className="flex gap-1">
           <IconCalendarTime className="text-gray-400" />
-          <span>06/09/2025</span>
+          <span>{date}</span>
         </div>
+
         <div>
-          <span>14:10</span>
+          <span>{time}</span>
         </div>
       </div>
+
       <div className="flex gap-3 justify-between items-center">
         <div className="flex gap-1">Tareas realizadas</div>
         <div>
-          <span className="text-green-700">16</span>
+          <span className="text-green-700">{data.tasks.completed}</span>
         </div>
       </div>
       <div className="flex gap-3 justify-between items-center">
         <div className="flex gap-1">Tareas pendientes</div>
         <div>
-          <span className="text-red-700">8</span>
+          <span className="text-red-700">{data.tasks.pending}</span>
         </div>
       </div>
     </div>
@@ -64,8 +117,12 @@ const IndicatorsDebtor = () => {
         title="Avance del ejecutivo"
       >
         <div className="flex flex-col">
-          <span className="text-3xl text-black font-black">68%</span>
-          <span className="text-sm text-black -mt-1">16/24 tareas</span>
+          <span className="text-3xl text-black font-black">
+            {data.tasks.progress_percent}%
+          </span>
+          <span className="text-sm text-black -mt-1">
+            {data.tasks.completed}/{data.tasks.total} tareas
+          </span>
         </div>
       </IndicatorCard>
 
@@ -74,8 +131,12 @@ const IndicatorsDebtor = () => {
         title="Meta del día"
       >
         <div className="flex flex-col">
-          <span className="text-3xl text-black font-black">$288M</span>
-          <span className="text-sm text-black -mt-1">de $425M</span>
+          <span className="text-3xl text-black font-black">
+            {formatValue(data.daily_goal.current_amount)}
+          </span>
+          <span className="text-sm text-black -mt-1">
+            de {formatValue(data.daily_goal.target_amount)}
+          </span>
         </div>
       </IndicatorCard>
 
@@ -83,12 +144,17 @@ const IndicatorsDebtor = () => {
         icon={<ChartLine className="text-blue-600" />}
         title="Reducción de morosidad"
       >
-        <div className="flex flex-col w-full">
-          <span className="text-3xl text-black font-black">67%</span>
+        <div className="flex flex-col w-full min-w-full">
+          <span className="text-3xl text-black font-black">
+            {data.overdue_reduction.percentage}%
+          </span>
           <ProgressBarChart
             color="#43C41180"
-            leftValue={288000000}
-            rightValue={137000000}
+            leftValue={data.overdue_reduction.current_amount}
+            rightValue={
+              data.overdue_reduction.total_amount -
+              data.overdue_reduction.current_amount
+            }
             separatorColor="#15803d"
           />
         </div>
@@ -100,10 +166,11 @@ const IndicatorsDebtor = () => {
       >
         <div className="flex flex-col">
           <span className="text-3xl text-black font-black">
-            {formatValue(288000000)}
+            {formatValue(data.payment_commitments.amount)}
           </span>
           <span className="text-sm text-black -mt-1">
-            de 8 compromisos obtenidos
+            de {data.payment_commitments.commitments_count} compromisos
+            obtenidos
           </span>
         </div>
       </IndicatorCard>
@@ -113,11 +180,15 @@ const IndicatorsDebtor = () => {
         title="Meta del mes"
       >
         <div className="flex flex-col w-full">
-          <span className="text-3xl text-black font-black">30%</span>
+          <span className="text-3xl text-black font-black">
+            {data.monthly_goal.percentage}%
+          </span>
           <ProgressBarChart
             color="#FFCC0080"
-            leftValue={1200000}
-            rightValue={4000000}
+            leftValue={data.monthly_goal.current_amount}
+            rightValue={
+              data.monthly_goal.target_amount - data.monthly_goal.current_amount
+            }
             separatorColor="#FFCC00"
           />
         </div>

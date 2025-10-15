@@ -24,8 +24,8 @@ export const ProgressBarChart = ({
   separatorColor = "#ffffff",
 }: ProgressBarChartProps) => {
   const total = leftValue + rightValue;
-  const leftPercentage = (leftValue / total) * 100;
-  const rightPercentage = (rightValue / total) * 100;
+  const leftPercentage = total > 0 ? (leftValue / total) * 100 : 50;
+  const rightPercentage = total > 0 ? (rightValue / total) * 100 : 50;
 
   return (
     <div className="flex w-full">

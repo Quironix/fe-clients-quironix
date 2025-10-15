@@ -1,6 +1,7 @@
 import {
   CollectorQuadrantsParams,
   CollectorQuadrantsResponse,
+  ManagementIndicators,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -53,6 +54,34 @@ export const getCollectorQuadrants = async (
     return data as CollectorQuadrantsResponse;
   } catch (error) {
     console.error("Error al obtener cuadrantes de cobrador:", error);
+    throw error;
+  }
+};
+
+export const getManagementIndicators = async (
+  accessToken: string,
+  clientId: string
+): Promise<ManagementIndicators> => {
+  try {
+    const url = `${API_URL}/v2/clients/${clientId}/managements/indicators`;
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data || typeof data !== "object") {
+      throw new Error("Respuesta del servidor no válida");
+    }
+
+    return data as ManagementIndicators;
+  } catch (error) {
+    console.error("Error al obtener indicadores de gestión:", error);
     throw error;
   }
 };
