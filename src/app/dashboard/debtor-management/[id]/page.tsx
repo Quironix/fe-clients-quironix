@@ -3,9 +3,12 @@
 import Language from "@/components/ui/language";
 import {
   ArrowLeft,
+  CreditCard,
   File,
   FileX2,
+  History,
   PhoneCall,
+  Scale,
   ShieldCheck,
   TriangleAlert,
 } from "lucide-react";
@@ -33,6 +36,9 @@ import PaymentCommitment from "../components/payment-commitment";
 import CreditRisk from "../components/credit-risk";
 import { CardCollapsible } from "@/app/dashboard/components/card-collapsible";
 import ProtestedChecks from "../components/protested-checks";
+import LastPaymentReceived from "../components/last-payment-received";
+import LitigationsCard from "../components/litigations-card";
+import LastManagements from "../components/last-managements";
 
 interface PageProps {
   params: Promise<{
@@ -226,6 +232,29 @@ const Content = ({ params }: PageProps) => {
                         <ProtestedChecks
                           data={collectionProfile.protested_checks}
                         />
+                      </CardCollapsible>
+                      <CardCollapsible
+                        icon={<CreditCard />}
+                        title="Último pago recibido"
+                        defaultOpen={false}
+                      >
+                        <LastPaymentReceived
+                          data={collectionProfile.last_payment_received}
+                        />
+                      </CardCollapsible>
+                      <CardCollapsible
+                        icon={<Scale />}
+                        title="Litigios"
+                        defaultOpen={false}
+                      >
+                        <LitigationsCard data={collectionProfile.litigations} />
+                      </CardCollapsible>
+                      <CardCollapsible
+                        icon={<History />}
+                        title="Últimas gestiones"
+                        defaultOpen={false}
+                      >
+                        <LastManagements data={collectionProfile.management} />
                       </CardCollapsible>
                     </div>
                   ) : (
