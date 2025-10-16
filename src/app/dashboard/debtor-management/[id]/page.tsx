@@ -1,7 +1,14 @@
 "use client";
 
 import Language from "@/components/ui/language";
-import { ArrowLeft, PhoneCall } from "lucide-react";
+import {
+  ArrowLeft,
+  File,
+  FileX2,
+  PhoneCall,
+  ShieldCheck,
+  TriangleAlert,
+} from "lucide-react";
 import { use, useEffect } from "react";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
@@ -21,6 +28,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDebtorsStore } from "../../debtors/store";
 import { useProfileContext } from "@/context/ProfileContext";
 import { SkeletonFormDebtor } from "@/components/ui/skeleton-form-debtor";
+import { KeyReasons } from "../components/key-reasons";
+import PaymentCommitment from "../components/payment-commitment";
+import CreditRisk from "../components/credit-risk";
+import { CardCollapsible } from "@/app/dashboard/components/card-collapsible";
+import ProtestedChecks from "../components/protested-checks";
 
 interface PageProps {
   params: Promise<{
@@ -33,16 +45,27 @@ const Content = ({ params }: PageProps) => {
   const { id } = use(params);
 
   const { profile, session } = useProfileContext();
-  const { fetchDebtorById, dataDebtor, isFetchingDebtor, clearDataDebtor } = useDebtorsStore();
+  const {
+    fetchDebtorById,
+    dataDebtor,
+    isFetchingDebtor,
+    clearDataDebtor,
+    fetchCollectionProfile,
+    collectionProfile,
+    isFetchingCollectionProfile,
+    clearCollectionProfile,
+  } = useDebtorsStore();
 
   useEffect(() => {
     if (id && profile?.client?.id && session?.token) {
       fetchDebtorById(session.token, profile.client.id, id);
+      fetchCollectionProfile(session.token, profile.client.id, id);
     }
 
     // Limpiar datos al desmontar
     return () => {
       clearDataDebtor();
+      clearCollectionProfile();
     };
   }, [id, profile?.client?.id, session?.token]);
 
@@ -93,7 +116,9 @@ const Content = ({ params }: PageProps) => {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage>
-                  <span className="font-bold">{dataDebtor?.name || "Cargando..."}</span>
+                  <span className="font-bold">
+                    {dataDebtor?.name || "Cargando..."}
+                  </span>
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
@@ -115,16 +140,24 @@ const Content = ({ params }: PageProps) => {
               function: dataDebtor.contacts[0]?.function || "Sin función",
               email: dataDebtor.contacts[0]?.email || "Sin email",
               phone: dataDebtor.contacts[0]?.phone || "Sin teléfono",
-              channel: (dataDebtor.contacts[0]?.channel as "email" | "phone" | "whatsapp") || "email",
+              channel:
+                (dataDebtor.contacts[0]?.channel as
+                  | "email"
+                  | "phone"
+                  | "whatsapp") || "email",
             }}
-            additionalContacts={dataDebtor.contacts.slice(1).map((contact: any) => ({
-              name: contact.name || "Sin nombre",
-              role: contact.role || "Sin rol",
-              function: contact.function || "Sin función",
-              email: contact.email || "Sin email",
-              phone: contact.phone || "Sin teléfono",
-              channel: (contact.channel as "email" | "phone" | "whatsapp") || "email",
-            }))}
+            additionalContacts={dataDebtor.contacts
+              .slice(1)
+              .map((contact: any) => ({
+                name: contact.name || "Sin nombre",
+                role: contact.role || "Sin rol",
+                function: contact.function || "Sin función",
+                email: contact.email || "Sin email",
+                phone: contact.phone || "Sin teléfono",
+                channel:
+                  (contact.channel as "email" | "phone" | "whatsapp") ||
+                  "email",
+              }))}
             callSchedule={dataDebtor.attention_days_hours || "No definido"}
           />
         ) : (
@@ -142,16 +175,72 @@ const Content = ({ params }: PageProps) => {
           />
         )}
 
-        <div className="bg-white p-5 rounded-md shadow-xl h-screen mt-5">
-          <Tabs defaultValue="quironix-ia">
+        <div className="bg-white p-5 rounded-md shadow-xl mt-5  min-h-auto flex flex-col">
+          <Tabs defaultValue="key-reasons" className="flex flex-col flex-1">
             <TabsList>
-              <TabsTrigger value="quironix-ia">Quironix IA</TabsTrigger>
               <TabsTrigger value="key-reasons">Razones clave</TabsTrigger>
               <TabsTrigger value="add-management">Agregar gestión</TabsTrigger>
             </TabsList>
-            <TabsContent value="quironix-ia">quironix-ia</TabsContent>
-            <TabsContent value="key-reasons">key-reasons</TabsContent>
-            <TabsContent value="add-management">add-management</TabsContent>
+            <TabsContent value="key-reasons" className="flex-1">
+              <div className="flex gap-5 h-full w-full">
+                <div className="bg-gray-100 border-gray-700 rounded-sm h-full w-full flex justify-center items-center">
+                  CHATBOT
+                </div>
+                <div className="h-full w-2xl overflow-y-auto">
+                  {isFetchingCollectionProfile ? (
+                    <div className="bg-white p-6 rounded-md h-full flex items-center justify-center">
+                      <span className="text-gray-500">
+                        Cargando razones clave...
+                      </span>
+                    </div>
+                  ) : collectionProfile ? (
+                    <div className="flex flex-col gap-3">
+                      <KeyReasons
+                        callReasons={collectionProfile.call_reasons}
+                      />
+
+                      <CardCollapsible
+                        icon={<ShieldCheck />}
+                        title="Compromiso de pago"
+                        defaultOpen={false}
+                        destacado={true}
+                      >
+                        <PaymentCommitment
+                          data={collectionProfile.payment_commitment}
+                        />
+                      </CardCollapsible>
+                      <CardCollapsible
+                        icon={<TriangleAlert />}
+                        title="Riesgo crediticio"
+                        defaultOpen={false}
+                      >
+                        <CreditRisk
+                          data={collectionProfile.payment_commitment}
+                        />
+                      </CardCollapsible>
+                      <CardCollapsible
+                        icon={<FileX2 />}
+                        title="Cheques protestos"
+                        defaultOpen={false}
+                      >
+                        <ProtestedChecks
+                          data={collectionProfile.protested_checks}
+                        />
+                      </CardCollapsible>
+                    </div>
+                  ) : (
+                    <div className="bg-white p-6 rounded-md h-full flex items-center justify-center">
+                      <span className="text-gray-500">
+                        No hay datos disponibles
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="add-management" className="flex-1">
+              add-management
+            </TabsContent>
           </Tabs>
         </div>
       </Main>
