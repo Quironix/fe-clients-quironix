@@ -47,6 +47,7 @@ export interface PaymentCommitment {
 }
 
 export interface CollectionProfile {
+  call_brief?: string;
   call_reasons: CallReasons;
   payment_commitment: PaymentCommitment;
   protested_checks?: any[];
