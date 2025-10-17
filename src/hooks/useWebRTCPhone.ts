@@ -6,9 +6,6 @@ import { toast } from "sonner";
 
 // Importar JsSIP de forma dinámica para evitar problemas con SSR
 let JsSIP: any = null;
-if (typeof window !== "undefined") {
-  JsSIP = require("jssip");
-}
 
 export const useWebRTCPhone = () => {
   const {
@@ -51,8 +48,8 @@ export const useWebRTCPhone = () => {
   }, []);
 
   // Registrar el User Agent
-  const register = useCallback(() => {
-    if (!config || !JsSIP) {
+  const register = useCallback(async () => {
+    if (!config) {
       toast.error("Configuración de WebRTC no disponible");
       return;
     }
@@ -64,6 +61,16 @@ export const useWebRTCPhone = () => {
 
     try {
       setCallStatus("registering");
+
+      // Cargar JsSIP dinámicamente
+      if (!JsSIP && typeof window !== "undefined") {
+        JsSIP = await import("jssip");
+      }
+
+      if (!JsSIP) {
+        toast.error("No se pudo cargar la librería JsSIP");
+        return;
+      }
 
       const socket = new JsSIP.WebSocketInterface(config.wsUri);
       const configuration = {
@@ -174,10 +181,13 @@ export const useWebRTCPhone = () => {
               if (!remoteAudioRef.current.srcObject) {
                 remoteAudioRef.current.srcObject = new MediaStream();
               }
-              remoteAudioRef.current.srcObject.addTrack(e.track);
-              remoteAudioRef.current
-                .play()
-                .catch((err) => console.warn("Autoplay bloqueado:", err));
+              const srcObject = remoteAudioRef.current.srcObject;
+              if (srcObject instanceof MediaStream) {
+                srcObject.addTrack(e.track);
+                remoteAudioRef.current
+                  .play()
+                  .catch((err) => console.warn("Autoplay bloqueado:", err));
+              }
             }
           }
         );

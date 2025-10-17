@@ -60,7 +60,7 @@ export const KeyReasonsTab = ({
             title="Riesgo crediticio"
             defaultOpen={false}
           >
-            <CreditRisk data={collectionProfile.payment_commitment} />
+            <CreditRisk data={collectionProfile.call_reasons} />
           </CardCollapsible>
 
           <CardCollapsible
@@ -68,7 +68,7 @@ export const KeyReasonsTab = ({
             title="Cheques protestos"
             defaultOpen={false}
           >
-            <ProtestedChecks data={collectionProfile.protested_checks} />
+            <ProtestedChecks data={collectionProfile.protested_checks || []} />
           </CardCollapsible>
 
           <CardCollapsible
@@ -76,7 +76,7 @@ export const KeyReasonsTab = ({
             title="Último pago recibido"
             defaultOpen={false}
           >
-            <LastPaymentReceived data={collectionProfile.last_payment_received} />
+            <LastPaymentReceived data={collectionProfile.last_payment_received || null} />
           </CardCollapsible>
 
           <CardCollapsible
@@ -84,7 +84,7 @@ export const KeyReasonsTab = ({
             title="Litigios"
             defaultOpen={false}
           >
-            <LitigationsCard data={collectionProfile.litigations} />
+            <LitigationsCard data={collectionProfile.litigations || null} />
           </CardCollapsible>
 
           <CardCollapsible
@@ -92,7 +92,7 @@ export const KeyReasonsTab = ({
             title="Últimas gestiones"
             defaultOpen={false}
           >
-            <LastManagements data={collectionProfile.management} />
+            <LastManagements data={collectionProfile.management || null} />
           </CardCollapsible>
         </div>
       </div>

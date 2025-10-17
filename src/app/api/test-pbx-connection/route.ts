@@ -27,7 +27,7 @@ export async function GET() {
         host: PBX_SERVER,
         port,
         status: response.ok ? "reachable" : "unreachable",
-        error: response.error || null,
+        error: "error" in response ? response.error : null,
       });
     } catch (error: any) {
       results.push({
