@@ -1,4 +1,5 @@
 import { Separator } from "@/components/ui/separator";
+import { Fragment } from "react";
 import { CallReasons } from "../types";
 
 const ProtestedChecks = ({ data }: { data: any[] }) => {
@@ -7,8 +8,8 @@ const ProtestedChecks = ({ data }: { data: any[] }) => {
       {/* Tu contenido aquí */}
 
       {data.map((dt, index) => (
-        <>
-          <div className="flex justify-between items-center" key={index}>
+        <Fragment key={dt.id || index}>
+          <div className="flex justify-between items-center">
             <div>
               <h4 className="font-semibold">N°{dt.number}</h4>
               <p className="text-sm text-muted-foreground">${dt.amount}</p>
@@ -23,7 +24,7 @@ const ProtestedChecks = ({ data }: { data: any[] }) => {
             </div>
           </div>
           {index < data.length - 1 && <Separator />}
-        </>
+        </Fragment>
       ))}
     </div>
   );
