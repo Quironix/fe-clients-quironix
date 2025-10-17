@@ -1,17 +1,7 @@
 "use client";
 
 import Language from "@/components/ui/language";
-import {
-  ArrowLeft,
-  CreditCard,
-  File,
-  FileX2,
-  History,
-  PhoneCall,
-  Scale,
-  ShieldCheck,
-  TriangleAlert,
-} from "lucide-react";
+import { ArrowLeft, PhoneCall } from "lucide-react";
 import { use, useEffect } from "react";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
@@ -31,15 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDebtorsStore } from "../../debtors/store";
 import { useProfileContext } from "@/context/ProfileContext";
 import { SkeletonFormDebtor } from "@/components/ui/skeleton-form-debtor";
-import { KeyReasons } from "../components/key-reasons";
-import PaymentCommitment from "../components/payment-commitment";
-import CreditRisk from "../components/credit-risk";
-import { CardCollapsible } from "@/app/dashboard/components/card-collapsible";
-import ProtestedChecks from "../components/protested-checks";
-import LastPaymentReceived from "../components/last-payment-received";
-import LitigationsCard from "../components/litigations-card";
-import LastManagements from "../components/last-managements";
-import { DebtorChatbot } from "../components/debtor-chatbot";
+import { KeyReasonsTab } from "../components/tabs/key-reasons-tab";
+import { AddManagementTab } from "../components/tabs/add-management-tab";
 
 interface PageProps {
   params: Promise<{
@@ -182,94 +165,21 @@ const Content = ({ params }: PageProps) => {
           />
         )}
 
-        <div className="bg-white p-5 rounded-md shadow-xl mt-5  min-h-auto flex flex-col">
+        <div className="bg-white p-5 rounded-md shadow-xl mt-5 min-h-auto flex flex-col">
           <Tabs defaultValue="key-reasons" className="flex flex-col flex-1">
             <TabsList>
               <TabsTrigger value="key-reasons">Razones clave</TabsTrigger>
               <TabsTrigger value="add-management">Agregar gestión</TabsTrigger>
             </TabsList>
             <TabsContent value="key-reasons" className="flex-1">
-              <div className="flex gap-5 h-full w-full">
-                <div className="h-full w-full">
-                  <DebtorChatbot debtorId={id} />
-                </div>
-                <div className="h-full w-2xl overflow-y-auto">
-                  {isFetchingCollectionProfile ? (
-                    <div className="bg-white p-6 rounded-md h-full flex items-center justify-center">
-                      <span className="text-gray-500">
-                        Cargando razones clave...
-                      </span>
-                    </div>
-                  ) : collectionProfile ? (
-                    <div className="flex flex-col gap-3">
-                      <KeyReasons
-                        callReasons={collectionProfile.call_reasons}
-                      />
-
-                      <CardCollapsible
-                        icon={<ShieldCheck />}
-                        title="Compromiso de pago"
-                        defaultOpen={false}
-                        destacado={true}
-                      >
-                        <PaymentCommitment
-                          data={collectionProfile.payment_commitment}
-                        />
-                      </CardCollapsible>
-                      <CardCollapsible
-                        icon={<TriangleAlert />}
-                        title="Riesgo crediticio"
-                        defaultOpen={false}
-                      >
-                        <CreditRisk
-                          data={collectionProfile.payment_commitment}
-                        />
-                      </CardCollapsible>
-                      <CardCollapsible
-                        icon={<FileX2 />}
-                        title="Cheques protestos"
-                        defaultOpen={false}
-                      >
-                        <ProtestedChecks
-                          data={collectionProfile.protested_checks}
-                        />
-                      </CardCollapsible>
-                      <CardCollapsible
-                        icon={<CreditCard />}
-                        title="Último pago recibido"
-                        defaultOpen={false}
-                      >
-                        <LastPaymentReceived
-                          data={collectionProfile.last_payment_received}
-                        />
-                      </CardCollapsible>
-                      <CardCollapsible
-                        icon={<Scale />}
-                        title="Litigios"
-                        defaultOpen={false}
-                      >
-                        <LitigationsCard data={collectionProfile.litigations} />
-                      </CardCollapsible>
-                      <CardCollapsible
-                        icon={<History />}
-                        title="Últimas gestiones"
-                        defaultOpen={false}
-                      >
-                        <LastManagements data={collectionProfile.management} />
-                      </CardCollapsible>
-                    </div>
-                  ) : (
-                    <div className="bg-white p-6 rounded-md h-full flex items-center justify-center">
-                      <span className="text-gray-500">
-                        No hay datos disponibles
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <KeyReasonsTab
+                debtorId={id}
+                collectionProfile={collectionProfile}
+                isFetchingCollectionProfile={isFetchingCollectionProfile}
+              />
             </TabsContent>
             <TabsContent value="add-management" className="flex-1">
-              add-management
+              <AddManagementTab dataDebtor={dataDebtor} />
             </TabsContent>
           </Tabs>
         </div>

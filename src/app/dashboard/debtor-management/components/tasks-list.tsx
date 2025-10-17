@@ -5,14 +5,39 @@ import { useCollectorQuadrants } from "../hooks/useCollectorQuadrants";
 import { AlertTriangle, CircleCheckBig, FileText, Scale, File } from "lucide-react";
 import { TaskIsland } from "./task-island";
 import { TaskItem } from "./task-item";
+import { TasksPagination } from "./tasks-pagination";
+import { useState, useEffect } from "react";
+import { QuadrantType } from "../services/types";
 
-export const TasksList = () => {
+interface TasksListProps {
+  selectedQuadrant: QuadrantType;
+}
+
+export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
   const { session, profile } = useProfileContext();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageLimit] = useState(20); // Límite de items por página
+
+  // Resetear página cuando cambia el filtro
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedQuadrant]);
 
   const { data, isLoading, isError } = useCollectorQuadrants({
     accessToken: session?.token || "",
     clientId: profile?.client?.id || "",
+    params: {
+      page: currentPage,
+      limit: pageLimit,
+      quadrant: selectedQuadrant,
+    },
   });
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (isLoading) {
     return (
@@ -222,6 +247,15 @@ export const TasksList = () => {
             />
           ))}
         </TaskIsland>
+      )}
+
+      {/* Paginación */}
+      {data?.pagination && (
+        <TasksPagination
+          pagination={data.pagination}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+        />
       )}
     </div>
   );

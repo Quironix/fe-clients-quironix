@@ -107,6 +107,7 @@ export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
 
         let assistantText = "";
         let done = false;
+        let buffer = "";
 
         // Crear mensaje temporal del asistente
         const assistantMessage: ThreadMessageLike = {
@@ -119,29 +120,64 @@ export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
           assistantMessage,
         ]);
 
+        // Procesar tokens línea por línea
         while (!done) {
           const { value, done: streamDone } = await reader.read();
           done = streamDone;
 
           if (value) {
             const chunk = decoder.decode(value, { stream: true });
-            assistantText += chunk;
+            buffer += chunk;
 
-            // Actualizar el último mensaje (el del asistente)
-            setMessages((currentMessages) => {
-              const newMessages = [...currentMessages];
-              const lastMessage = newMessages[newMessages.length - 1];
-              if (lastMessage && lastMessage.role === "assistant") {
-                return [
-                  ...newMessages.slice(0, -1),
-                  {
-                    role: "assistant",
-                    content: [{ type: "text", text: assistantText }],
-                  },
-                ];
+            // Dividir por saltos de línea (considerar \n y \r\n)
+            const lines = buffer.split(/\r?\n/);
+
+            // Guardar la última línea (puede estar incompleta) en el buffer
+            buffer = lines.pop() || '';
+
+            // Procesar cada línea completa
+            for (const line of lines) {
+              const trimmedLine = line.trim();
+              if (trimmedLine) {
+                // Regex más flexible: captura contenido entre 0:" y la comilla de cierre
+                // Usa non-greedy (.*?) para manejar comillas internas correctamente
+                const match = trimmedLine.match(/^0:"((?:[^"\\]|\\.)*)"/);
+                if (match) {
+                  let token = match[1];
+
+                  // Decodificar secuencias de escape en el orden correcto
+                  token = token
+                    .replace(/\\\\/g, '\\')  // \\ → \
+                    .replace(/\\"/g, '"')    // \" → "
+                    .replace(/\\n/g, '\n')   // \n → newline
+                    .replace(/\\t/g, '\t')   // \t → tab
+                    .replace(/\\r/g, '\r');  // \r → carriage return
+
+                  assistantText += token;
+                } else {
+                  // Log para debug si una línea no matchea
+                  console.log('Line did not match pattern:', trimmedLine);
+                }
               }
-              return newMessages;
-            });
+            }
+
+            // Actualizar el mensaje del asistente después de procesar cada chunk
+            if (assistantText) {
+              setMessages((currentMessages) => {
+                const newMessages = [...currentMessages];
+                const lastMessage = newMessages[newMessages.length - 1];
+                if (lastMessage && lastMessage.role === "assistant") {
+                  return [
+                    ...newMessages.slice(0, -1),
+                    {
+                      role: "assistant",
+                      content: [{ type: "text", text: assistantText }],
+                    },
+                  ];
+                }
+                return newMessages;
+              });
+            }
           }
         }
       } catch (error) {

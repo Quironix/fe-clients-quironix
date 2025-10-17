@@ -45,6 +45,7 @@ export interface CollectorQuadrantsResponse {
 // Parámetros para la petición
 export interface CollectorQuadrantsParams extends PaginationParams {
   quadrant?: QuadrantType;
+  search?: string;
 }
 
 // Tipos para indicadores de gestión

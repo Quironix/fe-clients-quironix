@@ -2,15 +2,18 @@
 
 import Language from "@/components/ui/language";
 import { PhoneCall } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import IndicatorsDebtor from "./components/indicators-debtors";
 import { TaskFilters } from "./components/task-filters";
 import { TasksList } from "./components/tasks-list";
+import { QuadrantType } from "./services/types";
 
 const Content = () => {
+  const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantType>(null);
+
   return (
     <>
       <Header fixed>
@@ -28,8 +31,11 @@ const Content = () => {
             <IndicatorsDebtor />
           </div>
           <div className="flex-1 bg-white p-5 rounded-md shadow-xl">
-            <TaskFilters />
-            <TasksList />
+            <TaskFilters
+              selectedQuadrant={selectedQuadrant}
+              onQuadrantChange={setSelectedQuadrant}
+            />
+            <TasksList selectedQuadrant={selectedQuadrant} />
           </div>
         </div>
       </Main>
