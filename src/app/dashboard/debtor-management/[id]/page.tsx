@@ -39,6 +39,7 @@ import ProtestedChecks from "../components/protested-checks";
 import LastPaymentReceived from "../components/last-payment-received";
 import LitigationsCard from "../components/litigations-card";
 import LastManagements from "../components/last-managements";
+import { DebtorChatbot } from "../components/debtor-chatbot";
 
 interface PageProps {
   params: Promise<{
@@ -189,8 +190,8 @@ const Content = ({ params }: PageProps) => {
             </TabsList>
             <TabsContent value="key-reasons" className="flex-1">
               <div className="flex gap-5 h-full w-full">
-                <div className="bg-gray-100 border-gray-700 rounded-sm h-full w-full flex justify-center items-center">
-                  CHATBOT
+                <div className="h-full w-full">
+                  <DebtorChatbot debtorId={id} />
                 </div>
                 <div className="h-full w-2xl overflow-y-auto">
                   {isFetchingCollectionProfile ? (

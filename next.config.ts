@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
     "@tanstack/react-table",
     "@tanstack/table-core",
     "@tanstack/react-query",
+    "@assistant-ui/react",
+    "@assistant-ui/react-markdown",
   ],
 
   // Optimizaciones de desarrollo mejoradas
