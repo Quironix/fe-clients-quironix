@@ -53,7 +53,13 @@ export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
 
             if (typeof firstContent === "string") {
               contentText = firstContent;
-            } else if (firstContent && typeof firstContent === "object" && "type" in firstContent && firstContent.type === "text" && "text" in firstContent) {
+            } else if (
+              firstContent &&
+              typeof firstContent === "object" &&
+              "type" in firstContent &&
+              firstContent.type === "text" &&
+              "text" in firstContent
+            ) {
               contentText = firstContent.text;
             }
 
@@ -84,7 +90,7 @@ export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ messages: apiMessages }),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -156,7 +162,7 @@ export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
         setIsStreaming(false);
       }
     },
-    [messages, debtorId, profile?.client?.id, session?.token]
+    [messages, debtorId, profile?.client?.id, session?.token],
   );
 
   const convertMessage = useCallback((message: ThreadMessageLike) => {
@@ -173,7 +179,7 @@ export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <div className="h-full w-full flex flex-col bg-white rounded-md border">
+      <div className="h-[400px] w-full flex flex-col bg-[#f9fcff] rounded-md border p-2 overflow-y-auto">
         <Thread />
       </div>
     </AssistantRuntimeProvider>

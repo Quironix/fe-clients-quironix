@@ -1,7 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Clock, Phone, Plus, User, Mail, PhoneOff } from "lucide-react";
+import {
+  Clock,
+  Phone,
+  Plus,
+  User,
+  Mail,
+  PhoneOff,
+  MailIcon,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import DialogForm from "../../components/dialog-form";
 import CreateContactForm from "../../components/create-contact-from";
@@ -31,14 +39,17 @@ export const DebtorContacts = ({
   const { isRegistered, callStatus, makeCall, hangup } = useWebRTCPhone();
 
   // Usar los contactos del store si están disponibles, sino usar las props
-  const contacts = dataDebtor?.contacts && dataDebtor.contacts.length > 0
-    ? dataDebtor.contacts
-    : [mainContact, ...additionalContacts];
+  const contacts =
+    dataDebtor?.contacts && dataDebtor.contacts.length > 0
+      ? dataDebtor.contacts
+      : [mainContact, ...additionalContacts];
 
-  const [currentMainContact, setCurrentMainContact] = useState<Contact>(contacts[0] || mainContact);
-  const [currentAdditionalContacts, setCurrentAdditionalContacts] = useState<Contact[]>(
-    contacts.slice(1) || additionalContacts
+  const [currentMainContact, setCurrentMainContact] = useState<Contact>(
+    contacts[0] || mainContact,
   );
+  const [currentAdditionalContacts, setCurrentAdditionalContacts] = useState<
+    Contact[]
+  >(contacts.slice(1) || additionalContacts);
 
   // Actualizar cuando cambian los contactos en el store
   useEffect(() => {
@@ -62,7 +73,11 @@ export const DebtorContacts = ({
       return;
     }
 
-    if (callStatus === "in-call" || callStatus === "calling" || callStatus === "ringing") {
+    if (
+      callStatus === "in-call" ||
+      callStatus === "calling" ||
+      callStatus === "ringing"
+    ) {
       // Si ya hay una llamada en curso, colgar
       hangup();
     } else {
@@ -76,7 +91,10 @@ export const DebtorContacts = ({
     }
   };
 
-  const isInCall = callStatus === "in-call" || callStatus === "calling" || callStatus === "ringing";
+  const isInCall =
+    callStatus === "in-call" ||
+    callStatus === "calling" ||
+    callStatus === "ringing";
 
   return (
     <div className="bg-[#EFF5FF] rounded-lg px-6 py-4 flex flex-col">
@@ -94,7 +112,9 @@ export const DebtorContacts = ({
               <span className="text-base font-semibold text-gray-900">
                 {currentMainContact.name}
               </span>
-              <span className="text-sm text-gray-600">{currentMainContact.phone}</span>
+              <span className="text-sm text-gray-600">
+                {currentMainContact.phone}
+              </span>
             </div>
           </div>
 
@@ -109,7 +129,12 @@ export const DebtorContacts = ({
                   <User className="w-6 h-6 text-gray-600" />
                 </div>
               </HoverCardTrigger>
-              <HoverCardContent className="w-80 shadow-lg" side="bottom" align="center" sideOffset={5}>
+              <HoverCardContent
+                className="w-80 shadow-lg"
+                side="bottom"
+                align="center"
+                sideOffset={5}
+              >
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 pb-3 border-b">
                     <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
@@ -136,27 +161,6 @@ export const DebtorContacts = ({
               </HoverCardContent>
             </HoverCard>
           ))}
-
-          {/* Separador vertical */}
-          <div className="h-12 w-px bg-gray-300" />
-
-          {/* Horario de llamada */}
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-gray-700">
-                <Phone className="w-4 h-4" />
-                <span className="text-sm font-medium">Llamada</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Clock className="w-4 h-4" />
-                <span className="text-sm">{callSchedule}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Botones de acción */}
-        <div className="flex items-center gap-3">
           <DialogForm
             open={openAdd}
             title="Agregar nuevo contacto"
@@ -165,11 +169,10 @@ export const DebtorContacts = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                className="border-orange-600 text-orange-600 bg-orange-50 hover:bg-white hover:text-orange-600 rounded-full w-10 h-10 flex items-center justify-center"
                 onClick={() => setOpenAdd(!openAdd)}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Agregar
+                <Plus className="w-4 h-4" />
               </Button>
             }
           >
@@ -180,7 +183,28 @@ export const DebtorContacts = ({
               }}
             />
           </DialogForm>
+          {/* Separador vertical */}
+          <div className="h-12 w-px bg-gray-300" />
 
+          {/* Horario de llamada */}
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-gray-700">
+                <MailIcon className="w-4 h-4" />
+                <span className="text-sm font-medium">Llamada</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm">
+                  {callSchedule.length > 0 ? callSchedule : "08:00 - 18:00"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="flex items-center gap-3">
           <Button
             size="sm"
             className={
