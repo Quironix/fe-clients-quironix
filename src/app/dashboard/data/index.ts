@@ -232,6 +232,12 @@ export const getSidebarData = (profile: any) => {
             icon: IconInfoTriangle,
             scope: "client.payment_projection.settings",
           },
+          {
+            title: "Gestión de deudores",
+            url: "/dashboard/debtor-management",
+            icon: IconInfoTriangle,
+            scope: "client.debtor_management",
+          },
           // {
           //   title: "Seguimiento",
           //   url: "/dashboard/litigation",

@@ -71,7 +71,7 @@ const createColumns = (
   },
   {
     accessorKey: "number",
-    header: "N° de factura",
+    header: "N° documento",
     cell: ({ row }) => {
       const number = row.getValue("number") as string;
       return (

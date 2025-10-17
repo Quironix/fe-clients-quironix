@@ -151,3 +151,20 @@ export const deleteDebtor = async (
   );
   return response.json();
 };
+
+export const getDebtorCollectionProfile = async (
+  accessToken: string,
+  clientId: string,
+  debtorId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/managements/collection-profiles/debtor/${debtorId}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+};

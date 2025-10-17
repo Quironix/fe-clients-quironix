@@ -11,7 +11,7 @@ import {
 
 const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
   if (!apiData?.data) return [];
-  
+
   const adaptedData = apiData.data.map((item: any) => ({
     ...item,
     id: item.id,
@@ -25,7 +25,7 @@ const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
     amount: parseFloat(item.amount) || 0,
     bank: item.bank_information.bank || "",
     account_number: item.bank_information.account_number || "",
-    status: mapApiStatusToLocal(item.status),
+    status: item.status,
     code: "-",
     description: item.description || "",
     comment: item.comment || "",
@@ -43,30 +43,14 @@ const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
       [BankMovementStatusEnum.ELIMINATED]: 7,
       [BankMovementStatusEnum.REJECTED_DUPLICATE]: 8,
       [BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT]: 9,
-      [BankMovementStatusEnum.ELIMINATED_NO_TRACKING]: 10
+      [BankMovementStatusEnum.ELIMINATED_NO_TRACKING]: 10,
     };
-    
+
     const orderA = statusOrder[a.status as keyof typeof statusOrder] || 999;
     const orderB = statusOrder[b.status as keyof typeof statusOrder] || 999;
-    
+
     return orderA - orderB;
   });
-};
-const mapApiStatusToLocal = (apiStatus: string): BankMovementStatusEnum => {
-  const statusMap: Record<string, BankMovementStatusEnum> = {
-    PENDING: BankMovementStatusEnum.PENDING,
-    PROCESSED: BankMovementStatusEnum.PROCESSED,
-    REJECTED: BankMovementStatusEnum.REJECTED,
-    ELIMINATED: BankMovementStatusEnum.ELIMINATED,
-    COMPENSATED: BankMovementStatusEnum.COMPENSATED,
-    REJECTED_DUPLICATE: BankMovementStatusEnum.REJECTED_DUPLICATE,
-    ELIMINATED_NEGATIVE_AMOUNT:
-      BankMovementStatusEnum.ELIMINATED_NEGATIVE_AMOUNT,
-    ELIMINATED_NO_TRACKING: BankMovementStatusEnum.ELIMINATED_NO_TRACKING,
-    MAINTAINED: BankMovementStatusEnum.MAINTAINED,
-    PAYMENT_CREATED: BankMovementStatusEnum.PAYMENT_CREATED,
-  };
-  return statusMap[apiStatus?.toUpperCase()] || BankMovementStatusEnum.PENDING;
 };
 
 export function usePaymentNetting(
@@ -193,9 +177,9 @@ export function usePaymentNetting(
 
       // Determinar si la búsqueda es numérica o textual
       const isNumericSearch = /^\d+\.?\d*$/.test(search.trim());
-      
+
       let newFilters: PaymentNettingFilters;
-      
+
       if (search.trim() === "") {
         // Si la búsqueda está vacía, reiniciar con filtros vacíos (solo paginado)
         newFilters = {};

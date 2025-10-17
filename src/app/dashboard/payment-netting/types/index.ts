@@ -20,7 +20,7 @@ export interface PaymentNetting {
   client_bank_id: string;
   bank_information: Bankinformation;
   movement_date: string;
-  status: BankMovementStatusEnum;
+  status: keyof typeof BankMovementStatusEnum;
   description: string;
   company_id: string;
   company: Company;
@@ -212,4 +212,5 @@ export enum BankMovementStatusEnum {
   ELIMINATED_NO_TRACKING = "Eliminado sin tracking",
   MAINTAINED = "Mantenido",
   PAYMENT_CREATED = "Pago creado",
+  MULTIPLE_SUGGESTIONS = "Múltiples sugerencias",
 }

@@ -312,7 +312,7 @@ export default function FinancialSummary({
 
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-600 pl-5">
-                Capital a financiar:
+                Monto a financiar:
               </span>
               <span className="text-sm font-semibold pr-5">
                 {formatCurrency(metrics.principalAmount)}

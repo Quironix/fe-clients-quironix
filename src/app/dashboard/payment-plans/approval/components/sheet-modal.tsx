@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Form,
   FormControl,
   FormField,
@@ -62,7 +69,6 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -92,7 +98,7 @@ const paymentPlanSchema = z
 
     // Configuración del plan de pago
     totalAmount: z.number().optional(),
-    downPayment: z
+    initialPayment: z
       .number()
       .min(0, "El pago contado debe ser mayor o igual a 0")
       .optional(),
@@ -136,7 +142,6 @@ const paymentPlanSchema = z
 type PaymentPlanForm = z.infer<typeof paymentPlanSchema>;
 
 const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
-  const router = useRouter();
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const [debtorExpanded, setDebtorExpanded] = useState(false);
@@ -152,7 +157,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       debtorId: detail?.debtorId || "",
       selectedInvoices: detail?.invoiceIds || [],
       totalAmount: Math.round(detail?.totalPlanAmount || 0),
-      downPayment: Math.round(detail?.initialPayment || 0),
+      initialPayment: Math.round(detail?.initialPayment || 0),
       numberOfInstallments: detail?.numberOfInstallments || 1,
       annualInterestRate: Math.round(detail?.annualInterestRate || 0),
       paymentMethod: detail?.paymentMethod || "",
@@ -257,6 +262,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
           payment_end_date: paymentEndDate.toISOString().split("T")[0],
           comments: data.comments,
           objected_comment: data.reason,
+          initial_payment: data.initialPayment,
           status: "OBJECTED",
         };
         debugger;
@@ -268,7 +274,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
           modificationData
         );
 
-        console.log("Datos de modificación capturados:", modificationData);
+        console.log("Datos de modificación capturados:", response);
 
         // Aquí implementarías la lógica para enviar los datos modificados
         // await modifyPaymentPlan(detail.requestId, modificationData);
@@ -360,7 +366,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
     if (!detail) {
       return {
         totalInvoices: 0,
-        downPayment: 0,
+        initialPayment: 0,
         principalAmount: 0,
         numberOfInstallments: 0,
         installmentAmount: 0,
@@ -378,8 +384,8 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       (sum, invoice) => sum + parseFloat(invoice.amount),
       0
     );
-    const downPayment = form.watch("downPayment") || 0;
-    const principalAmount = totalInvoices - downPayment; // Capital a financiar
+    const initialPayment = form.watch("initialPayment") || 0;
+    const principalAmount = totalInvoices - initialPayment; // Capital a financiar
 
     // 2. Parámetros del préstamo
     const numberOfInstallments = form.watch("numberOfInstallments") || 1;
@@ -422,7 +428,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
 
     return {
       totalInvoices,
-      downPayment,
+      initialPayment,
       principalAmount,
       numberOfInstallments,
       installmentAmount,
@@ -435,8 +441,8 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       // Métricas adicionales
       loanToValue:
         totalInvoices > 0 ? (principalAmount / totalInvoices) * 100 : 0, // LTV%
-      downPaymentRatio:
-        totalInvoices > 0 ? (downPayment / totalInvoices) * 100 : 0, // % pie
+      initialPaymentRatio:
+        totalInvoices > 0 ? (initialPayment / totalInvoices) * 100 : 0, // % pie
     };
   };
   const metrics = calculateFinancialMetrics();
@@ -455,7 +461,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       </SheetTrigger>
       <SheetContent className="min-w-[90%] rounded-l-xl p-0 m-0">
         <SheetHeader className="sr-only">
-          <SheetTitle>Detalles del plan de pago 2</SheetTitle>
+          <SheetTitle>Detalles del plan de pago</SheetTitle>
 
           <SheetDescription>
             <span>Solicitud Nº{detail?.requestId}</span>
@@ -559,7 +565,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                               {/* Pago contado */}
                               <FormField
                                 control={control}
-                                name="downPayment"
+                                name="initialPayment"
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>Pago contado ($)</FormLabel>
@@ -598,31 +604,26 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                       N° de cuotas{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
-                                    <Select
-                                      value={field.value.toString()}
-                                      onValueChange={(value) =>
-                                        field.onChange(parseInt(value))
-                                      }
-                                    >
-                                      <FormControl>
-                                        <SelectTrigger className="w-full">
-                                          <SelectValue placeholder="Selecciona" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent>
-                                        {Array.from(
-                                          { length: 36 },
-                                          (_, i) => i + 1
-                                        ).map((num) => (
-                                          <SelectItem
-                                            key={num}
-                                            value={num.toString()}
-                                          >
-                                            {num} cuota{num > 1 ? "s" : ""}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        min="1"
+                                        max="36"
+                                        placeholder="Ingresa el número de cuotas"
+                                        value={field.value || ""}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          if (
+                                            value === "" ||
+                                            /^\d+$/.test(value)
+                                          ) {
+                                            field.onChange(
+                                              parseInt(value) || 0
+                                            );
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
                                     <FormMessage />
                                   </FormItem>
                                 )}
@@ -755,12 +756,12 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                             {field.value
                                               ? format(
                                                   field.value,
-                                                  "dd/MM/yyyy",
+                                                  "dd-MM-yyyy",
                                                   {
                                                     locale: es,
                                                   }
                                                 )
-                                              : "DD/MM/AAAA"}
+                                              : "DD-MM-AAAA"}
                                           </Button>
                                         </FormControl>
                                       </PopoverTrigger>
@@ -829,13 +830,13 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                     <span className="text-sm font-medium text-gray-600 pl-5">
                                       Pago contado (
                                       {formatPercentage(
-                                        metrics.downPaymentRatio,
+                                        metrics.initialPaymentRatio,
                                         1
                                       )}
                                       ):
                                     </span>
                                     <span className="text-sm font-semibold pr-5">
-                                      {formatNumber(metrics.downPayment)}
+                                      {formatNumber(metrics.initialPayment)}
                                     </span>
                                   </div>
 
@@ -916,10 +917,33 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                       </div>
                                     ))}
                                   {pendingInstallments.length > 4 && (
-                                    <div className="text-xs text-gray-500">
-                                      +{pendingInstallments.length - 4} cuotas
-                                      más...
-                                    </div>
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <div className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">
+                                          +{pendingInstallments.length - 4}{" "}
+                                          cuotas más...
+                                        </div>
+                                      </DialogTrigger>
+                                      <DialogContent className="max-w-md">
+                                        <DialogHeader>
+                                          <DialogTitle>
+                                            Todas las cuotas pendientes
+                                          </DialogTitle>
+                                        </DialogHeader>
+                                        <div className="max-h-[350px] overflow-y-auto space-y-2">
+                                          {pendingInstallments.map(
+                                            (installment, index) => (
+                                              <div
+                                                key={index}
+                                                className="text-xs text-gray-700 p-2 bg-gray-50 rounded"
+                                              >
+                                                {installment}
+                                              </div>
+                                            )
+                                          )}
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
                                   )}
                                   {pendingInstallments.length === 0 && (
                                     <div className="text-xs text-green-600">
@@ -970,6 +994,41 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                   )?.label
                                 }
                               />
+
+                              <IconDescription
+                                icon={
+                                  <CalendarIcon className="w-6 h-6 text-gray-400" />
+                                }
+                                description="Inicio de pago"
+                                value={
+                                  detail.planStartDate
+                                    ? format(
+                                        detail.planStartDate,
+                                        "dd-MM-yyyy",
+                                        {
+                                          locale: es,
+                                        }
+                                      )
+                                    : "-"
+                                }
+                              />
+                              <IconDescription
+                                icon={
+                                  <CalendarCheck className="w-6 h-6 text-gray-400" />
+                                }
+                                description="Término de pago"
+                                value={
+                                  detail.paymentEndDate
+                                    ? format(
+                                        detail.paymentEndDate,
+                                        "dd-MM-yyyy",
+                                        {
+                                          locale: es,
+                                        }
+                                      )
+                                    : "-"
+                                }
+                              />
                               <IconDescription
                                 icon={
                                   <CalendarClock className="w-6 h-6 text-gray-400" />
@@ -979,24 +1038,6 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                   PAYMENT_FREQUENCY.find(
                                     (x) => x.code === detail.paymentFrequency
                                   )?.label
-                                }
-                              />
-                              <IconDescription
-                                icon={
-                                  <CalendarIcon className="w-6 h-6 text-gray-400" />
-                                }
-                                description="Inicio de pago"
-                                value={
-                                  detail.planStartDate as unknown as string
-                                }
-                              />
-                              <IconDescription
-                                icon={
-                                  <CalendarCheck className="w-6 h-6 text-gray-400" />
-                                }
-                                description="Término de pago"
-                                value={
-                                  detail.paymentEndDate as unknown as string
                                 }
                               />
                             </div>

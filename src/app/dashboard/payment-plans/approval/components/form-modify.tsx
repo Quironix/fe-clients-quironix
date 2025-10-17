@@ -393,10 +393,10 @@ const FormModify = () => {
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {field.value
-                      ? format(field.value, "dd/MM/yyyy", {
+                      ? format(field.value, "dd-MM-yyyy", {
                           locale: es,
                         })
-                      : "DD/MM/AAAA"}
+                      : "DD-MM-AAAA"}
                   </Button>
                 </FormControl>
               </PopoverTrigger>

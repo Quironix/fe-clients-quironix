@@ -417,3 +417,58 @@ export const getPaymentHistory = async ({
     };
   }
 };
+
+/**
+ * Realiza la reversa de un pago.
+ *
+ * @param accessToken Token de acceso para autenticación.
+ * @param clientId ID del cliente.
+ * @param paymentId ID del pago.
+ * @returns Resultado de la reversa del pago.
+ */
+export const reversePayment = async ({
+  accessToken,
+  clientId,
+  paymentId,
+}: {
+  accessToken: string;
+  clientId: string;
+  paymentId: string;
+}) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/reconciliation/applications/${paymentId}/reverse?flow=payment`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: null,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: data?.message || "Error al revertir el pago",
+        data: null,
+      };
+    }
+
+    return {
+      success: true,
+      message: "Pago revertido correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al revertir el pago",
+      data: null,
+    };
+  }
+};

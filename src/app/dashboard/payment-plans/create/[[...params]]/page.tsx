@@ -432,18 +432,11 @@ const CreatePaymentPlanPage = () => {
                                   icon={
                                     <IdCard className="w-8 h-8 text-blue-600" />
                                   }
-                                  description="Documento"
+                                  description="RUT"
                                   value={
                                     dataDebtor.dni?.dni ||
                                     dataDebtor.debtor_code
                                   }
-                                />
-                                <IconDescription
-                                  icon={
-                                    <User className="w-8 h-8 text-blue-600" />
-                                  }
-                                  description="Contacto"
-                                  value={dataDebtor.contacts[0].name}
                                 />
                                 <IconDescription
                                   icon={
@@ -454,17 +447,25 @@ const CreatePaymentPlanPage = () => {
                                 />
                                 <IconDescription
                                   icon={
+                                    <User className="w-8 h-8 text-blue-600" />
+                                  }
+                                  description="Contacto"
+                                  value={dataDebtor.contacts[0].name}
+                                />
+
+                                <IconDescription
+                                  icon={
                                     <Mail className="w-8 h-8 text-blue-600" />
                                   }
                                   description="Email"
-                                  value={dataDebtor.email}
+                                  value={dataDebtor?.email || "Sin información"}
                                 />
                                 <IconDescription
                                   icon={
                                     <Phone className="w-8 h-8 text-blue-600" />
                                   }
                                   description="Teléfono"
-                                  value={dataDebtor.phone}
+                                  value={dataDebtor?.phone || "Sin información"}
                                 />
                               </div>
                             ) : (
@@ -554,11 +555,12 @@ const CreatePaymentPlanPage = () => {
                                       <Input
                                         placeholder="Ingresa un monto"
                                         value={
-                                          field.value
+                                          field.value !== undefined &&
+                                          field.value !== null
                                             ? formatNumberWithThousands(
                                                 field.value
                                               )
-                                            : ""
+                                            : "0"
                                         }
                                         onChange={(e) => {
                                           const value = formatCurrency(
@@ -585,31 +587,26 @@ const CreatePaymentPlanPage = () => {
                                       N° de cuotas{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
-                                    <Select
-                                      value={field.value.toString()}
-                                      onValueChange={(value) =>
-                                        field.onChange(parseInt(value))
-                                      }
-                                    >
-                                      <FormControl>
-                                        <SelectTrigger className="w-full">
-                                          <SelectValue placeholder="Selecciona" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent>
-                                        {Array.from(
-                                          { length: 36 },
-                                          (_, i) => i + 1
-                                        ).map((num) => (
-                                          <SelectItem
-                                            key={num}
-                                            value={num.toString()}
-                                          >
-                                            {num} cuota{num > 1 ? "s" : ""}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        min="1"
+                                        max="36"
+                                        placeholder="Ingresa el número de cuotas"
+                                        value={field.value || ""}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          if (
+                                            value === "" ||
+                                            /^\d+$/.test(value)
+                                          ) {
+                                            field.onChange(
+                                              parseInt(value) || 0
+                                            );
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
                                     <FormMessage />
                                   </FormItem>
                                 )}
@@ -628,20 +625,19 @@ const CreatePaymentPlanPage = () => {
                                     <FormControl>
                                       <Input
                                         type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="100"
-                                        placeholder="Ej: 12.5"
+                                        min={1}
+                                        max={48}
+                                        placeholder="Ej: 1"
                                         value={field.value || ""}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          // Permitir números decimales
+                                          // Solo permitir números enteros
                                           if (
                                             value === "" ||
-                                            /^\d*\.?\d*$/.test(value)
+                                            /^\d+$/.test(value)
                                           ) {
                                             field.onChange(
-                                              parseFloat(value) || 0
+                                              parseInt(value) || 0
                                             );
                                           }
                                         }}
@@ -744,12 +740,12 @@ const CreatePaymentPlanPage = () => {
                                           {field.value
                                             ? format(
                                                 field.value,
-                                                "dd/MM/yyyy",
+                                                "dd-MM-yyyy",
                                                 {
                                                   locale: es,
                                                 }
                                               )
-                                            : "DD/MM/AAAA"}
+                                            : "DD-MM-AAAA"}
                                         </Button>
                                       </FormControl>
                                     </PopoverTrigger>
