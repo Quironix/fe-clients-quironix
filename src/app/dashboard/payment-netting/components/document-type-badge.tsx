@@ -16,8 +16,10 @@ const getDocumentTypeDisplayData = (type: AllDocumentTypes) => {
   const invoiceTypeMapping: Record<string, { text: string; color: string }> = {
     INVOICE: { text: "Factura", color: "pink" },
     EXEMPT_INVOICE: { text: "Fac. exenta", color: "purple" },
+    NON_TAXABLE_INVOICE: { text: "Fac. no gravada", color: "purple" },
     PURCHASE_INVOICE: { text: "Fac. de compra", color: "purple" },
     SETTLEMENT_INVOICE: { text: "Liquidación", color: "purple" },
+    COMMERCIAL_AGREEMENT: { text: "Convenio comercial", color: "orange" },
     EXPORT_INVOICE: { text: "Fac. de exportación", color: "purple" },
     DEBIT_NOTE: { text: "N. de débito", color: "blue" },
     CREDIT_NOTE: { text: "N. de crédito", color: "pink" },
@@ -106,3 +108,4 @@ const DocumentTypeBadge = ({ type }: DocumentTypeBadgeProps) => {
 
 export default DocumentTypeBadge;
 export type { AllDocumentTypes as DocumentType };
+export { getDocumentTypeDisplayData };

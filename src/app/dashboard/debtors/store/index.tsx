@@ -6,6 +6,7 @@ import {
   getDebtorById,
   getDebtors,
   updateDebtor,
+  getDebtorCollectionProfile,
 } from "../services";
 import { BulkUploadResponse, Debtor } from "../types";
 import { DEFAULT_PAGINATION_PARAMS } from "../types/pagination";
@@ -30,6 +31,11 @@ interface DebtorsStore {
   bulkUploadErrors: BulkUploadResponse | null;
   isFetchingDebtor: boolean;
   setIsFetchingDebtor: (isFetching: boolean) => void;
+
+  // Estados para collection profile
+  collectionProfile: any | null;
+  isFetchingCollectionProfile: boolean;
+  collectionProfileError: string | null;
 
   // Métodos existentes
   fetchDebtors: (accessToken: string, clientId: string) => Promise<void>;
@@ -73,6 +79,12 @@ interface DebtorsStore {
   clearSearch: () => void;
   resetPagination: () => void;
   clearDataDebtor: () => void;
+  fetchCollectionProfile: (
+    accessToken: string,
+    clientId: string,
+    debtorId: string
+  ) => Promise<void>;
+  clearCollectionProfile: () => void;
 }
 
 export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
@@ -96,6 +108,11 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   setIsFetchingDebtor: (isFetching: boolean) =>
     set({ isFetchingDebtor: isFetching }),
   bulkUploadErrors: null,
+
+  // Estados iniciales para collection profile
+  collectionProfile: null,
+  isFetchingCollectionProfile: false,
+  collectionProfileError: null,
 
   // Método original mantenido para compatibilidad
   fetchDebtors: async (accessToken: string, clientId: string) => {
@@ -322,5 +339,35 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   },
   clearDataDebtor: () => {
     set({ dataDebtor: {} as Debtor });
+  },
+  fetchCollectionProfile: async (
+    accessToken: string,
+    clientId: string,
+    debtorId: string
+  ) => {
+    set({
+      isFetchingCollectionProfile: true,
+      collectionProfileError: null,
+    });
+    try {
+      const response = await getDebtorCollectionProfile(
+        accessToken,
+        clientId,
+        debtorId
+      );
+      set({ collectionProfile: response });
+    } catch (error: any) {
+      console.error("Error en fetchCollectionProfile:", error);
+      const errorMessage =
+        error?.message ||
+        error?.toString() ||
+        "Error al obtener el perfil de cobranza";
+      set({ collectionProfileError: errorMessage });
+    } finally {
+      set({ isFetchingCollectionProfile: false });
+    }
+  },
+  clearCollectionProfile: () => {
+    set({ collectionProfile: null, collectionProfileError: null });
   },
 }));
