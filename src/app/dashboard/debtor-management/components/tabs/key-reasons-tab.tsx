@@ -40,7 +40,10 @@ export const KeyReasonsTab = ({
   return (
     <div className="flex gap-5 h-full w-full">
       <div className="h-full w-full">
-        <DebtorChatbot debtorId={debtorId} />
+        <DebtorChatbot
+          debtorId={debtorId}
+          callBrief={collectionProfile.call_brief}
+        />
       </div>
       <div className="h-full w-2xl overflow-y-auto">
         <div className="flex flex-col gap-3">

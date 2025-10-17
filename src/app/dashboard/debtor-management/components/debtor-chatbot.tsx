@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ThreadMessageLike,
   AppendMessage,
@@ -12,6 +12,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 
 interface DebtorChatbotProps {
   debtorId: string;
+  callBrief?: string;
 }
 
 interface ChatMessage {
@@ -21,10 +22,44 @@ interface ChatMessage {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
+export function DebtorChatbot({ debtorId, callBrief }: DebtorChatbotProps) {
   const { profile, session } = useProfileContext();
   const [messages, setMessages] = useState<readonly ThreadMessageLike[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Agregar el call_brief como primer mensaje cuando se carga el componente
+  useEffect(() => {
+    if (callBrief && messages.length === 0) {
+      // Limpiar los backticks de markdown del briefing si existen
+      const cleanedBrief = callBrief.replace(/^```text\/markdown\n/, '').replace(/\n```$/, '');
+
+      const initialMessage: ThreadMessageLike = {
+        role: "assistant",
+        content: [
+          {
+            type: "text",
+            text: cleanedBrief,
+          },
+        ],
+      };
+      setMessages([initialMessage]);
+    }
+  }, [callBrief]);
+
+  // Scroll to top cuando se carga el mensaje inicial
+  useEffect(() => {
+    if (messages.length === 1 && containerRef.current) {
+      // Usar setTimeout para asegurar que el DOM se ha actualizado
+      setTimeout(() => {
+        // Buscar el viewport del Thread (tiene la clase overflow-y-scroll)
+        const viewport = containerRef.current?.querySelector('.overflow-y-scroll');
+        if (viewport) {
+          viewport.scrollTo({ top: 0, behavior: 'instant' });
+        }
+      }, 150);
+    }
+  }, [messages.length]);
 
   const onNew = useCallback(
     async (message: AppendMessage) => {
@@ -42,10 +77,14 @@ export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
 
       try {
         // Preparar mensajes para el API
+        const systemContent = `Eres un asistente de IA para gestión de deudores. Estás ayudando con el deudor ID: ${debtorId}. Proporciona información útil y profesional.${
+          callBrief ? `\n\nContexto del deudor:\n${callBrief}` : ""
+        }`;
+
         const apiMessages: ChatMessage[] = [
           {
             role: "system",
-            content: `Eres un asistente de IA para gestión de deudores. Estás ayudando con el deudor ID: ${debtorId}. Proporciona información útil y profesional.`,
+            content: systemContent,
           },
           ...messages.map((msg) => {
             const firstContent = msg.content[0];
@@ -198,7 +237,7 @@ export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
         setIsStreaming(false);
       }
     },
-    [messages, debtorId, profile?.client?.id, session?.token],
+    [messages, debtorId, callBrief, profile?.client?.id, session?.token],
   );
 
   const convertMessage = useCallback((message: ThreadMessageLike) => {
@@ -215,7 +254,10 @@ export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <div className="h-[400px] w-full flex flex-col bg-[#f9fcff] rounded-md border p-2 overflow-y-auto">
+      <div
+        ref={containerRef}
+        className="h-[600px] w-full flex flex-col bg-[#f9fcff] rounded-md border p-2 overflow-y-auto"
+      >
         <Thread />
       </div>
     </AssistantRuntimeProvider>
