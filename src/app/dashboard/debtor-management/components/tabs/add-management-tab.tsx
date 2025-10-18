@@ -5,6 +5,7 @@ import { Step } from "@/components/Stepper/types";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { useState } from "react";
+import { StepOne, StepThree, StepTwo } from "./steps";
 
 interface AddManagementTabProps {
   dataDebtor: any;
@@ -64,42 +65,18 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Contenido del Paso 1</h3>
-            <p className="text-gray-600">
-              Aquí va el contenido del primer paso...
-            </p>
-            {/* TODO: Agregar componentes del paso 1 */}
-          </div>
-        );
+        return <StepOne dataDebtor={dataDebtor} />;
       case 1:
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Contenido del Paso 2</h3>
-            <p className="text-gray-600">
-              Aquí va el contenido del segundo paso...
-            </p>
-            {/* TODO: Agregar componentes del paso 2 */}
-          </div>
-        );
+        return <StepTwo dataDebtor={dataDebtor} />;
       case 2:
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Contenido del Paso 3</h3>
-            <p className="text-gray-600">
-              Aquí va el contenido del tercer paso...
-            </p>
-            {/* TODO: Agregar componentes del paso 3 */}
-          </div>
-        );
+        return <StepThree dataDebtor={dataDebtor} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-md h-full">
+    <div className="bg-white p-6 rounded-md h-full border border-gray-300 mt-5">
       {/* Stepper */}
       <div className="mb-6">
         <Stepper

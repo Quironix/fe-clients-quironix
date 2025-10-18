@@ -1,14 +1,21 @@
-import { History, Scale, CreditCard, FileX2, TriangleAlert, ShieldCheck } from "lucide-react";
 import { CardCollapsible } from "@/app/dashboard/components/card-collapsible";
+import {
+  CreditCard,
+  FileX2,
+  History,
+  Scale,
+  ShieldCheck,
+  TriangleAlert,
+} from "lucide-react";
+import { CollectionProfile } from "../../types";
+import CreditRisk from "../credit-risk";
 import { DebtorChatbot } from "../debtor-chatbot";
 import { KeyReasons } from "../key-reasons";
-import PaymentCommitment from "../payment-commitment";
-import CreditRisk from "../credit-risk";
-import ProtestedChecks from "../protested-checks";
+import LastManagements from "../last-managements";
 import LastPaymentReceived from "../last-payment-received";
 import LitigationsCard from "../litigations-card";
-import LastManagements from "../last-managements";
-import { CollectionProfile } from "../../types";
+import PaymentCommitment from "../payment-commitment";
+import ProtestedChecks from "../protested-checks";
 
 interface KeyReasonsTabProps {
   debtorId: string;
@@ -38,7 +45,7 @@ export const KeyReasonsTab = ({
   }
 
   return (
-    <div className="flex gap-5 h-full w-full">
+    <div className="flex gap-5 h-full w-full mt-5">
       <div className="h-full w-full">
         <DebtorChatbot
           debtorId={debtorId}
@@ -79,7 +86,9 @@ export const KeyReasonsTab = ({
             title="Último pago recibido"
             defaultOpen={false}
           >
-            <LastPaymentReceived data={collectionProfile.last_payment_received || null} />
+            <LastPaymentReceived
+              data={collectionProfile.last_payment_received || null}
+            />
           </CardCollapsible>
 
           <CardCollapsible

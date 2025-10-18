@@ -1,11 +1,5 @@
 "use client";
 
-import Language from "@/components/ui/language";
-import { ArrowLeft, PhoneCall } from "lucide-react";
-import { use, useEffect } from "react";
-import Header from "../../components/header";
-import { Main } from "../../components/main";
-import TitleSection from "../../components/title-section";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,15 +8,21 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { DebtorContacts } from "../components/debtor-contacts";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDebtorsStore } from "../../debtors/store";
-import { useProfileContext } from "@/context/ProfileContext";
+import Language from "@/components/ui/language";
 import { SkeletonFormDebtor } from "@/components/ui/skeleton-form-debtor";
-import { KeyReasonsTab } from "../components/tabs/key-reasons-tab";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useProfileContext } from "@/context/ProfileContext";
+import { ArrowLeft, PhoneCall } from "lucide-react";
+import Link from "next/link";
+import { use, useEffect } from "react";
+import Header from "../../components/header";
+import { Main } from "../../components/main";
+import TitleSection from "../../components/title-section";
+import { useDebtorsStore } from "../../debtors/store";
+import { DebtorContacts } from "../components/debtor-contacts";
 import { AddManagementTab } from "../components/tabs/add-management-tab";
+import { KeyReasonsTab } from "../components/tabs/key-reasons-tab";
 
 interface PageProps {
   params: Promise<{
