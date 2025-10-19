@@ -6,6 +6,7 @@ import { Step } from "@/components/Stepper/types";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { useState } from "react";
+import { SavedManagementCard } from "./saved-management-card";
 import { StepOne, StepThree, StepTwo } from "./steps";
 
 interface AddManagementTabProps {
@@ -30,6 +31,18 @@ export interface ManagementFormData {
   // Campos condicionales - Próxima gestión
   nextManagementDate?: string;
   nextManagementTime?: string;
+  // Campos del Step 3
+  file?: File | null;
+  comment?: string;
+  sendEmail?: boolean;
+}
+
+// Tipo para una gestión guardada completa
+export interface SavedManagement {
+  id: string;
+  formData: ManagementFormData;
+  selectedInvoices: Invoice[];
+  createdAt: Date;
 }
 
 export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
@@ -37,6 +50,9 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
   const [stepsState, setStepsState] = useState<Step[]>(steps);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedInvoices, setSelectedInvoices] = useState<Invoice[]>([]);
+  const [savedManagements, setSavedManagements] = useState<SavedManagement[]>(
+    []
+  );
   const [managementFormData, setManagementFormData] =
     useState<ManagementFormData>({
       managementType: "",
@@ -46,6 +62,9 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
       paymentCommitmentAmount: "",
       nextManagementDate: "",
       nextManagementTime: "",
+      file: null,
+      comment: "",
+      sendEmail: false,
     });
 
   // Función para avanzar al siguiente paso
@@ -85,12 +104,72 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
     console.log("Datos de gestión:", { ...managementFormData, ...data });
   };
 
-  // Función para finalizar el proceso
+  // Función para resetear el formulario de gestión (Step 2 y 3)
+  const resetManagementForm = () => {
+    setManagementFormData({
+      managementType: "",
+      debtorComments: "",
+      analystComments: "",
+      paymentCommitmentDate: "",
+      paymentCommitmentAmount: "",
+      nextManagementDate: "",
+      nextManagementTime: "",
+      file: null,
+      comment: "",
+      sendEmail: false,
+    });
+    // Mantener las facturas seleccionadas del Step 1
+    // No reseteamos selectedInvoices
+  };
+
+  // Función para agregar gestión y continuar editando
+  const handleAddManagement = async () => {
+    setIsSubmitting(true);
+    try {
+      // Crear nueva gestión guardada
+      const newManagement: SavedManagement = {
+        id: `management-${Date.now()}`,
+        formData: { ...managementFormData },
+        selectedInvoices: [...selectedInvoices],
+        createdAt: new Date(),
+      };
+
+      // Agregar a la lista de gestiones guardadas
+      setSavedManagements((prev) => [...prev, newManagement]);
+
+      console.log("Gestión agregada:", newManagement);
+
+      // Resetear formulario para agregar otra gestión
+      resetManagementForm();
+
+      // Volver al Step 2 para agregar nueva gestión
+      setCurrentStep(1);
+
+      // Resetear estados de los steps
+      setStepsState(steps.map((step) => ({ ...step, completed: false })));
+    } catch (error) {
+      console.error("Error al agregar gestión:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Función para eliminar una gestión guardada
+  const handleDeleteManagement = (id: string) => {
+    setSavedManagements((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  // Función para finalizar el proceso completamente
   const handleFinish = async () => {
     setIsSubmitting(true);
     try {
       // TODO: Implementar lógica de finalización
-      console.log("Finalizando proceso...");
+      console.log("Finalizando proceso...", {
+        selectedInvoices,
+        managementFormData,
+      });
+      // Aquí irá la lógica para guardar la gestión final
+      // y cerrar el formulario
     } catch (error) {
       console.error("Error al finalizar:", error);
     } finally {
@@ -117,7 +196,14 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
           />
         );
       case 2:
-        return <StepThree dataDebtor={dataDebtor} />;
+        return (
+          <StepThree
+            dataDebtor={dataDebtor}
+            formData={managementFormData}
+            onFormChange={handleManagementFormChange}
+            selectedInvoices={selectedInvoices}
+          />
+        );
       default:
         return null;
     }
@@ -125,54 +211,97 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
 
   return (
     <div className="bg-white p-6 rounded-md h-full border border-gray-300 mt-5">
-      {/* Stepper */}
-      <div className="mb-6">
+      {/* Gestiones guardadas */}
+      {savedManagements.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {savedManagements.map((management, index) => (
+            <SavedManagementCard
+              key={management.id}
+              management={management}
+              index={index}
+              onDelete={handleDeleteManagement}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Stepper actual */}
+      <div className="mb-6 border-gray-300">
         <Stepper
           steps={stepsState}
           currentStep={currentStep}
           onStepChange={handleStepChange}
         />
+        {savedManagements.length > 0 && (
+          <h3 className="text-base font-semibold text-blue-600 mb-4">
+            Gestión {savedManagements.length + 1}
+          </h3>
+        )}
       </div>
 
       {/* Contenido del paso actual */}
       <div className="border border-gray-200 rounded-md p-5 min-h-[500px] flex flex-col">
-        <div className="flex-1">
-          {renderStepContent()}
-        </div>
+        <div className="flex-1">{renderStepContent()}</div>
 
         {/* Botones de navegación */}
-        <div className="flex justify-end gap-6 border-t border-primary pt-3 mt-6">
-          {currentStep > 0 && (
-            <Button
-              variant="outline"
-              className="w-45 h-11 rounded-sm border-2 border-primary"
-              onClick={handleBack}
-              disabled={isSubmitting}
-            >
-              <ArrowLeft className="w-4 h-4 text-primary" /> Volver
-            </Button>
-          )}
-          <Button
-            className="w-45 h-11 rounded-sm"
-            onClick={handleNext}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              "Guardando..."
-            ) : (
-              <>
-                {currentStep === steps.length - 1 ? (
-                  <>
-                    <Save className="w-4 h-4 text-white" /> Finalizar
-                  </>
-                ) : (
-                  <>
-                    Continuar <ArrowRight className="w-4 h-4 text-white" />
-                  </>
-                )}
-              </>
+        <div className="flex justify-between items-center gap-6 border-t border-primary pt-3 mt-6">
+          {/* Botón Volver - siempre a la izquierda */}
+          <div>
+            {currentStep > 0 && (
+              <Button
+                variant="outline"
+                className="w-45 h-11 rounded-sm border-2 border-primary"
+                onClick={handleBack}
+                disabled={isSubmitting}
+              >
+                <ArrowLeft className="w-4 h-4 text-primary" /> Volver
+              </Button>
             )}
-          </Button>
+          </div>
+
+          {/* Botones de acción - siempre a la derecha */}
+          <div className="flex gap-4">
+            {currentStep === steps.length - 1 ? (
+              // Botones del último paso
+              <>
+                <Button
+                  variant="outline"
+                  className="h-11 rounded-sm border-2 border-orange-400 text-orange-600 hover:bg-orange-50"
+                  onClick={handleAddManagement}
+                  disabled={isSubmitting}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Agregar gestión
+                </Button>
+                <Button
+                  className="h-11 rounded-sm bg-primary hover:bg-primary/90"
+                  onClick={handleFinish}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 text-white mr-2" />
+                      Finalizar gestión
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              // Botón continuar para otros pasos
+              <Button
+                className="w-45 h-11 rounded-sm"
+                onClick={handleNext}
+                disabled={isSubmitting}
+              >
+                Continuar <ArrowRight className="w-4 h-4 text-white ml-2" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>
