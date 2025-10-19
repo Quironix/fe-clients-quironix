@@ -91,6 +91,7 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
   filterInputs?: React.ReactNode;
   initialColumnConfiguration?: ColumnConfiguration;
   isApplyingFilters?: boolean;
+  onResetFilters?: () => void;
 }
 
 interface ColumnConfig {
@@ -132,6 +133,7 @@ export function DataTableDynamicColumns<TData, TValue>({
   filterInputs,
   initialColumnConfiguration,
   isApplyingFilters = false,
+  onResetFilters,
 }: DataTableDynamicColumnsProps<TData, TValue>) {
   const [searchValue, setSearchValue] = useState(initialSearchValue);
 
@@ -264,7 +266,8 @@ export function DataTableDynamicColumns<TData, TValue>({
   const clearSearch = () => {
     setSearchValue("");
     onSearchChange?.("");
-    onPaginationChange(1, pagination?.limit || pageSize);
+    // No llamar a onPaginationChange aquí porque onSearchChange ya resetea a página 1
+    // Esto evita hacer dos llamadas al API con estados inconsistentes
   };
 
   const resetColumnConfig = () => {
@@ -275,6 +278,10 @@ export function DataTableDynamicColumns<TData, TValue>({
         is_visible: true,
       }));
     applyColumnConfiguration(defaultConfig);
+
+    // Resetear los filtros si existe la función
+    onResetFilters?.();
+
     setIsSheetOpen(false);
   };
 

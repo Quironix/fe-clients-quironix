@@ -16,6 +16,7 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, Loader2 } from "lucide-react";
+import { format, parseISO } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -151,14 +152,7 @@ const FormAssignDebtor = ({
                     </TableCell>
                     <TableCell>
                       {movement.created_at
-                        ? new Date(movement.created_at).toLocaleDateString(
-                            "es-ES",
-                            {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            }
-                          )
+                        ? format(parseISO(movement.created_at), "dd/MM/yyyy")
                         : "N/A"}
                     </TableCell>
                     <TableCell>

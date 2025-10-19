@@ -21,6 +21,7 @@ import { BankMovementStatusEnum, PaymentNettingFilters } from "../types";
 
 export interface FilterInputsRef {
   getCurrentFilters: () => PaymentNettingFilters;
+  resetFilters: () => void;
 }
 
 const FilterInputs = React.forwardRef<
@@ -67,7 +68,18 @@ const FilterInputs = React.forwardRef<
           : undefined,
       };
     },
-  }));
+    resetFilters: () => {
+      form.reset({
+        search: "",
+        status: "PENDING",
+        dateFrom: "",
+        dateTo: "",
+      });
+      onFilterChange?.({
+        status: "PENDING",
+      });
+    },
+  }), [form, onFilterChange]);
 
   return (
     <>

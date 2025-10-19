@@ -26,6 +26,7 @@ import {
   User2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { format, parseISO } from "date-fns";
 import DialogForm from "../../components/dialog-form";
 import { getPaymentHistory } from "../services";
 import IconDescription from "./icon-description";
@@ -119,15 +120,7 @@ export default function ViewDetailsModal({
                 <IconDescription
                   icon={<Calendar />}
                   description="Fecha"
-                  value={
-                    row?.date
-                      ? new Date(row.date).toLocaleDateString("es-ES", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
-                      : "N/A"
-                  }
+                  value={row?.date || "N/A"}
                 />
               </div>
               <div>
@@ -289,13 +282,7 @@ export default function ViewDetailsModal({
                 description="Fecha de depósito"
                 value={
                   paymentHistory?.data?.payment?.deposit_at
-                    ? new Date(
-                        paymentHistory.data.payment.deposit_at
-                      ).toLocaleDateString("es-ES", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                    ? format(parseISO(paymentHistory.data.payment.deposit_at), "dd/MM/yyyy")
                     : "N/A"
                 }
               />
@@ -404,17 +391,7 @@ export default function ViewDetailsModal({
                                 : "Aplicación de factura"}
                             </span>
                             <span className="text-xs text-gray-500">
-                              {new Date(event.timestamp).toLocaleString(
-                                "es-ES",
-                                {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false,
-                                }
-                              )}
+                              {format(parseISO(event.timestamp), "dd/MM/yyyy HH:mm")}
                             </span>
                           </div>
                           <div className="text-sm text-gray-700">
@@ -428,13 +405,7 @@ export default function ViewDetailsModal({
                               </div>
                               <div className="text-gray-600">
                                 Fecha:{" "}
-                                {new Date(
-                                  event.invoice.issue_date
-                                ).toLocaleDateString("es-ES", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                })}{" "}
+                                {format(parseISO(event.invoice.issue_date), "dd/MM/yyyy")}{" "}
                                 • Estado:{" "}
                                 <span className="text-green-600 font-medium">
                                   {event.invoice.status === "PAID"

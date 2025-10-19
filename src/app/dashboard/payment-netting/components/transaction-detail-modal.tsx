@@ -8,6 +8,7 @@ import {
   File,
   IdCard,
 } from "lucide-react";
+import { format, parseISO } from "date-fns";
 import DialogForm from "../../components/dialog-form";
 import { PaymentNetting } from "../types";
 import IconDescription from "./icon-description";
@@ -138,7 +139,7 @@ export default function TransactionDetailModal({
         <IconDescription
           icon={<Calendar className="w-4 h-4 text-gray-400" />}
           description="Fecha de depósito"
-          value={transaction.created_at}
+          value={transaction.created_at ? format(parseISO(transaction.created_at), "dd/MM/yyyy") : "N/A"}
         />
         <IconDescription
           icon={<ArrowLeftRight className="w-4 h-4 text-gray-400" />}

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Gestiones Completadas</title>
+    <!--[if mso]>
+    <style type="text/css">
+        table {border-collapse: collapse;}
+    </style>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
+    <!-- Main Container -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f4f4f4;">
+        <tr>
+            <td style="padding: 20px 0;">
+                <!-- Email Container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td style="padding: 30px 40px 20px 40px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td style="text-align: left; color: #333333; font-size: 14px;">
+                                        <!-- {{recipient_info}} -->
+                                        Para: {{recipient_email}}
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <!-- Logo - Replace with your SendGrid hosted image URL -->
+                                        <img src="https://via.placeholder.com/120x30/6366F1/ffffff?text=LOGOIPSUM" alt="Logo" style="width: 120px; height: auto; display: block;">
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Subject Line -->
+                    <tr>
+                        <td style="padding: 0 40px 30px 40px;">
+                            <p style="margin: 0; color: #333333; font-size: 14px;">
+                                Asunto: {{subject}}
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Greeting -->
+                    <tr>
+                        <td style="padding: 0 40px 20px 40px;">
+                            <p style="margin: 0; color: #333333; font-size: 16px; font-weight: normal;">
+                                Estimado(a) {{recipient_name}}
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Introduction Text -->
+                    <tr>
+                        <td style="padding: 0 40px 30px 40px;">
+                            <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.5;">
+                                Tus gestiones fueron completadas exitosamente. A continuación encontrarás el resumen con los detalles correspondientes.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Gestión 1 -->
+                    <tr>
+                        <td style="padding: 0 40px 20px 40px;">
+                            <!-- Gestión Header -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #9CA3AF; border-radius: 4px;">
+                                <tr>
+                                    <td style="padding: 12px 16px; color: #ffffff; font-size: 16px; font-weight: 500;">
+                                        Gestión 1
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Gestión Content -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 4px 4px;">
+                                <tr>
+                                    <td style="padding: 20px 16px;">
+                                        <!-- Icon and Title -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td width="80" style="vertical-align: top; padding-right: 15px;">
+                                                    <!-- Icon - Replace with your SendGrid hosted image URL -->
+                                                    <img src="https://via.placeholder.com/60x60/6366F1/ffffff?text=💻" alt="Icono" style="width: 60px; height: 60px; display: block;">
+                                                </td>
+                                                <td style="vertical-align: top;">
+                                                    <p style="margin: 0 0 8px 0; color: #333333; font-size: 16px; font-weight: normal;">
+                                                        {{gestion_1_title}}: <span style="color: #EF4444; font-weight: 500;">{{gestion_1_amount}}</span>
+                                                    </p>
+                                                    <p style="margin: 0; color: #666666; font-size: 14px;">
+                                                        Fecha de recaudación: {{gestion_1_date}}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Detalle de facturas -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 20px;">
+                                            <tr>
+                                                <td style="padding-bottom: 12px;">
+                                                    <p style="margin: 0; color: #333333; font-size: 14px; font-weight: 500;">
+                                                        Detalle de facturas
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Facturas Table -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #e5e7eb; border-collapse: collapse;">
+                                            <!-- Table Header -->
+                                            <tr style="background-color: #f9fafb;">
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Tipo</th>
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Número</th>
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Emisión</th>
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Días de atraso</th>
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Monto</th>
+                                            </tr>
+                                            <!-- {{#each gestion_1_invoices}} -->
+                                            <!-- Table Row - Example data, repeat as needed -->
+                                            <tr>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">Factura<br>electrónica</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">74689</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">00/00/0000</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">-12</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">$3.232.510</td>
+                                            </tr>
+                                            <!-- {{/each}} -->
+                                            <!-- Total Row -->
+                                            <tr>
+                                                <td colspan="4" style="padding: 10px; text-align: right; color: #333333; font-size: 13px; font-weight: 500;">Total a pagar</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 13px; font-weight: 500;">{{gestion_1_total}}</td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Retiro de cheque section (conditional) -->
+                                        <!-- {{#if gestion_1_check_info}} -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 20px;">
+                                            <tr>
+                                                <td style="padding-bottom: 8px;">
+                                                    <p style="margin: 0; color: #333333; font-size: 14px; font-weight: 500;">
+                                                        Retiro de cheque
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p style="margin: 0 0 6px 0; color: #666666; font-size: 13px;">
+                                                        Agradecemos tus valiosa colaboración en confirmarnos:
+                                                    </p>
+                                                    <ul style="margin: 0; padding-left: 20px; color: #666666; font-size: 13px;">
+                                                        <li style="margin-bottom: 4px;">Horario de atención</li>
+                                                        <li style="margin-bottom: 4px;">Documentación exigida para el retiro de cheque</li>
+                                                        <li style="margin-bottom: 4px;">Dirección de retiro en {{gestion_1_address}}</li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <!-- {{/if}} -->
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Gestión 2 -->
+                    <!-- {{#if gestion_2}} -->
+                    <tr>
+                        <td style="padding: 0 40px 20px 40px;">
+                            <!-- Gestión Header -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #9CA3AF; border-radius: 4px;">
+                                <tr>
+                                    <td style="padding: 12px 16px; color: #ffffff; font-size: 16px; font-weight: 500;">
+                                        Gestión 2
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Gestión Content -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 4px 4px;">
+                                <tr>
+                                    <td style="padding: 20px 16px;">
+                                        <!-- Icon and Title -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td width="80" style="vertical-align: top; padding-right: 15px;">
+                                                    <!-- Icon - Replace with your SendGrid hosted image URL -->
+                                                    <img src="https://via.placeholder.com/60x60/6366F1/ffffff?text=📊" alt="Icono" style="width: 60px; height: 60px; display: block;">
+                                                </td>
+                                                <td style="vertical-align: top; padding-top: 15px;">
+                                                    <p style="margin: 0; color: #333333; font-size: 16px; font-weight: normal;">
+                                                        {{gestion_2_title}}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Detalle de facturas -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 20px;">
+                                            <tr>
+                                                <td style="padding-bottom: 12px;">
+                                                    <p style="margin: 0; color: #333333; font-size: 14px; font-weight: 500;">
+                                                        Detalle de facturas
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Facturas Table -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #e5e7eb; border-collapse: collapse;">
+                                            <!-- Table Header -->
+                                            <tr style="background-color: #f9fafb;">
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Tipo</th>
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Número</th>
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Emisión</th>
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Vcto</th>
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Días de atraso</th>
+                                                <th style="padding: 10px; text-align: center; color: #6366F1; font-size: 12px; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Monto</th>
+                                            </tr>
+                                            <!-- {{#each gestion_2_invoices}} -->
+                                            <!-- Table Row - Example data, repeat as needed -->
+                                            <tr>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">Factura<br>electrónica</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">74689</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">00/00/0000</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">00/00/0000</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">-12</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">$3.232.510</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">Factura<br>electrónica</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">74689</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">00/00/0000</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">00/00/0000</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">-12</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">$3.232.510</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">Factura<br>Menciona</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">74689</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">00/00/0000</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">00/00/0000</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">-12</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 12px; border-bottom: 1px solid #e5e7eb;">$3.232.510</td>
+                                            </tr>
+                                            <!-- {{/each}} -->
+                                            <!-- Total Row -->
+                                            <tr>
+                                                <td colspan="5" style="padding: 10px; text-align: right; color: #333333; font-size: 13px; font-weight: 500;">Total a pagar</td>
+                                                <td style="padding: 10px; text-align: center; color: #333333; font-size: 13px; font-weight: 500;">{{gestion_2_total}}</td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Additional Note -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 15px;">
+                                            <tr>
+                                                <td>
+                                                    <p style="margin: 0; color: #666666; font-size: 13px; line-height: 1.5;">
+                                                        {{gestion_2_note}}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- {{/if}} -->
+
+                    <!-- Preferences Text -->
+                    <tr>
+                        <td style="padding: 20px 40px;">
+                            <p style="margin: 0; color: #666666; font-size: 13px; line-height: 1.5; text-align: center;">
+                                Su preferencia nos anima a seguir esforzándonos por ofrecerles un mejor servicio y la más completa información.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px 40px 40px; border-top: 1px solid #e5e7eb;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <p style="margin: 0 0 10px 0; color: #333333; font-size: 16px; font-weight: 500;">
+                                            ¿Necesitas ayuda?
+                                        </p>
+                                        <p style="margin: 0 0 5px 0; color: #666666; font-size: 14px;">
+                                            Estamos disponibles para asistirte
+                                        </p>
+                                        <p style="margin: 0 0 5px 0; color: #666666; font-size: 14px;">
+                                            Teléfono: {{support_phone}}
+                                        </p>
+                                        <p style="margin: 0; color: #666666; font-size: 14px;">
+                                            Correo: <a href="mailto:{{support_email}}" style="color: #6366F1; text-decoration: none;">{{support_email}}</a>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

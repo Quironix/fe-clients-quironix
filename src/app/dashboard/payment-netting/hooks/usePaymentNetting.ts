@@ -2,6 +2,7 @@
 
 import { RowSelectionState } from "@tanstack/react-table";
 import { useCallback, useEffect, useState } from "react";
+import { format, parseISO } from "date-fns";
 import { getPaymentNetting } from "../services";
 import {
   BankMovementStatusEnum,
@@ -11,25 +12,32 @@ import {
 
 const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
   if (!apiData?.data) return [];
+  const adaptedData = apiData.data.map((item: any) => {
+    let formattedDate = "";
 
-  const adaptedData = apiData.data.map((item: any) => ({
-    ...item,
-    id: item.id,
-    date: item?.created_at
-      ? new Date(item.created_at).toLocaleDateString("es-ES", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        })
-      : "",
-    amount: parseFloat(item.amount) || 0,
-    bank: item.bank_information.bank || "",
-    account_number: item.bank_information.account_number || "",
-    status: item.status,
-    code: "-",
-    description: item.description || "",
-    comment: item.comment || "",
-  }));
+    if (item?.created_at) {
+      try {
+        const parsedDate = parseISO(item.created_at);
+        formattedDate = format(parsedDate, "dd/MM/yyyy");
+      } catch (error) {
+        console.error("Error formatting date:", item.created_at, error);
+        formattedDate = "";
+      }
+    }
+
+    return {
+      ...item,
+      id: item.id,
+      date: formattedDate,
+      amount: parseFloat(item.amount) || 0,
+      bank: item.bank_information.bank || "",
+      account_number: item.bank_information.account_number || "",
+      status: item.status,
+      code: "-",
+      description: item.description || "",
+      comment: item.comment || "",
+    };
+  });
 
   // Ordenar por estado: "Pago creado" primero, luego "Pendiente"
   return adaptedData.sort((a, b) => {
@@ -69,7 +77,9 @@ export function usePaymentNetting(
     hasNext: false,
     hasPrevious: false,
   });
-  const [filters, setFilters] = useState<PaymentNettingFilters>({});
+  const [filters, setFilters] = useState<PaymentNettingFilters>({
+    status: "PENDING",
+  });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -169,11 +179,15 @@ export function usePaymentNetting(
     (search: string) => {
       if (search === filters.search) return;
 
-      // Limpiar filtros previos de búsqueda específica
-      const baseFilters = { ...filters };
-      delete baseFilters.amount;
-      delete baseFilters.description;
-      delete baseFilters.search;
+      // Mantener filtros de fecha y estado, solo limpiar los de búsqueda
+      const baseFilters: PaymentNettingFilters = {};
+
+      // Preservar solo los filtros que existen
+      if (filters.status) baseFilters.status = filters.status;
+      if (filters.dateFrom) baseFilters.dateFrom = filters.dateFrom;
+      if (filters.dateTo) baseFilters.dateTo = filters.dateTo;
+      if (filters.createdAtFrom) baseFilters.createdAtFrom = filters.createdAtFrom;
+      if (filters.createdAtTo) baseFilters.createdAtTo = filters.createdAtTo;
 
       // Determinar si la búsqueda es numérica o textual
       const isNumericSearch = /^\d+\.?\d*$/.test(search.trim());
@@ -181,8 +195,8 @@ export function usePaymentNetting(
       let newFilters: PaymentNettingFilters;
 
       if (search.trim() === "") {
-        // Si la búsqueda está vacía, reiniciar con filtros vacíos (solo paginado)
-        newFilters = {};
+        // Si la búsqueda está vacía, mantener solo los filtros de fecha y estado
+        newFilters = { ...baseFilters };
       } else if (isNumericSearch) {
         // Si es numérico, buscar por amount
         newFilters = { ...baseFilters, amount: search };

@@ -17,6 +17,7 @@ import {
   Trash2,
   TriangleAlert,
 } from "lucide-react";
+import { format, parseISO } from "date-fns";
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -232,6 +233,12 @@ export default function PaymentNettingPage() {
     [handleOpenTransactionDetail, handleReversePayment]
   );
 
+  const handleResetFilters = () => {
+    if (filterInputsRef.current) {
+      filterInputsRef.current.resetFilters();
+    }
+  };
+
   return (
     <>
       <Header fixed>
@@ -309,13 +316,7 @@ export default function PaymentNettingPage() {
                         value={
                           selectedPayments.length === 1
                             ? selectedPayments[0]?.created_at
-                              ? new Date(
-                                  selectedPayments[0].created_at
-                                ).toLocaleDateString("es-ES", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                })
+                              ? format(parseISO(selectedPayments[0].created_at), "dd/MM/yyyy")
                               : "N/A"
                             : "Múltiples fechas"
                         }
@@ -387,6 +388,7 @@ export default function PaymentNettingPage() {
                 />
               }
               isApplyingFilters={isApplyingFilters}
+              onResetFilters={handleResetFilters}
             />
           </CardContent>
         </Card>

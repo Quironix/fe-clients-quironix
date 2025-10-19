@@ -33,14 +33,6 @@ const formatCurrency = (amount: number, currency: string) => {
   }).format(amount);
 };
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
-
 const ERROR_CLASS =
   "bg-white border-red-500 rounded-md gap-2 text-red-500 text-[10px]";
 const SUCCESS_CLASS =
@@ -167,7 +159,7 @@ export const createColumns = (
     header: "Fecha",
     cell: ({ row }) => (
       <div className="font-medium text-sm">
-        {formatDate(row.getValue("date"))}
+        {row.getValue("date")}
       </div>
     ),
   },
