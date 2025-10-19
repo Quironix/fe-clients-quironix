@@ -1,5 +1,6 @@
 "use client";
 
+import { Invoice } from "@/app/dashboard/payment-plans/store";
 import Stepper from "@/components/Stepper";
 import { Step } from "@/components/Stepper/types";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,34 @@ const steps: Step[] = [
   { id: 3, label: "Paso 3", completed: false },
 ];
 
+// Tipo para los datos del formulario de gestión
+export interface ManagementFormData {
+  managementType: string;
+  debtorComments: string;
+  analystComments: string;
+  // Campos condicionales - Compromiso de pago
+  paymentCommitmentDate?: string;
+  paymentCommitmentAmount?: string;
+  // Campos condicionales - Próxima gestión
+  nextManagementDate?: string;
+  nextManagementTime?: string;
+}
+
 export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedInvoices, setSelectedInvoices] = useState<Invoice[]>([]);
+  const [managementFormData, setManagementFormData] =
+    useState<ManagementFormData>({
+      managementType: "",
+      debtorComments: "",
+      analystComments: "",
+      paymentCommitmentDate: "",
+      paymentCommitmentAmount: "",
+      nextManagementDate: "",
+      nextManagementTime: "",
+    });
 
   // Función para avanzar al siguiente paso
   const handleNext = () => {
@@ -48,6 +73,18 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
     setCurrentStep(step);
   };
 
+  // Función para manejar la selección de facturas
+  const handleInvoicesSelected = (invoices: Invoice[]) => {
+    setSelectedInvoices(invoices);
+    console.log("Facturas seleccionadas:", invoices);
+  };
+
+  // Función para manejar cambios en el formulario de gestión
+  const handleManagementFormChange = (data: Partial<ManagementFormData>) => {
+    setManagementFormData((prev) => ({ ...prev, ...data }));
+    console.log("Datos de gestión:", { ...managementFormData, ...data });
+  };
+
   // Función para finalizar el proceso
   const handleFinish = async () => {
     setIsSubmitting(true);
@@ -65,9 +102,20 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return <StepOne dataDebtor={dataDebtor} />;
+        return (
+          <StepOne
+            dataDebtor={dataDebtor}
+            onInvoicesSelected={handleInvoicesSelected}
+          />
+        );
       case 1:
-        return <StepTwo dataDebtor={dataDebtor} />;
+        return (
+          <StepTwo
+            dataDebtor={dataDebtor}
+            formData={managementFormData}
+            onFormChange={handleManagementFormChange}
+          />
+        );
       case 2:
         return <StepThree dataDebtor={dataDebtor} />;
       default:
@@ -87,8 +135,10 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
       </div>
 
       {/* Contenido del paso actual */}
-      <div className="border border-gray-200 rounded-md p-5">
-        {renderStepContent()}
+      <div className="border border-gray-200 rounded-md p-5 min-h-[500px] flex flex-col">
+        <div className="flex-1">
+          {renderStepContent()}
+        </div>
 
         {/* Botones de navegación */}
         <div className="flex justify-end gap-6 border-t border-primary pt-3 mt-6">

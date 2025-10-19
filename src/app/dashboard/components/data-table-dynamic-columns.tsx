@@ -85,7 +85,7 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
     variant?: "default" | "secondary" | "destructive" | "outline";
     icon?: React.ReactNode;
   }>;
-  title?: string;
+  title?: string | React.ReactNode;
   description?: string;
   handleSuccessButton?: (config?: ColumnConfiguration) => void | Promise<void>;
   filterInputs?: React.ReactNode;
@@ -146,6 +146,12 @@ export function DataTableDynamicColumns<TData, TValue>({
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (columns.length > 0 && columnOrder.length === 0) {
@@ -347,7 +353,7 @@ export function DataTableDynamicColumns<TData, TValue>({
               </div>
             )}
 
-            {searchValue && (
+            {/* {searchValue && (
               <div className="text-sm text-muted-foreground flex items-center gap-2">
                 {isServerSideLoading ? (
                   <>
@@ -358,12 +364,12 @@ export function DataTableDynamicColumns<TData, TValue>({
                   `${paginationInfo.total} resultado(s)`
                 )}
               </div>
-            )}
+            )} */}
           </div>
 
           <div className="flex items-center gap-2">
             {ctaNode && ctaNode}
-            {enableColumnFilter && (
+            {enableColumnFilter && mounted && (
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
                   <Button variant="outline">
@@ -507,39 +513,13 @@ export function DataTableDynamicColumns<TData, TValue>({
           </div>
         </div>
 
-        {enableRowSelection && Object.keys(rowSelection).length > 0 && (
+        {/* {enableRowSelection && Object.keys(rowSelection).length > 0 && (
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="text-sm text-muted-foreground">
               {Object.keys(rowSelection).length} elemento(s) seleccionado(s)
             </div>
-            {/* <div className="flex items-center gap-2">
-              {bulkActions.map((action, index) => {
-                const selectedRows = table
-                  .getFilteredSelectedRowModel()
-                  .rows.map((row) => row.original);
-                return (
-                  <Button
-                    key={index}
-                    variant={action.variant || "default"}
-                    size="sm"
-                    onClick={() => action.onClick(selectedRows)}
-                    className="flex items-center gap-1"
-                  >
-                    {action.icon}
-                    {action.label}
-                  </Button>
-                );
-              })}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setRowSelection({})}
-              >
-                Limpiar selección
-              </Button>
-            </div> */}
           </div>
-        )}
+        )} */}
       </div>
 
       <div className={`space-y-4 bg-white ${className}`}>
@@ -620,10 +600,7 @@ export function DataTableDynamicColumns<TData, TValue>({
               Mostrando {paginationInfo.showingFrom} a{" "}
               {paginationInfo.showingTo} de {paginationInfo.total} registros
               {searchValue && (
-                <span className="text-muted-foreground">
-                  {" "}
-                  (filtrado por búsqueda)
-                </span>
+                <span className="text-muted-foreground"> (filtrado)</span>
               )}
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
