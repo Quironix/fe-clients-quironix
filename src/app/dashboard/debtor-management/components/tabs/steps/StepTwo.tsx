@@ -587,11 +587,7 @@ export const StepTwo = ({
                         control={form.control}
                         name="nextManagementDate"
                         render={({ field }) => (
-                          <DatePopover
-                            field={field}
-                            label="Inicio de pago"
-                            required
-                          />
+                          <DatePopover field={field} label="Fecha" required />
                         )}
                       />
 

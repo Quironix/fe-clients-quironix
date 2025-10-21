@@ -49,7 +49,7 @@ export interface ManagementFormData {
   observation: string;
 
   // Próxima gestión
-  nextManagementDate: string;
+  nextManagementDate: string | Date;
   nextManagementTime: string;
 
   // Datos dinámicos del caso (se llenan según el tipo de gestión)
@@ -152,37 +152,137 @@ export const AddManagementTab = ({
       comment: "",
       sendEmail: false,
     });
-    // Mantener las facturas seleccionadas del Step 1
-    // No reseteamos selectedInvoices
   };
 
-  // Función para agregar gestión y continuar editando
+  const validateManagementData = () => {
+    if (!session?.token || !profile?.client_id || !dataDebtor?.id) {
+      throw new Error("Faltan datos de sesión o perfil");
+    }
+
+    if (
+      !managementFormData.managementType ||
+      !managementFormData.debtorComment ||
+      !managementFormData.executiveComment
+    ) {
+      throw new Error("Debe completar la selección de gestión");
+    }
+
+    if (!managementFormData.contactType || !managementFormData.contactValue) {
+      throw new Error("Debe seleccionar un contacto");
+    }
+
+    if (selectedInvoices.length === 0) {
+      throw new Error("Debe seleccionar al menos una factura");
+    }
+
+    if (
+      !managementFormData.observation ||
+      managementFormData.observation.trim() === ""
+    ) {
+      throw new Error("Debe agregar una observación");
+    }
+  };
+
+  const formatDateToISO = (dateValue: string | Date | undefined): string => {
+    if (!dateValue) return new Date().toISOString();
+
+    let dateObj: Date;
+
+    if (dateValue instanceof Date) {
+      dateObj = dateValue;
+    } else if (typeof dateValue === "string") {
+      dateObj = new Date(dateValue);
+    } else {
+      dateObj = new Date();
+    }
+
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const buildTrackPayload = () => {
+    const dateISO = formatDateToISO(managementFormData.nextManagementDate);
+    const time = managementFormData.nextManagementTime || "00:00";
+    const nextManagementDateTime = `${dateISO}T${time}:00.000Z`;
+
+    const payload: any = {
+      debtor_id: dataDebtor.id,
+      management_type: managementFormData.managementType,
+      contact: {
+        type: managementFormData.contactType,
+        value: managementFormData.contactValue,
+      },
+      observation: managementFormData.observation,
+      debtor_comment: managementFormData.debtorComment,
+      executive_comment: managementFormData.executiveComment,
+      next_management_date: nextManagementDateTime,
+      invoice_ids: selectedInvoices.map((inv) => inv.id),
+    };
+
+    if (
+      managementFormData.caseData &&
+      Object.keys(managementFormData.caseData).length > 0
+    ) {
+      const normalizedCaseData: any = {};
+
+      for (const [key, value] of Object.entries(managementFormData.caseData)) {
+        if (value instanceof Date) {
+          normalizedCaseData[key] = formatDateToISO(value);
+        } else {
+          normalizedCaseData[key] = value;
+        }
+      }
+
+      payload.case_data = normalizedCaseData;
+    }
+
+    console.log("🚀 Payload construido:", JSON.stringify(payload, null, 2));
+
+    return payload;
+  };
+
   const handleAddManagement = async () => {
     setIsSubmitting(true);
     try {
-      // Crear nueva gestión guardada
+      const { createTrack } = await import("../../services/tracks");
+      const { toast } = await import("sonner");
+
+      validateManagementData();
+
+      const payload = buildTrackPayload();
+
+      const result = await createTrack(
+        session.token,
+        profile.client_id,
+        payload
+      );
+
+      console.log("Gestión creada exitosamente:", result);
+      toast.success("Gestión agregada exitosamente");
+
       const newManagement: SavedManagement = {
-        id: `management-${Date.now()}`,
+        id: result.track.id,
         formData: { ...managementFormData },
         selectedInvoices: [...selectedInvoices],
-        createdAt: new Date(),
+        createdAt: new Date(result.track.created_at),
       };
 
-      // Agregar a la lista de gestiones guardadas
       setSavedManagements((prev) => [...prev, newManagement]);
 
-      console.log("Gestión agregada:", newManagement);
-
-      // Resetear formulario para agregar otra gestión
       resetManagementForm();
 
-      // Volver al Step 2 para agregar nueva gestión
       setCurrentStep(1);
 
-      // Resetear estados de los steps
       setStepsState(steps.map((step) => ({ ...step, completed: false })));
     } catch (error) {
       console.error("Error al agregar gestión:", error);
+      const { toast } = await import("sonner");
+      toast.error(
+        error instanceof Error ? error.message : "Error al crear gestión"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -197,70 +297,26 @@ export const AddManagementTab = ({
   const handleFinish = async () => {
     setIsSubmitting(true);
     try {
-      const { createMultipleTracks } = await import("../../services/tracks");
+      const { createTrack } = await import("../../services/tracks");
       const { toast } = await import("sonner");
 
-      // Validar datos requeridos
-      if (!session?.token || !profile?.client_id || !dataDebtor?.id) {
-        throw new Error("Faltan datos de sesión o perfil");
-      }
+      validateManagementData();
 
-      // Validar que la gestión actual esté completa
-      if (
-        !managementFormData.managementType ||
-        !managementFormData.debtorComment ||
-        !managementFormData.executiveComment
-      ) {
-        throw new Error("Debe completar la selección de gestión");
-      }
+      const payload = buildTrackPayload();
 
-      // Agregar la gestión actual a las guardadas
-      const allManagements = [
-        ...savedManagements,
-        {
-          id: `management-${Date.now()}`,
-          formData: { ...managementFormData },
-          selectedInvoices: [...selectedInvoices],
-          createdAt: new Date(),
-        },
-      ];
-
-      // Convertir todas las gestiones guardadas a payloads
-      const payloads = allManagements.map((management) => {
-        // Combinar fecha y hora para next_management_date
-        const nextManagementDateTime = management.formData.nextManagementDate
-          ? `${management.formData.nextManagementDate}T${management.formData.nextManagementTime || "00:00"}:00.000Z`
-          : new Date().toISOString();
-
-        return {
-          debtor_id: dataDebtor.id,
-          management_type: management.formData.managementType,
-          contact: {
-            type: management.formData.contactType as any,
-            value: management.formData.contactValue,
-          },
-          observation: management.formData.observation,
-          debtor_comment: management.formData.debtorComment,
-          executive_comment: management.formData.executiveComment,
-          next_management_date: nextManagementDateTime,
-          case_data: management.formData.caseData,
-          invoice_ids: management.selectedInvoices.map((inv) => inv.id),
-        };
-      });
-
-      // Invocar el endpoint para cada gestión
-      const results = await createMultipleTracks(
+      const result = await createTrack(
         session.token,
         profile.client_id,
-        payloads
+        payload
       );
 
-      console.log("Gestiones creadas exitosamente:", results);
+      console.log("Gestión final creada exitosamente:", result);
+
+      const totalCreated = savedManagements.length + 1;
       toast.success(
-        `Se crearon ${results.length} gestión(es) exitosamente`
+        `Proceso completado. ${totalCreated} gestión(es) creada(s) exitosamente`
       );
 
-      // Limpiar todo
       setSavedManagements([]);
       resetManagementForm();
       setSelectedInvoices([]);
@@ -270,7 +326,9 @@ export const AddManagementTab = ({
       console.error("Error al finalizar:", error);
       const { toast } = await import("sonner");
       toast.error(
-        error instanceof Error ? error.message : "Error al crear gestiones"
+        error instanceof Error
+          ? error.message
+          : "Error al crear la gestión final"
       );
     } finally {
       setIsSubmitting(false);
