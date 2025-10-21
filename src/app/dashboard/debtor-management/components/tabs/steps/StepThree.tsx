@@ -1,6 +1,10 @@
 "use client";
 
 import { ManagementFormData } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
+import {
+  CONTACT_TYPE_OPTIONS,
+  getManagementTypeConfig,
+} from "@/app/dashboard/debtor-management/config/management-types";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,7 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
-import { format } from "date-fns";
+import { differenceInDays, format } from "date-fns";
 import {
   CalendarDays,
   CircleDollarSign,
@@ -29,9 +33,8 @@ import {
   Upload,
   User,
 } from "lucide-react";
-import { differenceInDays } from "date-fns";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface StepThreeProps {
   dataDebtor: any;
@@ -39,33 +42,6 @@ interface StepThreeProps {
   onFormChange: (data: Partial<ManagementFormData>) => void;
   selectedInvoices: Invoice[];
 }
-
-// Mapeo de labels para tipos de gestión
-const managementTypeLabels: Record<string, string> = {
-  outgoing_call: "Llamada saliente",
-  incoming_call: "Llamada entrante",
-  email: "Correo electrónico",
-  visit: "Visita",
-  letter: "Carta",
-  whatsapp: "WhatsApp",
-};
-
-const debtorCommentsLabels: Record<string, string> = {
-  hara_pago: "Hará pago",
-  acepta_pago: "Acepta pago",
-  rechaza_pago: "Rechaza pago",
-  solicita_plazo: "Solicita plazo",
-  no_contesta: "No contesta",
-  otro: "Otro",
-};
-
-const analystCommentsLabels: Record<string, string> = {
-  con_compromiso_pago: "Con compromiso de pago",
-  deudor_contactado: "Deudor contactado",
-  sin_respuesta: "Sin respuesta",
-  requiere_seguimiento: "Requiere seguimiento",
-  otro: "Otro",
-};
 
 export const StepThree = ({
   dataDebtor,
@@ -77,15 +53,28 @@ export const StepThree = ({
   const { profile } = useProfileContext();
   const [isDragging, setIsDragging] = useState(false);
 
-  // Determinar si mostrar secciones condicionales
-  const showPaymentCommitment =
-    formData.analystComments === "con_compromiso_pago" ||
-    formData.debtorComments === "hara_pago";
+  // Obtener configuración del tipo de gestión
+  const selectedConfig = useMemo(() => {
+    if (
+      formData.managementType &&
+      formData.debtorComment &&
+      formData.executiveComment
+    ) {
+      const { getManagementCombination } = require("@/app/dashboard/debtor-management/config/management-types");
+      return getManagementCombination(
+        formData.managementType,
+        formData.debtorComment,
+        formData.executiveComment
+      );
+    }
+    return null;
+  }, [formData.managementType, formData.debtorComment, formData.executiveComment]);
 
-  const showNextManagement =
-    formData.managementType &&
-    formData.debtorComments &&
-    formData.analystComments;
+  // Obtener label del tipo de contacto
+  const contactTypeLabel = useMemo(() => {
+    const type = CONTACT_TYPE_OPTIONS.find((t) => t.value === formData.contactType);
+    return type?.label || formData.contactType;
+  }, [formData.contactType]);
 
   const handleFileChange = (file: File | null) => {
     onFormChange({ file });
@@ -133,6 +122,11 @@ export const StepThree = ({
     }
   };
 
+  const formatTime = (timeString: string) => {
+    if (!timeString) return "-";
+    return timeString;
+  };
+
   const calculateDelay = (dueDate: string) => {
     if (!dueDate) return 0;
     try {
@@ -162,6 +156,56 @@ export const StepThree = ({
       </div>
     </div>
   );
+
+  /**
+   * Renderiza dinámicamente los campos de case_data
+   */
+  const renderCaseDataFields = () => {
+    if (!selectedConfig || !formData.caseData) return null;
+
+    const fields = selectedConfig.fields;
+    if (fields.length === 0) return null;
+
+    return (
+      <div className="bg-white rounded-lg p-4 border border-gray-200">
+        <div className="flex items-center gap-2 mb-3">
+          <FileText className="w-4 h-4 text-gray-700" />
+          <h3 className="font-semibold text-sm text-gray-700">
+            Detalles: {selectedConfig.label}
+          </h3>
+          <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {fields.map((field) => {
+            const value = (formData.caseData as any)[field.name];
+            let displayValue = value || "-";
+
+            // Formatear según tipo
+            if (field.type === "number" && value) {
+              displayValue = formatCurrency(value);
+            } else if (field.type === "date" && value) {
+              displayValue = formatDate(value);
+            } else if (field.type === "time" && value) {
+              displayValue = formatTime(value);
+            } else if (field.type === "select" && field.options) {
+              const option = field.options.find((o) => o.value === value);
+              displayValue = option?.label || value || "-";
+            }
+
+            return (
+              <div key={field.name} className="flex items-start gap-2">
+                <CircleDollarSign className="w-4 h-4 text-gray-400 mt-1" />
+                <div className="flex-1">
+                  <span className="text-xs text-gray-500">{field.label}</span>
+                  <p className="text-sm font-medium text-gray-900">{displayValue}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -239,13 +283,102 @@ export const StepThree = ({
         </div>
       </div>
 
+      {/* Tipo de Gestión */}
+      {selectedConfig && (
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <FileText className="w-4 h-4 text-gray-700" />
+            <h3 className="font-semibold text-sm text-gray-700">Tipo de Gestión</h3>
+            <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
+          </div>
+          <div className="space-y-2">
+            <InfoCard
+              icon={<FileText className="w-4 h-4" />}
+              label="Tipo"
+              value={selectedConfig.label}
+            />
+            <InfoCard
+              icon={<MessageSquare className="w-4 h-4" />}
+              label="Descripción"
+              value={selectedConfig.description}
+            />
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
+              <p className="text-sm text-blue-800">
+                <strong>Fase objetivo:</strong> {selectedConfig.targetPhase}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contacto */}
+      <div className="bg-white rounded-lg p-4 border border-gray-200">
+        <div className="flex items-center gap-2 mb-3">
+          <Phone className="w-4 h-4 text-gray-700" />
+          <h3 className="font-semibold text-sm text-gray-700">Contacto</h3>
+          <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InfoCard
+            icon={<FileText className="w-4 h-4" />}
+            label="Tipo"
+            value={contactTypeLabel}
+          />
+          <InfoCard
+            icon={<MessageSquare className="w-4 h-4" />}
+            label="Valor"
+            value={formData.contactValue || "-"}
+          />
+        </div>
+      </div>
+
+      {/* Observación */}
+      {formData.observation && (
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <MessageSquare className="w-4 h-4 text-gray-700" />
+            <h3 className="font-semibold text-sm text-gray-700">Observación</h3>
+            <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
+          </div>
+          <p className="text-sm text-gray-900">{formData.observation}</p>
+        </div>
+      )}
+
+      {/* Datos del Caso (Dinámico) */}
+      {renderCaseDataFields()}
+
+      {/* Próxima gestión */}
+      {formData.nextManagementDate && (
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <CalendarDays className="w-4 h-4 text-gray-700" />
+            <h3 className="font-semibold text-sm text-gray-700">
+              Próxima gestión
+            </h3>
+            <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InfoCard
+              icon={<CalendarDays className="w-4 h-4" />}
+              label="Fecha"
+              value={formatDate(formData.nextManagementDate)}
+            />
+            <InfoCard
+              icon={<Clock className="w-4 h-4" />}
+              label="Hora"
+              value={formatTime(formData.nextManagementTime) + " hrs"}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Facturas seleccionadas */}
       {selectedInvoices.length > 0 && (
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="w-4 h-4 text-gray-700" />
             <h3 className="font-semibold text-sm text-gray-700">
-              Facturas seleccionadas
+              Facturas seleccionadas ({selectedInvoices.length})
             </h3>
             <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
           </div>
@@ -254,19 +387,12 @@ export const StepThree = ({
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-xs">Nº Doc.</TableHead>
+                  <TableHead className="text-xs">Tipo</TableHead>
                   <TableHead className="text-xs">Emisión</TableHead>
                   <TableHead className="text-xs">Vto.</TableHead>
                   <TableHead className="text-xs">Monto</TableHead>
                   <TableHead className="text-xs">Saldo</TableHead>
                   <TableHead className="text-xs">Atraso</TableHead>
-                  <TableHead className="text-xs">Tipo</TableHead>
-                  <TableHead className="text-xs">Observaciones</TableHead>
-                  <TableHead className="text-xs">Moneda</TableHead>
-                  <TableHead className="text-xs">Cliente</TableHead>
-                  <TableHead className="text-xs">Estado</TableHead>
-                  <TableHead className="text-xs">Fecha</TableHead>
-                  <TableHead className="text-xs">Seg.</TableHead>
-                  <TableHead className="text-xs">Puntaje</TableHead>
                   <TableHead className="text-xs">Fase</TableHead>
                 </TableRow>
               </TableHeader>
@@ -275,6 +401,9 @@ export const StepThree = ({
                   <TableRow key={index}>
                     <TableCell className="text-xs font-medium">
                       {invoice.number || invoice.folio || "-"}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      <DocumentTypeBadge type={invoice.type} />
                     </TableCell>
                     <TableCell className="text-xs">
                       {formatDate(invoice.issue_date)}
@@ -289,143 +418,18 @@ export const StepThree = ({
                       {formatCurrency(invoice.balance)}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {calculateDelay(invoice.due_date)}
+                      {calculateDelay(invoice.due_date)} días
                     </TableCell>
                     <TableCell className="text-xs">
-                      <DocumentTypeBadge type={invoice.type} />
+                      {Array.isArray(invoice.phases) && invoice.phases.length > 0
+                        ? (invoice.phases[invoice.phases.length - 1] as any)
+                            .phase ?? 0
+                        : "-"}
                     </TableCell>
-                    <TableCell className="text-xs">-</TableCell>
-                    <TableCell className="text-xs">P</TableCell>
-                    <TableCell className="text-xs">
-                      {invoice.client_id || "545484"}
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">
-                        Estado
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {formatDate(invoice.issue_date)}
-                    </TableCell>
-                    <TableCell className="text-xs">-</TableCell>
-                    <TableCell className="text-xs">0</TableCell>
-                    <TableCell className="text-xs">-</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </div>
-      )}
-
-      {/* Gestión */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
-        <div className="flex items-center gap-2 mb-3">
-          <MessageSquare className="w-4 h-4 text-gray-700" />
-          <h3 className="font-semibold text-sm text-gray-700">Gestión</h3>
-          <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 border-2 border-gray-400 rounded-sm"></div>
-            <div className="flex-1">
-              <span className="text-xs text-gray-500">Tipo de gestión</span>
-              <p className="text-sm font-medium text-gray-900">
-                {managementTypeLabels[formData.managementType] || "-"}
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-start gap-2">
-              <MessageSquare className="w-4 h-4 text-gray-400 mt-1" />
-              <div className="flex-1">
-                <span className="text-xs text-gray-500">
-                  Comentario del deudor
-                </span>
-                <p className="text-sm text-gray-900">
-                  {debtorCommentsLabels[formData.debtorComments] || "-"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <MessageSquare className="w-4 h-4 text-gray-400 mt-1" />
-              <div className="flex-1">
-                <span className="text-xs text-gray-500">
-                  Comentario del analista
-                </span>
-                <p className="text-sm text-gray-900">
-                  {analystCommentsLabels[formData.analystComments] || "-"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Compromiso de pago (Condicional) */}
-      {showPaymentCommitment && (
-        <div className="bg-white rounded-lg p-4 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <CircleDollarSign className="w-4 h-4 text-gray-700" />
-            <h3 className="font-semibold text-sm text-gray-700">
-              Compromiso de pago
-            </h3>
-            <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-start gap-2">
-              <CalendarDays className="w-4 h-4 text-gray-400 mt-1" />
-              <div className="flex-1">
-                <span className="text-xs text-gray-500">Fecha prometida</span>
-                <p className="text-sm font-medium text-gray-900">
-                  {formatDate(formData.paymentCommitmentDate || "")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <CircleDollarSign className="w-4 h-4 text-gray-400 mt-1" />
-              <div className="flex-1">
-                <span className="text-xs text-gray-500">Monto prometido</span>
-                <p className="text-sm font-medium text-gray-900">
-                  {formData.paymentCommitmentAmount
-                    ? formatCurrency(formData.paymentCommitmentAmount)
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Próxima gestión (Condicional) */}
-      {showNextManagement && (
-        <div className="bg-white rounded-lg p-4 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <CalendarDays className="w-4 h-4 text-gray-700" />
-            <h3 className="font-semibold text-sm text-gray-700">
-              Próxima gestión
-            </h3>
-            <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-start gap-2">
-              <CalendarDays className="w-4 h-4 text-gray-400 mt-1" />
-              <div className="flex-1">
-                <span className="text-xs text-gray-500">Fecha</span>
-                <p className="text-sm font-medium text-gray-900">
-                  {formatDate(formData.nextManagementDate || "")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Clock className="w-4 h-4 text-gray-400 mt-1" />
-              <div className="flex-1">
-                <span className="text-xs text-gray-500">Hora</span>
-                <p className="text-sm font-medium text-gray-900">
-                  {formData.nextManagementTime || "00:00"} hrs
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -475,11 +479,11 @@ export const StepThree = ({
       {/* Comentario */}
       <div className="bg-white rounded-lg p-4 border border-gray-200">
         <Label htmlFor="comment" className="text-sm font-semibold mb-2 block">
-          Comentario
+          Comentario adicional
         </Label>
         <Textarea
           id="comment"
-          placeholder="Lorem ipsum dolor sit amet consectetur. Tristique tincidunt aliquet ut proin..."
+          placeholder="Escribe algún comentario adicional sobre esta gestión..."
           value={formData.comment || ""}
           onChange={(e) => onFormChange({ comment: e.target.value })}
           className="min-h-[120px] resize-none"

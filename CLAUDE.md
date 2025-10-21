@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Quironix Frontend - A Next.js 15 enterprise application for financial management, debt collection, and client administration built with React 19, TypeScript, Tailwind CSS 4, and shadcn/ui components.
 
 **Tech Stack:**
+
 - **Framework:** Next.js 15 (App Router) with Turbopack
 - **React:** 19.0.0
 - **Auth:** NextAuth 5.0 (beta) with JWT strategy
@@ -113,6 +114,7 @@ dashboard/[module]/
 ```
 
 **Key Modules:**
+
 - `users/` - User management
 - `roles/` - Role and permissions management
 - `debtor-management/` - Debtor tracking and contact management
@@ -133,6 +135,7 @@ Use the included script to scaffold new modules:
 ```
 
 This creates a complete module structure with:
+
 - Service layer with GET/POST examples
 - Zustand store with CRUD operations
 - TypeScript types
@@ -140,6 +143,7 @@ This creates a complete module structure with:
 - README documentation
 
 **After generation:**
+
 1. Update `services/index.ts` - replace `REPLACE_ENDPOINT` with actual API endpoint
 2. Define types in `types/index.ts`
 3. Customize `page.tsx` UI
@@ -149,11 +153,13 @@ This creates a complete module structure with:
 ### Authentication & Authorization
 
 **NextAuth Configuration (`src/auth.ts`):**
+
 - Credentials provider with custom sign-in service
 - JWT session strategy
 - Custom session interface extending NextAuth's Session type
 
 **Middleware (`src/middleware.ts`):**
+
 - Route protection for `/dashboard/*` and `/onboarding/*`
 - Profile caching (5-minute TTL) to reduce API calls
 - Scope-based access control via `ROUTE_SCOPE_MAP`
@@ -161,6 +167,7 @@ This creates a complete module structure with:
 - Status-based routing (INVITED → onboarding, others → dashboard)
 
 **Access Token Flow:**
+
 1. User signs in → receives JWT token
 2. Token stored in NextAuth session
 3. Middleware validates token and fetches profile
@@ -168,6 +175,7 @@ This creates a complete module structure with:
 5. Scope validation determines route access
 
 **Adding Protected Routes:**
+
 ```typescript
 // In middleware.ts
 const ROUTE_SCOPE_MAP: Record<string, string> = {
@@ -178,11 +186,12 @@ const ROUTE_SCOPE_MAP: Record<string, string> = {
 ### API Service Layer
 
 **Pattern:**
+
 ```typescript
 // services/index.ts
 export async function getAll(accessToken: string, clientId: string) {
   const response = await fetch(`${API_URL}/v2/clients/${clientId}/resource`, {
-    headers: { Authorization: `Bearer ${accessToken}` }
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!response.ok) throw new Error("Failed to fetch");
   return response.json();
@@ -190,6 +199,7 @@ export async function getAll(accessToken: string, clientId: string) {
 ```
 
 **Common Headers:**
+
 - `Authorization: Bearer ${accessToken}` - Required for all authenticated requests
 - `Content-Type: application/json` - For POST/PUT/PATCH
 
@@ -198,6 +208,7 @@ export async function getAll(accessToken: string, clientId: string) {
 ### State Management Patterns
 
 **Zustand Store Structure:**
+
 ```typescript
 interface ModuleStore {
   items: Item[];
@@ -207,12 +218,18 @@ interface ModuleStore {
   setSearchTerm: (term: string) => void;
   fetchItems: (token: string, clientId: string) => Promise<void>;
   addItem: (item: Item, token: string, clientId: string) => Promise<void>;
-  updateItem: (id: string, item: Item, token: string, clientId: string) => Promise<void>;
+  updateItem: (
+    id: string,
+    item: Item,
+    token: string,
+    clientId: string
+  ) => Promise<void>;
   deleteItem: (id: string, token: string, clientId: string) => Promise<void>;
 }
 ```
 
 **Usage in Components:**
+
 ```typescript
 const { items, loading, fetchItems } = useModuleStore();
 const session = await auth();
@@ -227,6 +244,7 @@ useEffect(() => {
 ### Form Handling
 
 **Pattern with React Hook Form + Zod:**
+
 ```typescript
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -246,11 +264,13 @@ const form = useForm<z.infer<typeof formSchema>>({
 ### UI Component Patterns
 
 **shadcn/ui components are in `src/components/ui/`:**
+
 - Import from `@/components/ui/component-name`
 - Customized with Tailwind CSS
 - Use `cn()` utility from `@/lib/utils` for conditional classes
 
 **Date Formatting:**
+
 ```typescript
 import { formatDate, formatDateTime } from "@/lib/utils";
 
@@ -259,6 +279,7 @@ formatDateTime("2024-01-15T10:30:00Z"); // "15-01-2024 10:30"
 ```
 
 **Number Formatting:**
+
 ```typescript
 import { formatNumber } from "@/lib/utils";
 
@@ -279,6 +300,7 @@ Follow **Conventional Commits v1.0.0** (see `.cursor/rules/conventional-commits.
 ```
 
 **Types:**
+
 - `feat`: new feature
 - `fix`: bug fix
 - `docs`: documentation
@@ -293,6 +315,7 @@ Follow **Conventional Commits v1.0.0** (see `.cursor/rules/conventional-commits.
 **Common Scopes:** `api`, `ui`, `auth`, `components`, `utils`, `config`, `types`, `hooks`, `services`
 
 **Examples:**
+
 ```
 feat(components): add UserCard component
 fix(auth): resolve token expiration handling
@@ -302,6 +325,7 @@ refactor(services): simplify API client configuration
 ## Important Configuration Notes
 
 ### Next.js Configuration
+
 - Build output: `build/` (not `.next/`)
 - Standalone output enabled
 - React Strict Mode: **disabled** (for performance)
@@ -310,12 +334,15 @@ refactor(services): simplify API client configuration
 - Path alias: `@/*` → `./src/*`
 
 ### Environment Variables
+
 Required environment variables (see `.env` and `.env.local`):
+
 - `NEXT_PUBLIC_API_URL` - Backend API base URL
 - `AUTH_SECRET` - NextAuth secret key
 - `NEXTAUTH_URL` - Application URL for NextAuth
 
 ### TypeScript Configuration
+
 - Target: ES2020
 - Strict mode: **disabled**
 - Module resolution: bundler
@@ -325,19 +352,23 @@ Required environment variables (see `.env` and `.env.local`):
 ## Development Workflow
 
 1. **Creating a new dashboard module:**
+
    ```bash
    ./create-dashboard-module.sh module-name
    ```
 
 2. **Adding authentication to a route:**
+
    - Add route scope mapping in `src/middleware.ts`
    - Ensure backend API has corresponding scope
 
 3. **Adding a new UI component:**
+
    - Use shadcn/ui CLI: `npx shadcn-ui@latest add [component]`
    - Or manually add to `src/components/ui/`
 
 4. **Working with forms:**
+
    - Use React Hook Form + Zod for validation
    - Use shadcn/ui Form components for consistent styling
 
@@ -350,6 +381,7 @@ Required environment variables (see `.env` and `.env.local`):
 ## Common Patterns
 
 ### Getting Session in Server Components
+
 ```typescript
 import { auth } from "@/auth";
 
@@ -358,6 +390,7 @@ const token = session?.token;
 ```
 
 ### Getting Session in Client Components
+
 ```typescript
 "use client";
 import { useSession } from "next-auth/react";
@@ -367,6 +400,7 @@ const token = session?.token;
 ```
 
 ### Toast Notifications
+
 ```typescript
 import { toast } from "sonner";
 
@@ -375,6 +409,7 @@ toast.error("Error message");
 ```
 
 ### Conditional Styling
+
 ```typescript
 import { cn } from "@/lib/utils";
 
@@ -388,23 +423,32 @@ import { cn } from "@/lib/utils";
 ## Troubleshooting
 
 **Build errors with TanStack packages:**
+
 - The project has custom webpack config to handle ESM modules from `@tanstack`
 - If issues persist, check `next.config.ts` transpilePackages array
 
 **Turbopack issues:**
+
 - Use `npm run dev:webpack` to bypass Turbopack
 - Check `next.config.ts` for Turbopack rules
 
 **Type errors:**
+
 - Run `npm run type-check` to see all TypeScript errors
 - Note: strict mode is disabled for this project
 
 **Authentication issues:**
+
 - Check middleware logs in console
 - Verify token is present in session
 - Check profile cache (5-minute TTL)
 
 **Module not accessible:**
+
 - Verify scope mapping in `middleware.ts`
 - Check user roles/scopes in profile
 - Look for "Acceso denegado" logs in middleware
+
+## Considerations
+
+- Don't comment the code

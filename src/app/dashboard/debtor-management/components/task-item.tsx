@@ -68,7 +68,7 @@ export const TaskItem = ({
       <div
         onClick={handleClick}
         className={cn(
-          "flex items-center px-5 py-3 last:border-b-0 hover:bg-gray-100 transition-colors bg-white shadow-lg mb-2 cursor-pointer",
+          "flex items-center px-5 py-3 last:border-b-0 hover:bg-gray-100 transition-colors bg-white shadow-lg mb-2 cursor-pointer min-w-max",
           highlighted && `border-l-4 ${borderColor} bg-gray-50/50`,
           !highlighted && ` opacity-50`,
         )}

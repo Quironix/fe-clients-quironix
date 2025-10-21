@@ -1,16 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  AlertTriangle,
-  FileText,
-  Scale,
-  File,
-} from "lucide-react";
-import { QuadrantType } from "../services/types";
 import { useProfileContext } from "@/context/ProfileContext";
-import { useCollectorQuadrants } from "../hooks/useCollectorQuadrants";
+import { AlertTriangle, File, FileText, Scale } from "lucide-react";
 import { useMemo } from "react";
+import { useCollectorQuadrants } from "../hooks/useCollectorQuadrants";
+import { QuadrantType } from "../services/types";
 import { DebtorSearchAutocomplete } from "./debtor-search-autocomplete";
 
 interface TaskFiltersProps {
@@ -75,12 +70,72 @@ export const TaskFilters = ({
   };
 
   return (
-    <div className="mb-3 flex items-center gap-4 justify-between">
+    <div className="mb-3 flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:justify-between">
       <DebtorSearchAutocomplete placeholder="Buscar deudor por código o nombre" />
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap">
         <Button
-          size="sm"
+          size="xs"
+          variant={
+            selectedQuadrant === "CRITICAL_DEBTORS" ? "secondary" : "outline"
+          }
+          className={
+            selectedQuadrant === "CRITICAL_DEBTORS"
+              ? "bg-red-500 hover:bg-red-600 text-white text-xs"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+          }
+          onClick={() => handleQuadrantClick("CRITICAL_DEBTORS")}
+        >
+          <AlertTriangle className="w-4 h-4" />
+          Críticos {counts.critical_debtors}
+        </Button>
+        <Button
+          size="xs"
+          variant={
+            selectedQuadrant === "CASH_GENERATION" ? "secondary" : "outline"
+          }
+          className={
+            selectedQuadrant === "CASH_GENERATION"
+              ? "bg-orange-500 hover:bg-orange-600 text-white text-xs"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+          }
+          onClick={() => handleQuadrantClick("CASH_GENERATION")}
+        >
+          <FileText className="w-4 h-4" />
+          Gen. Caja {counts.cash_generation}
+        </Button>
+        <Button
+          size="xs"
+          variant={selectedQuadrant === "LITIGATION" ? "secondary" : "outline"}
+          className={
+            selectedQuadrant === "LITIGATION"
+              ? "bg-yellow-500 hover:bg-yellow-600 text-white text-xs"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+          }
+          onClick={() => handleQuadrantClick("LITIGATION")}
+        >
+          <Scale className="w-4 h-4" />
+          Litigios {counts.litigation}
+        </Button>
+        <Button
+          size="xs"
+          variant={
+            selectedQuadrant === "DEFICIENT_TECHNICAL_FILE"
+              ? "secondary"
+              : "outline"
+          }
+          className={
+            selectedQuadrant === "DEFICIENT_TECHNICAL_FILE"
+              ? "bg-purple-500 hover:bg-purple-600 text-white text-xs"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+          }
+          onClick={() => handleQuadrantClick("DEFICIENT_TECHNICAL_FILE")}
+        >
+          <File className="w-4 h-4" />
+          Exp. Técnico {counts.deficient_technical_file}
+        </Button>
+        <Button
+          size="xs"
           variant={selectedQuadrant === null ? "secondary" : "outline"}
           className={
             selectedQuadrant === null
@@ -90,58 +145,6 @@ export const TaskFilters = ({
           onClick={() => onQuadrantChange(null)}
         >
           Todas {counts.total}
-        </Button>
-        <Button
-          size="sm"
-          variant={selectedQuadrant === "CRITICAL_DEBTORS" ? "secondary" : "outline"}
-          className={
-            selectedQuadrant === "CRITICAL_DEBTORS"
-              ? "bg-red-500 hover:bg-red-600 text-white text-xs"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
-          }
-          onClick={() => handleQuadrantClick("CRITICAL_DEBTORS")}
-        >
-          <AlertTriangle className="w-4 h-4 mr-2" />
-          Críticos {counts.critical_debtors}
-        </Button>
-        <Button
-          size="sm"
-          variant={selectedQuadrant === "CASH_GENERATION" ? "secondary" : "outline"}
-          className={
-            selectedQuadrant === "CASH_GENERATION"
-              ? "bg-orange-500 hover:bg-orange-600 text-white text-xs"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
-          }
-          onClick={() => handleQuadrantClick("CASH_GENERATION")}
-        >
-          <FileText className="w-4 h-4 mr-2" />
-          Gen. Caja {counts.cash_generation}
-        </Button>
-        <Button
-          size="sm"
-          variant={selectedQuadrant === "LITIGATION" ? "secondary" : "outline"}
-          className={
-            selectedQuadrant === "LITIGATION"
-              ? "bg-yellow-500 hover:bg-yellow-600 text-white text-xs"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
-          }
-          onClick={() => handleQuadrantClick("LITIGATION")}
-        >
-          <Scale className="w-4 h-4 mr-2" />
-          Litigios {counts.litigation}
-        </Button>
-        <Button
-          size="sm"
-          variant={selectedQuadrant === "DEFICIENT_TECHNICAL_FILE" ? "secondary" : "outline"}
-          className={
-            selectedQuadrant === "DEFICIENT_TECHNICAL_FILE"
-              ? "bg-purple-500 hover:bg-purple-600 text-white text-xs"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
-          }
-          onClick={() => handleQuadrantClick("DEFICIENT_TECHNICAL_FILE")}
-        >
-          <File className="w-4 h-4 mr-2" />
-          Exp. Técnico {counts.deficient_technical_file}
         </Button>
       </div>
     </div>

@@ -26,11 +26,11 @@ const Content = () => {
           icon={<PhoneCall color="white" />}
           subDescription="Gestión de deudores"
         />
-        <div className="flex gap-5">
-          <div className="w-[240px]">
+        <div className="flex gap-5 w-full overflow-x-auto">
+          <div className="w-[240px] flex-shrink-0">
             <IndicatorsDebtor />
           </div>
-          <div className="flex-1 bg-white p-5 rounded-md shadow-xl">
+          <div className="flex-1 rounded-md shadow-xl min-w-0">
             <TaskFilters
               selectedQuadrant={selectedQuadrant}
               onQuadrantChange={setSelectedQuadrant}

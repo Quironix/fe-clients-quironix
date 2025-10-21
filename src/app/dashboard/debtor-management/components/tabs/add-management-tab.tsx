@@ -11,6 +11,8 @@ import { StepOne, StepThree, StepTwo } from "./steps";
 
 interface AddManagementTabProps {
   dataDebtor: any;
+  session?: any;
+  profile?: any;
 }
 
 // Definir los 3 pasos del stepper
@@ -20,17 +22,30 @@ const steps: Step[] = [
   { id: 3, label: "Paso 3", completed: false },
 ];
 
+import { ContactType } from "../../config/management-types";
+import { CaseData } from "../../types/track";
+
 // Tipo para los datos del formulario de gestión
 export interface ManagementFormData {
-  managementType: string;
-  debtorComments: string;
-  analystComments: string;
-  // Campos condicionales - Compromiso de pago
-  paymentCommitmentDate?: string;
-  paymentCommitmentAmount?: string;
-  // Campos condicionales - Próxima gestión
-  nextManagementDate?: string;
-  nextManagementTime?: string;
+  // Selección en cascada (3 niveles)
+  managementType: string; // Primer nivel
+  debtorComment: string; // Segundo nivel
+  executiveComment: string; // Tercer nivel
+
+  // Datos de contacto
+  contactType: ContactType | "";
+  contactValue: string;
+
+  // Observación
+  observation: string;
+
+  // Próxima gestión
+  nextManagementDate: string;
+  nextManagementTime: string;
+
+  // Datos dinámicos del caso (se llenan según el tipo de gestión)
+  caseData: CaseData;
+
   // Campos del Step 3
   file?: File | null;
   comment?: string;
@@ -45,7 +60,11 @@ export interface SavedManagement {
   createdAt: Date;
 }
 
-export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
+export const AddManagementTab = ({
+  dataDebtor,
+  session,
+  profile,
+}: AddManagementTabProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,12 +75,14 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
   const [managementFormData, setManagementFormData] =
     useState<ManagementFormData>({
       managementType: "",
-      debtorComments: "",
-      analystComments: "",
-      paymentCommitmentDate: "",
-      paymentCommitmentAmount: "",
+      debtorComment: "",
+      executiveComment: "",
+      contactType: "",
+      contactValue: "",
+      observation: "",
       nextManagementDate: "",
       nextManagementTime: "",
+      caseData: {},
       file: null,
       comment: "",
       sendEmail: false,
@@ -108,12 +129,14 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
   const resetManagementForm = () => {
     setManagementFormData({
       managementType: "",
-      debtorComments: "",
-      analystComments: "",
-      paymentCommitmentDate: "",
-      paymentCommitmentAmount: "",
+      debtorComment: "",
+      executiveComment: "",
+      contactType: "",
+      contactValue: "",
+      observation: "",
       nextManagementDate: "",
       nextManagementTime: "",
+      caseData: {},
       file: null,
       comment: "",
       sendEmail: false,
@@ -163,15 +186,81 @@ export const AddManagementTab = ({ dataDebtor }: AddManagementTabProps) => {
   const handleFinish = async () => {
     setIsSubmitting(true);
     try {
-      // TODO: Implementar lógica de finalización
-      console.log("Finalizando proceso...", {
-        selectedInvoices,
-        managementFormData,
+      const { createMultipleTracks } = await import("../../services/tracks");
+      const { toast } = await import("sonner");
+
+      // Validar datos requeridos
+      if (!session?.token || !profile?.client_id || !dataDebtor?.id) {
+        throw new Error("Faltan datos de sesión o perfil");
+      }
+
+      // Validar que la gestión actual esté completa
+      if (
+        !managementFormData.managementType ||
+        !managementFormData.debtorComment ||
+        !managementFormData.executiveComment
+      ) {
+        throw new Error("Debe completar la selección de gestión");
+      }
+
+      // Agregar la gestión actual a las guardadas
+      const allManagements = [
+        ...savedManagements,
+        {
+          id: `management-${Date.now()}`,
+          formData: { ...managementFormData },
+          selectedInvoices: [...selectedInvoices],
+          createdAt: new Date(),
+        },
+      ];
+
+      // Convertir todas las gestiones guardadas a payloads
+      const payloads = allManagements.map((management) => {
+        // Combinar fecha y hora para next_management_date
+        const nextManagementDateTime = management.formData.nextManagementDate
+          ? `${management.formData.nextManagementDate}T${management.formData.nextManagementTime || "00:00"}:00.000Z`
+          : new Date().toISOString();
+
+        return {
+          debtor_id: dataDebtor.id,
+          management_type: management.formData.managementType,
+          contact: {
+            type: management.formData.contactType as any,
+            value: management.formData.contactValue,
+          },
+          observation: management.formData.observation,
+          debtor_comment: management.formData.debtorComment,
+          executive_comment: management.formData.executiveComment,
+          next_management_date: nextManagementDateTime,
+          case_data: management.formData.caseData,
+          invoice_ids: management.selectedInvoices.map((inv) => inv.id),
+        };
       });
-      // Aquí irá la lógica para guardar la gestión final
-      // y cerrar el formulario
+
+      // Invocar el endpoint para cada gestión
+      const results = await createMultipleTracks(
+        session.token,
+        profile.client_id,
+        payloads
+      );
+
+      console.log("Gestiones creadas exitosamente:", results);
+      toast.success(
+        `Se crearon ${results.length} gestión(es) exitosamente`
+      );
+
+      // Limpiar todo
+      setSavedManagements([]);
+      resetManagementForm();
+      setSelectedInvoices([]);
+      setCurrentStep(0);
+      setStepsState(steps.map((step) => ({ ...step, completed: false })));
     } catch (error) {
       console.error("Error al finalizar:", error);
+      const { toast } = await import("sonner");
+      toast.error(
+        error instanceof Error ? error.message : "Error al crear gestiones"
+      );
     } finally {
       setIsSubmitting(false);
     }

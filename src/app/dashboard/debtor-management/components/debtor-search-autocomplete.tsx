@@ -1,24 +1,35 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
 import { useProfileContext } from "@/context/ProfileContext";
+import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { getCollectorQuadrants } from "../services";
 import { QuadrantItem } from "../services/types";
-import { formatNumber } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 
 interface DebtorSearchAutocompleteProps {
   placeholder?: string;
 }
 
 const QUADRANT_LABELS: Record<string, { label: string; color: string }> = {
-  BROKEN_COMMITMENTS: { label: "Compromisos Incumplidos", color: "bg-red-100 text-red-700" },
-  CRITICAL_DEBTORS: { label: "Riesgo / crédito", color: "bg-red-100 text-red-700" },
-  CASH_GENERATION: { label: "Gen. Caja", color: "bg-orange-100 text-orange-700" },
+  BROKEN_COMMITMENTS: {
+    label: "Compromisos Incumplidos",
+    color: "bg-red-100 text-red-700",
+  },
+  CRITICAL_DEBTORS: {
+    label: "Riesgo / crédito",
+    color: "bg-red-100 text-red-700",
+  },
+  CASH_GENERATION: {
+    label: "Gen. Caja",
+    color: "bg-orange-100 text-orange-700",
+  },
   LITIGATION: { label: "Litigios", color: "bg-yellow-100 text-yellow-700" },
-  DEFICIENT_TECHNICAL_FILE: { label: "Exp. Técnico", color: "bg-purple-100 text-purple-700" },
+  DEFICIENT_TECHNICAL_FILE: {
+    label: "Exp. Técnico",
+    color: "bg-purple-100 text-purple-700",
+  },
   UNCLASSIFIED: { label: "Sin Clasificar", color: "bg-gray-100 text-gray-700" },
 };
 
@@ -36,7 +47,10 @@ export const DebtorSearchAutocomplete = ({
   // Cerrar dropdown cuando se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -104,11 +118,16 @@ export const DebtorSearchAutocomplete = ({
   };
 
   const getQuadrantInfo = (quadrantName: string) => {
-    return QUADRANT_LABELS[quadrantName] || { label: quadrantName, color: "bg-gray-100 text-gray-700" };
+    return (
+      QUADRANT_LABELS[quadrantName] || {
+        label: quadrantName,
+        color: "bg-gray-100 text-gray-700",
+      }
+    );
   };
 
   return (
-    <div ref={wrapperRef} className="relative w-[400px]">
+    <div ref={wrapperRef} className="relative w-auto min-w-[280px]">
       <div className="relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
         <Input

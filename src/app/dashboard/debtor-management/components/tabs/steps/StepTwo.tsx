@@ -1,6 +1,14 @@
 "use client";
 
 import { ManagementFormData } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
+import {
+  CONTACT_TYPE_OPTIONS,
+  FieldConfig,
+  getDebtorCommentOptions,
+  getExecutiveCommentOptions,
+  getManagementCombination,
+  MANAGEMENT_TYPES,
+} from "@/app/dashboard/debtor-management/config/management-types";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import {
   Accordion,
@@ -24,8 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarClock, ClipboardList, HandCoins } from "lucide-react";
+import {
+  CalendarClock,
+  ClipboardList,
+  MessageSquare,
+  Phone,
+} from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -36,115 +50,183 @@ interface StepTwoProps {
   onFormChange: (data: Partial<ManagementFormData>) => void;
 }
 
-// Tipos de gestión disponibles
-const managementTypes = [
-  { value: "outgoing_call", label: "Llamada saliente" },
-  { value: "incoming_call", label: "Llamada entrante" },
-  { value: "email", label: "Correo electrónico" },
-  { value: "visit", label: "Visita" },
-  { value: "letter", label: "Carta" },
-  { value: "whatsapp", label: "WhatsApp" },
-];
+interface DebtorContact {
+  id: string;
+  type: string;
+  value: string;
+  label: string;
+}
 
-// Opciones para comentarios del deudor
-const debtorCommentsOptions = [
-  { value: "hara_pago", label: "Hará pago" },
-  { value: "acepta_pago", label: "Acepta pago" },
-  { value: "rechaza_pago", label: "Rechaza pago" },
-  { value: "solicita_plazo", label: "Solicita plazo" },
-  { value: "no_contesta", label: "No contesta" },
-  { value: "otro", label: "Otro" },
-];
-
-// Opciones para comentarios del analista
-const analystCommentsOptions = [
-  { value: "con_compromiso_pago", label: "Con compromiso de pago" },
-  { value: "deudor_contactado", label: "Deudor contactado" },
-  { value: "sin_respuesta", label: "Sin respuesta" },
-  { value: "requiere_seguimiento", label: "Requiere seguimiento" },
-  { value: "otro", label: "Otro" },
-];
-
-// Configuración de campos condicionales
-// Esta es la clave para hacer el componente escalable
-const conditionalFieldsConfig = {
-  // Si el analista selecciona "con_compromiso_pago", mostrar sección de compromiso
-  paymentCommitment: {
-    showWhen: (values: any) =>
-      values.analystComments === "con_compromiso_pago" ||
-      values.debtorComments === "hara_pago",
-  },
-  // Siempre mostrar próxima gestión cuando haya selecciones completas
-  nextManagement: {
-    showWhen: (values: any) =>
-      values.managementType && values.debtorComments && values.analystComments,
-  },
-};
-
-// Esquema de validación con Zod - dinámico
-const createFormSchema = (showPaymentCommitment: boolean) => {
-  const baseSchema = {
-    managementType: z.string().min(1, "El tipo de gestión es requerido"),
-    debtorComments: z
+/**
+ * Genera esquema de validación dinámico
+ */
+const createFormSchema = (hasCompleteSelection: boolean) => {
+  const baseSchema: any = {
+    managementType: z.string().min(1, "Debe seleccionar un tipo de gestión"),
+    debtorComment: z
       .string()
-      .min(1, "Los comentarios del deudor son requeridos"),
-    analystComments: z
+      .min(1, "Debe seleccionar un comentario del deudor"),
+    executiveComment: z
       .string()
-      .min(1, "Los comentarios del analista son requeridos"),
+      .min(1, "Debe seleccionar un comentario del ejecutivo"),
   };
 
-  // Agregar validaciones condicionales
-  if (showPaymentCommitment) {
-    return z.object({
-      ...baseSchema,
-      paymentCommitmentDate: z
-        .string()
-        .min(1, "La fecha de compromiso es requerida"),
-      paymentCommitmentAmount: z
-        .string()
-        .min(1, "El monto es requerido")
-        .regex(/^\d+$/, "El monto debe ser un número válido"),
-      nextManagementDate: z.string().optional(),
-      nextManagementTime: z.string().optional(),
-    });
+  // Solo validar otros campos si la selección está completa
+  if (hasCompleteSelection) {
+    baseSchema.contactType = z
+      .string()
+      .min(1, "Debe seleccionar un tipo de contacto");
+    baseSchema.contactValue = z
+      .string()
+      .min(1, "Debe ingresar el valor de contacto");
+    baseSchema.observation = z
+      .string()
+      .min(10, "La observación debe tener al menos 10 caracteres");
+    baseSchema.nextManagementDate = z
+      .string()
+      .min(1, "Debe seleccionar una fecha");
+    baseSchema.nextManagementTime = z
+      .string()
+      .min(1, "Debe seleccionar una hora");
+  } else {
+    baseSchema.contactType = z.string().optional();
+    baseSchema.contactValue = z.string().optional();
+    baseSchema.observation = z.string().optional();
+    baseSchema.nextManagementDate = z.string().optional();
+    baseSchema.nextManagementTime = z.string().optional();
   }
 
-  return z.object({
-    ...baseSchema,
-    paymentCommitmentDate: z.string().optional(),
-    paymentCommitmentAmount: z.string().optional(),
-    nextManagementDate: z.string().optional(),
-    nextManagementTime: z.string().optional(),
-  });
+  return z.object(baseSchema);
 };
 
-export const StepTwo = ({ formData, onFormChange }: StepTwoProps) => {
-  // Determinar qué secciones mostrar basándose en los valores actuales
-  const showPaymentCommitment = useMemo(
-    () => conditionalFieldsConfig.paymentCommitment.showWhen(formData),
-    [formData]
+/**
+ * Renderiza un campo dinámicamente según su configuración
+ */
+const DynamicField = ({
+  field,
+  control,
+}: {
+  field: FieldConfig;
+  control: any;
+}) => {
+  const fieldName = `caseData.${field.name}` as any;
+
+  return (
+    <FormField
+      control={control}
+      name={fieldName}
+      render={({ field: formField }) => (
+        <FormItem>
+          <FormLabel>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </FormLabel>
+          <FormControl>
+            {field.type === "select" ? (
+              <Select
+                onValueChange={formField.onChange}
+                value={formField.value || ""}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecciona una opción" />
+                </SelectTrigger>
+                <SelectContent>
+                  {field.options?.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : field.type === "textarea" ? (
+              <Textarea
+                placeholder={field.placeholder}
+                {...formField}
+                className="min-h-[100px] resize-none"
+              />
+            ) : (
+              <Input
+                type={field.type}
+                placeholder={field.placeholder}
+                {...formField}
+                className="w-full"
+              />
+            )}
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
+
+export const StepTwo = ({
+  dataDebtor,
+  formData,
+  onFormChange,
+}: StepTwoProps) => {
+  // Opciones filtradas para cascada
+  const debtorCommentOptions = useMemo(
+    () => getDebtorCommentOptions(formData.managementType),
+    [formData.managementType]
   );
 
-  const showNextManagement = useMemo(
-    () => conditionalFieldsConfig.nextManagement.showWhen(formData),
-    [formData]
+  const executiveCommentOptions = useMemo(
+    () => getExecutiveCommentOptions(formData.debtorComment),
+    [formData.debtorComment]
   );
 
+  // Obtener combinación completa si las 3 selecciones están hechas
+  const selectedCombination = useMemo(() => {
+    if (
+      formData.managementType &&
+      formData.debtorComment &&
+      formData.executiveComment
+    ) {
+      return getManagementCombination(
+        formData.managementType,
+        formData.debtorComment,
+        formData.executiveComment
+      );
+    }
+    return null;
+  }, [
+    formData.managementType,
+    formData.debtorComment,
+    formData.executiveComment,
+  ]);
+
+  const hasCompleteSelection = !!selectedCombination;
+
+  // Crear esquema dinámico
   const formSchema = useMemo(
-    () => createFormSchema(showPaymentCommitment),
-    [showPaymentCommitment]
+    () => createFormSchema(hasCompleteSelection),
+    [hasCompleteSelection]
   );
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  // Obtener contactos del deudor para selector
+  const debtorContacts = useMemo<DebtorContact[]>(() => {
+    if (!dataDebtor?.contacts) return [];
+    return dataDebtor.contacts.map((contact: any, idx: number): DebtorContact => ({
+      id: `contact-${idx}`, // ID único para evitar duplicados
+      type: contact.channel?.toUpperCase() || "EMAIL",
+      value: contact.email || contact.phone || "",
+      label: `${contact.name} - ${contact.email || contact.phone}`,
+    }));
+  }, [dataDebtor]);
+
+  const form = useForm<any>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       managementType: formData.managementType || "",
-      debtorComments: formData.debtorComments || "",
-      analystComments: formData.analystComments || "",
-      paymentCommitmentDate: formData.paymentCommitmentDate || "",
-      paymentCommitmentAmount: formData.paymentCommitmentAmount || "",
+      debtorComment: formData.debtorComment || "",
+      executiveComment: formData.executiveComment || "",
+      contactType: formData.contactType || "",
+      contactValue: formData.contactValue || "",
+      observation: formData.observation || "",
       nextManagementDate: formData.nextManagementDate || "",
       nextManagementTime: formData.nextManagementTime || "",
+      caseData: formData.caseData || {},
     },
   });
 
@@ -153,94 +235,106 @@ export const StepTwo = ({ formData, onFormChange }: StepTwoProps) => {
     const subscription = form.watch((value) => {
       onFormChange({
         managementType: value.managementType || "",
-        debtorComments: value.debtorComments || "",
-        analystComments: value.analystComments || "",
-        paymentCommitmentDate: value.paymentCommitmentDate || "",
-        paymentCommitmentAmount: value.paymentCommitmentAmount || "",
+        debtorComment: value.debtorComment || "",
+        executiveComment: value.executiveComment || "",
+        contactType: value.contactType || "",
+        contactValue: value.contactValue || "",
+        observation: value.observation || "",
         nextManagementDate: value.nextManagementDate || "",
         nextManagementTime: value.nextManagementTime || "",
+        caseData: value.caseData || {},
       });
     });
     return () => subscription.unsubscribe();
   }, [form, onFormChange]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <Form {...form}>
-        <form className="space-y-3">
-          {/* Sección 1: Gestión */}
+        <form className="space-y-5">
           <Accordion
             type="multiple"
-            defaultValue={["gestion"]}
-            className="w-full space-y-3"
+            defaultValue={["seleccion-gestion"]}
+            className="w-full space-y-5"
           >
+            {/* ISLA 1: Selección de Gestión (3 selectores en cascada) */}
             <AccordionItem
-              value="gestion"
-              className="border border-gray-200 rounded-md px-3 py-1"
+              value="seleccion-gestion"
+              className="border border-gray-200 rounded-md px-4 py-2 mb-5"
             >
               <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
                 <AccordionTrigger className="flex items-center justify-between h-full">
                   <TitleStep
-                    title="Gestión"
+                    title="Selección de Gestión"
                     icon={<ClipboardList className="w-5 h-5" />}
                   />
                 </AccordionTrigger>
               </div>
-              <AccordionContent className="flex flex-col gap-4 text-balance px-1 py-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                  {/* Tipo de Gestión */}
-                  <FormField
-                    control={form.control}
-                    name="managementType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Tipo de Gestión{" "}
-                          <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {managementTypes.map((type) => (
-                              <SelectItem key={type.value} value={type.value}>
-                                {type.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <AccordionContent className="grid grid-cols-2 gap-4 text-balance px-1 py-4">
+                {/* Nivel 1: Management Type */}
+                <FormField
+                  control={form.control}
+                  name="managementType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Tipo de gestión <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          // Limpiar selecciones posteriores
+                          form.setValue("debtorComment", "");
+                          form.setValue("executiveComment", "");
+                          form.setValue("caseData", {});
+                        }}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona un tipo de gestión" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {MANAGEMENT_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  {/* Comentarios del Deudor */}
+                {/* Nivel 2: Debtor Comment */}
+                {formData.managementType && (
                   <FormField
                     control={form.control}
-                    name="debtorComments"
+                    name="debtorComment"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Comentarios del deudor{" "}
+                          Comentario del deudor{" "}
                           <span className="text-red-500">*</span>
                         </FormLabel>
                         <Select
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            // Limpiar selección posterior
+                            form.setValue("executiveComment", "");
+                            form.setValue("caseData", {});
+                          }}
                           value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona" />
+                              <SelectValue placeholder="Selecciona comentario del deudor" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {debtorCommentsOptions.map((option) => (
+                            {debtorCommentOptions.map((option) => (
                               <SelectItem
                                 key={option.value}
                                 value={option.value}
@@ -254,95 +348,206 @@ export const StepTwo = ({ formData, onFormChange }: StepTwoProps) => {
                       </FormItem>
                     )}
                   />
-                </div>
+                )}
 
-                {/* Comentarios del Analista */}
-                <FormField
-                  control={form.control}
-                  name="analystComments"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Comentarios del analista{" "}
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {analystCommentsOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Nivel 3: Executive Comment */}
+                {formData.debtorComment && (
+                  <FormField
+                    control={form.control}
+                    name="executiveComment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Comentario del ejecutivo{" "}
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecciona comentario del ejecutivo" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {executiveCommentOptions.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {/* Información de la combinación seleccionada */}
+                {/* {selectedCombination && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-3">
+                    <div className="flex items-start gap-2">
+                      <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-blue-900">
+                          {selectedCombination.label}
+                        </p>
+                        <p className="text-xs text-blue-700 mt-1">
+                          {selectedCombination.description}
+                        </p>
+                        <p className="text-sm text-blue-800 mt-2">
+                          <strong>Fase objetivo:</strong>{" "}
+                          {selectedCombination.targetPhase}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )} */}
               </AccordionContent>
             </AccordionItem>
 
-            {/* Sección 2: Compromiso de pago (Condicional) */}
-            {showPaymentCommitment && (
+            {/* ISLA 2: Datos de la Gestión (campos comunes a TODOS los casos) */}
+            {hasCompleteSelection && (
               <AccordionItem
-                value="compromiso-pago"
-                className="border border-gray-200 rounded-md px-3 py-1 mt-5"
+                value="datos-gestion"
+                className="border border-gray-200 rounded-md px-4 py-2 mb-5"
               >
                 <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
                   <AccordionTrigger className="flex items-center justify-between h-full">
                     <TitleStep
-                      title="Compromiso de pago"
-                      icon={<HandCoins className="w-5 h-5" />}
+                      title="Datos de la Gestión"
+                      icon={<Phone className="w-5 h-5" />}
                     />
                   </AccordionTrigger>
                 </div>
-                <AccordionContent className="flex flex-col gap-4 text-balance px-1 py-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                    {/* Fecha */}
-                    <FormField
-                      control={form.control}
-                      name="paymentCommitmentDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Fecha <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="date"
-                              placeholder="DD/MM/AAAA"
-                              {...field}
-                              className="w-full"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <AccordionContent className="flex flex-col gap-6 text-balance px-1 py-4">
+                  {/* Contacto */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Contacto
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                      <FormField
+                        control={form.control}
+                        name="contactType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Tipo de Contacto{" "}
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Selecciona" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {CONTACT_TYPE_OPTIONS.map((type) => (
+                                  <SelectItem
+                                    key={type.value}
+                                    value={type.value}
+                                  >
+                                    {type.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    {/* Monto */}
+                      <FormField
+                        control={form.control}
+                        name="contactValue"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Valor de Contacto{" "}
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
+                            {debtorContacts.length > 0 ? (
+                              <Select
+                                onValueChange={(value) => {
+                                  if (value === "__manual__") {
+                                    field.onChange("");
+                                  } else {
+                                    const contact = debtorContacts.find(
+                                      (c) => c.id === value
+                                    );
+                                    if (contact) {
+                                      field.onChange(contact.value);
+                                      form.setValue(
+                                        "contactType",
+                                        contact.type
+                                      );
+                                    }
+                                  }
+                                }}
+                                value={
+                                  debtorContacts.find((c) => c.value === field.value)
+                                    ?.id || field.value
+                                }
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Selecciona un contacto" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {debtorContacts.map((contact) => (
+                                    <SelectItem key={contact.id} value={contact.id}>
+                                      {contact.label}
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem value="__manual__">
+                                    Ingresar manualmente...
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <FormControl>
+                                <Input
+                                  placeholder="+56912345678 o email@example.com"
+                                  {...field}
+                                  className="w-full"
+                                />
+                              </FormControl>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Observación */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Observación
+                    </h4>
                     <FormField
                       control={form.control}
-                      name="paymentCommitmentAmount"
+                      name="observation"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Monto <span className="text-red-500">*</span>
+                            Descripción de la interacción{" "}
+                            <span className="text-red-500">*</span>
                           </FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="$500,000"
+                            <Textarea
+                              placeholder="Describe los detalles de la gestión realizada..."
                               {...field}
-                              className="w-full"
+                              className="min-h-[120px] resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -350,69 +555,84 @@ export const StepTwo = ({ formData, onFormChange }: StepTwoProps) => {
                       )}
                     />
                   </div>
+
+                  {/* Próxima Gestión */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <CalendarClock className="w-4 h-4" />
+                      Próxima Gestión
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                      <FormField
+                        control={form.control}
+                        name="nextManagementDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Fecha <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                placeholder="YYYY-MM-DD"
+                                {...field}
+                                className="w-full"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="nextManagementTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Hora <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="time"
+                                placeholder="HH:mm"
+                                {...field}
+                                className="w-full"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             )}
 
-            {/* Sección 3: Próxima gestión (Condicional) */}
-            {showNextManagement && (
+            {/* ISLA 3: Detalles Específicos (solo si hay campos en case_data) */}
+            {hasCompleteSelection && selectedCombination.fields.length > 0 && (
               <AccordionItem
-                value="proxima-gestion"
-                className="border border-gray-200 rounded-md px-3 py-1 mt-5"
+                value="detalles-especificos"
+                className="border border-gray-200 rounded-md px-4 py-2 mb-5"
               >
                 <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
                   <AccordionTrigger className="flex items-center justify-between h-full">
                     <TitleStep
-                      title="Próxima gestión"
-                      icon={<CalendarClock className="w-5 h-5" />}
+                      title={`Detalles Específicos: ${selectedCombination.label}`}
+                      icon={<MessageSquare className="w-5 h-5" />}
                     />
                   </AccordionTrigger>
                 </div>
-                <AccordionContent className="flex flex-col gap-4 text-balance px-1 py-3">
+                <AccordionContent className="flex flex-col gap-4 text-balance px-1 py-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                    {/* Fecha */}
-                    <FormField
-                      control={form.control}
-                      name="nextManagementDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Fecha <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="date"
-                              placeholder="DD/MM/AAAA"
-                              {...field}
-                              className="w-full"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Hora */}
-                    <FormField
-                      control={form.control}
-                      name="nextManagementTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Hora <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="time"
-                              placeholder="Completa"
-                              {...field}
-                              className="w-full"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {selectedCombination.fields.map((field) => (
+                      <DynamicField
+                        key={field.name}
+                        field={field}
+                        control={form.control}
+                      />
+                    ))}
                   </div>
                 </AccordionContent>
               </AccordionItem>

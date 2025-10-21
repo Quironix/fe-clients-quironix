@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import Language from "@/components/ui/language";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonFormDebtor } from "@/components/ui/skeleton-form-debtor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileContext } from "@/context/ProfileContext";
@@ -107,7 +108,7 @@ const Content = ({ params }: PageProps) => {
               <BreadcrumbItem>
                 <BreadcrumbPage>
                   <span className="font-bold">
-                    {dataDebtor?.name || "Cargando..."}
+                    {dataDebtor?.name || <Skeleton />}
                   </span>
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -179,7 +180,11 @@ const Content = ({ params }: PageProps) => {
               />
             </TabsContent>
             <TabsContent value="add-management" className="flex-1">
-              <AddManagementTab dataDebtor={dataDebtor} />
+              <AddManagementTab
+                dataDebtor={dataDebtor}
+                session={session}
+                profile={profile}
+              />
             </TabsContent>
           </Tabs>
         </div>
