@@ -48,23 +48,23 @@ export interface ManagementCombination {
 export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   {
     id: "payment_commitment",
-    label: "Compromiso de Pago",
+    label: "Compromiso de pago",
     description: "Depositará o hará transferencia",
-    management_type: "WILL_DEPOSIT_OR_TRANSFER",
+    management_type: "CALL_OUT",
     debtor_comment: "WILL_DEPOSIT_OR_TRANSFER",
     executive_comment: "WITH_PAYMENT_COMMITMENT",
     targetPhase: 5,
     fields: [
       {
         name: "commitmentDate",
-        label: "Fecha de Compromiso",
+        label: "Fecha de compromiso",
         type: "date",
         required: true,
         placeholder: "YYYY-MM-DD",
       },
       {
         name: "amount",
-        label: "Monto Comprometido",
+        label: "Monto comprometido",
         type: "number",
         required: true,
         placeholder: "500000",
@@ -75,21 +75,21 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
     id: "payment_declared",
     label: "Pago Declarado",
     description: "Depositó o transfirió",
-    management_type: "DEPOSITED_OR_TRANSFERRED",
+    management_type: "CALL_OUT",
     debtor_comment: "DEPOSITED_OR_TRANSFERRED",
     executive_comment: "CONFIRM_PAYMENT_IN_STATEMENT",
     targetPhase: 7,
     fields: [
       {
         name: "paymentDate",
-        label: "Fecha de Pago",
+        label: "Fecha de pago",
         type: "date",
         required: true,
         placeholder: "YYYY-MM-DD",
       },
       {
         name: "paymentAmount",
-        label: "Monto Pagado",
+        label: "Monto pagado",
         type: "number",
         required: true,
         placeholder: "750000",
@@ -98,16 +98,16 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "non_payment_reason",
-    label: "Motivo de No Pago",
+    label: "Motivo denNo pago",
     description: "Contacto no responde",
-    management_type: "CONTACT_NOT_RESPONDING",
+    management_type: "CALL_OUT",
     debtor_comment: "CONTACT_NOT_RESPONDING",
     executive_comment: "NO_PROGRESS",
     targetPhase: 1,
     fields: [
       {
         name: "nonPaymentReason",
-        label: "Razón de No Pago",
+        label: "Razón de no pago",
         type: "select",
         required: true,
         options: [
@@ -128,21 +128,27 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "pending_communication",
-    label: "Comunicación Pendiente",
-    description: "Envío Estado de Cuenta",
-    management_type: "STATEMENT_SENT",
+    label: "Comunicación pendiente",
+    description: "Envío estado de cuenta",
+    management_type: "CALL_OUT",
     debtor_comment: "STATEMENT_SENT",
     executive_comment: "INFORMATION_SENT",
     targetPhase: 1,
     fields: [
       {
         name: "communicationPurpose",
-        label: "Propósito de Comunicación",
+        label: "Propósito de comunicación",
         type: "select",
         required: true,
         options: [
-          { value: "ACCOUNT_STATEMENT_REQUEST", label: "Solicitud de estado de cuenta" },
-          { value: "SEND_INVOICE_DETAILS", label: "Envío de detalles de factura" },
+          {
+            value: "ACCOUNT_STATEMENT_REQUEST",
+            label: "Solicitud de estado de cuenta",
+          },
+          {
+            value: "SEND_INVOICE_DETAILS",
+            label: "Envío de detalles de factura",
+          },
           { value: "PAYMENT_CONFIRMATION", label: "Confirmación de pago" },
           { value: "OTHER", label: "Otro" },
         ],
@@ -153,21 +159,21 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
     id: "payment_identified",
     label: "Pago Identificado",
     description: "Pago realizado e identificado",
-    management_type: "PAYMENT_MADE_AND_IDENTIFIED",
+    management_type: "CALL_OUT",
     debtor_comment: "PAYMENT_MADE_AND_IDENTIFIED",
     executive_comment: "PARTIAL_PAYMENT_OR_INCOMPLETE_DETAIL",
     targetPhase: 1,
     fields: [
       {
         name: "paymentAmount",
-        label: "Monto del Pago Parcial",
+        label: "Monto del pago parcial",
         type: "number",
         required: true,
         placeholder: "300000",
       },
       {
         name: "paymentDate",
-        label: "Fecha de Identificación",
+        label: "Fecha de identificación",
         type: "date",
         required: true,
         placeholder: "YYYY-MM-DD",
@@ -176,16 +182,16 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "invoice_not_registered",
-    label: "Factura No Contabilizada",
+    label: "Factura no contabilizada",
     description: "Factura no registrada en contabilidad",
-    management_type: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING",
+    management_type: "CALL_OUT",
     debtor_comment: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING",
     executive_comment: "NOT_ACCOUNTED",
     targetPhase: 3,
     fields: [
       {
         name: "selectionOption",
-        label: "Acción a Tomar",
+        label: "Acción a tomar",
         type: "select",
         required: true,
         options: [
@@ -197,7 +203,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
       },
       {
         name: "customReason",
-        label: "Explicación del Problema",
+        label: "Explicación del problema",
         type: "textarea",
         required: false,
         placeholder: "Detalles específicos del problema contable...",
@@ -207,15 +213,15 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   {
     id: "litigation",
     label: "Litigio",
-    description: "Factura con Litigio",
-    management_type: "INVOICE_WITH_LITIGATION",
+    description: "Factura con litigio",
+    management_type: "CALL_OUT",
     debtor_comment: "INVOICE_WITH_LITIGATION",
     executive_comment: "DOCUMENT_IN_LITIGATION",
     targetPhase: 2,
     fields: [
       {
         name: "litigationId",
-        label: "ID de Caso de Litigio",
+        label: "ID de caso de litigio",
         type: "text",
         required: false,
         placeholder: "lit-12345-2025",
@@ -224,16 +230,16 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "payment_plan_request",
-    label: "Solicitud de Plan de Pago",
-    description: "Necesito Plan de Pago",
-    management_type: "NEED_PAYMENT_PLAN",
+    label: "Solicitud de plan de pago",
+    description: "Necesito plan de pago",
+    management_type: "CALL_OUT",
     debtor_comment: "NEED_PAYMENT_PLAN",
     executive_comment: "PAYMENT_PLAN_APPROVAL_REQUEST",
     targetPhase: 4,
     fields: [
       {
         name: "paymentPlanId",
-        label: "ID de Plan de Pago",
+        label: "ID de plan de pago",
         type: "text",
         required: false,
         placeholder: "plan-789-2025 (opcional si está pendiente de aprobación)",
@@ -244,42 +250,42 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
     id: "check_pickup",
     label: "Retiro de Cheque",
     description: "Cheque Confirmado",
-    management_type: "CHECK_CONFIRMED",
+    management_type: "CALL_OUT",
     debtor_comment: "CHECK_CONFIRMED",
     executive_comment: "WITH_PAYMENT_COMMITMENT",
     targetPhase: 5,
     fields: [
       {
         name: "pickupDate",
-        label: "Fecha de Retiro",
+        label: "Fecha de retiro",
         type: "date",
         required: true,
         placeholder: "YYYY-MM-DD",
       },
       {
         name: "paymentCommitmentAmount",
-        label: "Monto del Cheque",
+        label: "Monto del cheque",
         type: "number",
         required: true,
         placeholder: "850000",
       },
       {
         name: "pickupTimeFrom",
-        label: "Hora Inicio Retiro",
+        label: "Hora inicio retiro",
         type: "time",
         required: true,
         placeholder: "14:00",
       },
       {
         name: "pickupTimeTo",
-        label: "Hora Fin Retiro",
+        label: "Hora fin retiro",
         type: "time",
         required: true,
         placeholder: "17:00",
       },
       {
         name: "checkPickupAddress",
-        label: "Dirección de Retiro",
+        label: "Dirección de retiro",
         type: "textarea",
         required: true,
         placeholder: "Av. Libertador 1234, Oficina 501, Santiago",
@@ -292,12 +298,21 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
  * Opciones para management_type (primer nivel)
  */
 export const MANAGEMENT_TYPES = [
-  { value: "WILL_DEPOSIT_OR_TRANSFER", label: "Depositará o hará transferencia" },
+  {
+    value: "WILL_DEPOSIT_OR_TRANSFER",
+    label: "Depositará o hará transferencia",
+  },
   { value: "DEPOSITED_OR_TRANSFERRED", label: "Depositó o transfirió" },
   { value: "CONTACT_NOT_RESPONDING", label: "Contacto no responde" },
   { value: "STATEMENT_SENT", label: "Envío Estado de Cuenta" },
-  { value: "PAYMENT_MADE_AND_IDENTIFIED", label: "Pago realizado e identificado" },
-  { value: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING", label: "Factura no registrada en contabilidad" },
+  {
+    value: "PAYMENT_MADE_AND_IDENTIFIED",
+    label: "Pago realizado e identificado",
+  },
+  {
+    value: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING",
+    label: "Factura no registrada en contabilidad",
+  },
   { value: "INVOICE_WITH_LITIGATION", label: "Factura con Litigio" },
   { value: "NEED_PAYMENT_PLAN", label: "Necesito Plan de Pago" },
   { value: "CHECK_CONFIRMED", label: "Cheque Confirmado" },
@@ -307,30 +322,102 @@ export const MANAGEMENT_TYPES = [
  * Opciones para debtor_comment (segundo nivel)
  */
 export const DEBTOR_COMMENTS = [
-  { value: "WILL_DEPOSIT_OR_TRANSFER", label: "Depositará o hará transferencia", managementType: "WILL_DEPOSIT_OR_TRANSFER" },
-  { value: "DEPOSITED_OR_TRANSFERRED", label: "Depositó o transfirió", managementType: "DEPOSITED_OR_TRANSFERRED" },
-  { value: "CONTACT_NOT_RESPONDING", label: "Contacto no responde", managementType: "CONTACT_NOT_RESPONDING" },
-  { value: "STATEMENT_SENT", label: "Envío Estado de Cuenta", managementType: "STATEMENT_SENT" },
-  { value: "PAYMENT_MADE_AND_IDENTIFIED", label: "Pago realizado e identificado", managementType: "PAYMENT_MADE_AND_IDENTIFIED" },
-  { value: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING", label: "Factura no registrada en contabilidad", managementType: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING" },
-  { value: "INVOICE_WITH_LITIGATION", label: "Factura con Litigio", managementType: "INVOICE_WITH_LITIGATION" },
-  { value: "NEED_PAYMENT_PLAN", label: "Necesito Plan de Pago", managementType: "NEED_PAYMENT_PLAN" },
-  { value: "CHECK_CONFIRMED", label: "Cheque Confirmado", managementType: "CHECK_CONFIRMED" },
+  {
+    value: "WILL_DEPOSIT_OR_TRANSFER",
+    label: "Depositará o hará transferencia",
+    managementType: "WILL_DEPOSIT_OR_TRANSFER",
+  },
+  {
+    value: "DEPOSITED_OR_TRANSFERRED",
+    label: "Depositó o transfirió",
+    managementType: "DEPOSITED_OR_TRANSFERRED",
+  },
+  {
+    value: "CONTACT_NOT_RESPONDING",
+    label: "Contacto no responde",
+    managementType: "CONTACT_NOT_RESPONDING",
+  },
+  {
+    value: "STATEMENT_SENT",
+    label: "Envío Estado de Cuenta",
+    managementType: "STATEMENT_SENT",
+  },
+  {
+    value: "PAYMENT_MADE_AND_IDENTIFIED",
+    label: "Pago realizado e identificado",
+    managementType: "PAYMENT_MADE_AND_IDENTIFIED",
+  },
+  {
+    value: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING",
+    label: "Factura no registrada en contabilidad",
+    managementType: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING",
+  },
+  {
+    value: "INVOICE_WITH_LITIGATION",
+    label: "Factura con Litigio",
+    managementType: "INVOICE_WITH_LITIGATION",
+  },
+  {
+    value: "NEED_PAYMENT_PLAN",
+    label: "Necesito Plan de Pago",
+    managementType: "NEED_PAYMENT_PLAN",
+  },
+  {
+    value: "CHECK_CONFIRMED",
+    label: "Cheque Confirmado",
+    managementType: "CHECK_CONFIRMED",
+  },
 ];
 
 /**
  * Opciones para executive_comment (tercer nivel)
  */
 export const EXECUTIVE_COMMENTS = [
-  { value: "WITH_PAYMENT_COMMITMENT", label: "Con Compromiso de pago", debtorComment: "WILL_DEPOSIT_OR_TRANSFER" },
-  { value: "CONFIRM_PAYMENT_IN_STATEMENT", label: "Confirmar abono en cartola", debtorComment: "DEPOSITED_OR_TRANSFERRED" },
-  { value: "NO_PROGRESS", label: "Sin progreso", debtorComment: "CONTACT_NOT_RESPONDING" },
-  { value: "INFORMATION_SENT", label: "Envío de información", debtorComment: "STATEMENT_SENT" },
-  { value: "PARTIAL_PAYMENT_OR_INCOMPLETE_DETAIL", label: "Pago parcial o detalle incompleto", debtorComment: "PAYMENT_MADE_AND_IDENTIFIED" },
-  { value: "NOT_ACCOUNTED", label: "No contabilizada", debtorComment: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING" },
-  { value: "DOCUMENT_IN_LITIGATION", label: "Documento en litigio", debtorComment: "INVOICE_WITH_LITIGATION" },
-  { value: "PAYMENT_PLAN_APPROVAL_REQUEST", label: "Solicitud de aprobación de Plan de Pago", debtorComment: "NEED_PAYMENT_PLAN" },
-  { value: "WITH_PAYMENT_COMMITMENT", label: "Con Compromiso de pago", debtorComment: "CHECK_CONFIRMED" },
+  {
+    value: "WITH_PAYMENT_COMMITMENT",
+    label: "Con Compromiso de pago",
+    debtorComment: "WILL_DEPOSIT_OR_TRANSFER",
+  },
+  {
+    value: "CONFIRM_PAYMENT_IN_STATEMENT",
+    label: "Confirmar abono en cartola",
+    debtorComment: "DEPOSITED_OR_TRANSFERRED",
+  },
+  {
+    value: "NO_PROGRESS",
+    label: "Sin progreso",
+    debtorComment: "CONTACT_NOT_RESPONDING",
+  },
+  {
+    value: "INFORMATION_SENT",
+    label: "Envío de información",
+    debtorComment: "STATEMENT_SENT",
+  },
+  {
+    value: "PARTIAL_PAYMENT_OR_INCOMPLETE_DETAIL",
+    label: "Pago parcial o detalle incompleto",
+    debtorComment: "PAYMENT_MADE_AND_IDENTIFIED",
+  },
+  {
+    value: "NOT_ACCOUNTED",
+    label: "No contabilizada",
+    debtorComment: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING",
+  },
+  {
+    value: "DOCUMENT_IN_LITIGATION",
+    label: "Documento en litigio",
+    debtorComment: "INVOICE_WITH_LITIGATION",
+  },
+  {
+    value: "PAYMENT_PLAN_APPROVAL_REQUEST",
+    label: "Solicitud de aprobación de Plan de Pago",
+    debtorComment: "NEED_PAYMENT_PLAN",
+  },
+  {
+    value: "WITH_PAYMENT_COMMITMENT",
+    label: "Con Compromiso de pago",
+    debtorComment: "CHECK_CONFIRMED",
+  },
 ];
 
 /**
@@ -377,6 +464,8 @@ export const getManagementCombination = (
 /**
  * Helper para obtener configuración por ID (retrocompatibilidad)
  */
-export const getManagementTypeConfig = (id: string): ManagementCombination | undefined => {
+export const getManagementTypeConfig = (
+  id: string
+): ManagementCombination | undefined => {
   return MANAGEMENT_COMBINATIONS.find((config) => config.id === id);
 };

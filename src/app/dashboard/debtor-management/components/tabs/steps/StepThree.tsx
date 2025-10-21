@@ -1,10 +1,7 @@
 "use client";
 
 import { ManagementFormData } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
-import {
-  CONTACT_TYPE_OPTIONS,
-  getManagementTypeConfig,
-} from "@/app/dashboard/debtor-management/config/management-types";
+import { CONTACT_TYPE_OPTIONS } from "@/app/dashboard/debtor-management/config/management-types";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,7 +31,7 @@ import {
   User,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface StepThreeProps {
   dataDebtor: any;
@@ -60,7 +57,9 @@ export const StepThree = ({
       formData.debtorComment &&
       formData.executiveComment
     ) {
-      const { getManagementCombination } = require("@/app/dashboard/debtor-management/config/management-types");
+      const {
+        getManagementCombination,
+      } = require("@/app/dashboard/debtor-management/config/management-types");
       return getManagementCombination(
         formData.managementType,
         formData.debtorComment,
@@ -68,11 +67,17 @@ export const StepThree = ({
       );
     }
     return null;
-  }, [formData.managementType, formData.debtorComment, formData.executiveComment]);
+  }, [
+    formData.managementType,
+    formData.debtorComment,
+    formData.executiveComment,
+  ]);
 
   // Obtener label del tipo de contacto
   const contactTypeLabel = useMemo(() => {
-    const type = CONTACT_TYPE_OPTIONS.find((t) => t.value === formData.contactType);
+    const type = CONTACT_TYPE_OPTIONS.find(
+      (t) => t.value === formData.contactType
+    );
     return type?.label || formData.contactType;
   }, [formData.contactType]);
 
@@ -197,7 +202,9 @@ export const StepThree = ({
                 <CircleDollarSign className="w-4 h-4 text-gray-400 mt-1" />
                 <div className="flex-1">
                   <span className="text-xs text-gray-500">{field.label}</span>
-                  <p className="text-sm font-medium text-gray-900">{displayValue}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {displayValue}
+                  </p>
                 </div>
               </div>
             );
@@ -288,7 +295,9 @@ export const StepThree = ({
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="w-4 h-4 text-gray-700" />
-            <h3 className="font-semibold text-sm text-gray-700">Tipo de Gestión</h3>
+            <h3 className="font-semibold text-sm text-gray-700">
+              Tipo de gestión
+            </h3>
             <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
           </div>
           <div className="space-y-2">
@@ -421,9 +430,10 @@ export const StepThree = ({
                       {calculateDelay(invoice.due_date)} días
                     </TableCell>
                     <TableCell className="text-xs">
-                      {Array.isArray(invoice.phases) && invoice.phases.length > 0
-                        ? (invoice.phases[invoice.phases.length - 1] as any)
-                            .phase ?? 0
+                      {Array.isArray(invoice.phases) &&
+                      invoice.phases.length > 0
+                        ? ((invoice.phases[invoice.phases.length - 1] as any)
+                            .phase ?? 0)
                         : "-"}
                     </TableCell>
                   </TableRow>

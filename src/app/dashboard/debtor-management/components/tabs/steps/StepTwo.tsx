@@ -1,5 +1,7 @@
 "use client";
 
+import { DatePopover } from "@/app/dashboard/components/date-popover";
+import { TimePopover } from "@/app/dashboard/components/time-popover";
 import { ManagementFormData } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
 import {
   CONTACT_TYPE_OPTIONS,
@@ -111,6 +113,40 @@ const DynamicField = ({
 }) => {
   const fieldName = `caseData.${field.name}` as any;
 
+  if (field.type === "date") {
+    return (
+      <FormField
+        control={control}
+        name={fieldName}
+        render={({ field: formField }) => (
+          <DatePopover
+            field={formField}
+            label={field.label}
+            placeholder={field.placeholder}
+            required={field.required}
+          />
+        )}
+      />
+    );
+  }
+
+  if (field.type === "time") {
+    return (
+      <FormField
+        control={control}
+        name={fieldName}
+        render={({ field: formField }) => (
+          <TimePopover
+            field={formField}
+            label={field.label}
+            placeholder={field.placeholder}
+            required={field.required}
+          />
+        )}
+      />
+    );
+  }
+
   return (
     <FormField
       control={control}
@@ -207,18 +243,20 @@ export const StepTwo = ({
   // Obtener contactos del deudor para selector
   const debtorContacts = useMemo<DebtorContact[]>(() => {
     if (!dataDebtor?.contacts) return [];
-    return dataDebtor.contacts.map((contact: any, idx: number): DebtorContact => ({
-      id: `contact-${idx}`, // ID único para evitar duplicados
-      type: contact.channel?.toUpperCase() || "EMAIL",
-      value: contact.email || contact.phone || "",
-      label: `${contact.name} - ${contact.email || contact.phone}`,
-    }));
+    return dataDebtor.contacts.map(
+      (contact: any, idx: number): DebtorContact => ({
+        id: `contact-${idx}`, // ID único para evitar duplicados
+        type: contact.channel?.toUpperCase() || "EMAIL",
+        value: contact.email || contact.phone || "",
+        label: `${contact.name} - ${contact.email || contact.phone}`,
+      })
+    );
   }, [dataDebtor]);
 
   const form = useForm<any>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      managementType: formData.managementType || "",
+      managementType: formData.managementType || "CALL_OUT",
       debtorComment: formData.debtorComment || "",
       executiveComment: formData.executiveComment || "",
       contactType: formData.contactType || "",
@@ -234,7 +272,7 @@ export const StepTwo = ({
   useEffect(() => {
     const subscription = form.watch((value) => {
       onFormChange({
-        managementType: value.managementType || "",
+        managementType: value.managementType || "CALL_OUT",
         debtorComment: value.debtorComment || "",
         executiveComment: value.executiveComment || "",
         contactType: value.contactType || "",
@@ -296,6 +334,42 @@ export const StepTwo = ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="CALL_OUT">
+                            Llamada saliente
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Nivel 2: Debtor Comment */}
+
+                <FormField
+                  control={form.control}
+                  name="debtorComment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Comentario del deudor{" "}
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          // Limpiar selección posterior
+                          form.setValue("executiveComment", "");
+                          form.setValue("caseData", {});
+                        }}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona comentario del deudor" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {MANAGEMENT_TYPES.map((type) => (
                             <SelectItem key={type.value} value={type.value}>
                               {type.label}
@@ -308,84 +382,43 @@ export const StepTwo = ({
                   )}
                 />
 
-                {/* Nivel 2: Debtor Comment */}
-                {formData.managementType && (
-                  <FormField
-                    control={form.control}
-                    name="debtorComment"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Comentario del deudor{" "}
-                          <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            // Limpiar selección posterior
-                            form.setValue("executiveComment", "");
-                            form.setValue("caseData", {});
-                          }}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona comentario del deudor" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {debtorCommentOptions.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={option.value}
-                              >
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
                 {/* Nivel 3: Executive Comment */}
-                {formData.debtorComment && (
-                  <FormField
-                    control={form.control}
-                    name="executiveComment"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Comentario del ejecutivo{" "}
-                          <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona comentario del ejecutivo" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {executiveCommentOptions.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={option.value}
-                              >
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
+                <FormField
+                  control={form.control}
+                  name="executiveComment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Comentario del ejecutivo{" "}
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={!formData.debtorComment}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona comentario del ejecutivo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {/* {debtorCommentOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))} */}
+                          {executiveCommentOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 {/* Información de la combinación seleccionada */}
                 {/* {selectedCombination && (
@@ -493,8 +526,9 @@ export const StepTwo = ({
                                   }
                                 }}
                                 value={
-                                  debtorContacts.find((c) => c.value === field.value)
-                                    ?.id || field.value
+                                  debtorContacts.find(
+                                    (c) => c.value === field.value
+                                  )?.id || field.value
                                 }
                               >
                                 <FormControl>
@@ -504,7 +538,10 @@ export const StepTwo = ({
                                 </FormControl>
                                 <SelectContent>
                                   {debtorContacts.map((contact) => (
-                                    <SelectItem key={contact.id} value={contact.id}>
+                                    <SelectItem
+                                      key={contact.id}
+                                      value={contact.id}
+                                    >
                                       {contact.label}
                                     </SelectItem>
                                   ))}
@@ -567,20 +604,11 @@ export const StepTwo = ({
                         control={form.control}
                         name="nextManagementDate"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Fecha <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="date"
-                                placeholder="YYYY-MM-DD"
-                                {...field}
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                          <DatePopover
+                            field={field}
+                            label="Inicio de pago"
+                            required
+                          />
                         )}
                       />
 
@@ -588,20 +616,11 @@ export const StepTwo = ({
                         control={form.control}
                         name="nextManagementTime"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Hora <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="time"
-                                placeholder="HH:mm"
-                                {...field}
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                          <TimePopover
+                            field={field}
+                            label="Hora de la gestión"
+                            required
+                          />
                         )}
                       />
                     </div>
@@ -619,7 +638,7 @@ export const StepTwo = ({
                 <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
                   <AccordionTrigger className="flex items-center justify-between h-full">
                     <TitleStep
-                      title={`Detalles Específicos: ${selectedCombination.label}`}
+                      title={`${selectedCombination.label}`}
                       icon={<MessageSquare className="w-5 h-5" />}
                     />
                   </AccordionTrigger>
