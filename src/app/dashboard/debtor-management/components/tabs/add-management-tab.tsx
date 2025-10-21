@@ -25,6 +25,14 @@ const steps: Step[] = [
 import { ContactType } from "../../config/management-types";
 import { CaseData } from "../../types/track";
 
+export interface DebtorContact {
+  id: string;
+  type: string;
+  value: string;
+  label: string;
+  name?: string;
+}
+
 // Tipo para los datos del formulario de gestión
 export interface ManagementFormData {
   // Selección en cascada (3 niveles)
@@ -35,6 +43,7 @@ export interface ManagementFormData {
   // Datos de contacto
   contactType: ContactType | "";
   contactValue: string;
+  selectedContact?: DebtorContact | null;
 
   // Observación
   observation: string;
@@ -79,6 +88,7 @@ export const AddManagementTab = ({
       executiveComment: "",
       contactType: "",
       contactValue: "",
+      selectedContact: null,
       observation: "",
       nextManagementDate: "",
       nextManagementTime: "",
@@ -133,6 +143,7 @@ export const AddManagementTab = ({
       executiveComment: "",
       contactType: "",
       contactValue: "",
+      selectedContact: null,
       observation: "",
       nextManagementDate: "",
       nextManagementTime: "",

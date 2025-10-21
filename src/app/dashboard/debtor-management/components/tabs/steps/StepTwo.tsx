@@ -2,7 +2,10 @@
 
 import { DatePopover } from "@/app/dashboard/components/date-popover";
 import { TimePopover } from "@/app/dashboard/components/time-popover";
-import { ManagementFormData } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
+import {
+  DebtorContact,
+  ManagementFormData,
+} from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
 import {
   CONTACT_TYPE_OPTIONS,
   FieldConfig,
@@ -50,13 +53,6 @@ interface StepTwoProps {
   dataDebtor: any;
   formData: ManagementFormData;
   onFormChange: (data: Partial<ManagementFormData>) => void;
-}
-
-interface DebtorContact {
-  id: string;
-  type: string;
-  value: string;
-  label: string;
 }
 
 /**
@@ -177,14 +173,16 @@ const DynamicField = ({
             ) : field.type === "textarea" ? (
               <Textarea
                 placeholder={field.placeholder}
-                {...formField}
+                value={formField.value || ""}
+                onChange={formField.onChange}
                 className="min-h-[100px] resize-none"
               />
             ) : (
               <Input
                 type={field.type}
                 placeholder={field.placeholder}
-                {...formField}
+                value={formField.value || ""}
+                onChange={formField.onChange}
                 className="w-full"
               />
             )}
@@ -245,10 +243,11 @@ export const StepTwo = ({
     if (!dataDebtor?.contacts) return [];
     return dataDebtor.contacts.map(
       (contact: any, idx: number): DebtorContact => ({
-        id: `contact-${idx}`, // ID único para evitar duplicados
+        id: `contact-${idx}`,
         type: contact.channel?.toUpperCase() || "EMAIL",
         value: contact.email || contact.phone || "",
         label: `${contact.name} - ${contact.email || contact.phone}`,
+        name: contact.name || "",
       })
     );
   }, [dataDebtor]);
@@ -261,6 +260,7 @@ export const StepTwo = ({
       executiveComment: formData.executiveComment || "",
       contactType: formData.contactType || "",
       contactValue: formData.contactValue || "",
+      selectedContact: formData.selectedContact || null,
       observation: formData.observation || "",
       nextManagementDate: formData.nextManagementDate || "",
       nextManagementTime: formData.nextManagementTime || "",
@@ -277,6 +277,7 @@ export const StepTwo = ({
         executiveComment: value.executiveComment || "",
         contactType: value.contactType || "",
         contactValue: value.contactValue || "",
+        selectedContact: value.selectedContact || null,
         observation: value.observation || "",
         nextManagementDate: value.nextManagementDate || "",
         nextManagementTime: value.nextManagementTime || "",
@@ -291,8 +292,9 @@ export const StepTwo = ({
       <Form {...form}>
         <form className="space-y-5">
           <Accordion
-            type="multiple"
-            defaultValue={["seleccion-gestion"]}
+            type="single"
+            defaultValue={"seleccion-gestion"} // Expandir todos por defecto]}
+            collapsible
             className="w-full space-y-5"
           >
             {/* ISLA 1: Selección de Gestión (3 selectores en cascada) */}
@@ -308,7 +310,7 @@ export const StepTwo = ({
                   />
                 </AccordionTrigger>
               </div>
-              <AccordionContent className="grid grid-cols-2 gap-4 text-balance px-1 py-4">
+              <AccordionContent className="grid grid-cols-3 gap-4 text-balance px-1 py-4">
                 {/* Nivel 1: Management Type */}
                 <FormField
                   control={form.control}
@@ -419,27 +421,6 @@ export const StepTwo = ({
                     </FormItem>
                   )}
                 />
-
-                {/* Información de la combinación seleccionada */}
-                {/* {selectedCombination && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-3">
-                    <div className="flex items-start gap-2">
-                      <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-blue-900">
-                          {selectedCombination.label}
-                        </p>
-                        <p className="text-xs text-blue-700 mt-1">
-                          {selectedCombination.description}
-                        </p>
-                        <p className="text-sm text-blue-800 mt-2">
-                          <strong>Fase objetivo:</strong>{" "}
-                          {selectedCombination.targetPhase}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )} */}
               </AccordionContent>
             </AccordionItem>
 
@@ -512,12 +493,15 @@ export const StepTwo = ({
                                 onValueChange={(value) => {
                                   if (value === "__manual__") {
                                     field.onChange("");
+                                    form.setValue("selectedContact", null);
+                                    form.setValue("contactType", "");
                                   } else {
                                     const contact = debtorContacts.find(
                                       (c) => c.id === value
                                     );
                                     if (contact) {
                                       field.onChange(contact.value);
+                                      form.setValue("selectedContact", contact);
                                       form.setValue(
                                         "contactType",
                                         contact.type
@@ -526,9 +510,8 @@ export const StepTwo = ({
                                   }
                                 }}
                                 value={
-                                  debtorContacts.find(
-                                    (c) => c.value === field.value
-                                  )?.id || field.value
+                                  formData.selectedContact?.id ||
+                                  (field.value ? "__manual__" : "")
                                 }
                               >
                                 <FormControl>
@@ -542,7 +525,7 @@ export const StepTwo = ({
                                       key={contact.id}
                                       value={contact.id}
                                     >
-                                      {contact.label}
+                                      {contact.name}
                                     </SelectItem>
                                   ))}
                                   <SelectItem value="__manual__">

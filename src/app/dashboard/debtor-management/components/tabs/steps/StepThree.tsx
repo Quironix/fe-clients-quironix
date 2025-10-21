@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 "use client";
 
 import { ManagementFormData } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
 import { CONTACT_TYPE_OPTIONS } from "@/app/dashboard/debtor-management/config/management-types";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
+import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import { Invoice } from "@/app/dashboard/payment-plans/store";
+import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,17 +21,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
 import { differenceInDays, format } from "date-fns";
 import {
-  CalendarDays,
-  CircleDollarSign,
+  BookUser,
+  Calendar,
   Clock,
+  Clock1,
+  CogIcon,
+  DollarSign,
   Eye,
   FileText,
-  Hash,
+  HashIcon,
+  History,
   Mail,
-  MessageSquare,
+  MessageCircle,
   Phone,
+  ThermometerSnowflake,
   Upload,
-  User,
+  User2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
@@ -118,10 +126,10 @@ export const StepThree = ({
     }).format(numAmount);
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string, formatType = "dd/MM/yyy") => {
     if (!dateString) return "-";
     try {
-      return format(new Date(dateString), "dd/MM/yyyy");
+      return format(new Date(dateString), formatType);
     } catch {
       return dateString;
     }
@@ -171,14 +179,15 @@ export const StepThree = ({
     const fields = selectedConfig.fields;
     if (fields.length === 0) return null;
 
+    let icon = <FileText className="w-6 h-6 text-blue-600" />;
+
     return (
       <div className="bg-white rounded-lg p-4 border border-gray-200">
         <div className="flex items-center gap-2 mb-3">
-          <FileText className="w-4 h-4 text-gray-700" />
+          <BookUser className="w-4 h-4 text-gray-700" />
           <h3 className="font-semibold text-sm text-gray-700">
-            Detalles: {selectedConfig.label}
+            {selectedConfig.label}
           </h3>
-          <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {fields.map((field) => {
@@ -187,25 +196,27 @@ export const StepThree = ({
 
             // Formatear según tipo
             if (field.type === "number" && value) {
+              icon = <DollarSign className="w-6 h-6 text-blue-600" />;
               displayValue = formatCurrency(value);
             } else if (field.type === "date" && value) {
+              icon = <Calendar className="w-6 h-6 text-blue-600" />;
               displayValue = formatDate(value);
             } else if (field.type === "time" && value) {
+              icon = <Clock className="w-6 h-6 text-blue-600" />;
               displayValue = formatTime(value);
             } else if (field.type === "select" && field.options) {
+              icon = <ThermometerSnowflake className="w-6 h-6 text-blue-600" />;
               const option = field.options.find((o) => o.value === value);
               displayValue = option?.label || value || "-";
             }
 
             return (
               <div key={field.name} className="flex items-start gap-2">
-                <CircleDollarSign className="w-4 h-4 text-gray-400 mt-1" />
-                <div className="flex-1">
-                  <span className="text-xs text-gray-500">{field.label}</span>
-                  <p className="text-sm font-medium text-gray-900">
-                    {displayValue}
-                  </p>
-                </div>
+                <IconDescription
+                  icon={icon}
+                  description={field.label}
+                  value={displayValue}
+                />
               </div>
             );
           })}
@@ -217,169 +228,72 @@ export const StepThree = ({
   return (
     <div className="space-y-4">
       {/* Título y botón visualizar email */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Eye className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg font-semibold text-gray-900">
-            Vista previa de la gestión
-          </h2>
-        </div>
-        <button
-          type="button"
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
-          onClick={() => {
-            // TODO: Implementar visualización de email
-            console.log("Visualizar email");
-          }}
-        >
-          <Mail className="w-4 h-4" />
-          Visualizar email
-        </button>
-      </div>
+      <TitleStep
+        icon={<Eye className="w-6 h-6" />}
+        title="Vista previa de la gestión"
+      />
 
       {/* Datos del deudor */}
-      <div className="bg-blue-50 rounded-lg p-4">
-        <h3 className="font-semibold text-sm text-gray-700 mb-3">
-          Datos del deudor
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <InfoCard
-            icon={<Hash className="w-4 h-4" />}
-            label="Documento"
-            value={dataDebtor?.debtor_code || "-"}
-          />
-          <InfoCard
-            icon={<FileText className="w-4 h-4" />}
-            label="Razón Social"
-            value={dataDebtor?.name || "-"}
-          />
-          <InfoCard
-            icon={<User className="w-4 h-4" />}
-            label="Contacto"
-            value={dataDebtor?.contact_name || "-"}
-          />
-          <InfoCard
-            icon={<Phone className="w-4 h-4" />}
-            label="Teléfono"
-            value={dataDebtor?.phone || "-"}
-          />
+      <div className="bg-blue-50 rounded-lg p-4 flex flex-col gap-5">
+        <div>
+          <h3 className="font-semibold text-sm text-gray-700 mb-2">
+            Datos del deudor
+          </h3>
+          <div className="grid grid-cols-4 md:grid-cols-4 gap-4">
+            <IconDescription
+              icon={<HashIcon className="w-6 h-6 text-blue-600" />}
+              description="Documento"
+              value={dataDebtor?.debtor_code || "-"}
+            />
+            <IconDescription
+              icon={<FileText className="w-6 h-6 text-blue-600" />}
+              description="Razón social"
+              value={dataDebtor?.name || "-"}
+            />
+            <IconDescription
+              icon={<FileText className="w-6 h-6 text-blue-600" />}
+              description="Contacto"
+              value={formData.selectedContact.name || "-"}
+            />
+            {formData.contactType === "EMAIL" && (
+              <IconDescription
+                icon={<Mail className="w-6 h-6 text-blue-600" />}
+                description="Contacto"
+                value={formData.selectedContact.value || "-"}
+              />
+            )}
+            {formData.contactType === "PHONE" && (
+              <IconDescription
+                icon={<Phone className="w-6 h-6 text-blue-600" />}
+                description="Contacto"
+                value={formData.selectedContact.value || "-"}
+              />
+            )}
+          </div>
+        </div>
+        <div>
+          <h3 className="font-semibold text-sm text-gray-700 mb-2">
+            Datos de la gestión
+          </h3>
+          <div className="grid grid-cols-4 md:grid-cols-4 gap-4">
+            <IconDescription
+              icon={<Calendar className="w-6 h-6 text-blue-600" />}
+              description="Fecha"
+              value={formatDate(new Date().toISOString())}
+            />
+            <IconDescription
+              icon={<Clock1 className="w-6 h-6 text-blue-600" />}
+              description="Hora"
+              value={formatDate(new Date().toLocaleString(), "HH:mm") + " hrs"}
+            />
+            <IconDescription
+              icon={<User2 className="w-6 h-6 text-blue-600" />}
+              description="Analista"
+              value={"Nombre analista"}
+            />
+          </div>
         </div>
       </div>
-
-      {/* Datos de la gestión */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
-        <h3 className="font-semibold text-sm text-gray-700 mb-3">
-          Datos de la gestión
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <InfoCard
-            icon={<CalendarDays className="w-4 h-4" />}
-            label="Fecha"
-            value={format(new Date(), "dd/MM/yyyy")}
-          />
-          <InfoCard
-            icon={<Clock className="w-4 h-4" />}
-            label="Hora"
-            value={format(new Date(), "HH:mm")}
-          />
-          <InfoCard
-            icon={<User className="w-4 h-4" />}
-            label="Analista"
-            value={profile?.user?.name || "-"}
-          />
-        </div>
-      </div>
-
-      {/* Tipo de Gestión */}
-      {selectedConfig && (
-        <div className="bg-white rounded-lg p-4 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <FileText className="w-4 h-4 text-gray-700" />
-            <h3 className="font-semibold text-sm text-gray-700">
-              Tipo de gestión
-            </h3>
-            <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
-          </div>
-          <div className="space-y-2">
-            <InfoCard
-              icon={<FileText className="w-4 h-4" />}
-              label="Tipo"
-              value={selectedConfig.label}
-            />
-            <InfoCard
-              icon={<MessageSquare className="w-4 h-4" />}
-              label="Descripción"
-              value={selectedConfig.description}
-            />
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
-              <p className="text-sm text-blue-800">
-                <strong>Fase objetivo:</strong> {selectedConfig.targetPhase}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Contacto */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
-        <div className="flex items-center gap-2 mb-3">
-          <Phone className="w-4 h-4 text-gray-700" />
-          <h3 className="font-semibold text-sm text-gray-700">Contacto</h3>
-          <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InfoCard
-            icon={<FileText className="w-4 h-4" />}
-            label="Tipo"
-            value={contactTypeLabel}
-          />
-          <InfoCard
-            icon={<MessageSquare className="w-4 h-4" />}
-            label="Valor"
-            value={formData.contactValue || "-"}
-          />
-        </div>
-      </div>
-
-      {/* Observación */}
-      {formData.observation && (
-        <div className="bg-white rounded-lg p-4 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <MessageSquare className="w-4 h-4 text-gray-700" />
-            <h3 className="font-semibold text-sm text-gray-700">Observación</h3>
-            <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
-          </div>
-          <p className="text-sm text-gray-900">{formData.observation}</p>
-        </div>
-      )}
-
-      {/* Datos del Caso (Dinámico) */}
-      {renderCaseDataFields()}
-
-      {/* Próxima gestión */}
-      {formData.nextManagementDate && (
-        <div className="bg-white rounded-lg p-4 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <CalendarDays className="w-4 h-4 text-gray-700" />
-            <h3 className="font-semibold text-sm text-gray-700">
-              Próxima gestión
-            </h3>
-            <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoCard
-              icon={<CalendarDays className="w-4 h-4" />}
-              label="Fecha"
-              value={formatDate(formData.nextManagementDate)}
-            />
-            <InfoCard
-              icon={<Clock className="w-4 h-4" />}
-              label="Hora"
-              value={formatTime(formData.nextManagementTime) + " hrs"}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Facturas seleccionadas */}
       {selectedInvoices.length > 0 && (
@@ -389,7 +303,6 @@ export const StepThree = ({
             <h3 className="font-semibold text-sm text-gray-700">
               Facturas seleccionadas ({selectedInvoices.length})
             </h3>
-            <MessageSquare className="w-4 h-4 text-blue-600 ml-auto" />
           </div>
           <div className="overflow-x-auto">
             <Table>
@@ -443,6 +356,75 @@ export const StepThree = ({
           </div>
         </div>
       )}
+      {/* <pre>{JSON.stringify(formData, null, 2)}</pre> */}
+
+      {/* Tipo de Gestión */}
+      {selectedConfig && (
+        <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-col gap-3">
+          <div className="flex flex-col gap-5">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <CogIcon className="w-4 h-4 text-gray-700" />
+                <h3 className="font-semibold text-sm text-gray-700">Gestión</h3>
+              </div>
+              <div className="grid grid-cols-3 gap-5">
+                <IconDescription
+                  icon={<FileText className="w-6 h-6 text-blue-600" />}
+                  description="Tipo de gestión"
+                  value={"Llamada saliente"}
+                />{" "}
+                <IconDescription
+                  icon={<FileText className="w-6 h-6 text-blue-600" />}
+                  description="Comentario del deudor"
+                  value={selectedConfig.description}
+                />
+                <IconDescription
+                  icon={<FileText className="w-6 h-6 text-blue-600" />}
+                  description="Comentario del ejecutivo"
+                  value={selectedConfig.label}
+                />
+              </div>
+              <div className="flex flex-col gap-2 mt-5">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-gray-700" />
+                  <h3 className="font-semibold text-sm text-gray-700">
+                    Observación
+                  </h3>
+                </div>
+                <p className="text-xs italic  text-gray-600">
+                  {formData.observation.charAt(0).toUpperCase() +
+                    formData.observation.slice(1)}
+                </p>
+              </div>
+            </div>
+            {/* <pre>{JSON.stringify(selectedConfig, null, 2)}</pre> */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <History className="w-4 h-4 text-gray-700" />
+                <h3 className="font-semibold text-sm text-gray-700">
+                  Próxima gestión
+                </h3>
+              </div>
+              <div className="grid grid-cols-3 gap-5">
+                <IconDescription
+                  icon={<Calendar className="w-6 h-6 text-blue-600" />}
+                  description="Fecha"
+                  value={formatDate(formData.nextManagementDate)}
+                />{" "}
+                <IconDescription
+                  icon={<Clock1 className="w-6 h-6 text-blue-600" />}
+                  description="Hora"
+                  value={formatTime(formData.nextManagementTime) + " hrs"}
+                />
+              </div>
+            </div>
+            {/* <pre>{JSON.stringify(selectedConfig, null, 2)}</pre> */}
+          </div>
+        </div>
+      )}
+
+      {/* Datos del Caso (Dinámico) */}
+      {renderCaseDataFields()}
 
       {/* Subir archivo */}
       <div className="bg-white rounded-lg p-4 border border-gray-200">
