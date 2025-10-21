@@ -13,7 +13,7 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import { cn, formatNumber } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { getReportsByDebtor } from "../services";
@@ -210,13 +210,14 @@ const WeeklyProjectionTable = () => {
                     key={item.week_number}
                     className="text-center text-gray-600 text-sm px-6 py-2"
                   >
-                    {format(item.week_start, "dd MMM")} -{" "}
-                    {format(item.week_end, "dd MMM")}
+                    {format(parseISO(item.week_start), "dd MMM")} -{" "}
+                    {format(parseISO(item.week_end), "dd MMM")}
                   </TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
+              {/* <pre>{JSON.stringify(data?.data, null, 2)}</pre> */}
               {/* Fila N° Facturas */}
               <TableRow>
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
@@ -262,10 +263,7 @@ const WeeklyProjectionTable = () => {
                     className="text-center py-4 px-6"
                   >
                     <span className="text-gray-900 font-medium">
-                      {formatNumber(
-                        item.total_weekly_estimated -
-                          item.total_weekly_estimated * 0.3
-                      )}
+                      {formatNumber(item.total_weekly_collected)}
                     </span>
                   </TableCell>
                 ))}
@@ -293,8 +291,7 @@ const WeeklyProjectionTable = () => {
                     >
                       {formatNumber(
                         item.total_weekly_estimated -
-                          (item.total_weekly_estimated -
-                            item.total_weekly_estimated * 0.3)
+                          item.total_weekly_collected
                       )}
                     </span>
                   </TableCell>
