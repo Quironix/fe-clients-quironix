@@ -2,26 +2,26 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  Clock,
-  Phone,
-  Plus,
-  User,
-  Mail,
-  PhoneOff,
-  MailIcon,
-} from "lucide-react";
-import { useState, useEffect } from "react";
-import DialogForm from "../../components/dialog-form";
-import CreateContactForm from "../../components/create-contact-from";
-import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { useWebRTCPhone } from "@/hooks/useWebRTCPhone";
+import {
+  Clock,
+  Mail,
+  MailIcon,
+  Phone,
+  PhoneOff,
+  Plus,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import CreateContactForm from "../../components/create-contact-from";
+import DialogForm from "../../components/dialog-form";
 import { useDebtorsStore } from "../../debtors/store";
 import type { Contact } from "../../debtors/types";
-import { useWebRTCPhone } from "@/hooks/useWebRTCPhone";
-import { toast } from "sonner";
 
 interface DebtorContactsProps {
   mainContact: Contact;
@@ -45,7 +45,7 @@ export const DebtorContacts = ({
       : [mainContact, ...additionalContacts];
 
   const [currentMainContact, setCurrentMainContact] = useState<Contact>(
-    contacts[0] || mainContact,
+    contacts[0] || mainContact
   );
   const [currentAdditionalContacts, setCurrentAdditionalContacts] = useState<
     Contact[]
@@ -95,6 +95,9 @@ export const DebtorContacts = ({
     callStatus === "in-call" ||
     callStatus === "calling" ||
     callStatus === "ringing";
+
+  console.log(!isRegistered && !isInCall);
+  console.log(isRegistered, isInCall);
 
   return (
     <div className="bg-[#EFF5FF] rounded-lg px-6 py-4 flex flex-col">
@@ -213,7 +216,7 @@ export const DebtorContacts = ({
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }
             onClick={handleCall}
-            disabled={!isRegistered && !isInCall}
+            disabled={isRegistered && isInCall}
           >
             {isInCall ? (
               <>
