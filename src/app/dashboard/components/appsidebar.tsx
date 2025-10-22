@@ -48,9 +48,9 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         ))}
       </SidebarContent>
       <SidebarFooter className="bg-primary text-white rounded-md rounded-t-none">
-        {/*<div className="px-2 pb-2">
+        <div className="px-2 pb-2">
           <WebRTCLogin />
-        </div>*/}
+        </div>
         <ProfileDropdown />
       </SidebarFooter>
     </Sidebar>
