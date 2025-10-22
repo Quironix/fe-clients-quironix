@@ -7,8 +7,28 @@ import type {
 const WEBRTC_API_URL =
   process.env.NEXT_PUBLIC_WEBRTC_API_URL || "https://172.17.16.24";
 
+const SIP_DOMAIN = "172.17.16.24";
+const WS_URI = "wss://172.17.16.24:8089/ws";
+
 /**
- * Obtiene las credenciales SIP/WebRTC desde el servidor de provisión
+ * Crea la configuración de WebRTC directamente sin llamar a provision.php
+ * Conecta directamente al WebSocket de Issabel PBX usando JsSIP
+ */
+export function createDirectWebRTCConfig(
+  sipUser: string,
+  sipPass: string
+): WebRTCCredentials {
+  return {
+    sipUser,
+    sipPass,
+    sipDomain: SIP_DOMAIN,
+    wsUri: WS_URI,
+  };
+}
+
+/**
+ * @deprecated Este método llama a provision.php y ya no se usa.
+ * Usar createDirectWebRTCConfig() en su lugar para conectar directamente al WebSocket.
  */
 export async function provisionWebRTC(
   credentials: ProvisionRequest

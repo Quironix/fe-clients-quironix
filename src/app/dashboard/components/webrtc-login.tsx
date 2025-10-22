@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Phone, PhoneOff } from "lucide-react";
 import { useWebRTCContext } from "@/context/WebRTCContext";
-import { provisionWebRTC, TEST_CREDENTIALS } from "@/services/webrtc";
+import { TEST_CREDENTIALS, createDirectWebRTCConfig } from "@/services/webrtc";
 import { toast } from "sonner";
 
 export const WebRTCLogin = () => {
@@ -35,15 +35,15 @@ export const WebRTCLogin = () => {
     setLoading(true);
 
     try {
-      const credentials = await provisionWebRTC({ username, password });
+      const credentials = createDirectWebRTCConfig(username, password);
       setConfig(credentials);
       toast.success("Conectando a la central telefónica...");
       setOpen(false);
       setUsername("");
       setPassword("");
     } catch (error) {
-      console.error("Error en login WebRTC:", error);
-      toast.error("Credenciales inválidas o error de conexión");
+      console.error("Error en configuración WebRTC:", error);
+      toast.error("Error al configurar la conexión");
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export const WebRTCLogin = () => {
     const creds = TEST_CREDENTIALS[anexo];
 
     try {
-      const credentials = await provisionWebRTC(creds);
+      const credentials = createDirectWebRTCConfig(creds.username, creds.password);
       setConfig(credentials);
       toast.success(`Conectando con anexo ${anexo}...`);
       setOpen(false);
