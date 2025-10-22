@@ -50,29 +50,45 @@ export const useWebRTCPhone = () => {
   // Registrar el User Agent
   const register = useCallback(async () => {
     if (!config) {
+      console.error("❌ [WebRTC] No hay configuración disponible");
       toast.error("Configuración de WebRTC no disponible");
       return;
     }
 
     if (uaRef.current) {
-      console.log("User Agent ya registrado");
+      console.log("⚠️ [WebRTC] User Agent ya registrado");
       return;
     }
 
     try {
+      console.log("🔄 [WebRTC] Iniciando registro...");
+      console.log("📋 [WebRTC] Config:", {
+        sipUser: config.sipUser,
+        sipDomain: config.sipDomain,
+        wsUri: config.wsUri,
+      });
       setCallStatus("registering");
 
       // Cargar JsSIP dinámicamente
       if (!JsSIP && typeof window !== "undefined") {
+        console.log("📦 [WebRTC] Cargando JsSIP...");
         JsSIP = await import("jssip");
+        console.log("✅ [WebRTC] JsSIP cargado correctamente");
+
+        // Habilitar debug de JsSIP para ver todos los logs
+        JsSIP.debug.enable("JsSIP:*");
+        console.log("🐛 [WebRTC] Debug de JsSIP habilitado");
       }
 
       if (!JsSIP) {
+        console.error("❌ [WebRTC] No se pudo cargar JsSIP");
         toast.error("No se pudo cargar la librería JsSIP");
         return;
       }
 
+      console.log("🔌 [WebRTC] Creando WebSocket:", config.wsUri);
       const socket = new JsSIP.WebSocketInterface(config.wsUri);
+
       const configuration = {
         sockets: [socket],
         uri: `sip:${config.sipUser}@${config.sipDomain}`,
@@ -83,11 +99,26 @@ export const useWebRTCPhone = () => {
         contact_uri: `sip:${config.sipUser}@${config.sipDomain}`,
       };
 
+      console.log("⚙️ [WebRTC] Configuración UA:", {
+        uri: configuration.uri,
+        contact_uri: configuration.contact_uri,
+      });
+
       uaRef.current = new JsSIP.UA(configuration);
+
+      // Event: WebSocket conectado
+      uaRef.current.on("connected", () => {
+        console.log("🔗 [WebRTC] WebSocket conectado");
+      });
+
+      // Event: WebSocket desconectado
+      uaRef.current.on("disconnected", () => {
+        console.warn("⚠️ [WebRTC] WebSocket desconectado");
+      });
 
       // Event: Registrado exitosamente
       uaRef.current.on("registered", () => {
-        console.log("✅ Registrado en PBX");
+        console.log("✅ [WebRTC] Registrado en PBX exitosamente");
         setIsRegistered(true);
         setCallStatus("registered");
         toast.success("Conectado a la central telefónica");
@@ -95,7 +126,11 @@ export const useWebRTCPhone = () => {
 
       // Event: Fallo en el registro
       uaRef.current.on("registrationFailed", (e: any) => {
-        console.error("❌ Registro fallido:", e);
+        console.error("❌ [WebRTC] Registro fallido:", e);
+        console.error("❌ [WebRTC] Detalles del error:", {
+          cause: e.cause,
+          response: e.response,
+        });
         setIsRegistered(false);
         setCallStatus("failed");
         toast.error("Error al conectar con la central telefónica");
@@ -103,12 +138,14 @@ export const useWebRTCPhone = () => {
 
       // Event: Nueva sesión RTC (llamada entrante)
       uaRef.current.on("newRTCSession", (e: any) => {
-        console.log("Nueva sesión RTC:", e);
+        console.log("📞 [WebRTC] Nueva sesión RTC:", e);
       });
 
+      console.log("🚀 [WebRTC] Iniciando User Agent...");
       uaRef.current.start();
+      console.log("✅ [WebRTC] User Agent iniciado, esperando registro...");
     } catch (error) {
-      console.error("Error al registrar UA:", error);
+      console.error("❌ [WebRTC] Error crítico al registrar UA:", error);
       setCallStatus("failed");
       toast.error("Error al inicializar el softphone");
     }
