@@ -5,7 +5,7 @@ import type {
 } from "./types";
 
 const WEBRTC_API_URL =
-  process.env.NEXT_PUBLIC_WEBRTC_API_URL || "http://172.17.16.24";
+  process.env.NEXT_PUBLIC_WEBRTC_API_URL || "https://172.17.16.24";
 
 /**
  * Obtiene las credenciales SIP/WebRTC desde el servidor de provisión
