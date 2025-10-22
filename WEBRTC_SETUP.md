@@ -23,15 +23,18 @@ Este documento describe la integración de llamadas WebRTC usando JsSIP para con
    - Hook personalizado que encapsula toda la lógica de JsSIP
    - Funciones: `makeCall`, `hangup`, `toggleHold`, `register`, `unregister`
    - Manejo de eventos de llamadas y registro
+   - Se conecta directamente al WebSocket de Issabel PBX
 
 3. **WebRTC Services** (`src/services/webrtc/`)
-   - `provisionWebRTC()`: Obtiene credenciales SIP desde el servidor
-   - Tipos TypeScript para requests y responses
+   - `createDirectWebRTCConfig()`: Crea configuración SIP directamente (sin llamar a PHP)
+   - `TEST_CREDENTIALS`: Credenciales de anexos de prueba
+   - Tipos TypeScript para configuración WebRTC
 
 4. **WebRTCLogin** (`src/app/dashboard/components/webrtc-login.tsx`)
-   - Componente de diálogo para login
+   - Componente de diálogo para seleccionar anexo
    - Botones rápidos para anexos de prueba
    - Integrado en el sidebar del dashboard
+   - Conecta directamente al WebSocket sin provisión PHP
 
 5. **DebtorContacts** (`src/app/dashboard/debtor-management/components/debtor-contacts.tsx`)
    - Botón "Llamar" integrado con WebRTC
@@ -97,6 +100,12 @@ Estos están disponibles en `src/services/webrtc/index.ts` como `TEST_CREDENTIAL
 2. Ingresar credenciales manualmente O usar uno de los botones de anexo de prueba
 3. Esperar confirmación de registro
 
+**💡 Tip:** Si ves "Conectando..." indefinidamente:
+- Haz clic en **"Probar Conexión WebSocket"** (botón en el diálogo)
+- Abre la consola del navegador (F12) para ver logs detallados
+- Verifica que estés conectado a la VPN si es necesario
+- Acepta el certificado SSL en `https://172.17.16.24:8089`
+
 ### 2. Realizar una Llamada
 
 1. Navegar a Gestión de Deudores > Detalle de un deudor
@@ -118,36 +127,37 @@ El hook `useWebRTCPhone` proporciona los siguientes estados:
 - `ended`: Llamada finalizada
 - `failed`: Error en llamada o registro
 
-## API del Servidor de Provisión
+## Conexión Directa al WebSocket
 
-### Endpoint: `/api/provision.php`
+La aplicación se conecta **directamente** al WebSocket de Issabel PBX usando JsSIP, sin necesidad de provisión desde el servidor PHP.
 
-**Request:**
-```json
+### Configuración Hardcoded
+
+```typescript
+const SIP_DOMAIN = "172.17.16.24";
+const WS_URI = "wss://172.17.16.24:8089/ws";
+```
+
+### Función Helper
+
+```typescript
+createDirectWebRTCConfig(sipUser: string, sipPass: string): WebRTCCredentials
+```
+
+Esta función crea la configuración necesaria para JsSIP:
+
+```typescript
 {
-  "username": "6170",
-  "password": "9c8c35689dca898e0cbad7fc622944ca"
+  sipUser: "6170",
+  sipPass: "9c8c35689dca898e0cbad7fc622944ca",
+  sipDomain: "172.17.16.24",
+  wsUri: "wss://172.17.16.24:8089/ws"
 }
 ```
 
-**Response (éxito):**
-```json
-{
-  "status": "ok",
-  "sip_user": "6170",
-  "sip_pass": "9c8c35689dca898e0cbad7fc622944ca",
-  "sip_domain": "172.17.16.24",
-  "ws_uri": "wss://172.17.16.24:8089/ws"
-}
-```
+### API del Servidor de Provisión (DEPRECATED)
 
-**Response (error):**
-```json
-{
-  "status": "error",
-  "message": "Invalid credentials"
-}
-```
+**Nota:** El endpoint `/api/provision.php` ya no se utiliza. La aplicación se conecta directamente al WebSocket.
 
 ## Estructura de Archivos
 
