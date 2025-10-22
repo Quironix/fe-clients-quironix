@@ -48,8 +48,18 @@ Este documento describe la integración de llamadas WebRTC usando JsSIP para con
 Agrega a tu archivo `.env.local`:
 
 ```bash
-# URL del servidor de provisión WebRTC (opcional)
-# Por defecto usa: http://172.17.16.24
+# Dominio SIP (opcional, default: 172.17.16.24)
+NEXT_PUBLIC_WEBRTC_SIP_DOMAIN=172.17.16.24
+
+# URI del WebSocket (opcional, default: wss://172.17.16.24:8089/ws)
+# ⚠️ IMPORTANTE: Verifica el path correcto con tu administrador de Issabel
+# Paths comunes:
+#   - wss://IP:8089/ws (Asterisk/Issabel estándar)
+#   - wss://IP:8089/ (sin path)
+#   - wss://IP:8089/websocket (alternativo)
+NEXT_PUBLIC_WEBRTC_WS_URI=wss://172.17.16.24:8089/ws
+
+# URL del servidor de provisión WebRTC (DEPRECATED, ya no se usa)
 NEXT_PUBLIC_WEBRTC_API_URL=http://172.17.16.24
 ```
 

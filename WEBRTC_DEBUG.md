@@ -208,8 +208,34 @@ ws.onclose = (e) => console.log('WebSocket cerrado:', e.code, e.reason);
 1. El WebSocket no se puede conectar al servidor
 2. El servidor rechaza la conexión
 3. Problemas de certificado SSL
+4. **Path incorrecto en el WebSocket URI** ⚠️
 
-**Verificar:**
+**Verificar el Path del WebSocket:**
+
+El path `/ws` es estándar en Asterisk/Issabel pero **puede ser diferente** en tu servidor.
+
+**Paths comunes:**
+- `wss://172.17.16.24:8089/ws` (estándar Asterisk/Issabel)
+- `wss://172.17.16.24:8089/` (sin path)
+- `wss://172.17.16.24:8089/websocket` (alternativo)
+
+**Cómo verificar el path correcto:**
+1. Pregunta al administrador del servidor Issabel
+2. Revisa la configuración SSH:
+   ```bash
+   ssh root@172.17.16.24
+   cat /etc/asterisk/http.conf | grep -i websocket
+   ```
+3. Usa el botón "Probar Conexión WebSocket" y revisa el error en consola
+
+**Cambiar el path:**
+
+Edita `.env.local`:
+```bash
+NEXT_PUBLIC_WEBRTC_WS_URI=wss://172.17.16.24:8089/TU_PATH_AQUI
+```
+
+**Probar en consola:**
 ```bash
 # En la terminal
 curl -k https://172.17.16.24:8089/ws

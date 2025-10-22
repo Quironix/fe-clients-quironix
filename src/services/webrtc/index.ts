@@ -7,8 +7,8 @@ import type {
 const WEBRTC_API_URL =
   process.env.NEXT_PUBLIC_WEBRTC_API_URL || "https://172.17.16.24";
 
-const SIP_DOMAIN = "172.17.16.24";
-const WS_URI = "wss://172.17.16.24:8089/ws";
+const SIP_DOMAIN = process.env.NEXT_PUBLIC_WEBRTC_SIP_DOMAIN || "172.17.16.24";
+const WS_URI = process.env.NEXT_PUBLIC_WEBRTC_WS_URI || "wss://172.17.16.24:8089/ws";
 
 /**
  * Crea la configuración de WebRTC directamente sin llamar a provision.php
