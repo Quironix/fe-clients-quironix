@@ -127,7 +127,7 @@ export const DebtorSearchAutocomplete = ({
   };
 
   return (
-    <div ref={wrapperRef} className="relative w-auto min-w-[280px]">
+    <div ref={wrapperRef} className="relative w-auto min-w-[280px] max-w-auto">
       <div className="relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
         <Input
@@ -140,7 +140,7 @@ export const DebtorSearchAutocomplete = ({
 
       {/* Dropdown de sugerencias */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-[400px] overflow-auto">
+        <div className="absolute z-50 min-w-full w-max max-w-2xl mt-1 bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
           {isLoading ? (
             <div className="p-4 text-center text-gray-500 text-sm">
               Buscando...

@@ -292,13 +292,13 @@ export const StepTwo = ({
       <Form {...form}>
         <form className="space-y-5">
           <Accordion
-            type="single"
-            defaultValue={"seleccion-gestion"} // Expandir todos por defecto]}
-            collapsible
+            type="multiple"
+            defaultValue={["seleccion-gestion"]} // Expandir todos por defecto]}
             className="w-full space-y-5"
           >
             {/* ISLA 1: Selección de Gestión (3 selectores en cascada) */}
             <AccordionItem
+              key="seleccion-gestion"
               value="seleccion-gestion"
               className="border border-gray-200 rounded-md px-4 py-2 mb-5"
             >
@@ -427,13 +427,14 @@ export const StepTwo = ({
             {/* ISLA 2: Datos de la Gestión (campos comunes a TODOS los casos) */}
             {hasCompleteSelection && (
               <AccordionItem
+                key="datos-gestion"
                 value="datos-gestion"
                 className="border border-gray-200 rounded-md px-4 py-2 mb-5"
               >
                 <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
                   <AccordionTrigger className="flex items-center justify-between h-full">
                     <TitleStep
-                      title="Datos de la Gestión"
+                      title="Datos de la gestión"
                       icon={<Phone className="w-5 h-5" />}
                     />
                   </AccordionTrigger>
@@ -611,6 +612,7 @@ export const StepTwo = ({
             {/* ISLA 3: Detalles Específicos (solo si hay campos en case_data) */}
             {hasCompleteSelection && selectedCombination.fields.length > 0 && (
               <AccordionItem
+                key="detalles-especificos"
                 value="detalles-especificos"
                 className="border border-gray-200 rounded-md px-4 py-2 mb-5"
               >

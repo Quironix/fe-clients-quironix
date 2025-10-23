@@ -98,7 +98,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "non_payment_reason",
-    label: "Motivo denNo pago",
+    label: "Motivo de no pago",
     description: "Contacto no responde",
     management_type: "CALL_OUT",
     debtor_comment: "CONTACT_NOT_RESPONDING",
@@ -119,7 +119,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
       },
       {
         name: "customReason",
-        label: "Detalles Adicionales",
+        label: "Detalles adicionales",
         type: "textarea",
         required: false,
         placeholder: "Explique los detalles específicos...",
