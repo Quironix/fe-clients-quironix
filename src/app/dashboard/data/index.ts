@@ -171,6 +171,12 @@ export const getSidebarData = (profile: any) => {
                 url: "/dashboard/indicators",
                 scope: "client.settings_account.indicators",
               },
+              {
+                disabled: true,
+                title: "Collectors",
+                url: "/dashboard/collectors",
+                scope: "client.settings_account.collectors",
+              },
             ],
           },
           {
