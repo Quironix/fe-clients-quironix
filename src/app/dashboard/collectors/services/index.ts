@@ -1,7 +1,11 @@
-// Ejemplo de servicio GET
+import type {
+  CreateCollectorRequest,
+  CollectorResponse,
+} from "./types";
+
 export const getAll = async (accessToken: string, clientId: string) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/REPLACE_ENDPOINT`,
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/collectors`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -10,7 +14,7 @@ export const getAll = async (accessToken: string, clientId: string) => {
   );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch data");
+    throw new Error("Failed to fetch collectors");
   }
 
   return response.json();
@@ -18,11 +22,11 @@ export const getAll = async (accessToken: string, clientId: string) => {
 
 export const create = async (
   accessToken: string,
-  data: any,
+  data: CreateCollectorRequest,
   clientId: string
-) => {
+): Promise<CollectorResponse> => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/REPLACE_ENDPOINT`,
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/collectors`,
     {
       method: "POST",
       headers: {
@@ -34,7 +38,10 @@ export const create = async (
   );
 
   if (!response.ok) {
-    throw new Error("Failed to create data");
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.message || "Failed to create collector"
+    );
   }
 
   return response.json();
