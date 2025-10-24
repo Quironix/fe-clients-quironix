@@ -13,7 +13,7 @@ export interface CollectorSegmentation {
   schedule: {
     preferred_time: string;
     timezone?: string;
-    preferred_days: string[];
+    preferred_days?: string[];
   };
 }
 
@@ -23,25 +23,39 @@ export interface CreateCollectorRequest {
   frequency: string;
   channel: "EMAIL" | "WHATSAPP" | "SMS";
   status: boolean;
-  debt_phases: number[];
+  debtPhases: number[];
   subject: string;
-  body_message: string;
-  send_associate_invoices: boolean;
+  bodyMessage: string;
+  sendAssociateInvoices: boolean;
   segmentations: CollectorSegmentation[];
+}
+
+export interface UpdateCollectorRequest {
+  name?: string;
+  description?: string;
+  frequency?: string;
+  channel?: "EMAIL" | "WHATSAPP" | "SMS";
+  status?: boolean;
+  debtPhases?: number[];
+  subject?: string;
+  bodyMessage?: string;
+  sendAssociateInvoices?: boolean;
+  segmentations?: CollectorSegmentation[];
 }
 
 export interface CollectorResponse {
   id: string;
+  clientId: string;
   name: string;
   description: string;
   frequency: string;
   channel: string;
   status: boolean;
-  debt_phases: number[];
+  debtPhases: number[];
   subject: string;
-  body_message: string;
-  send_associate_invoices: boolean;
+  bodyMessage: string;
+  sendAssociateInvoices: boolean;
   segmentations: CollectorSegmentation[];
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
