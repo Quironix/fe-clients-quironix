@@ -65,7 +65,7 @@ export function GeneralInformationSection({
         </AccordionTrigger>
       </div>
       <AccordionContent className="text-balance px-1 py-4 items-start">
-        <div className="grid grid-cols-2 gap-4 mb-5">
+        <div className="grid grid-cols-2 gap-4 mb-5 items-start w-full">
           <FormField
             control={form.control}
             name="name"
@@ -125,7 +125,7 @@ export function GeneralInformationSection({
                                   phase.value
                                 )
                                   ? field.value.filter(
-                                      (val) => val !== phase.value
+                                      (val: string) => val !== phase.value
                                     )
                                   : [...(field.value || []), phase.value];
                                 field.onChange(newValue);
@@ -169,7 +169,7 @@ export function GeneralInformationSection({
                                 e.preventDefault();
                                 e.stopPropagation();
                                 field.onChange(
-                                  field.value.filter((v) => v !== val)
+                                  field.value.filter((v: string) => v !== val)
                                 );
                               }}
                             >

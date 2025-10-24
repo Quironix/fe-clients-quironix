@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import Language from "@/components/ui/language";
 import { Switch } from "@/components/ui/switch";
+import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Cog } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -20,33 +22,33 @@ import { create } from "../services";
 import type { CreateCollectorRequest } from "../services/types";
 
 const formSchema = z.object({
-  isActive: z.boolean().default(true),
-  collectorName: z.string().min(1, "El nombre del collector es requerido"),
+  status: z.boolean().default(true),
+  name: z.string().min(1, "El nombre del collector es requerido"),
   description: z.string().min(1, "La descripción es requerida"),
-  debtPhases: z
+  debt_phases: z
     .array(z.string())
     .min(1, "Selecciona al menos una fase de deuda"),
-  communicationChannel: z.enum(["email", "whatsapp", "sms"], {
+  channel: z.enum(["EMAIL", "WHATSAPP", "SMS"], {
     required_error: "Selecciona un canal de comunicación",
   }),
   subject: z.string().min(1, "El asunto es requerido"),
-  messageBody: z.string().min(1, "El cuerpo del mensaje es requerido"),
-  attachInvoice: z.boolean().default(false),
-  segments: z
+  body_message: z.string().min(1, "El cuerpo del mensaje es requerido"),
+  send_associate_invoices: z.boolean().default(false),
+  segmentations: z
     .array(
       z.object({
-        applicableSegment: z
+        applicable_segment: z
           .string()
           .min(1, "El segmento aplicable es requerido"),
-        minimumDaysOverdue: z
-          .string()
-          .min(1, "Los días de atraso son requeridos"),
+        min_delay_days: z.string().min(1, "Los días de atraso son requeridos"),
         exclusions: z.array(z.string()).default([]),
-        frequency: z.string().min(1, "La frecuencia es requerida"),
-        schedule: z.string().min(1, "El horario es requerido"),
-        sendingDays: z
-          .array(z.string())
-          .min(1, "Selecciona al menos un día de envío"),
+        frequency: z.enum(["DAILY", "SEVEN_DAYS", "BIWEEKLY", "MONTHLY"]),
+        schedule: z.object({
+          preferred_time: z.string().min(1, "El horario es requerido"),
+          preferred_days: z
+            .array(z.string())
+            .min(1, "Selecciona al menos un día de envío"),
+        }),
       })
     )
     .min(1, "Debes agregar al menos un segmento"),
@@ -55,27 +57,31 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const PageCreateCollector = () => {
+  const { data: session } = useSession();
+  const { profile } = useProfileContext();
   const [activeSegment, setActiveSegment] = useState<string>("segment-0");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      isActive: true,
-      collectorName: "",
+      status: true,
+      name: "",
       description: "",
-      debtPhases: [],
-      communicationChannel: "email",
+      debt_phases: [],
+      channel: "EMAIL",
       subject: "",
-      messageBody: "",
-      attachInvoice: false,
-      segments: [
+      body_message: "",
+      send_associate_invoices: false,
+      segmentations: [
         {
-          applicableSegment: "",
-          minimumDaysOverdue: "",
+          applicable_segment: "",
+          min_delay_days: "",
           exclusions: [],
-          frequency: "",
-          schedule: "",
-          sendingDays: [],
+          frequency: "MONTHLY",
+          schedule: {
+            preferred_time: "",
+            preferred_days: [],
+          },
         },
       ],
     },
@@ -83,25 +89,25 @@ const PageCreateCollector = () => {
 
   const fieldArray = useFieldArray({
     control: form.control,
-    name: "segments",
+    name: "segmentations",
   });
 
   const onSubmit = async (data: FormValues) => {
     try {
-      const session = await fetch("/api/auth/session").then((res) =>
-        res.json()
-      );
+      // const session = await fetch("/api/auth/session").then((res) =>
+      //   res.json()
+      // );
 
-      if (!session?.token) {
-        toast.error("No se encontró la sesión");
-        return;
-      }
+      // if (!session?.token) {
+      //   toast.error("No se encontró la sesión");
+      //   return;
+      // }
 
-      const clientId = session.client?.id;
-      if (!clientId) {
-        toast.error("No se encontró el ID del cliente");
-        return;
-      }
+      // const clientId = session.client?.id;
+      // if (!clientId) {
+      //   toast.error("No se encontró el ID del cliente");
+      //   return;
+      // }
 
       const exclusionMapping: Record<
         string,
@@ -119,19 +125,20 @@ const PageCreateCollector = () => {
         sms: "SMS",
       };
 
-      const payload: CreateCollectorRequest = {
-        name: data.collectorName,
+      const weekendDays = ["S", "D"];
+
+      const requestPayload: CreateCollectorRequest = {
+        name: data.name,
         description: data.description,
-        frequency: data.segments[0]?.frequency || "DAILY",
-        channel: channelMapping[data.communicationChannel],
-        status: data.isActive,
-        debt_phases: data.debtPhases.map(Number),
+        frequency: data.segmentations[0]?.frequency || "DAILY",
+        channel: channelMapping[data.channel.toLowerCase()] || "EMAIL",
+        status: data.status,
+        debt_phases: data.debt_phases.map(Number),
         subject: data.subject,
-        body_message: data.messageBody,
-        send_associate_invoices: data.attachInvoice,
-        segmentations: data.segments.map((segment) => {
-          const weekendDays = ["S", "D"];
-          const hasWeekendDays = segment.sendingDays.some((day) =>
+        body_message: data.body_message,
+        send_associate_invoices: data.send_associate_invoices,
+        segmentations: data.segmentations.map((segment) => {
+          const hasWeekendDays = segment.schedule.preferred_days.some((day) =>
             weekendDays.includes(day)
           );
 
@@ -150,19 +157,20 @@ const PageCreateCollector = () => {
           }
 
           return {
-            applicable_segment: segment.applicableSegment,
-            min_delay_days: Number(segment.minimumDaysOverdue),
+            applicable_segment: segment.applicable_segment,
+            min_delay_days: Number(segment.min_delay_days),
             frequency: segment.frequency,
             exclusions,
             schedule: {
-              preferred_time: segment.schedule,
-              timezone: "America/Santiago",
+              preferred_time: segment.schedule.preferred_time,
+              preferred_days: segment.schedule.preferred_days,
             },
           };
         }),
       };
 
-      await create(session.token, payload, clientId);
+      console.log("Payload to send:", requestPayload);
+      await create(session.token, requestPayload, profile.client_id);
       toast.success("Collector creado exitosamente");
     } catch (error) {
       console.error("Error creating collector:", error);
@@ -194,7 +202,7 @@ const PageCreateCollector = () => {
               </div>
               <FormField
                 control={form.control}
-                name="isActive"
+                name="status"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>

@@ -12,7 +12,8 @@ export interface CollectorSegmentation {
   };
   schedule: {
     preferred_time: string;
-    timezone: string;
+    timezone?: string;
+    preferred_days: string[];
   };
 }
 

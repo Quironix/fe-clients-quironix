@@ -21,10 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FolderTree, Plus, Trash2 } from "lucide-react";
-import { UseFormReturn, UseFieldArrayReturn } from "react-hook-form";
+import { UseFieldArrayReturn, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
-import TitleStep from "../../settings/components/title-step";
 import { TimePopover } from "../../components/time-popover";
+import TitleStep from "../../settings/components/title-step";
 
 const daysOfWeek = [
   { value: "L", label: "L" },
@@ -45,7 +45,7 @@ const exclusionOptions = [
 
 interface SegmentationSectionProps {
   form: UseFormReturn<any>;
-  fieldArray: UseFieldArrayReturn<any, "segments", "id">;
+  fieldArray: UseFieldArrayReturn<any, "segmentations", "id">;
   activeSegment: string;
   setActiveSegment: (value: string) => void;
 }
@@ -105,32 +105,28 @@ export function SegmentationSection({
             className="border border-gray-200 rounded-md"
           >
             <AccordionItem value={`segment-${index}`} className="border-none">
-              <AccordionTrigger className="px-4 py-4 hover:no-underline [&>svg]:order-last flex items-center w-full">
-                <span className="font-semibold flex-shrink-0">
-                  Segmento {index + 1}
-                </span>
-                <div className="flex items-center gap-2 ml-auto">
-                  {fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeSegment(index);
-                      }}
-                      className="h-8 w-8"
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  )}
-                </div>
-              </AccordionTrigger>
+              <div className="flex items-center gap-2 px-4">
+                <AccordionTrigger className="flex-1 py-4 hover:no-underline">
+                  <span className="font-semibold">Segmento {index + 1}</span>
+                </AccordionTrigger>
+                {fields.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      removeSegment(index);
+                    }}
+                    className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-gray-100 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </button>
+                )}
+              </div>
               <AccordionContent className="px-4 pb-4">
                 <div className="grid grid-cols-3 gap-4 w-full">
                   <FormField
                     control={form.control}
-                    name={`segments.${index}.applicableSegment`}
+                    name={`segmentations.${index}.applicable_segment`}
                     render={({ field }) => (
                       <FormItem className="w-full">
                         <FormLabel>
@@ -148,18 +144,20 @@ export function SegmentationSection({
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="all">Todas</SelectItem>
-                            <SelectItem value="high_invoices">
-                              Alta facturación
+                            <SelectItem value="SEGMENTATION_LOW">
+                              Facturación baja
                             </SelectItem>
-                            <SelectItem value="high_value_debtors">
-                              Alto DBT
+                            <SelectItem value="SEGMENTATION_MEDIUM">
+                              Facturación media
                             </SelectItem>
-                            <SelectItem value="low_invoices">
-                              Baja facturación
+                            <SelectItem value="SEGMENTATION_HIGH">
+                              Facturación alta
                             </SelectItem>
-                            <SelectItem value="low_value_debtors">
-                              Bajo DBT
+                            <SelectItem value="DBT_LOW">DBT bajo</SelectItem>
+                            <SelectItem value="DBT_MEDIUM">
+                              DBT medio
                             </SelectItem>
+                            <SelectItem value="DBT_HIGH">DBT alto</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -169,7 +167,7 @@ export function SegmentationSection({
 
                   <FormField
                     control={form.control}
-                    name={`segments.${index}.minimumDaysOverdue`}
+                    name={`segmentations.${index}.min_delay_days`}
                     render={({ field }) => (
                       <FormItem className="w-full">
                         <FormLabel>
@@ -200,7 +198,7 @@ export function SegmentationSection({
 
                   <FormField
                     control={form.control}
-                    name={`segments.${index}.exclusions`}
+                    name={`segmentations.${index}.exclusions`}
                     render={() => (
                       <FormItem>
                         <FormLabel>Exclusiones</FormLabel>
@@ -209,7 +207,7 @@ export function SegmentationSection({
                             <FormField
                               key={option.id}
                               control={form.control}
-                              name={`segments.${index}.exclusions`}
+                              name={`segmentations.${index}.exclusions`}
                               render={({ field }) => {
                                 return (
                                   <FormItem
@@ -224,12 +222,12 @@ export function SegmentationSection({
                                         onCheckedChange={(checked) => {
                                           return checked
                                             ? field.onChange([
-                                                ...field.value,
+                                                ...(field.value || []),
                                                 option.id,
                                               ])
                                             : field.onChange(
                                                 field.value?.filter(
-                                                  (value) => value !== option.id
+                                                  (value: string) => value !== option.id
                                                 )
                                               );
                                         }}
@@ -251,7 +249,7 @@ export function SegmentationSection({
 
                   <FormField
                     control={form.control}
-                    name={`segments.${index}.frequency`}
+                    name={`segmentations.${index}.frequency`}
                     render={({ field }) => (
                       <FormItem className="w-full">
                         <FormLabel>
@@ -280,7 +278,7 @@ export function SegmentationSection({
 
                   <FormField
                     control={form.control}
-                    name={`segments.${index}.schedule`}
+                    name={`segmentations.${index}.schedule.preferred_time`}
                     render={({ field }) => (
                       <TimePopover
                         field={field}
@@ -296,7 +294,7 @@ export function SegmentationSection({
 
                   <FormField
                     control={form.control}
-                    name={`segments.${index}.sendingDays`}
+                    name={`segmentations.${index}.schedule.preferred_days`}
                     render={() => (
                       <FormItem>
                         <FormLabel>
@@ -307,7 +305,7 @@ export function SegmentationSection({
                             <FormField
                               key={day.value}
                               control={form.control}
-                              name={`segments.${index}.sendingDays`}
+                              name={`segmentations.${index}.schedule.preferred_days`}
                               render={({ field }) => {
                                 return (
                                   <FormItem key={day.value}>
@@ -327,7 +325,7 @@ export function SegmentationSection({
                                           if (isSelected) {
                                             field.onChange(
                                               field.value.filter(
-                                                (v) => v !== day.value
+                                                (v: string) => v !== day.value
                                               )
                                             );
                                           } else {

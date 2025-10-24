@@ -40,7 +40,7 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
       <AccordionContent className="space-y-4 px-1 py-4">
         <FormField
           control={form.control}
-          name="communicationChannel"
+          name="channel"
           render={({ field }) => (
             <FormItem className="space-y-3">
               <FormLabel>
@@ -53,19 +53,19 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
                   className="flex gap-4"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="email" id="email" />
+                    <RadioGroupItem value="EMAIL" id="email" />
                     <label htmlFor="email" className="cursor-pointer">
                       Correo electrónico
                     </label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="whatsapp" id="whatsapp" />
+                    <RadioGroupItem value="WHATSAPP" id="whatsapp" />
                     <label htmlFor="whatsapp" className="cursor-pointer">
                       WhatsApp
                     </label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="sms" id="sms" />
+                    <RadioGroupItem value="SMS" id="sms" />
                     <label htmlFor="sms" className="cursor-pointer">
                       Mensaje de texto
                     </label>
@@ -99,7 +99,7 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
 
         <FormField
           control={form.control}
-          name="messageBody"
+          name="body_message"
           render={({ field }) => (
             <FormItem>
               <FormLabel>
@@ -115,7 +115,7 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
 
         <FormField
           control={form.control}
-          name="attachInvoice"
+          name="send_associate_invoices"
           render={({ field }) => (
             <FormItem className="flex flex-col items-start space-x-3 space-y-0">
               <FormLabel>Adjuntar factura</FormLabel>
