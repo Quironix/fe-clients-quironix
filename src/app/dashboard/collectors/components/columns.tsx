@@ -16,9 +16,9 @@ const formatDate = (dateString: string) => {
 
 const getChannelIcon = (channel: string) => {
   const iconMap = {
-    EMAIL: <Mail className="h-5 w-5 text-gray-600" />,
-    WHATSAPP: <MessageSquare className="h-5 w-5 text-gray-600" />,
-    SMS: <Phone className="h-5 w-5 text-gray-600" />,
+    EMAIL: <Mail className="h-5 w-5 text-gray-800" color="#bbb" />,
+    WHATSAPP: <MessageSquare className="h-5 w-5 text-gray-600" color="#bbb" />,
+    SMS: <Phone className="h-5 w-5 text-gray-600" color="#bbb" />,
   };
 
   return (

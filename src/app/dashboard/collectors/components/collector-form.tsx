@@ -1,6 +1,7 @@
 "use client";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,13 +11,17 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { create, update } from "../services";
-import type { CollectorResponse, CreateCollectorRequest } from "../services/types";
+import type {
+  CollectorResponse,
+  CreateCollectorRequest,
+} from "../services/types";
 import { GeneralInformationSection } from "./general-information-section";
 import { MessageContentSection } from "./message-content-section";
 import { SegmentationSection } from "./segmentation-section";
 
 const formSchema = z.object({
   status: z.boolean().default(true),
+  send_now: z.boolean().default(false).optional(),
   name: z.string().min(1, "El nombre del collector es requerido"),
   description: z.string().min(1, "La descripción es requerida"),
   debt_phases: z
@@ -70,6 +75,7 @@ export const CollectorForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       status: true,
+      send_now: false,
       name: "",
       description: "",
       debt_phases: [],
@@ -108,6 +114,7 @@ export const CollectorForm = ({
 
       form.reset({
         status: initialData.status,
+        send_now: initialData.send_now || false,
         name: initialData.name,
         description: initialData.description,
         debt_phases: initialData.debtPhases.map(String),
@@ -130,7 +137,11 @@ export const CollectorForm = ({
             applicable_segment: seg.applicable_segment,
             min_delay_days: String(seg.min_delay_days),
             exclusions,
-            frequency: seg.frequency as "DAILY" | "SEVEN_DAYS" | "BIWEEKLY" | "MONTHLY",
+            frequency: seg.frequency as
+              | "DAILY"
+              | "SEVEN_DAYS"
+              | "BIWEEKLY"
+              | "MONTHLY",
             schedule: {
               preferred_time: seg.schedule.preferred_time,
               preferred_days: seg.schedule.preferred_days || [],
@@ -167,6 +178,7 @@ export const CollectorForm = ({
         frequency: data.segmentations[0]?.frequency || "DAILY",
         channel: channelMapping[data.channel.toLowerCase()] || data.channel,
         status: data.status,
+        send_now: data.send_now,
         debtPhases: data.debt_phases.map(Number),
         subject: data.subject,
         bodyMessage: data.body_message,
@@ -213,7 +225,10 @@ export const CollectorForm = ({
         router.push("/dashboard/collectors");
       }
     } catch (error) {
-      console.error(`Error ${mode === "create" ? "creating" : "updating"} collector:`, error);
+      console.error(
+        `Error ${mode === "create" ? "creating" : "updating"} collector:`,
+        error
+      );
       toast.error(
         error instanceof Error
           ? error.message
@@ -221,6 +236,8 @@ export const CollectorForm = ({
       );
     }
   };
+
+  const isSendNow = form.watch("send_now");
 
   return (
     <Form {...form}>
@@ -262,6 +279,38 @@ export const CollectorForm = ({
           />
         </Accordion>
 
+        <div className="bg-amber-50 p-5 flex justify-between items-center rounded-md mb-5">
+          <FormField
+            control={form.control}
+            name="send_now"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="flex items-center space-x-2 w-full">
+                    <Checkbox
+                      checked={field.value || false}
+                      onCheckedChange={(checked) => field.onChange(checked)}
+                    />
+                    <label
+                      htmlFor="send_now"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      <div className="flex flex-col gap-0">
+                        <span className="font-bold">Enviar ahora</span>
+                        <span className=" text-sm text-gray-600">
+                          El collector enviará notificaciones a los clientes que
+                          cumplan con los criterios establecidos inmediatamente
+                          después de crear el collector.
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
         <div className="flex justify-end gap-3 pt-4">
           <Button
             type="button"
@@ -271,7 +320,11 @@ export const CollectorForm = ({
             Cancelar
           </Button>
           <Button type="submit">
-            {mode === "create" ? "Crear collector" : "Actualizar collector"}
+            {mode === "create"
+              ? isSendNow
+                ? "Guardar y enviar"
+                : "Guardar"
+              : "Actualizar collector"}
           </Button>
         </div>
       </form>

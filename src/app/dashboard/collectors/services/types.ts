@@ -23,6 +23,7 @@ export interface CreateCollectorRequest {
   frequency: string;
   channel: "EMAIL" | "WHATSAPP" | "SMS";
   status: boolean;
+  send_now?: boolean;
   debtPhases: number[];
   subject: string;
   bodyMessage: string;
@@ -51,6 +52,7 @@ export interface CollectorResponse {
   frequency: string;
   channel: string;
   status: boolean;
+  send_now?: boolean;
   debtPhases: number[];
   subject: string;
   bodyMessage: string;

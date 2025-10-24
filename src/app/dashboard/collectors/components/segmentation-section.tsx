@@ -123,7 +123,7 @@ export function SegmentationSection({
                 )}
               </div>
               <AccordionContent className="px-4 pb-4">
-                <div className="grid grid-cols-3 gap-4 w-full">
+                <div className="grid grid-cols-3 gap-5 w-full mb-5">
                   <FormField
                     control={form.control}
                     name={`segmentations.${index}.applicable_segment`}
@@ -212,7 +212,7 @@ export function SegmentationSection({
                                 return (
                                   <FormItem
                                     key={option.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                    className="flex flex-row items-start space-x-1 space-y-0"
                                   >
                                     <FormControl>
                                       <Checkbox
@@ -227,7 +227,8 @@ export function SegmentationSection({
                                               ])
                                             : field.onChange(
                                                 field.value?.filter(
-                                                  (value: string) => value !== option.id
+                                                  (value: string) =>
+                                                    value !== option.id
                                                 )
                                               );
                                         }}
@@ -291,65 +292,64 @@ export function SegmentationSection({
                       />
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name={`segmentations.${index}.schedule.preferred_days`}
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>
-                          Días de envío <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <div className="flex gap-2">
-                          {daysOfWeek.map((day) => (
-                            <FormField
-                              key={day.value}
-                              control={form.control}
-                              name={`segmentations.${index}.schedule.preferred_days`}
-                              render={({ field }) => {
-                                return (
-                                  <FormItem key={day.value}>
-                                    <FormControl>
-                                      <Button
-                                        type="button"
-                                        variant={
-                                          field.value?.includes(day.value)
-                                            ? "default"
-                                            : "outline"
-                                        }
-                                        size="sm"
-                                        className="w-10 h-10 p-0"
-                                        onClick={() => {
-                                          const isSelected =
-                                            field.value?.includes(day.value);
-                                          if (isSelected) {
-                                            field.onChange(
-                                              field.value.filter(
-                                                (v: string) => v !== day.value
-                                              )
-                                            );
-                                          } else {
-                                            field.onChange([
-                                              ...(field.value || []),
-                                              day.value,
-                                            ]);
-                                          }
-                                        }}
-                                      >
-                                        {day.label}
-                                      </Button>
-                                    </FormControl>
-                                  </FormItem>
-                                );
-                              }}
-                            />
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
+                <FormField
+                  control={form.control}
+                  name={`segmentations.${index}.schedule.preferred_days`}
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>
+                        Días de envío <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <div className="flex gap-2">
+                        {daysOfWeek.map((day) => (
+                          <FormField
+                            key={day.value}
+                            control={form.control}
+                            name={`segmentations.${index}.schedule.preferred_days`}
+                            render={({ field }) => {
+                              return (
+                                <FormItem key={day.value}>
+                                  <FormControl>
+                                    <Button
+                                      type="button"
+                                      variant={
+                                        field.value?.includes(day.value)
+                                          ? "default"
+                                          : "outline"
+                                      }
+                                      size="sm"
+                                      className="w-10 h-10 p-0"
+                                      onClick={() => {
+                                        const isSelected =
+                                          field.value?.includes(day.value);
+                                        if (isSelected) {
+                                          field.onChange(
+                                            field.value.filter(
+                                              (v: string) => v !== day.value
+                                            )
+                                          );
+                                        } else {
+                                          field.onChange([
+                                            ...(field.value || []),
+                                            day.value,
+                                          ]);
+                                        }
+                                      }}
+                                    >
+                                      {day.label}
+                                    </Button>
+                                  </FormControl>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </AccordionContent>
             </AccordionItem>
           </Accordion>
