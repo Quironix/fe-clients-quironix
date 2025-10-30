@@ -24,10 +24,10 @@ export interface CreateCollectorRequest {
   channel: "EMAIL" | "WHATSAPP" | "SMS";
   status: boolean;
   send_now?: boolean;
-  debtPhases: number[];
+  debt_phases: number[];
   subject: string;
-  bodyMessage: string;
-  sendAssociateInvoices: boolean;
+  body_message: string;
+  send_associate_invoices: boolean;
   segmentations: CollectorSegmentation[];
 }
 
@@ -37,10 +37,10 @@ export interface UpdateCollectorRequest {
   frequency?: string;
   channel?: "EMAIL" | "WHATSAPP" | "SMS";
   status?: boolean;
-  debtPhases?: number[];
+  debt_phases?: number[];
   subject?: string;
-  bodyMessage?: string;
-  sendAssociateInvoices?: boolean;
+  body_message?: string;
+  send_associate_invoices?: boolean;
   segmentations?: CollectorSegmentation[];
 }
 

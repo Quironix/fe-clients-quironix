@@ -216,7 +216,7 @@ export const DebtorContacts = ({
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }
             onClick={handleCall}
-            disabled={isRegistered && isInCall}
+            disabled={!isRegistered && !isInCall}
           >
             {isInCall ? (
               <>

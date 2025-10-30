@@ -41,7 +41,10 @@ const formSchema = z.object({
           .min(1, "El segmento aplicable es requerido"),
         min_delay_days: z.string().min(1, "Los días de atraso son requeridos"),
         exclusions: z.array(z.string()).default([]),
-        frequency: z.enum(["DAILY", "SEVEN_DAYS", "BIWEEKLY", "MONTHLY"]),
+        frequency: z.enum(["DAILY", "SEVEN_DAYS", "BIWEEKLY", "MONTHLY"], {
+          required_error: "La frecuencia de envío es requerida",
+          invalid_type_error: "Selecciona una frecuencia válida",
+        }),
         schedule: z.object({
           preferred_time: z.string().min(1, "El horario es requerido"),
           preferred_days: z
@@ -50,7 +53,17 @@ const formSchema = z.object({
         }),
       })
     )
-    .min(1, "Debes agregar al menos un segmento"),
+    .min(1, "Debes agregar al menos un segmento")
+    .refine(
+      (segments) => {
+        const applicableSegments = segments.map((s) => s.applicable_segment);
+        return new Set(applicableSegments).size === applicableSegments.length;
+      },
+      {
+        message:
+          "No puedes tener segmentos duplicados con el mismo segmento aplicable",
+      }
+    ),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -105,13 +118,6 @@ export const CollectorForm = ({
 
   useEffect(() => {
     if (mode === "edit" && initialData) {
-      const exclusionReverseMapping: Record<string, string> = {
-        exclude_cash_documents: "cash_documents",
-        exclude_protested_checks: "protested_checks",
-        exclude_promissory_notes: "promissory_notes",
-        exclude_credit_notes: "credit_notes",
-      };
-
       form.reset({
         status: initialData.status,
         send_now: initialData.send_now || false,
@@ -164,25 +170,19 @@ export const CollectorForm = ({
         credit_notes: "exclude_credit_notes",
       };
 
-      const channelMapping: Record<string, "EMAIL" | "WHATSAPP" | "SMS"> = {
-        email: "EMAIL",
-        whatsapp: "WHATSAPP",
-        sms: "SMS",
-      };
-
       const weekendDays = ["S", "D"];
 
       const requestPayload: CreateCollectorRequest = {
         name: data.name,
         description: data.description,
         frequency: data.segmentations[0]?.frequency || "DAILY",
-        channel: channelMapping[data.channel.toLowerCase()] || data.channel,
+        channel: data.channel,
         status: data.status,
         send_now: data.send_now,
-        debtPhases: data.debt_phases.map(Number),
+        debt_phases: data.debt_phases.map(Number),
         subject: data.subject,
-        bodyMessage: data.body_message,
-        sendAssociateInvoices: data.send_associate_invoices,
+        body_message: data.body_message,
+        send_associate_invoices: data.send_associate_invoices,
         segmentations: data.segmentations.map((segment) => {
           const hasWeekendDays = segment.schedule.preferred_days.some((day) =>
             weekendDays.includes(day)
@@ -237,11 +237,37 @@ export const CollectorForm = ({
     }
   };
 
+  const onError = (errors: any) => {
+    if (errors.segmentations?.root?.message) {
+      toast.error(errors.segmentations.root.message);
+    } else if (errors.segmentations?.message) {
+      toast.error(errors.segmentations.message);
+    } else if (errors.segmentations) {
+      const firstError = Object.values(errors.segmentations).find(
+        (err: any) => err?.message
+      );
+      if (
+        firstError &&
+        typeof firstError === "object" &&
+        "message" in firstError
+      ) {
+        toast.error(firstError.message as string);
+      } else {
+        toast.error(
+          "Por favor, completa todos los campos requeridos en los segmentos"
+        );
+      }
+    }
+  };
+
   const isSendNow = form.watch("send_now");
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, onError)}
+        className="space-y-5"
+      >
         <div className="bg-blue-50 p-5 flex justify-between items-center rounded-md mb-5">
           <div className="flex flex-col gap-0">
             <span className="font-bold">Estado inicial</span>
