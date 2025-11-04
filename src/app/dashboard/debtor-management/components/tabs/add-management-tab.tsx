@@ -345,6 +345,7 @@ export const AddManagementTab = ({
             dataDebtor={dataDebtor}
             formData={managementFormData}
             onFormChange={handleManagementFormChange}
+            selectedInvoices={selectedInvoices}
           />
         );
       case 2:

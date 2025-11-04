@@ -3,6 +3,9 @@
  * Estructura en cascada: management_type → debtor_comment → executive_comment
  */
 
+import React from "react";
+import { ManagementLitigationForm } from "../components/litigation";
+
 export type ContactType = "PHONE" | "EMAIL" | "WHATSAPP" | "SMS" | "LETTER";
 
 export type FieldType =
@@ -12,7 +15,8 @@ export type FieldType =
   | "time"
   | "datetime"
   | "textarea"
-  | "select";
+  | "select"
+  | "component";
 
 export interface FieldConfig {
   name: string;
@@ -26,6 +30,8 @@ export interface FieldConfig {
     max?: number;
     pattern?: RegExp;
   };
+  component?: React.ComponentType<any>;
+  componentProps?: Record<string, any>;
 }
 
 /**
@@ -220,11 +226,11 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
     targetPhase: 2,
     fields: [
       {
-        name: "litigationId",
-        label: "ID de caso de litigio",
-        type: "text",
-        required: false,
-        placeholder: "lit-12345-2025",
+        name: "litigationData",
+        label: "Datos del Litigio",
+        type: "component",
+        required: true,
+        component: ManagementLitigationForm,
       },
     ],
   },

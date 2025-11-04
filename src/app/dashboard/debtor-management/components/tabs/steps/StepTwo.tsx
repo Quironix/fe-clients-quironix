@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CalendarClock,
@@ -44,14 +45,18 @@ import {
   MessageSquare,
   Phone,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+
+import { Invoice } from "@/app/dashboard/payment-plans/store";
 
 interface StepTwoProps {
   dataDebtor: any;
   formData: ManagementFormData;
   onFormChange: (data: Partial<ManagementFormData>) => void;
+  selectedInvoices?: Invoice[];
 }
 
 /**
@@ -100,11 +105,42 @@ const createFormSchema = (hasCompleteSelection: boolean) => {
 const DynamicField = ({
   field,
   control,
+  dataDebtor,
+  selectedInvoices,
 }: {
   field: FieldConfig;
   control: any;
+  dataDebtor?: any;
+  selectedInvoices?: Invoice[];
 }) => {
   const fieldName = `caseData.${field.name}` as any;
+  const { data: session } = useSession();
+  const { profile } = useProfileContext();
+
+  if (field.type === "component" && field.component) {
+    const CustomComponent = field.component;
+    return (
+      <FormField
+        control={control}
+        name={fieldName}
+        render={({ field: formField }) => (
+          <FormItem className="col-span-2">
+            <CustomComponent
+              value={formField.value}
+              onChange={formField.onChange}
+              debtorId={dataDebtor?.id}
+              dataDebtor={dataDebtor}
+              session={session}
+              profile={profile}
+              selectedInvoices={selectedInvoices}
+              {...(field.componentProps || {})}
+            />
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    );
+  }
 
   if (field.type === "date") {
     return (
@@ -195,6 +231,7 @@ export const StepTwo = ({
   dataDebtor,
   formData,
   onFormChange,
+  selectedInvoices = [],
 }: StepTwoProps) => {
   // Opciones filtradas para cascada
   const executiveCommentOptions = useMemo(
@@ -619,6 +656,8 @@ export const StepTwo = ({
                         key={field.name}
                         field={field}
                         control={form.control}
+                        dataDebtor={dataDebtor}
+                        selectedInvoices={selectedInvoices}
                       />
                     ))}
                   </div>
