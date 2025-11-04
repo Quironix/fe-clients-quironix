@@ -174,13 +174,6 @@ export const AddManagementTab = ({
     if (selectedInvoices.length === 0) {
       throw new Error("Debe seleccionar al menos una factura");
     }
-
-    if (
-      !managementFormData.observation ||
-      managementFormData.observation.trim() === ""
-    ) {
-      throw new Error("Debe agregar una observación");
-    }
   };
 
   const formatDateToISO = (dateValue: string | Date | undefined): string => {
@@ -342,6 +335,7 @@ export const AddManagementTab = ({
         return (
           <StepOne
             dataDebtor={dataDebtor}
+            selectedInvoices={selectedInvoices}
             onInvoicesSelected={handleInvoicesSelected}
           />
         );

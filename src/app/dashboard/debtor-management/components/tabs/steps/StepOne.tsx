@@ -17,10 +17,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface StepOneProps {
   dataDebtor: any;
+  selectedInvoices?: Invoice[];
   onInvoicesSelected?: (invoices: Invoice[]) => void;
 }
 
-export const StepOne = ({ dataDebtor, onInvoicesSelected }: StepOneProps) => {
+export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected }: StepOneProps) => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const [currentPage, setCurrentPage] = useState(1);
@@ -242,6 +243,24 @@ export const StepOne = ({ dataDebtor, onInvoicesSelected }: StepOneProps) => {
     return filteredInvoices.slice(startIndex, endIndex);
   }, [filteredInvoices, currentPage, pageSize]);
 
+  // Calcular initialRowSelection basado en las facturas seleccionadas
+  const initialRowSelection = useMemo(() => {
+    if (!selectedInvoices || selectedInvoices.length === 0) return {};
+
+    const selection: RowSelectionState = {};
+    selectedInvoices.forEach((selectedInvoice) => {
+      if (!selectedInvoice?.id) return;
+
+      const index = paginatedData.findIndex((invoice) =>
+        invoice?.id && invoice.id === selectedInvoice.id
+      );
+      if (index !== -1) {
+        selection[index] = true;
+      }
+    });
+    return selection;
+  }, [selectedInvoices, paginatedData]);
+
   // Actualizar ref de paginatedData
   useEffect(() => {
     paginatedDataRef.current = paginatedData;
@@ -334,6 +353,7 @@ export const StepOne = ({ dataDebtor, onInvoicesSelected }: StepOneProps) => {
         pageSizeOptions={[15, 20, 25, 30, 40, 50]}
         showPagination={true}
         enableRowSelection={true}
+        initialRowSelection={initialRowSelection}
         onRowSelectionChange={handleRowSelectionChange}
         pagination={pagination}
         onPaginationChange={handlePaginationChange}

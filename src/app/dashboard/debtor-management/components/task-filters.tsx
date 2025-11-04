@@ -81,8 +81,8 @@ export const TaskFilters = ({
           }
           className={
             selectedQuadrant === "CRITICAL_DEBTORS"
-              ? "bg-red-500 hover:bg-red-600 text-white text-xs"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+              ? "bg-red-500 hover:bg-red-600 text-white text-xs rounded-[4px]"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px]"
           }
           onClick={() => handleQuadrantClick("CRITICAL_DEBTORS")}
         >
@@ -96,8 +96,8 @@ export const TaskFilters = ({
           }
           className={
             selectedQuadrant === "CASH_GENERATION"
-              ? "bg-orange-500 hover:bg-orange-600 text-white text-xs"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+              ? "bg-orange-500 hover:bg-orange-600 text-white text-xs rounded-[4px]"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px]"
           }
           onClick={() => handleQuadrantClick("CASH_GENERATION")}
         >
@@ -109,8 +109,8 @@ export const TaskFilters = ({
           variant={selectedQuadrant === "LITIGATION" ? "secondary" : "outline"}
           className={
             selectedQuadrant === "LITIGATION"
-              ? "bg-yellow-500 hover:bg-yellow-600 text-white text-xs"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+              ? "bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-[4px]"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px]"
           }
           onClick={() => handleQuadrantClick("LITIGATION")}
         >
@@ -126,8 +126,8 @@ export const TaskFilters = ({
           }
           className={
             selectedQuadrant === "DEFICIENT_TECHNICAL_FILE"
-              ? "bg-purple-500 hover:bg-purple-600 text-white text-xs"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+              ? "bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-[4px]"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px]"
           }
           onClick={() => handleQuadrantClick("DEFICIENT_TECHNICAL_FILE")}
         >
@@ -139,8 +139,8 @@ export const TaskFilters = ({
           variant={selectedQuadrant === null ? "secondary" : "outline"}
           className={
             selectedQuadrant === null
-              ? "bg-gray-400 hover:bg-gray-500 text-white"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50"
+              ? "bg-gray-400 hover:bg-gray-500 text-white rounded-[4px]"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 rounded-[4px]"
           }
           onClick={() => onQuadrantChange(null)}
         >

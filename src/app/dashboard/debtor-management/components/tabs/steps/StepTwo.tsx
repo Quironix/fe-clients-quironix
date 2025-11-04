@@ -9,7 +9,6 @@ import {
 import {
   CONTACT_TYPE_OPTIONS,
   FieldConfig,
-  getDebtorCommentOptions,
   getExecutiveCommentOptions,
   getManagementCombination,
   MANAGEMENT_TYPES,
@@ -77,9 +76,7 @@ const createFormSchema = (hasCompleteSelection: boolean) => {
     baseSchema.contactValue = z
       .string()
       .min(1, "Debe ingresar el valor de contacto");
-    baseSchema.observation = z
-      .string()
-      .min(10, "La observación debe tener al menos 10 caracteres");
+    baseSchema.observation = z.string().optional();
     baseSchema.nextManagementDate = z
       .string()
       .min(1, "Debe seleccionar una fecha");
@@ -200,11 +197,6 @@ export const StepTwo = ({
   onFormChange,
 }: StepTwoProps) => {
   // Opciones filtradas para cascada
-  const debtorCommentOptions = useMemo(
-    () => getDebtorCommentOptions(formData.managementType),
-    [formData.managementType]
-  );
-
   const executiveCommentOptions = useMemo(
     () => getExecutiveCommentOptions(formData.debtorComment),
     [formData.debtorComment]
@@ -293,7 +285,7 @@ export const StepTwo = ({
         <form className="space-y-5">
           <Accordion
             type="multiple"
-            defaultValue={["seleccion-gestion"]} // Expandir todos por defecto]}
+            defaultValue={["seleccion-gestion", "datos-gestion", "detalles-especificos"]}
             className="w-full space-y-5"
           >
             {/* ISLA 1: Selección de Gestión (3 selectores en cascada) */}
@@ -486,8 +478,7 @@ export const StepTwo = ({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Valor de Contacto{" "}
-                              <span className="text-red-500">*</span>
+                              Contacto <span className="text-red-500">*</span>
                             </FormLabel>
                             {debtorContacts.length > 0 ? (
                               <Select
@@ -529,9 +520,6 @@ export const StepTwo = ({
                                       {contact.name}
                                     </SelectItem>
                                   ))}
-                                  <SelectItem value="__manual__">
-                                    Ingresar manualmente...
-                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                             ) : (
@@ -558,15 +546,15 @@ export const StepTwo = ({
                     <FormField
                       control={form.control}
                       name="observation"
+                      disabled
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Descripción de la interacción{" "}
-                            <span className="text-red-500">*</span>
+                            Descripción de la interacción
                           </FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Describe los detalles de la gestión realizada..."
+                              placeholder="Texto será generado por IA según la interacción"
                               {...field}
                               className="min-h-[120px] resize-none"
                             />
