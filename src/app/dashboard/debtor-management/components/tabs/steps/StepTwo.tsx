@@ -46,7 +46,7 @@ import {
   Phone,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -57,12 +57,13 @@ interface StepTwoProps {
   formData: ManagementFormData;
   onFormChange: (data: Partial<ManagementFormData>) => void;
   selectedInvoices?: Invoice[];
+  onValidationChange?: (isValid: boolean) => void;
 }
 
 /**
  * Genera esquema de validación dinámico
  */
-const createFormSchema = (hasCompleteSelection: boolean) => {
+const createFormSchema = (hasCompleteSelection: boolean, selectedCombination: any) => {
   const baseSchema: any = {
     managementType: z.string().min(1, "Debe seleccionar un tipo de gestión"),
     debtorComment: z
@@ -83,17 +84,64 @@ const createFormSchema = (hasCompleteSelection: boolean) => {
       .min(1, "Debe ingresar el valor de contacto");
     baseSchema.observation = z.string().optional();
     baseSchema.nextManagementDate = z
-      .string()
-      .min(1, "Debe seleccionar una fecha");
+      .union([z.string(), z.date()])
+      .refine((val) => val !== "" && val !== null, {
+        message: "Debe seleccionar una fecha",
+      });
     baseSchema.nextManagementTime = z
       .string()
       .min(1, "Debe seleccionar una hora");
+
+    // Validar caseData para componentes de tipo litigio
+    if (selectedCombination?.executive_comment === "DOCUMENT_IN_LITIGATION") {
+      baseSchema.caseData = z.object({
+        litigationData: z.object({
+          litigations: z.array(z.object({
+            selectedInvoiceIds: z.array(z.string()).min(1, "Debe seleccionar al menos una factura"),
+            litigationAmount: z.string().optional(),
+            reason: z.string().min(1, "El motivo es requerido"),
+            subreason: z.string().min(1, "El submotivo es requerido"),
+          })).min(1, "Debe crear al menos un litigio"),
+          _isValid: z.boolean().optional(),
+        }).refine((data) => data._isValid !== false, {
+          message: "Debe completar todos los campos requeridos del litigio",
+        }),
+      });
+    } else if (selectedCombination?.fields && selectedCombination.fields.length > 0) {
+      // Validar campos dinámicos según su configuración
+      const caseDataSchema: any = {};
+
+      selectedCombination.fields.forEach((field: FieldConfig) => {
+        if (field.required) {
+          if (field.type === "number") {
+            caseDataSchema[field.name] = z.coerce.number().min(1, `${field.label} es requerido`);
+          } else if (field.type === "date") {
+            caseDataSchema[field.name] = z
+              .union([z.string(), z.date()])
+              .refine((val) => val !== "" && val !== null, {
+                message: `${field.label} es requerido`,
+              });
+          } else if (field.type === "time") {
+            caseDataSchema[field.name] = z.string().min(1, `${field.label} es requerido`);
+          } else {
+            caseDataSchema[field.name] = z.string().min(1, `${field.label} es requerido`);
+          }
+        } else {
+          caseDataSchema[field.name] = z.any().optional();
+        }
+      });
+
+      baseSchema.caseData = z.object(caseDataSchema);
+    } else {
+      baseSchema.caseData = z.any().optional();
+    }
   } else {
     baseSchema.contactType = z.string().optional();
     baseSchema.contactValue = z.string().optional();
     baseSchema.observation = z.string().optional();
-    baseSchema.nextManagementDate = z.string().optional();
+    baseSchema.nextManagementDate = z.union([z.string(), z.date()]).optional();
     baseSchema.nextManagementTime = z.string().optional();
+    baseSchema.caseData = z.any().optional();
   }
 
   return z.object(baseSchema);
@@ -128,10 +176,6 @@ const DynamicField = ({
             <CustomComponent
               value={formField.value}
               onChange={formField.onChange}
-              debtorId={dataDebtor?.id}
-              dataDebtor={dataDebtor}
-              session={session}
-              profile={profile}
               selectedInvoices={selectedInvoices}
               {...(field.componentProps || {})}
             />
@@ -232,7 +276,21 @@ export const StepTwo = ({
   formData,
   onFormChange,
   selectedInvoices = [],
+  onValidationChange,
 }: StepTwoProps) => {
+  // Usar refs para callbacks para evitar re-renders infinitos
+  const onValidationChangeRef = useRef(onValidationChange);
+  const onFormChangeRef = useRef(onFormChange);
+  const previousIsValidRef = useRef<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    onValidationChangeRef.current = onValidationChange;
+  }, [onValidationChange]);
+
+  useEffect(() => {
+    onFormChangeRef.current = onFormChange;
+  }, [onFormChange]);
+
   // Opciones filtradas para cascada
   const executiveCommentOptions = useMemo(
     () => getExecutiveCommentOptions(formData.debtorComment),
@@ -263,26 +321,35 @@ export const StepTwo = ({
 
   // Crear esquema dinámico
   const formSchema = useMemo(
-    () => createFormSchema(hasCompleteSelection),
-    [hasCompleteSelection]
+    () => createFormSchema(hasCompleteSelection, selectedCombination),
+    [hasCompleteSelection, selectedCombination]
   );
 
   // Obtener contactos del deudor para selector
   const debtorContacts = useMemo<DebtorContact[]>(() => {
     if (!dataDebtor?.contacts) return [];
-    return dataDebtor.contacts.map(
+
+    console.log("🔍 Raw contacts from dataDebtor:", dataDebtor.contacts);
+
+    const mappedContacts = dataDebtor.contacts.map(
       (contact: any, idx: number): DebtorContact => ({
-        id: `contact-${idx}`,
+        id: contact.id || `contact-${idx}`,
         type: contact.channel?.toUpperCase() || "EMAIL",
         value: contact.email || contact.phone || "",
         label: `${contact.name} - ${contact.email || contact.phone}`,
         name: contact.name || "",
       })
     );
+
+    console.log("🔍 Mapped debtorContacts:", mappedContacts);
+
+    return mappedContacts;
   }, [dataDebtor]);
 
   const form = useForm<any>({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       managementType: formData.managementType || "CALL_OUT",
       debtorComment: formData.debtorComment || "",
@@ -297,10 +364,54 @@ export const StepTwo = ({
     },
   });
 
+  // Sincronizar valores cuando cambie formData desde el padre
+  useEffect(() => {
+    const currentValues = form.getValues();
+    const hasChanges = JSON.stringify({
+      managementType: formData.managementType || "CALL_OUT",
+      debtorComment: formData.debtorComment || "",
+      executiveComment: formData.executiveComment || "",
+      contactType: formData.contactType || "",
+      contactValue: formData.contactValue || "",
+      observation: formData.observation || "",
+      nextManagementDate: formData.nextManagementDate || "",
+      nextManagementTime: formData.nextManagementTime || "",
+      caseData: formData.caseData || {},
+    }) !== JSON.stringify({
+      ...currentValues,
+      selectedContact: undefined,
+    });
+
+    if (hasChanges) {
+      form.reset({
+        managementType: formData.managementType || "CALL_OUT",
+        debtorComment: formData.debtorComment || "",
+        executiveComment: formData.executiveComment || "",
+        contactType: formData.contactType || "",
+        contactValue: formData.contactValue || "",
+        selectedContact: formData.selectedContact || null,
+        observation: formData.observation || "",
+        nextManagementDate: formData.nextManagementDate || "",
+        nextManagementTime: formData.nextManagementTime || "",
+        caseData: formData.caseData || {},
+      }, { keepErrors: true, keepDirty: false, keepTouched: true });
+    }
+  }, [formData, form]);
+
+  // Revalidar cuando cambie el esquema o la selección
+  useEffect(() => {
+    if (hasCompleteSelection) {
+      const timeoutId = setTimeout(() => {
+        form.trigger();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [hasCompleteSelection, form.trigger]);
+
   // Sincronizar cambios del formulario con el componente padre
   useEffect(() => {
     const subscription = form.watch((value) => {
-      onFormChange({
+      onFormChangeRef.current({
         managementType: value.managementType || "CALL_OUT",
         debtorComment: value.debtorComment || "",
         executiveComment: value.executiveComment || "",
@@ -314,7 +425,18 @@ export const StepTwo = ({
       });
     });
     return () => subscription.unsubscribe();
-  }, [form, onFormChange]);
+  }, [form.watch]);
+
+  // Notificar estado de validación solo cuando cambie
+  useEffect(() => {
+    const isValid = form.formState.isValid;
+
+    // Solo notificar si el valor cambió
+    if (previousIsValidRef.current !== isValid) {
+      previousIsValidRef.current = isValid;
+      onValidationChangeRef.current?.(isValid);
+    }
+  }, [form.formState.isValid]);
 
   return (
     <div className="space-y-5">

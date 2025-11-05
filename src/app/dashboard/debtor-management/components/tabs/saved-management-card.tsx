@@ -2,6 +2,7 @@
 
 import { SavedManagement } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
 import { getManagementCombination } from "@/app/dashboard/debtor-management/config/management-types";
+import { disputes } from "@/app/dashboard/data";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import {
@@ -10,7 +11,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -24,17 +24,13 @@ import { differenceInDays, format } from "date-fns";
 import {
   BookUser,
   Calendar,
-  CheckCircle2,
   Clock,
   Clock1,
   CogIcon,
   DollarSign,
   FileText,
-  HashIcon,
   History,
-  Mail,
   MessageCircle,
-  Phone,
   ThermometerSnowflake,
   Trash2,
 } from "lucide-react";
@@ -79,10 +75,7 @@ export const SavedManagementCard = ({
     }).format(numAmount);
   };
 
-  const formatDate = (
-    dateString: string | Date,
-    formatType = "dd/MM/yyyy"
-  ) => {
+  const formatDate = (dateString: string | Date, formatType = "dd/MM/yyyy") => {
     if (!dateString) return "-";
     try {
       return format(new Date(dateString), formatType);
@@ -108,12 +101,82 @@ export const SavedManagementCard = ({
     }
   };
 
+  const getDisputeLabels = (reasonCode: string, subreasonCode: string) => {
+    const reason = disputes.find((d) => d.code === reasonCode);
+    const reasonLabel = reason?.label || reasonCode;
+    const subreasonLabel = reason?.submotivo.find((s) => s.code === subreasonCode)?.label || subreasonCode;
+    return { reasonLabel, subreasonLabel };
+  };
+
   const renderCaseDataFields = () => {
     if (!selectedConfig || !management.formData.caseData) return null;
 
     const fields = selectedConfig.fields;
     if (fields.length === 0) return null;
 
+    // Caso especial: Litigios
+    if (selectedConfig.executive_comment === "DOCUMENT_IN_LITIGATION" &&
+        management.formData.caseData?.litigationData?.litigations) {
+      return (
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <BookUser className="w-4 h-4 text-gray-700" />
+            <h3 className="font-semibold text-sm text-gray-700">
+              Litigios ({management.formData.caseData.litigationData.litigations.length})
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {management.formData.caseData.litigationData.litigations.map(
+              (litigation: any, index: number) => {
+                const { reasonLabel, subreasonLabel } = getDisputeLabels(
+                  litigation.reason,
+                  litigation.subreason
+                );
+
+                return (
+                  <div
+                    key={litigation.id || index}
+                    className="border border-gray-200 rounded p-3"
+                  >
+                    <p className="font-semibold text-sm mb-2">
+                      Litigio {index + 1}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-gray-500">Facturas:</span>{" "}
+                        <span className="font-medium">
+                          {litigation.selectedInvoiceIds?.length || 0}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Monto:</span>{" "}
+                        <span className="font-medium">
+                          {formatCurrency(litigation.litigationAmount || 0)}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-gray-500">Motivo:</span>{" "}
+                        <span className="font-medium">
+                          {reasonLabel}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-gray-500">Submotivo:</span>{" "}
+                        <span className="font-medium">
+                          {subreasonLabel}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Campos normales
     return (
       <div className="bg-white rounded-lg p-4 border border-gray-200">
         <div className="flex items-center gap-2 mb-3">
@@ -123,8 +186,19 @@ export const SavedManagementCard = ({
           </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {fields.map((field) => {
+          {fields.map((field: any) => {
             const value = (management.formData.caseData as any)[field.name];
+
+            // Skip campos de tipo component (como litigationData)
+            if (field.type === "component") {
+              return null;
+            }
+
+            // Skip if value is an object (defensive check)
+            if (value && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
+              return null;
+            }
+
             let displayValue = value || "-";
             let icon = <FileText className="w-6 h-6 text-blue-600" />;
 
@@ -139,7 +213,7 @@ export const SavedManagementCard = ({
               displayValue = formatTime(value);
             } else if (field.type === "select" && field.options) {
               icon = <ThermometerSnowflake className="w-6 h-6 text-blue-600" />;
-              const option = field.options.find((o) => o.value === value);
+              const option = field.options.find((o: any) => o.value === value);
               displayValue = option?.label || value || "-";
             }
 
@@ -171,22 +245,16 @@ export const SavedManagementCard = ({
               <h3 className="text-base font-semibold text-blue-600">
                 Gestión {index + 1}
               </h3>
-              <Badge
-                variant="outline"
-                className="bg-green-50 text-green-700 border-green-200"
-              >
-                <CheckCircle2 className="w-3 h-3 mr-1" />
-                Creada exitosamente
-              </Badge>
-              {management.id && (
+
+              {/* {management.id && (
                 <span className="text-xs text-gray-500 font-mono">
                   ID: {management.id.slice(0, 8)}...
                 </span>
-              )}
+              )} */}
             </div>
           </AccordionTrigger>
           <Button
-            variant="ghost"
+            variant="destructive"
             size="icon"
             className="h-8 w-8 flex-shrink-0"
             onClick={(e) => {
@@ -195,7 +263,7 @@ export const SavedManagementCard = ({
             }}
             title="Eliminar gestión de la lista"
           >
-            <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-600" />
+            <Trash2 className="h-4 w-4 text-white" />
           </Button>
         </div>
 
@@ -252,8 +320,11 @@ export const SavedManagementCard = ({
                           <TableCell className="text-xs">
                             {Array.isArray(invoice.phases) &&
                             invoice.phases.length > 0
-                              ? ((invoice.phases[invoice.phases.length - 1] as any)
-                                  .phase ?? 0)
+                              ? ((
+                                  invoice.phases[
+                                    invoice.phases.length - 1
+                                  ] as any
+                                ).phase ?? 0)
                               : "-"}
                           </TableCell>
                         </TableRow>
@@ -301,7 +372,9 @@ export const SavedManagementCard = ({
                       </div>
                       <p className="text-xs italic text-gray-600">
                         {management.formData.observation
-                          ? management.formData.observation.charAt(0).toUpperCase() +
+                          ? management.formData.observation
+                              .charAt(0)
+                              .toUpperCase() +
                             management.formData.observation.slice(1)
                           : "-"}
                       </p>

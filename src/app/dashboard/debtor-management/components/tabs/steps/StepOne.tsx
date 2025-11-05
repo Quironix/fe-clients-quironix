@@ -19,9 +19,10 @@ interface StepOneProps {
   dataDebtor: any;
   selectedInvoices?: Invoice[];
   onInvoicesSelected?: (invoices: Invoice[]) => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
-export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected }: StepOneProps) => {
+export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected, onValidationChange }: StepOneProps) => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,11 +31,21 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected 
 
   // Usar refs para evitar recrear handleRowSelectionChange
   const onInvoicesSelectedRef = useRef(onInvoicesSelected);
+  const onValidationChangeRef = useRef(onValidationChange);
   const paginatedDataRef = useRef<Invoice[]>([]);
 
   useEffect(() => {
     onInvoicesSelectedRef.current = onInvoicesSelected;
   }, [onInvoicesSelected]);
+
+  useEffect(() => {
+    onValidationChangeRef.current = onValidationChange;
+  }, [onValidationChange]);
+
+  useEffect(() => {
+    const isValid = selectedInvoices && selectedInvoices.length > 0;
+    onValidationChangeRef.current?.(isValid);
+  }, [selectedInvoices]);
 
   // Fetch invoices using TanStack Query
   const { data: invoicesResponse, isLoading } = useQuery({

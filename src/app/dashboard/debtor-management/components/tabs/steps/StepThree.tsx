@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
+import { disputes } from "@/app/dashboard/data";
 
 interface StepThreeProps {
   dataDebtor: any;
@@ -170,6 +171,14 @@ export const StepThree = ({
     </div>
   );
 
+  // Función para obtener el label del motivo y submotivo
+  const getDisputeLabels = (reasonCode: string, subreasonCode: string) => {
+    const reason = disputes.find((d) => d.code === reasonCode);
+    const reasonLabel = reason?.label || reasonCode;
+    const subreasonLabel = reason?.submotivo.find((s) => s.code === subreasonCode)?.label || subreasonCode;
+    return { reasonLabel, subreasonLabel };
+  };
+
   /**
    * Renderiza dinámicamente los campos de case_data
    */
@@ -179,6 +188,69 @@ export const StepThree = ({
     const fields = selectedConfig.fields;
     if (fields.length === 0) return null;
 
+    // Caso especial: Litigios
+    if (selectedConfig.executive_comment === "DOCUMENT_IN_LITIGATION" &&
+        formData.caseData?.litigationData?.litigations) {
+      return (
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <BookUser className="w-4 h-4 text-gray-700" />
+            <h3 className="font-semibold text-sm text-gray-700">
+              Litigios ({formData.caseData.litigationData.litigations.length})
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {formData.caseData.litigationData.litigations.map(
+              (litigation: any, index: number) => {
+                const { reasonLabel, subreasonLabel } = getDisputeLabels(
+                  litigation.reason,
+                  litigation.subreason
+                );
+
+                return (
+                  <div
+                    key={litigation.id || index}
+                    className="border border-gray-200 rounded p-3"
+                  >
+                    <p className="font-semibold text-sm mb-2">
+                      Litigio {index + 1}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-gray-500">Facturas:</span>{" "}
+                        <span className="font-medium">
+                          {litigation.selectedInvoiceIds?.length || 0}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Monto:</span>{" "}
+                        <span className="font-medium">
+                          {formatCurrency(litigation.litigationAmount || 0)}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-gray-500">Motivo:</span>{" "}
+                        <span className="font-medium">
+                          {reasonLabel}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-gray-500">Submotivo:</span>{" "}
+                        <span className="font-medium">
+                          {subreasonLabel}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Campos normales
     let icon = <FileText className="w-6 h-6 text-blue-600" />;
 
     return (
@@ -190,8 +262,19 @@ export const StepThree = ({
           </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {fields.map((field) => {
+          {fields.map((field: any) => {
             const value = (formData.caseData as any)[field.name];
+
+            // Skip campos de tipo component (como litigationData)
+            if (field.type === "component") {
+              return null;
+            }
+
+            // Skip if value is an object (defensive check)
+            if (value && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
+              return null;
+            }
+
             let displayValue = value || "-";
 
             // Formatear según tipo
@@ -206,7 +289,7 @@ export const StepThree = ({
               displayValue = formatTime(value);
             } else if (field.type === "select" && field.options) {
               icon = <ThermometerSnowflake className="w-6 h-6 text-blue-600" />;
-              const option = field.options.find((o) => o.value === value);
+              const option = field.options.find((o: any) => o.value === value);
               displayValue = option?.label || value || "-";
             }
 
@@ -253,20 +336,20 @@ export const StepThree = ({
             <IconDescription
               icon={<FileText className="w-6 h-6 text-blue-600" />}
               description="Contacto"
-              value={formData.selectedContact.name || "-"}
+              value={formData.selectedContact?.name || "-"}
             />
             {formData.contactType === "EMAIL" && (
               <IconDescription
                 icon={<Mail className="w-6 h-6 text-blue-600" />}
-                description="Contacto"
-                value={formData.selectedContact.value || "-"}
+                description="Email"
+                value={formData.contactValue || "-"}
               />
             )}
             {formData.contactType === "PHONE" && (
               <IconDescription
                 icon={<Phone className="w-6 h-6 text-blue-600" />}
-                description="Contacto"
-                value={formData.selectedContact.value || "-"}
+                description="Teléfono"
+                value={formData.contactValue || "-"}
               />
             )}
           </div>

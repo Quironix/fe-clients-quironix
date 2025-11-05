@@ -8,8 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Form, FormField } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import Required from "@/components/ui/required";
 import {
   Select,
@@ -18,23 +17,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import DebtorContactSelectFormItem from "../../../components/debtor-contact-select-form-item";
 import { disputes } from "../../../data";
 import InvoiceCardLitigation from "./InvoiceCardLitigation";
 
 interface SingleLitigation {
   id: string;
   selectedInvoiceIds: string[];
-  litigationAmount: string;
+  invoiceAmounts: { [invoiceId: string]: string }; // Monto por cada factura
+  litigationAmount: string; // Total calculado (suma de invoiceAmounts)
   reason: string;
   subreason: string;
-  comment: string;
 }
 
 const singleLitigationSchema = z.object({
@@ -44,14 +41,12 @@ const singleLitigationSchema = z.object({
   litigationAmount: z.string().optional(),
   reason: z.string().min(1, "El motivo es requerido"),
   subreason: z.string().min(1, "El submotivo es requerido"),
-  comment: z.string().optional(),
 });
 
 const litigationFormSchema = z.object({
   litigations: z
     .array(singleLitigationSchema)
     .min(1, "Debes crear al menos un litigio"),
-  contact: z.string().min(1, "El contacto es requerido"),
 });
 
 type ManagementLitigationFormData = z.infer<typeof litigationFormSchema>;
@@ -59,20 +54,12 @@ type ManagementLitigationFormData = z.infer<typeof litigationFormSchema>;
 interface ManagementLitigationFormProps {
   value?: any;
   onChange: (data: any) => void;
-  debtorId: string;
-  dataDebtor: any;
-  session?: any;
-  profile?: any;
   selectedInvoices?: Invoice[];
 }
 
 const ManagementLitigationForm = ({
   value,
   onChange,
-  debtorId,
-  dataDebtor,
-  session,
-  profile,
   selectedInvoices = [],
 }: ManagementLitigationFormProps) => {
   const [litigations, setLitigations] = useState<SingleLitigation[]>(
@@ -80,10 +67,10 @@ const ManagementLitigationForm = ({
       {
         id: `lit-${Date.now()}`,
         selectedInvoiceIds: [],
+        invoiceAmounts: {},
         litigationAmount: "",
         reason: "",
         subreason: "",
-        comment: "",
       },
     ]
   );
@@ -91,16 +78,18 @@ const ManagementLitigationForm = ({
   const [activeLitigation, setActiveLitigation] = useState<string>(
     litigations[0]?.id || ""
   );
-  const [litigationAmountDisplays, setLitigationAmountDisplays] = useState<{
-    [key: string]: string;
-  }>({});
+
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   const form = useForm<ManagementLitigationFormData>({
     resolver: zodResolver(litigationFormSchema),
     mode: "onChange",
     defaultValues: value || {
       litigations: litigations,
-      contact: "",
     },
   });
 
@@ -120,9 +109,57 @@ const ManagementLitigationForm = ({
           ? lit.selectedInvoiceIds.filter((id) => id !== invoice.id)
           : [...lit.selectedInvoiceIds, invoice.id];
 
+        // Manejar montos por factura
+        const newInvoiceAmounts = { ...lit.invoiceAmounts };
+        if (isSelected) {
+          // Si se deselecciona, eliminar el monto de esa factura
+          delete newInvoiceAmounts[invoice.id];
+        } else {
+          // Si se selecciona, establecer el saldo de la factura como monto por defecto (sin decimales)
+          const balanceAmount = Math.round(Number(invoice.balance) || 0);
+          newInvoiceAmounts[invoice.id] = balanceAmount.toString();
+        }
+
+        // Calcular el nuevo monto total
+        const totalAmount = Object.values(newInvoiceAmounts).reduce(
+          (sum, amount) => sum + (parseFloat(amount) || 0),
+          0
+        );
+
         return {
           ...lit,
           selectedInvoiceIds: newSelectedIds,
+          invoiceAmounts: newInvoiceAmounts,
+          litigationAmount: totalAmount.toString(),
+        };
+      })
+    );
+  };
+
+  const handleInvoiceAmountChange = (
+    litigationId: string,
+    invoiceId: string,
+    amount: string
+  ) => {
+    setLitigations((prev) =>
+      prev.map((lit) => {
+        if (lit.id !== litigationId) return lit;
+
+        const newInvoiceAmounts = {
+          ...lit.invoiceAmounts,
+          [invoiceId]: amount,
+        };
+
+        // Calcular el nuevo monto total
+        const totalAmount = Object.values(newInvoiceAmounts).reduce(
+          (sum, amountVal) => sum + (parseFloat(amountVal) || 0),
+          0
+        );
+
+        return {
+          ...lit,
+          invoiceAmounts: newInvoiceAmounts,
+          litigationAmount: totalAmount.toString(),
         };
       })
     );
@@ -145,10 +182,10 @@ const ManagementLitigationForm = ({
     const newLitigation: SingleLitigation = {
       id: `lit-${Date.now()}`,
       selectedInvoiceIds: [],
+      invoiceAmounts: {},
       litigationAmount: "",
       reason: "",
       subreason: "",
-      comment: "",
     };
     setLitigations((prev) => [...prev, newLitigation]);
     setActiveLitigation(newLitigation.id);
@@ -164,49 +201,34 @@ const ManagementLitigationForm = ({
     }
   };
 
-  const getTotalAmount = (litigation: SingleLitigation): number => {
+  const getTotalInvoicesAmount = (litigation: SingleLitigation): number => {
     return selectedInvoices
       .filter((inv) => litigation.selectedInvoiceIds.includes(inv.id))
       .reduce((sum, inv) => sum + Number(inv.balance || 0), 0);
   };
 
   useEffect(() => {
-    form.setValue("litigations", litigations);
-    onChange({
-      litigations,
-      contact: form.getValues("contact"),
-    });
-  }, [litigations]);
+    const validateAndNotify = async () => {
+      form.setValue("litigations", litigations, { shouldValidate: false });
 
-  useEffect(() => {
-    const subscription = form.watch((formData) => {
-      onChange({
-        litigations,
-        contact: formData.contact,
-      });
-    });
-    return () => subscription.unsubscribe();
-  }, [form, onChange, litigations]);
+      // Validar el formulario después de un pequeño delay
+      setTimeout(async () => {
+        const isValid = await form.trigger();
+
+        onChangeRef.current({
+          litigations,
+          _isValid: isValid,
+        });
+      }, 100);
+    };
+
+    validateAndNotify();
+  }, [litigations, form]);
 
   return (
-    <div className="space-y-4 border border-gray-200 rounded-md p-4 bg-white">
+    <div className="space-y-4">
       <Form {...form}>
         <div className="space-y-4">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm">Litigio</h3>
-            <Button
-              type="button"
-              onClick={handleAddLitigation}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white h-8 rounded-sm"
-            >
-              <Plus className="w-4 h-4 text-orange-500" />
-              Agregar litigio
-            </Button>
-          </div>
-
           {/* Facturas en gestión - Información general */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -217,7 +239,7 @@ const ManagementLitigationForm = ({
               </span>
             </div>
             <p className="text-xs text-gray-500">
-              Selecciona las facturas que deseas considerar para el plan de pago
+              Selecciona las facturas que deseas considerar para el litigio
             </p>
           </div>
 
@@ -231,7 +253,7 @@ const ManagementLitigationForm = ({
           >
             {litigations.map((litigation, index) => {
               const usedInvoiceIds = getUsedInvoiceIds(litigation.id);
-              const totalAmount = getTotalAmount(litigation);
+              const totalInvoicesAmount = getTotalInvoicesAmount(litigation);
 
               return (
                 <AccordionItem
@@ -286,6 +308,16 @@ const ManagementLitigationForm = ({
                               invoice={invoice}
                               isSelected={isSelectedHere}
                               isDisabled={isUsedInOther}
+                              litigationAmount={
+                                litigation.invoiceAmounts[invoice.id] || ""
+                              }
+                              onAmountChange={(amount) =>
+                                handleInvoiceAmountChange(
+                                  litigation.id,
+                                  invoice.id,
+                                  amount
+                                )
+                              }
                               onToggleSelect={() =>
                                 !isUsedInOther &&
                                 handleToggleInvoice(litigation.id, invoice)
@@ -309,70 +341,32 @@ const ManagementLitigationForm = ({
                           Monto de facturas
                         </label>
                         <div className="flex items-center h-10 w-full rounded-md border border-input bg-gray-100 px-3 py-2 text-sm">
-                          ${new Intl.NumberFormat("es-CL").format(totalAmount)}
+                          $
+                          {new Intl.NumberFormat("es-CL").format(
+                            totalInvoicesAmount
+                          )}
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium">
-                          Monto en litigio <Required />
+                          Monto total en litigio <Required />
                         </label>
-                        <Input
-                          type="text"
-                          placeholder="0"
-                          value={
-                            litigationAmountDisplays[litigation.id] ||
-                            litigation.litigationAmount ||
-                            ""
-                          }
-                          onChange={(e) => {
-                            const rawValue = e.target.value.replace(
-                              /[^0-9]/g,
-                              ""
-                            );
-                            const numericValue = parseInt(rawValue) || 0;
-
-                            handleFieldChange(
-                              litigation.id,
-                              "litigationAmount",
-                              numericValue.toString()
-                            );
-                            setLitigationAmountDisplays((prev) => ({
-                              ...prev,
-                              [litigation.id]: e.target.value,
-                            }));
-                          }}
-                          onBlur={() => {
-                            const value =
-                              parseInt(litigation.litigationAmount || "0") || 0;
-                            const formattedAmount = new Intl.NumberFormat(
-                              "es-CL",
-                              {
-                                style: "decimal",
-                                maximumFractionDigits: 0,
-                                minimumFractionDigits: 0,
-                              }
-                            ).format(value);
-                            setLitigationAmountDisplays((prev) => ({
-                              ...prev,
-                              [litigation.id]: formattedAmount,
-                            }));
-                          }}
-                          onFocus={() => {
-                            const value =
-                              parseInt(litigation.litigationAmount || "0") || 0;
-                            setLitigationAmountDisplays((prev) => ({
-                              ...prev,
-                              [litigation.id]: value.toString(),
-                            }));
-                          }}
-                        />
+                        <div className="flex items-center h-10 w-full rounded-md border border-input bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">
+                          $
+                          {new Intl.NumberFormat("es-CL").format(
+                            parseFloat(litigation.litigationAmount) || 0
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 italic">
+                          Suma automática de los montos ingresados por factura
+                        </p>
                       </div>
                     </div>
 
                     {/* Motivo y Submotivo */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
+                      <div className="space-y-2 w-full">
                         <label className="text-sm font-medium">
                           Motivo <Required />
                         </label>
@@ -383,7 +377,7 @@ const ManagementLitigationForm = ({
                             handleFieldChange(litigation.id, "subreason", "");
                           }}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona motivo" />
                           </SelectTrigger>
                           <SelectContent>
@@ -407,7 +401,7 @@ const ManagementLitigationForm = ({
                           }
                           disabled={!litigation.reason}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Selecciona submotivo" />
                           </SelectTrigger>
                           <SelectContent>
@@ -422,42 +416,22 @@ const ManagementLitigationForm = ({
                         </Select>
                       </div>
                     </div>
-
-                    {/* Comentario */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Comentario</label>
-                      <Textarea
-                        placeholder="Ingresa un comentario"
-                        value={litigation.comment}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            litigation.id,
-                            "comment",
-                            e.target.value
-                          )
-                        }
-                        className="h-24"
-                      />
-                    </div>
                   </AccordionContent>
                 </AccordionItem>
               );
             })}
           </Accordion>
-
-          {/* Contacto - Campo global fuera de los accordions */}
-          <div className="pt-4 border-t border-gray-200">
-            <FormField
-              control={form.control}
-              name="contact"
-              render={({ field }) => (
-                <DebtorContactSelectFormItem
-                  field={field}
-                  selectedDebtor={dataDebtor}
-                  isFetchingDebtor={false}
-                />
-              )}
-            />
+          <div className="w-full flex justify-end">
+            <Button
+              type="button"
+              onClick={handleAddLitigation}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white h-8 rounded-sm"
+            >
+              <Plus className="w-4 h-4 text-orange-500" />
+              Agregar litigio
+            </Button>
           </div>
         </div>
       </Form>

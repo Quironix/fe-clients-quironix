@@ -5,7 +5,7 @@ import Stepper from "@/components/Stepper";
 import { Step } from "@/components/Stepper/types";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { SavedManagementCard } from "./saved-management-card";
 import { StepOne, StepThree, StepTwo } from "./steps";
 
@@ -22,7 +22,7 @@ const steps: Step[] = [
   { id: 3, label: "Paso 3", completed: false },
 ];
 
-import { ContactType } from "../../config/management-types";
+import { ContactType, getManagementCombination, FieldConfig } from "../../config/management-types";
 import { CaseData } from "../../types/track";
 
 export interface DebtorContact {
@@ -98,15 +98,42 @@ export const AddManagementTab = ({
       sendEmail: false,
     });
 
+  const [stepValidations, setStepValidations] = useState({
+    step1: false,
+    step2: false,
+    step3: true,
+  });
+
+  const handleStep1ValidationChange = useCallback((isValid: boolean) => {
+    setStepValidations((prev) => ({ ...prev, step1: isValid }));
+  }, []);
+
+  const handleStep2ValidationChange = useCallback((isValid: boolean) => {
+    setStepValidations((prev) => ({ ...prev, step2: isValid }));
+  }, []);
+
   // Función para avanzar al siguiente paso
-  const handleNext = () => {
+  const handleNext = async () => {
+    const { toast } = await import("sonner");
+
+    if (currentStep === 0 && !stepValidations.step1) {
+      toast.error("Debe seleccionar al menos una factura para continuar");
+      return;
+    }
+
+    if (currentStep === 1 && !stepValidations.step2) {
+      toast.error(
+        "Debe completar todos los campos requeridos en la gestión para continuar"
+      );
+      return;
+    }
+
     if (currentStep < steps.length - 1) {
       const newSteps = [...stepsState];
       newSteps[currentStep].completed = true;
       setStepsState(newSteps);
       setCurrentStep(currentStep + 1);
     } else {
-      // Lógica para finalizar (último paso)
       handleFinish();
     }
   };
@@ -124,16 +151,17 @@ export const AddManagementTab = ({
   };
 
   // Función para manejar la selección de facturas
-  const handleInvoicesSelected = (invoices: Invoice[]) => {
+  const handleInvoicesSelected = useCallback((invoices: Invoice[]) => {
     setSelectedInvoices(invoices);
-    console.log("Facturas seleccionadas:", invoices);
-  };
+  }, []);
 
   // Función para manejar cambios en el formulario de gestión
-  const handleManagementFormChange = (data: Partial<ManagementFormData>) => {
-    setManagementFormData((prev) => ({ ...prev, ...data }));
-    console.log("Datos de gestión:", { ...managementFormData, ...data });
-  };
+  const handleManagementFormChange = useCallback(
+    (data: Partial<ManagementFormData>) => {
+      setManagementFormData((prev) => ({ ...prev, ...data }));
+    },
+    []
+  );
 
   // Función para resetear el formulario de gestión (Step 2 y 3)
   const resetManagementForm = () => {
@@ -196,10 +224,92 @@ export const AddManagementTab = ({
     return `${year}-${month}-${day}`;
   };
 
-  const buildTrackPayload = () => {
+  const createLitigationsAndGetIds = async (): Promise<string[]> => {
+    if (!managementFormData.caseData?.litigationData) {
+      return [];
+    }
+
+    const { createLitigation } = await import("../../../litigation/services");
+    const litigationData = managementFormData.caseData.litigationData;
+    const litigations = litigationData.litigations || [];
+
+    const createdIds: string[] = [];
+    const isFactoring = profile?.client?.type === "FACTORING";
+
+    for (const litigation of litigations) {
+      // Construir el array de facturas con toda la información requerida
+      const invoicesArray = litigation.selectedInvoiceIds.map((invoiceId: string) => {
+        const invoice = selectedInvoices.find((inv) => inv.id === invoiceId);
+        return {
+          documentType: invoice?.type || "INVOICE",
+          invoiceNumber: invoice?.number || "",
+          invoiceAmount: invoice?.balance?.toString() || "0",
+          litigationAmount: litigation.invoiceAmounts[invoiceId] || "0",
+          reason: litigation.reason,
+          subreason: litigation.subreason,
+        };
+      });
+
+      // Payload siguiendo la estructura de /dashboard/litigation
+      // Contacto y comentario se obtienen del formulario principal de gestión
+      console.log("🔍 Selected contact for litigation:", managementFormData.selectedContact);
+
+      const litigationPayload: any = {
+        debtorId: dataDebtor.id,
+        contact: managementFormData.selectedContact?.id || "",
+        initial_comment: managementFormData.observation || "",
+        invoices: invoicesArray,
+      };
+
+      console.log("📦 Litigation payload:", litigationPayload);
+
+      // Agregar cliente solo si es FACTORING
+      if (isFactoring && profile.client_id) {
+        litigationPayload.client = profile.client_id;
+      }
+
+      const result = await createLitigation({
+        accessToken: session.token,
+        clientId: profile.client_id,
+        dataToInsert: litigationPayload,
+      });
+
+      console.log("🔍 Resultado de createLitigation:", result);
+
+      if (result.success) {
+        // La API devuelve un objeto con array 'successes' que contiene los litigios creados
+        const successes = result.data?.successes;
+
+        if (successes && Array.isArray(successes)) {
+          // Extraer todos los IDs de los litigios creados
+          const ids = successes
+            .map((litigation: any) => litigation.id)
+            .filter((id: any) => id);
+
+          console.log(`✅ ${ids.length} litigio(s) creado(s):`, ids);
+          createdIds.push(...ids);
+        } else {
+          console.error("⚠️ No se encontró array 'successes' en la respuesta:", result.data);
+          throw new Error("No se pudo obtener los IDs de los litigios creados");
+        }
+      } else {
+        throw new Error(result.message || "Error al crear litigio");
+      }
+    }
+
+    return createdIds;
+  };
+
+  const buildTrackPayload = (litigationIds?: string[]) => {
     const dateISO = formatDateToISO(managementFormData.nextManagementDate);
     const time = managementFormData.nextManagementTime || "00:00";
     const nextManagementDateTime = `${dateISO}T${time}:00.000Z`;
+
+    console.log("🔍 Contact data:", {
+      contactType: managementFormData.contactType,
+      contactValue: managementFormData.contactValue,
+      selectedContact: managementFormData.selectedContact,
+    });
 
     const payload: any = {
       debtor_id: dataDebtor.id,
@@ -219,17 +329,60 @@ export const AddManagementTab = ({
       managementFormData.caseData &&
       Object.keys(managementFormData.caseData).length > 0
     ) {
-      const normalizedCaseData: any = {};
+      const selectedCombination = getManagementCombination(
+        managementFormData.managementType,
+        managementFormData.debtorComment,
+        managementFormData.executiveComment
+      );
 
-      for (const [key, value] of Object.entries(managementFormData.caseData)) {
-        if (value instanceof Date) {
-          normalizedCaseData[key] = formatDateToISO(value);
-        } else {
-          normalizedCaseData[key] = value;
+      // Caso especial: litigation
+      if (
+        selectedCombination?.executive_comment === "DOCUMENT_IN_LITIGATION" &&
+        litigationIds
+      ) {
+        // Asegurar que todos los IDs sean strings
+        const validatedIds = litigationIds
+          .filter(id => id && typeof id === 'string')
+          .map(id => id.toString());
+
+        payload.case_data = {
+          litigationIds: validatedIds,
+        };
+
+        console.log("📦 Payload de track con litigios:", {
+          litigationIds: validatedIds,
+          total: validatedIds.length
+        });
+      } else {
+        // Caso normal: otros tipos de gestión
+        const normalizedCaseData: any = {};
+
+        for (const [key, value] of Object.entries(
+          managementFormData.caseData
+        )) {
+          if (value === null || value === undefined || value === "") {
+            continue;
+          }
+
+          const fieldConfig = selectedCombination?.fields?.find(
+            (f: FieldConfig) => f.name === key
+          );
+
+          if (value instanceof Date) {
+            normalizedCaseData[key] = formatDateToISO(value);
+          } else if (fieldConfig?.type === "number") {
+            const numValue =
+              typeof value === "string" ? parseFloat(value) : value;
+            normalizedCaseData[key] = isNaN(numValue as number)
+              ? value
+              : numValue;
+          } else {
+            normalizedCaseData[key] = value;
+          }
         }
-      }
 
-      payload.case_data = normalizedCaseData;
+        payload.case_data = normalizedCaseData;
+      }
     }
 
     console.log("🚀 Payload construido:", JSON.stringify(payload, null, 2));
@@ -245,7 +398,18 @@ export const AddManagementTab = ({
 
       validateManagementData();
 
-      const payload = buildTrackPayload();
+      // Si es litigation, crear los litigios primero
+      let litigationIds: string[] | undefined;
+      if (
+        managementFormData.executiveComment === "DOCUMENT_IN_LITIGATION" &&
+        managementFormData.caseData?.litigationData
+      ) {
+        toast.info("Creando litigios...");
+        litigationIds = await createLitigationsAndGetIds();
+        toast.success(`${litigationIds.length} litigio(s) creado(s)`);
+      }
+
+      const payload = buildTrackPayload(litigationIds);
 
       const result = await createTrack(
         session.token,
@@ -295,7 +459,18 @@ export const AddManagementTab = ({
 
       validateManagementData();
 
-      const payload = buildTrackPayload();
+      // Si es litigation, crear los litigios primero
+      let litigationIds: string[] | undefined;
+      if (
+        managementFormData.executiveComment === "DOCUMENT_IN_LITIGATION" &&
+        managementFormData.caseData?.litigationData
+      ) {
+        toast.info("Creando litigios...");
+        litigationIds = await createLitigationsAndGetIds();
+        toast.success(`${litigationIds.length} litigio(s) creado(s)`);
+      }
+
+      const payload = buildTrackPayload(litigationIds);
 
       const result = await createTrack(
         session.token,
@@ -337,6 +512,7 @@ export const AddManagementTab = ({
             dataDebtor={dataDebtor}
             selectedInvoices={selectedInvoices}
             onInvoicesSelected={handleInvoicesSelected}
+            onValidationChange={handleStep1ValidationChange}
           />
         );
       case 1:
@@ -346,6 +522,7 @@ export const AddManagementTab = ({
             formData={managementFormData}
             onFormChange={handleManagementFormChange}
             selectedInvoices={selectedInvoices}
+            onValidationChange={handleStep2ValidationChange}
           />
         );
       case 2:
@@ -363,7 +540,8 @@ export const AddManagementTab = ({
   };
 
   return (
-    <div className="bg-white p-6 rounded-md h-full border border-gray-300 mt-5">
+    // <div className="bg-white p-6 rounded-md h-full border border-gray-300 mt-5">
+    <div className="bg-white h-full  mt-5">
       {/* Gestiones guardadas */}
       {savedManagements.length > 0 && (
         <div className="mb-4 space-y-2">
@@ -421,7 +599,11 @@ export const AddManagementTab = ({
                   variant="outline"
                   className="h-11 rounded-sm border-2 border-orange-400 text-orange-600 hover:bg-orange-50"
                   onClick={handleAddManagement}
-                  disabled={isSubmitting}
+                  disabled={
+                    isSubmitting ||
+                    !stepValidations.step1 ||
+                    !stepValidations.step2
+                  }
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Agregar gestión
@@ -429,7 +611,11 @@ export const AddManagementTab = ({
                 <Button
                   className="h-11 rounded-sm bg-primary hover:bg-primary/90"
                   onClick={handleFinish}
-                  disabled={isSubmitting}
+                  disabled={
+                    isSubmitting ||
+                    !stepValidations.step1 ||
+                    !stepValidations.step2
+                  }
                 >
                   {isSubmitting ? (
                     <>
@@ -449,7 +635,11 @@ export const AddManagementTab = ({
               <Button
                 className="w-45 h-11 rounded-sm"
                 onClick={handleNext}
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting ||
+                  (currentStep === 0 && !stepValidations.step1) ||
+                  (currentStep === 1 && !stepValidations.step2)
+                }
               >
                 Continuar <ArrowRight className="w-4 h-4 text-white ml-2" />
               </Button>

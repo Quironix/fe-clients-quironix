@@ -18,11 +18,11 @@ export interface TrackContact {
  */
 export interface CaseData {
   // Compromiso de pago
-  commitmentDate?: string;
+  commitmentDate?: string | Date;
   amount?: number;
 
   // Pago declarado
-  paymentDate?: string;
+  paymentDate?: string | Date;
   paymentAmount?: number;
 
   // Motivo de no pago
@@ -37,12 +37,13 @@ export interface CaseData {
 
   // Litigio
   litigationId?: string;
+  litigationData?: any;
 
   // Plan de pago
   paymentPlanId?: string;
 
   // Retiro de cheque
-  pickupDate?: string;
+  pickupDate?: string | Date;
   paymentCommitmentAmount?: number;
   pickupTimeFrom?: string;
   pickupTimeTo?: string;

@@ -360,7 +360,12 @@ export const DEBTOR_COMMENTS = [
   },
   {
     value: "INVOICE_WITH_LITIGATION",
-    label: "Factura con Litigio",
+    label: "Factura con litigio",
+    managementType: "INVOICE_WITH_LITIGATION",
+  },
+  {
+    value: "LITIGATION_NORMALIZATION",
+    label: "Normalización de litigio",
     managementType: "INVOICE_WITH_LITIGATION",
   },
   {
@@ -412,6 +417,11 @@ export const EXECUTIVE_COMMENTS = [
   {
     value: "DOCUMENT_IN_LITIGATION",
     label: "Documento en litigio",
+    debtorComment: "INVOICE_WITH_LITIGATION",
+  },
+  {
+    value: "LITIGATION_NORMALIZATION",
+    label: "Normalización de litigio",
     debtorComment: "INVOICE_WITH_LITIGATION",
   },
   {
