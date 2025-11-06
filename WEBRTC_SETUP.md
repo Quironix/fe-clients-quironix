@@ -16,21 +16,25 @@ Este documento describe la integración de llamadas WebRTC usando JsSIP para con
 ### Componentes Principales
 
 1. **WebRTCContext** (`src/context/WebRTCContext.tsx`)
+
    - Proveedor de contexto para el estado global del softphone
    - Maneja configuración SIP, estado de registro y estado de llamadas
 
 2. **useWebRTCPhone** (`src/hooks/useWebRTCPhone.ts`)
+
    - Hook personalizado que encapsula toda la lógica de JsSIP
    - Funciones: `makeCall`, `hangup`, `toggleHold`, `register`, `unregister`
    - Manejo de eventos de llamadas y registro
    - Se conecta directamente al WebSocket de Issabel PBX
 
 3. **WebRTC Services** (`src/services/webrtc/`)
+
    - `createDirectWebRTCConfig()`: Crea configuración SIP directamente (sin llamar a PHP)
    - `TEST_CREDENTIALS`: Credenciales de anexos de prueba
    - Tipos TypeScript para configuración WebRTC
 
 4. **WebRTCLogin** (`src/app/dashboard/components/webrtc-login.tsx`)
+
    - Componente de diálogo para seleccionar anexo
    - Botones rápidos para anexos de prueba
    - Integrado en el sidebar del dashboard
@@ -48,26 +52,27 @@ Este documento describe la integración de llamadas WebRTC usando JsSIP para con
 Agrega a tu archivo `.env.local`:
 
 ```bash
-# Dominio SIP (opcional, default: 172.17.16.24)
-NEXT_PUBLIC_WEBRTC_SIP_DOMAIN=172.17.16.24
+# Dominio SIP (opcional, default: webrtc.quironix.com)
+NEXT_PUBLIC_WEBRTC_SIP_DOMAIN=webrtc.quironix.com
 
-# URI del WebSocket (opcional, default: wss://172.17.16.24:8089/ws)
+# URI del WebSocket (opcional, default: wss://webrtc.quironix.com:8089/ws)
 # ⚠️ IMPORTANTE: Verifica el path correcto con tu administrador de Issabel
 # Paths comunes:
 #   - wss://IP:8089/ws (Asterisk/Issabel estándar)
 #   - wss://IP:8089/ (sin path)
 #   - wss://IP:8089/websocket (alternativo)
-NEXT_PUBLIC_WEBRTC_WS_URI=wss://172.17.16.24:8089/ws
+NEXT_PUBLIC_WEBRTC_WS_URI=wss://webrtc.quironix.com:8089/ws
 
 # URL del servidor de provisión WebRTC (DEPRECATED, ya no se usa)
-NEXT_PUBLIC_WEBRTC_API_URL=http://172.17.16.24
+NEXT_PUBLIC_WEBRTC_API_URL=http://webrtc.quironix.com
 ```
 
 ### Servidor Issabel PBX
 
-**IP del servidor:** `172.17.16.24`
+**IP del servidor:** `webrtc.quironix.com`
 
 **Puertos requeridos:**
+
 - UDP 5060 (SIP clásico)
 - TCP 8088 (WebRTC WS)
 - TCP 8089 (WebRTC WSS)
@@ -77,24 +82,24 @@ NEXT_PUBLIC_WEBRTC_API_URL=http://172.17.16.24
 
 ```bash
 # Escanear puertos críticos TCP
-nmap -p 5060,8088,8089 172.17.16.24
+nmap -p 5060,8088,8089 webrtc.quironix.com
 
 # Escanear puerto críticos UDP
-nmap -sU -p 5060 172.17.16.24
+nmap -sU -p 5060 webrtc.quironix.com
 
 # Escanear rango RTP UDP
-nmap -sU -p 10000-20000 172.17.16.24
+nmap -sU -p 10000-20000 webrtc.quironix.com
 
 # Escaneo completo con detección de servicios
-nmap -sV -p 5060,8088,8089,10000-20000 172.17.16.24
+nmap -sV -p 5060,8088,8089,10000-20000 webrtc.quironix.com
 ```
 
 ## Anexos de Prueba
 
 Los siguientes anexos están preconfigurados para desarrollo:
 
-| Anexo | Usuario | Contraseña |
-|-------|---------|------------|
+| Anexo | Usuario | Contraseña                       |
+| ----- | ------- | -------------------------------- |
 | 6170  | 6170    | 9c8c35689dca898e0cbad7fc622944ca |
 | 6171  | 6171    | 9c8c35689dca898e0cbad7fc622944ca |
 | 6172  | 6172    | 9c8c35689dca898e0cbad7fc622944ca |
@@ -111,10 +116,11 @@ Estos están disponibles en `src/services/webrtc/index.ts` como `TEST_CREDENTIAL
 3. Esperar confirmación de registro
 
 **💡 Tip:** Si ves "Conectando..." indefinidamente:
+
 - Haz clic en **"Probar Conexión WebSocket"** (botón en el diálogo)
 - Abre la consola del navegador (F12) para ver logs detallados
 - Verifica que estés conectado a la VPN si es necesario
-- Acepta el certificado SSL en `https://172.17.16.24:8089`
+- Acepta el certificado SSL en `https://webrtc.quironix.com:8089`
 
 ### 2. Realizar una Llamada
 
@@ -144,8 +150,8 @@ La aplicación se conecta **directamente** al WebSocket de Issabel PBX usando Js
 ### Configuración Hardcoded
 
 ```typescript
-const SIP_DOMAIN = "172.17.16.24";
-const WS_URI = "wss://172.17.16.24:8089/ws";
+const SIP_DOMAIN = "webrtc.quironix.com";
+const WS_URI = "wss://webrtc.quironix.com:8089/ws";
 ```
 
 ### Función Helper
@@ -160,8 +166,8 @@ Esta función crea la configuración necesaria para JsSIP:
 {
   sipUser: "6170",
   sipPass: "9c8c35689dca898e0cbad7fc622944ca",
-  sipDomain: "172.17.16.24",
-  wsUri: "wss://172.17.16.24:8089/ws"
+  sipDomain: "webrtc.quironix.com",
+  wsUri: "wss://webrtc.quironix.com:8089/ws"
 }
 ```
 
@@ -215,6 +221,7 @@ JsSIP es una librería JavaScript completa que implementa el protocolo SIP sobre
 ### Error: "Debes permitir acceso al micrófono"
 
 El navegador requiere permisos para el micrófono. Asegúrate de:
+
 - Permitir el acceso cuando el navegador lo solicite
 - Verificar permisos del sitio en configuración del navegador
 
@@ -227,6 +234,7 @@ El navegador requiere permisos para el micrófono. Asegúrate de:
 ### Error: "Llamada fallida"
 
 Posibles causas:
+
 - Número de destino inválido
 - Permisos insuficientes en el anexo
 - Problemas de red/firewall
@@ -259,6 +267,7 @@ Posibles causas:
 ## Referencia del Código Original
 
 El código de referencia se encuentra en:
+
 - `WebRtc-Fono/index.html` - Implementación HTML/JavaScript vanilla
 - `WebRtc-Fono/jssip.min.js` - Librería JsSIP
 - `WebRtc-Fono/api/provision.php` - API de provisión PHP

@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -12,9 +9,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Phone, PhoneOff, Activity } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useWebRTCContext } from "@/context/WebRTCContext";
 import { TEST_CREDENTIALS, createDirectWebRTCConfig } from "@/services/webrtc";
+import { Activity, Phone, PhoneOff } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const WebRTCLogin = () => {
@@ -54,7 +54,10 @@ export const WebRTCLogin = () => {
     const creds = TEST_CREDENTIALS[anexo];
 
     try {
-      const credentials = createDirectWebRTCConfig(creds.username, creds.password);
+      const credentials = createDirectWebRTCConfig(
+        creds.username,
+        creds.password
+      );
       setConfig(credentials);
       toast.success(`Conectando con anexo ${anexo}...`);
       setOpen(false);
@@ -76,8 +79,8 @@ export const WebRTCLogin = () => {
     console.log("🧪 TEST DE CONEXIÓN WEBRTC - ISSABEL PBX");
     console.log("=".repeat(60));
 
-    const WS_URI = "wss://172.17.16.24:8089/ws";
-    const SIP_DOMAIN = "172.17.16.24";
+    const WS_URI = "wss://webrtc.quironix.com:8089/ws";
+    const SIP_DOMAIN = "webrtc.quironix.com";
 
     console.log("\n📋 Configuración:");
     console.log(`   WebSocket URI: ${WS_URI}`);
@@ -107,7 +110,7 @@ export const WebRTCLogin = () => {
         console.error("   - Problemas de firewall o VPN");
         console.error("   - Certificado SSL bloqueado");
         console.error("\n   💡 Solución sugerida:");
-        console.error("   1. Navega a https://172.17.16.24:8089");
+        console.error("   1. Navega a https://webrtc.quironix.com:8089");
         console.error("   2. Acepta el certificado SSL");
         console.error("   3. Vuelve a ejecutar este test");
         toast.error("Timeout: No se pudo conectar. Revisa la consola (F12)");
@@ -153,10 +156,10 @@ export const WebRTCLogin = () => {
       console.error("   - Puerto 8089 bloqueado por firewall");
       console.error("\n   💡 Soluciones:");
       console.error("   1. Acepta el certificado SSL:");
-      console.error("      → https://172.17.16.24:8089");
+      console.error("      → https://webrtc.quironix.com:8089");
       console.error("   2. Verifica que estés conectado a la VPN");
       console.error("   3. Verifica conectividad:");
-      console.error("      → ping 172.17.16.24");
+      console.error("      → ping webrtc.quironix.com");
       toast.error("❌ Error de conexión. Revisa la consola (F12)");
     };
 
@@ -178,13 +181,21 @@ export const WebRTCLogin = () => {
       );
 
       if (event.code === 1006) {
-        console.error("\n   ⚠️ PROBLEMA DETECTADO: No se pudo establecer conexión");
-        console.error("   El código 1006 indica que el navegador rechazó la conexión");
+        console.error(
+          "\n   ⚠️ PROBLEMA DETECTADO: No se pudo establecer conexión"
+        );
+        console.error(
+          "   El código 1006 indica que el navegador rechazó la conexión"
+        );
         console.error("   antes de completar el handshake WebSocket.");
         console.error("\n   💡 SOLUCIÓN:");
         console.error("   1. Verifica que estés conectado a la VPN");
-        console.error("   2. Abre en una nueva pestaña: https://172.17.16.24:8089");
-        console.error("   3. Acepta el certificado SSL (clic en Avanzado → Continuar)");
+        console.error(
+          "   2. Abre en una nueva pestaña: https://webrtc.quironix.com:8089"
+        );
+        console.error(
+          "   3. Acepta el certificado SSL (clic en Avanzado → Continuar)"
+        );
         console.error("   4. Vuelve aquí y ejecuta el test de nuevo");
         toast.error("Error 1006: Certificado SSL o VPN. Revisa consola (F12)");
       }
@@ -228,7 +239,7 @@ export const WebRTCLogin = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button size="sm" className="gap-2">
           <Phone className="w-4 h-4" />
           <span className="hidden sm:inline">Conectar PBX</span>
         </Button>
@@ -282,19 +293,21 @@ export const WebRTCLogin = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          {(Object.keys(TEST_CREDENTIALS) as Array<keyof typeof TEST_CREDENTIALS>).map(
-            (anexo) => (
-              <Button
-                key={anexo}
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickLogin(anexo)}
-                disabled={loading}
-              >
-                Anexo {anexo}
-              </Button>
-            )
-          )}
+          {(
+            Object.keys(TEST_CREDENTIALS) as Array<
+              keyof typeof TEST_CREDENTIALS
+            >
+          ).map((anexo) => (
+            <Button
+              key={anexo}
+              variant="outline"
+              size="sm"
+              onClick={() => handleQuickLogin(anexo)}
+              disabled={loading}
+            >
+              Anexo {anexo}
+            </Button>
+          ))}
         </div>
 
         <div className="pt-2">
@@ -313,7 +326,7 @@ export const WebRTCLogin = () => {
         </div>
 
         <p className="text-xs text-muted-foreground text-center">
-          Servidor: 172.17.16.24 | Puerto: 8089 (WSS)
+          Servidor: webrtc.quironix.com | Puerto: 8089 (WSS)
         </p>
       </DialogContent>
     </Dialog>

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const PBX_SERVER = "172.17.16.24";
+const PBX_SERVER = "webrtc.quironix.com";
 const PBX_PORTS = [8088, 8089, 5060];
 
 export async function GET() {

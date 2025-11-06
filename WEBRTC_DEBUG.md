@@ -7,16 +7,19 @@
 La forma más rápida de diagnosticar problemas es usar el botón de test integrado:
 
 **Ubicación:**
+
 1. En el diálogo "Conectar PBX" → Botón **"Probar Conexión WebSocket"** (parte inferior)
 2. Cuando estés conectado → Botón **"Test"** junto a "Desconectar"
 
 **Cómo usar:**
+
 1. Haz clic en "Conectar PBX" (o en "Test" si ya estás conectado)
 2. Haz clic en **"Probar Conexión WebSocket"**
 3. Abre la consola del navegador (**F12**)
 4. Revisa los logs del test (marcados con 🧪)
 
 **Resultados:**
+
 - ✅ **Conexión exitosa:** Verás "Conexión WebSocket exitosa!" en un toast verde
 - ❌ **Error de conexión:** Verás el error específico en la consola y un toast rojo
 - ⏳ **Timeout:** Si pasan 10 segundos sin respuesta, hay problema de conectividad
@@ -26,10 +29,12 @@ La forma más rápida de diagnosticar problemas es usar el botón de test integr
 ### 1. Abrir DevTools
 
 **Chrome/Edge:**
+
 - Mac: `Cmd + Option + J`
 - Windows/Linux: `Ctrl + Shift + J`
 
 **Firefox:**
+
 - Mac: `Cmd + Option + K`
 - Windows/Linux: `Ctrl + Shift + K`
 
@@ -41,12 +46,12 @@ Una vez que haces clic en "Conectar PBX" o en un anexo de prueba, busca en la co
 
 ```
 🔄 [WebRTC] Iniciando registro...
-📋 [WebRTC] Config: { sipUser: "6170", sipDomain: "172.17.16.24", wsUri: "wss://172.17.16.24:8089/ws" }
+📋 [WebRTC] Config: { sipUser: "6170", sipDomain: "webrtc.quironix.com", wsUri: "wss://webrtc.quironix.com:8089/ws" }
 📦 [WebRTC] Cargando JsSIP...
 ✅ [WebRTC] JsSIP cargado correctamente
 🐛 [WebRTC] Debug de JsSIP habilitado
-🔌 [WebRTC] Creando WebSocket: wss://172.17.16.24:8089/ws
-⚙️ [WebRTC] Configuración UA: { uri: "sip:6170@172.17.16.24", contact_uri: "sip:6170@172.17.16.24" }
+🔌 [WebRTC] Creando WebSocket: wss://webrtc.quironix.com:8089/ws
+⚙️ [WebRTC] Configuración UA: { uri: "sip:6170@webrtc.quironix.com", contact_uri: "sip:6170@webrtc.quironix.com" }
 🚀 [WebRTC] Iniciando User Agent...
 ✅ [WebRTC] User Agent iniciado, esperando registro...
 🔗 [WebRTC] WebSocket conectado
@@ -56,22 +61,28 @@ Una vez que haces clic en "Conectar PBX" o en un anexo de prueba, busca en la co
 #### ❌ Errores Comunes
 
 **1. No hay configuración:**
+
 ```
 ❌ [WebRTC] No hay configuración disponible
 ```
+
 **Solución:** Asegúrate de hacer clic primero en "Conectar PBX" y seleccionar un anexo.
 
 **2. Fallo en el registro:**
+
 ```
 ❌ [WebRTC] Registro fallido: {...}
 ❌ [WebRTC] Detalles del error: { cause: "...", response: "..." }
 ```
+
 **Solución:** Verifica las credenciales y la conectividad con el servidor.
 
 **3. WebSocket desconectado:**
+
 ```
 ⚠️ [WebRTC] WebSocket desconectado
 ```
+
 **Solución:** Verifica la conectividad de red con el servidor Issabel.
 
 ## Network Tab - Inspección de WebSocket
@@ -102,16 +113,16 @@ En DevTools, ve a la pestaña **Network** (Red).
 #### Mensajes de Registro Exitoso
 
 ```
-↑ REGISTER sip:172.17.16.24 SIP/2.0
+↑ REGISTER sip:webrtc.quironix.com SIP/2.0
   Via: SIP/2.0/WSS ...
-  From: <sip:6170@172.17.16.24>
-  To: <sip:6170@172.17.16.24>
+  From: <sip:6170@webrtc.quironix.com>
+  To: <sip:6170@webrtc.quironix.com>
   ...
 
 ↓ SIP/2.0 200 OK
   Via: SIP/2.0/WSS ...
-  From: <sip:6170@172.17.16.24>
-  To: <sip:6170@172.17.16.24>;tag=...
+  From: <sip:6170@webrtc.quironix.com>
+  To: <sip:6170@webrtc.quironix.com>;tag=...
   ...
 ```
 
@@ -132,7 +143,7 @@ En DevTools, ve a la pestaña **Network** (Red).
 
 En la pestaña **Headers** de la conexión WebSocket:
 
-- **Request URL:** `wss://172.17.16.24:8089/ws`
+- **Request URL:** `wss://webrtc.quironix.com:8089/ws`
 - **Status Code:** `101 Switching Protocols`
 - **Upgrade:** `websocket`
 - **Connection:** `Upgrade`
@@ -142,12 +153,12 @@ En la pestaña **Headers** de la conexión WebSocket:
 Con el debug habilitado (`JsSIP.debug.enable("JsSIP:*")`), verás logs muy detallados:
 
 ```
-JsSIP:Transport connecting to wss://172.17.16.24:8089/ws
+JsSIP:Transport connecting to wss://webrtc.quironix.com:8089/ws
 JsSIP:Transport WebSocket connected
 JsSIP:UA registration requested
 JsSIP:Registrator sending REGISTER
 JsSIP:Transport sending message:
-  REGISTER sip:172.17.16.24 SIP/2.0
+  REGISTER sip:webrtc.quironix.com SIP/2.0
   ...
 JsSIP:Transport received message:
   SIP/2.0 200 OK
@@ -169,16 +180,16 @@ En la consola del navegador, puedes filtrar logs escribiendo:
 
 ```bash
 # 1. Verificar que el servidor responde
-ping 172.17.16.24
+ping webrtc.quironix.com
 
 # 2. Verificar puerto WebSocket (8089)
-nc -zv 172.17.16.24 8089
+nc -zv webrtc.quironix.com 8089
 
 # 3. Escanear puertos con nmap
-nmap -p 5060,8088,8089 172.17.16.24
+nmap -p 5060,8088,8089 webrtc.quironix.com
 
 # 4. Verificar conexión SSL/TLS
-openssl s_client -connect 172.17.16.24:8089
+openssl s_client -connect webrtc.quironix.com:8089
 ```
 
 ### Desde el Navegador
@@ -187,10 +198,10 @@ openssl s_client -connect 172.17.16.24:8089
 2. Ejecuta este comando para probar el WebSocket manualmente:
 
 ```javascript
-const ws = new WebSocket('wss://172.17.16.24:8089/ws');
-ws.onopen = () => console.log('✅ WebSocket abierto');
-ws.onerror = (e) => console.error('❌ Error WebSocket:', e);
-ws.onclose = (e) => console.log('WebSocket cerrado:', e.code, e.reason);
+const ws = new WebSocket("wss://webrtc.quironix.com:8089/ws");
+ws.onopen = () => console.log("✅ WebSocket abierto");
+ws.onerror = (e) => console.error("❌ Error WebSocket:", e);
+ws.onclose = (e) => console.log("WebSocket cerrado:", e.code, e.reason);
 ```
 
 #### Códigos de Cierre Comunes
@@ -205,6 +216,7 @@ ws.onclose = (e) => console.log('WebSocket cerrado:', e.code, e.reason);
 ### "Conectando..." infinito
 
 **Posibles causas:**
+
 1. El WebSocket no se puede conectar al servidor
 2. El servidor rechaza la conexión
 3. Problemas de certificado SSL
@@ -215,15 +227,17 @@ ws.onclose = (e) => console.log('WebSocket cerrado:', e.code, e.reason);
 El path `/ws` es estándar en Asterisk/Issabel pero **puede ser diferente** en tu servidor.
 
 **Paths comunes:**
-- `wss://172.17.16.24:8089/ws` (estándar Asterisk/Issabel)
-- `wss://172.17.16.24:8089/` (sin path)
-- `wss://172.17.16.24:8089/websocket` (alternativo)
+
+- `wss://webrtc.quironix.com:8089/ws` (estándar Asterisk/Issabel)
+- `wss://webrtc.quironix.com:8089/` (sin path)
+- `wss://webrtc.quironix.com:8089/websocket` (alternativo)
 
 **Cómo verificar el path correcto:**
+
 1. Pregunta al administrador del servidor Issabel
 2. Revisa la configuración SSH:
    ```bash
-   ssh root@172.17.16.24
+   ssh root@webrtc.quironix.com
    cat /etc/asterisk/http.conf | grep -i websocket
    ```
 3. Usa el botón "Probar Conexión WebSocket" y revisa el error en consola
@@ -231,14 +245,16 @@ El path `/ws` es estándar en Asterisk/Issabel pero **puede ser diferente** en t
 **Cambiar el path:**
 
 Edita `.env.local`:
+
 ```bash
-NEXT_PUBLIC_WEBRTC_WS_URI=wss://172.17.16.24:8089/TU_PATH_AQUI
+NEXT_PUBLIC_WEBRTC_WS_URI=wss://webrtc.quironix.com:8089/TU_PATH_AQUI
 ```
 
 **Probar en consola:**
+
 ```bash
 # En la terminal
-curl -k https://172.17.16.24:8089/ws
+curl -k https://webrtc.quironix.com:8089/ws
 ```
 
 ### Certificado SSL Auto-firmado
@@ -246,7 +262,8 @@ curl -k https://172.17.16.24:8089/ws
 Si el servidor usa un certificado auto-firmado, el navegador puede bloquear la conexión.
 
 **Solución temporal:**
-1. Navega a `https://172.17.16.24:8089` en el navegador
+
+1. Navega a `https://webrtc.quironix.com:8089` en el navegador
 2. Acepta el certificado (clic en "Avanzado" → "Continuar")
 3. Vuelve a la aplicación e intenta conectar
 

@@ -13,8 +13,8 @@
   console.log("🧪 TEST DE CONEXIÓN WEBRTC - ISSABEL PBX");
   console.log("=".repeat(60));
 
-  const WS_URI = "wss://172.17.16.24:8089/ws";
-  const SIP_DOMAIN = "172.17.16.24";
+  const WS_URI = "wss://webrtc.quironix.com:8089/ws";
+  const SIP_DOMAIN = "webrtc.quironix.com";
 
   console.log("\n📋 Configuración:");
   console.log(`   WebSocket URI: ${WS_URI}`);
@@ -22,7 +22,7 @@
 
   // Test 1: Verificar soporte WebSocket
   console.log("\n1️⃣ Verificando soporte WebSocket...");
-  if (typeof WebSocket === 'undefined') {
+  if (typeof WebSocket === "undefined") {
     console.error("❌ WebSocket no está soportado en este navegador");
     return;
   }
@@ -36,13 +36,15 @@
 
   const timeout = setTimeout(() => {
     if (ws.readyState !== WebSocket.OPEN) {
-      console.error("❌ Timeout: No se pudo conectar al WebSocket en 10 segundos");
+      console.error(
+        "❌ Timeout: No se pudo conectar al WebSocket en 10 segundos"
+      );
       console.error("   Posibles causas:");
       console.error("   - El servidor no está accesible");
       console.error("   - Problemas de firewall");
       console.error("   - Certificado SSL bloqueado");
       console.error("\n   💡 Solución sugerida:");
-      console.error("   1. Navega a https://172.17.16.24:8089");
+      console.error("   1. Navega a https://webrtc.quironix.com:8089");
       console.error("   2. Acepta el certificado SSL");
       console.error("   3. Vuelve a ejecutar este test");
       ws.close();
@@ -86,36 +88,46 @@
     console.error("   - Puerto 8089 bloqueado por firewall");
     console.error("\n   💡 Soluciones:");
     console.error("   1. Acepta el certificado SSL:");
-    console.error("      → https://172.17.16.24:8089");
+    console.error("      → https://webrtc.quironix.com:8089");
     console.error("   2. Verifica conectividad:");
-    console.error("      → ping 172.17.16.24");
+    console.error("      → ping webrtc.quironix.com");
     console.error("   3. Verifica que el puerto esté abierto:");
-    console.error("      → nc -zv 172.17.16.24 8089");
+    console.error("      → nc -zv webrtc.quironix.com 8089");
   };
 
   ws.onclose = (event) => {
     console.log("\n🔌 WebSocket cerrado");
     console.log(`   Code: ${event.code}`);
-    console.log(`   Reason: ${event.reason || 'Sin razón específica'}`);
-    console.log(`   Clean: ${event.wasClean ? 'Sí' : 'No'}`);
+    console.log(`   Reason: ${event.reason || "Sin razón específica"}`);
+    console.log(`   Clean: ${event.wasClean ? "Sí" : "No"}`);
 
     // Interpretar código de cierre
     const closeCodes = {
       1000: "✅ Cierre normal - Todo OK",
       1001: "⚠️ El servidor se fue",
       1006: "❌ Conexión cerrada anormalmente (sin handshake)",
-      1015: "❌ Error de TLS/SSL - Certificado rechazado"
+      1015: "❌ Error de TLS/SSL - Certificado rechazado",
     };
 
-    console.log(`   Interpretación: ${closeCodes[event.code] || 'Código desconocido'}`);
+    console.log(
+      `   Interpretación: ${closeCodes[event.code] || "Código desconocido"}`
+    );
 
     if (event.code === 1006) {
-      console.error("\n   ⚠️ PROBLEMA DETECTADO: No se pudo establecer conexión");
-      console.error("   El código 1006 indica que el navegador rechazó la conexión");
+      console.error(
+        "\n   ⚠️ PROBLEMA DETECTADO: No se pudo establecer conexión"
+      );
+      console.error(
+        "   El código 1006 indica que el navegador rechazó la conexión"
+      );
       console.error("   antes de completar el handshake WebSocket.");
       console.error("\n   💡 SOLUCIÓN:");
-      console.error("   1. Abre en una nueva pestaña: https://172.17.16.24:8089");
-      console.error("   2. Acepta el certificado SSL (clic en Avanzado → Continuar)");
+      console.error(
+        "   1. Abre en una nueva pestaña: https://webrtc.quironix.com:8089"
+      );
+      console.error(
+        "   2. Acepta el certificado SSL (clic en Avanzado → Continuar)"
+      );
       console.error("   3. Vuelve aquí y ejecuta el test de nuevo");
     }
 
