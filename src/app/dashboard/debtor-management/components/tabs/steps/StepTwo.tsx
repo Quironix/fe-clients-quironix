@@ -46,9 +46,10 @@ import {
   Phone,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { getLitigationsByDebtor } from "@/app/dashboard/litigation/services";
 
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 
@@ -107,6 +108,18 @@ const createFormSchema = (hasCompleteSelection: boolean, selectedCombination: an
           message: "Debe completar todos los campos requeridos del litigio",
         }),
       });
+    } else if (selectedCombination?.executive_comment === "LITIGATION_NORMALIZATION") {
+      baseSchema.caseData = z.object({
+        litigationData: z.object({
+          selectedInvoiceIds: z.array(z.string()).min(1, "Debe seleccionar al menos una factura"),
+          reason: z.string().min(1, "La razón de normalización es requerida"),
+          comment: z.string().min(1, "El comentario es requerido"),
+          totalAmount: z.number().optional(),
+          _isValid: z.boolean().optional(),
+        }).refine((data) => data._isValid !== false, {
+          message: "Debe completar todos los campos requeridos de la normalización",
+        }),
+      });
     } else if (selectedCombination?.fields && selectedCombination.fields.length > 0) {
       // Validar campos dinámicos según su configuración
       const caseDataSchema: any = {};
@@ -155,11 +168,13 @@ const DynamicField = ({
   control,
   dataDebtor,
   selectedInvoices,
+  litigations,
 }: {
   field: FieldConfig;
   control: any;
   dataDebtor?: any;
   selectedInvoices?: Invoice[];
+  litigations?: any[];
 }) => {
   const fieldName = `caseData.${field.name}` as any;
   const { data: session } = useSession();
@@ -177,6 +192,7 @@ const DynamicField = ({
               value={formField.value}
               onChange={formField.onChange}
               selectedInvoices={selectedInvoices}
+              litigations={litigations}
               {...(field.componentProps || {})}
             />
             <FormMessage />
@@ -278,6 +294,12 @@ export const StepTwo = ({
   selectedInvoices = [],
   onValidationChange,
 }: StepTwoProps) => {
+  const { data: session } = useSession();
+  const { profile } = useProfileContext();
+
+  const [debtorLitigations, setDebtorLitigations] = useState<any[]>([]);
+  const [loadingLitigations, setLoadingLitigations] = useState(false);
+
   // Usar refs para callbacks para evitar re-renders infinitos
   const onValidationChangeRef = useRef(onValidationChange);
   const onFormChangeRef = useRef(onFormChange);
@@ -318,6 +340,41 @@ export const StepTwo = ({
   ]);
 
   const hasCompleteSelection = !!selectedCombination;
+
+  useEffect(() => {
+    const fetchLitigations = async () => {
+      if (
+        selectedCombination?.executive_comment === "LITIGATION_NORMALIZATION" &&
+        dataDebtor?.id &&
+        session?.token &&
+        profile?.client_id
+      ) {
+        setLoadingLitigations(true);
+        try {
+          const response = await getLitigationsByDebtor(
+            session.token,
+            profile.client_id,
+            dataDebtor.id
+          );
+          if (response.success) {
+            setDebtorLitigations(response.data || []);
+          } else {
+            setDebtorLitigations([]);
+            console.error("Error fetching litigations:", response.message);
+          }
+        } catch (error) {
+          console.error("Error fetching litigations:", error);
+          setDebtorLitigations([]);
+        } finally {
+          setLoadingLitigations(false);
+        }
+      } else {
+        setDebtorLitigations([]);
+      }
+    };
+
+    fetchLitigations();
+  }, [selectedCombination?.executive_comment, dataDebtor?.id, session?.token, profile?.client_id]);
 
   // Crear esquema dinámico
   const formSchema = useMemo(
@@ -780,6 +837,7 @@ export const StepTwo = ({
                         control={form.control}
                         dataDebtor={dataDebtor}
                         selectedInvoices={selectedInvoices}
+                        litigations={debtorLitigations}
                       />
                     ))}
                   </div>

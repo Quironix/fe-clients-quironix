@@ -5,6 +5,7 @@
 
 import React from "react";
 import { ManagementLitigationForm } from "../components/litigation";
+import { ManagementNormalizedLitigationForm } from "../components/normalization";
 
 export type ContactType = "PHONE" | "EMAIL" | "WHATSAPP" | "SMS" | "LETTER";
 
@@ -235,6 +236,24 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
     ],
   },
   {
+    id: "litigation-normalization",
+    label: "Facturas con litigio",
+    description: "Normalización de litigio",
+    management_type: "CALL_OUT",
+    debtor_comment: "INVOICE_WITH_LITIGATION",
+    executive_comment: "LITIGATION_NORMALIZATION",
+    targetPhase: 2,
+    fields: [
+      {
+        name: "litigationData",
+        label: "Datos del Litigio",
+        type: "component",
+        required: true,
+        component: ManagementNormalizedLitigationForm,
+      },
+    ],
+  },
+  {
     id: "payment_plan_request",
     label: "Solicitud de plan de pago",
     description: "Necesito plan de pago",
@@ -319,7 +338,8 @@ export const MANAGEMENT_TYPES = [
     value: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING",
     label: "Factura no registrada en contabilidad",
   },
-  { value: "INVOICE_WITH_LITIGATION", label: "Factura con Litigio" },
+  { value: "INVOICE_WITH_LITIGATION", label: "Factura con litigio" },
+  { value: "LITIGATION_NORMALIZATION", label: "Normalización de litigio" },
   { value: "NEED_PAYMENT_PLAN", label: "Necesito Plan de Pago" },
   { value: "CHECK_CONFIRMED", label: "Cheque Confirmado" },
 ];
