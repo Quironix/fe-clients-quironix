@@ -3,7 +3,7 @@
  *
  * Para usar este código:
  * 1. Instala SendGrid: npm install @sendgrid/mail
- * 2. Configura la variable de entorno SENDGRID_API_KEY
+ * 2. Configura la variable de entorno NEXT_SENDGRID_API_KEY
  * 3. Sube el template a SendGrid y obtén el Template ID
  * 4. Actualiza TEMPLATE_ID con tu ID real
  */
@@ -11,13 +11,13 @@
 import sgMail from '@sendgrid/mail';
 
 // Configuración
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || '';
+const NEXT_SENDGRID_API_KEY = process.env.NEXT_SENDGRID_API_KEY || '';
 const TEMPLATE_ID = 'd-xxxxxxxxxxxxx'; // Reemplazar con tu Template ID de SendGrid
 const FROM_EMAIL = 'noreply@quironix.com'; // Email verificado en SendGrid
 
 // Inicializar SendGrid
-if (SENDGRID_API_KEY) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
+if (NEXT_SENDGRID_API_KEY) {
+  sgMail.setApiKey(NEXT_SENDGRID_API_KEY);
 }
 
 // Tipos para las facturas
@@ -82,8 +82,8 @@ export async function sendGestionesEmail(
   gestiones: GestionData[],
   subject?: string
 ) {
-  if (!SENDGRID_API_KEY) {
-    throw new Error('SENDGRID_API_KEY no está configurada');
+  if (!NEXT_SENDGRID_API_KEY) {
+    throw new Error('NEXT_SENDGRID_API_KEY no está configurada');
   }
 
   if (gestiones.length === 0 || gestiones.length > 2) {

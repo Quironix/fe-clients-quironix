@@ -308,18 +308,18 @@ export const StepThree = ({
                   Facturas seleccionadas ({selectedInvoicesForNormalization.length})
                 </p>
                 <div className="space-y-2">
-                  {selectedInvoicesForNormalization.map((invoice) => (
+                  {selectedInvoicesForNormalization.filter(invoice => invoice).map((invoice) => (
                     <div
                       key={invoice.id}
                       className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded text-xs border border-gray-200"
                     >
                       <div className="flex items-center gap-2">
                         <DocumentTypeBadge type={invoice.type} />
-                        <span className="font-medium">{invoice.number}</span>
+                        <span className="font-medium">{invoice.number || invoice.folio || "-"}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-gray-500">
-                          Saldo: <span className="font-medium text-gray-700">{formatCurrency(invoice.balance)}</span>
+                          Saldo: <span className="font-medium text-gray-700">{formatCurrency(invoice.balance || 0)}</span>
                         </span>
                         <span className="text-xs text-gray-500">
                           {invoice.operation_date
@@ -489,31 +489,31 @@ export const StepThree = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {selectedInvoices.map((invoice, index) => (
-                  <TableRow key={index}>
+                {selectedInvoices.filter(invoice => invoice).map((invoice, index) => (
+                  <TableRow key={invoice?.id || index}>
                     <TableCell className="text-xs font-medium">
-                      {invoice.number || invoice.folio || "-"}
+                      {invoice?.number || invoice?.folio || "-"}
                     </TableCell>
                     <TableCell className="text-xs">
-                      <DocumentTypeBadge type={invoice.type} />
+                      <DocumentTypeBadge type={invoice?.type} />
                     </TableCell>
                     <TableCell className="text-xs">
-                      {formatDate(invoice.issue_date)}
+                      {formatDate(invoice?.issue_date)}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {formatDate(invoice.due_date)}
+                      {formatDate(invoice?.due_date)}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {formatCurrency(invoice.amount)}
+                      {formatCurrency(invoice?.amount || 0)}
                     </TableCell>
                     <TableCell className="text-xs text-red-600 font-medium">
-                      {formatCurrency(invoice.balance)}
+                      {formatCurrency(invoice?.balance || 0)}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {calculateDelay(invoice.due_date)} días
+                      {calculateDelay(invoice?.due_date)} días
                     </TableCell>
                     <TableCell className="text-xs">
-                      {Array.isArray(invoice.phases) &&
+                      {Array.isArray(invoice?.phases) &&
                       invoice.phases.length > 0
                         ? ((invoice.phases[invoice.phases.length - 1] as any)
                             .phase ?? 0)

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 "use client";
 
 import { disputes } from "@/app/dashboard/data";
@@ -239,7 +240,8 @@ export const SavedManagementCard = ({
                 <div className="flex items-center gap-2 mb-3">
                   <FileText className="w-4 h-4 text-gray-700" />
                   <h3 className="font-semibold text-sm text-gray-700">
-                    Facturas seleccionadas ({selectedInvoicesForNormalization.length})
+                    Facturas seleccionadas (
+                    {selectedInvoicesForNormalization.length})
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
