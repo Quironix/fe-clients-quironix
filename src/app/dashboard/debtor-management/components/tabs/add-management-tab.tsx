@@ -396,24 +396,18 @@ export const AddManagementTab = ({
         litigationIds
       ) {
         // Caso especial: normalización de litigios
+        // Solo incluir litigationIds en case_data (sin reason, comment, totalAmount)
         const validatedIds = litigationIds
           .filter(id => id && typeof id === 'string')
           .map(id => id.toString());
 
-        const normalizationData = managementFormData.caseData?.litigationData;
-
         payload.case_data = {
           litigationIds: validatedIds,
-          normalizationReason: normalizationData?.reason,
-          normalizationComment: normalizationData?.comment,
-          totalAmount: normalizationData?.totalAmount,
         };
 
         console.log("📦 Payload de track con normalización de litigios:", {
           litigationIds: validatedIds,
           total: validatedIds.length,
-          reason: normalizationData?.reason,
-          totalAmount: normalizationData?.totalAmount,
         });
       } else {
         // Caso normal: otros tipos de gestión

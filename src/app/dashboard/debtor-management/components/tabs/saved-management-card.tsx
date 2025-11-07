@@ -1,8 +1,8 @@
 "use client";
 
+import { disputes } from "@/app/dashboard/data";
 import { SavedManagement } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
 import { getManagementCombination } from "@/app/dashboard/debtor-management/config/management-types";
-import { disputes } from "@/app/dashboard/data";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import {
@@ -104,7 +104,9 @@ export const SavedManagementCard = ({
   const getDisputeLabels = (reasonCode: string, subreasonCode: string) => {
     const reason = disputes.find((d) => d.code === reasonCode);
     const reasonLabel = reason?.label || reasonCode;
-    const subreasonLabel = reason?.submotivo.find((s) => s.code === subreasonCode)?.label || subreasonCode;
+    const subreasonLabel =
+      reason?.submotivo.find((s) => s.code === subreasonCode)?.label ||
+      subreasonCode;
     return { reasonLabel, subreasonLabel };
   };
 
@@ -115,14 +117,17 @@ export const SavedManagementCard = ({
     if (fields.length === 0) return null;
 
     // Caso especial: Litigios
-    if (selectedConfig.executive_comment === "DOCUMENT_IN_LITIGATION" &&
-        management.formData.caseData?.litigationData?.litigations) {
+    if (
+      selectedConfig.executive_comment === "DOCUMENT_IN_LITIGATION" &&
+      management.formData.caseData?.litigationData?.litigations
+    ) {
       return (
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center gap-2 mb-3">
             <BookUser className="w-4 h-4 text-gray-700" />
             <h3 className="font-semibold text-sm text-gray-700">
-              Litigios ({management.formData.caseData.litigationData.litigations.length})
+              Litigios (
+              {management.formData.caseData.litigationData.litigations.length})
             </h3>
           </div>
           <div className="space-y-3">
@@ -156,20 +161,141 @@ export const SavedManagementCard = ({
                       </div>
                       <div className="col-span-2">
                         <span className="text-gray-500">Motivo:</span>{" "}
-                        <span className="font-medium">
-                          {reasonLabel}
-                        </span>
+                        <span className="font-medium">{reasonLabel}</span>
                       </div>
                       <div className="col-span-2">
                         <span className="text-gray-500">Submotivo:</span>{" "}
-                        <span className="font-medium">
-                          {subreasonLabel}
-                        </span>
+                        <span className="font-medium">{subreasonLabel}</span>
                       </div>
                     </div>
                   </div>
                 );
               }
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Caso especial: Normalización de Litigios
+    if (
+      selectedConfig.executive_comment === "LITIGATION_NORMALIZATION" &&
+      management.formData.caseData?.litigationData
+    ) {
+      const normalizationData = management.formData.caseData.litigationData;
+      const { NORMALIZATION_REASONS } = require("@/app/dashboard/data");
+      const normalizationReason = NORMALIZATION_REASONS.find(
+        (r: any) => r.code === normalizationData.reason
+      );
+
+      // Obtener facturas seleccionadas para mostrar detalles
+      const selectedInvoicesForNormalization =
+        management.selectedInvoices.filter((inv) =>
+          normalizationData.selectedInvoiceIds?.includes(inv.id)
+        );
+
+      return (
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <BookUser className="w-4 h-4 text-gray-700" />
+            <h3 className="font-semibold text-sm text-gray-700">
+              Normalización de Litigios
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {/* Resumen General */}
+            <div className="border border-gray-200 rounded p-3 bg-blue-50">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-gray-500">Litigios normalizados:</span>{" "}
+                  <span className="font-bold text-blue-700">
+                    {normalizationData.litigationIds?.length || 0}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Monto total litigios:</span>{" "}
+                  <span className="font-bold text-blue-700">
+                    {formatCurrency(normalizationData.totalAmount || 0)}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-500">Razón de normalización:</span>{" "}
+                  <span className="font-medium">
+                    {normalizationReason?.label || normalizationData.reason}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-500">Comentario:</span>{" "}
+                  <span className="font-medium">
+                    {normalizationData.comment || "-"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Detalle de Facturas - Usar misma tabla completa */}
+            {selectedInvoicesForNormalization.length > 0 && (
+              <div className="border border-gray-200 rounded p-3">
+                <div className="flex items-center gap-2 mb-3">
+                  <FileText className="w-4 h-4 text-gray-700" />
+                  <h3 className="font-semibold text-sm text-gray-700">
+                    Facturas seleccionadas ({selectedInvoicesForNormalization.length})
+                  </h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">Nº Doc.</TableHead>
+                        <TableHead className="text-xs">Tipo</TableHead>
+                        <TableHead className="text-xs">Emisión</TableHead>
+                        <TableHead className="text-xs">Vto.</TableHead>
+                        <TableHead className="text-xs">Monto</TableHead>
+                        <TableHead className="text-xs">Saldo</TableHead>
+                        <TableHead className="text-xs">Atraso</TableHead>
+                        <TableHead className="text-xs">Fase</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedInvoicesForNormalization.map((invoice, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="text-xs font-medium">
+                            {invoice.number || invoice.folio || "-"}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <DocumentTypeBadge type={invoice.type} />
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {formatDate(invoice.issue_date)}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {formatDate(invoice.due_date)}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {formatCurrency(invoice.amount)}
+                          </TableCell>
+                          <TableCell className="text-xs text-red-600 font-medium">
+                            {formatCurrency(invoice.balance)}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {calculateDelay(invoice.due_date)} días
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {Array.isArray(invoice.phases) &&
+                            invoice.phases.length > 0
+                              ? ((
+                                  invoice.phases[
+                                    invoice.phases.length - 1
+                                  ] as any
+                                ).phase ?? 0)
+                              : "-"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -195,7 +321,12 @@ export const SavedManagementCard = ({
             }
 
             // Skip if value is an object (defensive check)
-            if (value && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
+            if (
+              value &&
+              typeof value === "object" &&
+              !Array.isArray(value) &&
+              !(value instanceof Date)
+            ) {
               return null;
             }
 
@@ -269,71 +400,73 @@ export const SavedManagementCard = ({
 
         <AccordionContent className="px-4 pb-4">
           <div className="space-y-4">
-            {/* Facturas seleccionadas */}
-            {management.selectedInvoices.length > 0 && (
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <FileText className="w-4 h-4 text-gray-700" />
-                  <h3 className="font-semibold text-sm text-gray-700">
-                    Facturas seleccionadas ({management.selectedInvoices.length}
-                    )
-                  </h3>
-                </div>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-xs">Nº Doc.</TableHead>
-                        <TableHead className="text-xs">Tipo</TableHead>
-                        <TableHead className="text-xs">Emisión</TableHead>
-                        <TableHead className="text-xs">Vto.</TableHead>
-                        <TableHead className="text-xs">Monto</TableHead>
-                        <TableHead className="text-xs">Saldo</TableHead>
-                        <TableHead className="text-xs">Atraso</TableHead>
-                        <TableHead className="text-xs">Fase</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {management.selectedInvoices.map((invoice, idx) => (
-                        <TableRow key={idx}>
-                          <TableCell className="text-xs font-medium">
-                            {invoice.number || invoice.folio || "-"}
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            <DocumentTypeBadge type={invoice.type} />
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            {formatDate(invoice.issue_date)}
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            {formatDate(invoice.due_date)}
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            {formatCurrency(invoice.amount)}
-                          </TableCell>
-                          <TableCell className="text-xs text-red-600 font-medium">
-                            {formatCurrency(invoice.balance)}
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            {calculateDelay(invoice.due_date)} días
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            {Array.isArray(invoice.phases) &&
-                            invoice.phases.length > 0
-                              ? ((
-                                  invoice.phases[
-                                    invoice.phases.length - 1
-                                  ] as any
-                                ).phase ?? 0)
-                              : "-"}
-                          </TableCell>
+            {/* Facturas seleccionadas - Ocultar para normalización de litigios */}
+            {management.selectedInvoices.length > 0 &&
+              selectedConfig?.executive_comment !==
+                "LITIGATION_NORMALIZATION" && (
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText className="w-4 h-4 text-gray-700" />
+                    <h3 className="font-semibold text-sm text-gray-700">
+                      Facturas seleccionadas (
+                      {management.selectedInvoices.length})
+                    </h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs">Nº Doc.</TableHead>
+                          <TableHead className="text-xs">Tipo</TableHead>
+                          <TableHead className="text-xs">Emisión</TableHead>
+                          <TableHead className="text-xs">Vto.</TableHead>
+                          <TableHead className="text-xs">Monto</TableHead>
+                          <TableHead className="text-xs">Saldo</TableHead>
+                          <TableHead className="text-xs">Atraso</TableHead>
+                          <TableHead className="text-xs">Fase</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {management.selectedInvoices.map((invoice, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="text-xs font-medium">
+                              {invoice.number || invoice.folio || "-"}
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              <DocumentTypeBadge type={invoice.type} />
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              {formatDate(invoice.issue_date)}
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              {formatDate(invoice.due_date)}
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              {formatCurrency(invoice.amount)}
+                            </TableCell>
+                            <TableCell className="text-xs text-red-600 font-medium">
+                              {formatCurrency(invoice.balance)}
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              {calculateDelay(invoice.due_date)} días
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              {Array.isArray(invoice.phases) &&
+                              invoice.phases.length > 0
+                                ? ((
+                                    invoice.phases[
+                                      invoice.phases.length - 1
+                                    ] as any
+                                  ).phase ?? 0)
+                                : "-"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Tipo de Gestión */}
             {selectedConfig && (

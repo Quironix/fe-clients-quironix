@@ -257,6 +257,11 @@ export const StepThree = ({
         (r: any) => r.code === normalizationData.reason
       );
 
+      // Obtener facturas seleccionadas para mostrar detalles
+      const selectedInvoicesForNormalization = selectedInvoices.filter((inv) =>
+        normalizationData.selectedInvoiceIds?.includes(inv.id)
+      );
+
       return (
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center gap-2 mb-3">
@@ -266,17 +271,18 @@ export const StepThree = ({
             </h3>
           </div>
           <div className="space-y-3">
-            <div className="border border-gray-200 rounded p-3">
+            {/* Resumen General */}
+            <div className="border border-gray-200 rounded p-3 bg-blue-50">
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-500">Facturas seleccionadas:</span>{" "}
-                  <span className="font-medium">
-                    {normalizationData.selectedInvoiceIds?.length || 0}
+                  <span className="text-gray-500">Litigios a normalizar:</span>{" "}
+                  <span className="font-bold text-blue-700">
+                    {normalizationData.litigationIds?.length || 0}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Monto total:</span>{" "}
-                  <span className="font-medium">
+                  <span className="text-gray-500">Monto total litigios:</span>{" "}
+                  <span className="font-bold text-blue-700">
                     {formatCurrency(normalizationData.totalAmount || 0)}
                   </span>
                 </div>
@@ -294,6 +300,38 @@ export const StepThree = ({
                 </div>
               </div>
             </div>
+
+            {/* Detalle de Facturas */}
+            {selectedInvoicesForNormalization.length > 0 && (
+              <div className="border border-gray-200 rounded p-3">
+                <p className="font-semibold text-xs mb-2 text-gray-700">
+                  Facturas seleccionadas ({selectedInvoicesForNormalization.length})
+                </p>
+                <div className="space-y-2">
+                  {selectedInvoicesForNormalization.map((invoice) => (
+                    <div
+                      key={invoice.id}
+                      className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded text-xs border border-gray-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <DocumentTypeBadge type={invoice.type} />
+                        <span className="font-medium">{invoice.number}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-500">
+                          Saldo: <span className="font-medium text-gray-700">{formatCurrency(invoice.balance)}</span>
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {invoice.operation_date
+                            ? format(new Date(invoice.operation_date), "dd/MM/yyyy")
+                            : "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       );
