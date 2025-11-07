@@ -24,6 +24,8 @@ const steps: Step[] = [
 
 import { ContactType, getManagementCombination, FieldConfig } from "../../config/management-types";
 import { CaseData } from "../../types/track";
+import { buildEmailPayload } from "../../services/email-builder";
+import { sendTrackEmail } from "../../services/email-sender";
 
 export interface DebtorContact {
   id: string;
@@ -490,6 +492,36 @@ export const AddManagementTab = ({
       console.log("Gestión creada exitosamente:", result);
       toast.success("Gestión agregada exitosamente");
 
+      if (managementFormData.contactType === "EMAIL") {
+        try {
+          const selectedCombination = getManagementCombination(
+            managementFormData.managementType,
+            managementFormData.debtorComment,
+            managementFormData.executiveComment
+          );
+
+          if (selectedCombination) {
+            const emailPayload = buildEmailPayload({
+              managementFormData,
+              selectedInvoices,
+              profile,
+              managementCombination: selectedCombination,
+            });
+
+            const emailResult = await sendTrackEmail(emailPayload);
+
+            if (emailResult.success) {
+              toast.success("Email enviado al contacto");
+            } else {
+              toast.warning("Gestión creada pero el email no pudo enviarse");
+            }
+          }
+        } catch (error) {
+          console.error("Error al enviar email:", error);
+          toast.warning("Gestión creada pero el email no pudo enviarse");
+        }
+      }
+
       const newManagement: SavedManagement = {
         id: result.track.id,
         formData: { ...managementFormData },
@@ -556,6 +588,36 @@ export const AddManagementTab = ({
       );
 
       console.log("Gestión final creada exitosamente:", result);
+
+      if (managementFormData.contactType === "EMAIL") {
+        try {
+          const selectedCombination = getManagementCombination(
+            managementFormData.managementType,
+            managementFormData.debtorComment,
+            managementFormData.executiveComment
+          );
+
+          if (selectedCombination) {
+            const emailPayload = buildEmailPayload({
+              managementFormData,
+              selectedInvoices,
+              profile,
+              managementCombination: selectedCombination,
+            });
+
+            const emailResult = await sendTrackEmail(emailPayload);
+
+            if (emailResult.success) {
+              toast.success("Email enviado al contacto");
+            } else {
+              toast.warning("Gestión creada pero el email no pudo enviarse");
+            }
+          }
+        } catch (error) {
+          console.error("Error al enviar email:", error);
+          toast.warning("Gestión creada pero el email no pudo enviarse");
+        }
+      }
 
       const totalCreated = savedManagements.length + 1;
       toast.success(

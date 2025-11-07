@@ -7,9 +7,11 @@ Este directorio contiene templates HTML optimizados para SendGrid que siguen las
 **Archivo:** `gestiones-template.html`
 
 ### Descripción
+
 Template para notificar a los usuarios sobre gestiones completadas, incluyendo detalles de facturas, montos y fechas de recaudación.
 
 ### Características
+
 - ✅ Diseño responsive compatible con todos los clientes de email
 - ✅ Layout basado en tablas para máxima compatibilidad
 - ✅ CSS inline para evitar problemas de renderizado
@@ -20,29 +22,45 @@ Template para notificar a los usuarios sobre gestiones completadas, incluyendo d
 ### Variables de SendGrid Disponibles
 
 #### Variables Generales
+
 ```handlebars
-{{recipient_email}}        # Email del destinatario (ej: "s.pedro@intramedios")
-{{recipient_name}}         # Nombre del destinatario (ej: "Daniel")
-{{subject}}               # Asunto del email (ej: "Gestione septiembre 2025")
-{{support_phone}}         # Teléfono de soporte (ej: "0923 2590 6728")
-{{support_email}}         # Email de soporte (ej: "empresa@logoipsum.com")
+{{recipient_email}}
+# Email del destinatario (ej: "s.pedro@intramedios")
+{{recipient_name}}
+# Nombre del destinatario (ej: "Daniel")
+{{subject}}
+# Asunto del email (ej: "Gestione septiembre 2025")
+{{support_phone}}
+# Teléfono de soporte (ej: "0923 2590 6728")
+{{support_email}}
+# Email de soporte (ej: "empresa@logoipsum.com")
 ```
 
 #### Variables Gestión 1
-```handlebars
-{{gestion_1_title}}       # Título de la gestión (ej: "Pago sin recaudación")
-{{gestion_1_amount}}      # Monto principal (ej: "$3.232.510")
-{{gestion_1_date}}        # Fecha de recaudación (ej: "17 de septiembre,2024")
-{{gestion_1_total}}       # Total a pagar (ej: "$3.232.510")
-{{gestion_1_address}}     # Dirección para retiro (ej: "Teatinos 301, Oficina 17, Ñuñoa")
 
-# Array de facturas
+```handlebars
+{{gestion_1_title}}
+# Título de la gestión (ej: "Pago sin recaudación")
+{{gestion_1_amount}}
+# Monto principal (ej: "$3.232.510")
+{{gestion_1_date}}
+# Fecha de recaudación (ej: "17 de septiembre,2024")
+{{gestion_1_total}}
+# Total a pagar (ej: "$3.232.510")
+{{gestion_1_address}}
+# Dirección para retiro (ej: "Teatinos 301, Oficina 17, Ñuñoa") # Array de
+facturas
 {{#each gestion_1_invoices}}
-  {{tipo}}               # Tipo de factura (ej: "Factura electrónica")
-  {{numero}}             # Número de factura (ej: "74689")
-  {{emision}}            # Fecha de emisión (ej: "00/00/0000")
-  {{dias_atraso}}        # Días de atraso (ej: "-12")
-  {{monto}}              # Monto de la factura (ej: "$3.232.510")
+  {{tipo}}
+  # Tipo de factura (ej: "Factura electrónica")
+  {{numero}}
+  # Número de factura (ej: "74689")
+  {{emision}}
+  # Fecha de emisión (ej: "00/00/0000")
+  {{dias_atraso}}
+  # Días de atraso (ej: "-12")
+  {{monto}}
+  # Monto de la factura (ej: "$3.232.510")
 {{/each}}
 
 # Información del cheque (condicional)
@@ -52,20 +70,28 @@ Template para notificar a los usuarios sobre gestiones completadas, incluyendo d
 ```
 
 #### Variables Gestión 2 (Condicional)
+
 ```handlebars
 {{#if gestion_2}}
-  {{gestion_2_title}}     # Título de la gestión 2 (ej: "Facturas con filtros")
-  {{gestion_2_total}}     # Total a pagar (ej: "$3.232.510")
-  {{gestion_2_note}}      # Nota adicional
-
-  # Array de facturas
+  {{gestion_2_title}}
+  # Título de la gestión 2 (ej: "Facturas con filtros")
+  {{gestion_2_total}}
+  # Total a pagar (ej: "$3.232.510")
+  {{gestion_2_note}}
+  # Nota adicional # Array de facturas
   {{#each gestion_2_invoices}}
-    {{tipo}}             # Tipo de factura
-    {{numero}}           # Número de factura
-    {{emision}}          # Fecha de emisión
-    {{vcto}}             # Fecha de vencimiento
-    {{dias_atraso}}      # Días de atraso
-    {{monto}}            # Monto de la factura
+    {{tipo}}
+    # Tipo de factura
+    {{numero}}
+    # Número de factura
+    {{emision}}
+    # Fecha de emisión
+    {{vcto}}
+    # Fecha de vencimiento
+    {{dias_atraso}}
+    # Días de atraso
+    {{monto}}
+    # Monto de la factura
   {{/each}}
 {{/if}}
 ```
@@ -75,22 +101,35 @@ Template para notificar a los usuarios sobre gestiones completadas, incluyendo d
 El template incluye imágenes placeholder que debes reemplazar con URLs de SendGrid:
 
 1. **Logo principal** (línea ~47):
+
    ```html
-   <img src="https://via.placeholder.com/120x30/6366F1/ffffff?text=LOGOIPSUM" alt="Logo">
+   <img
+     src="https://via.placeholder.com/120x30/6366F1/ffffff?text=LOGOIPSUM"
+     alt="Logo"
+   />
    ```
+
    - Tamaño recomendado: 120x30px o 240x60px (retina)
    - Formato: PNG con fondo transparente
 
 2. **Icono Gestión 1** (línea ~94):
+
    ```html
-   <img src="https://via.placeholder.com/60x60/6366F1/ffffff?text=💻" alt="Icono">
+   <img
+     src="https://via.placeholder.com/60x60/6366F1/ffffff?text=💻"
+     alt="Icono"
+   />
    ```
+
    - Tamaño: 60x60px o 120x120px (retina)
    - Sugerencia: Icono de computadora/dinero
 
 3. **Icono Gestión 2** (línea ~188):
    ```html
-   <img src="https://via.placeholder.com/60x60/6366F1/ffffff?text=📊" alt="Icono">
+   <img
+     src="https://via.placeholder.com/60x60/6366F1/ffffff?text=📊"
+     alt="Icono"
+   />
    ```
    - Tamaño: 60x60px o 120x120px (retina)
    - Sugerencia: Icono de gráficos/documentos
@@ -175,17 +214,17 @@ El template incluye imágenes placeholder que debes reemplazar con URLs de SendG
 #### Opción 2: Transactional Templates
 
 ```javascript
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.NEXT_SENDGRID_API_KEY);
 
 const msg = {
-  to: 's.pedro@intramedios',
-  from: 'noreply@quironix.com',
-  templateId: 'd-xxxxxxxxxxxxx', // Tu Template ID
+  to: "s.pedro@intramedios",
+  from: "noreply@quironix.com",
+  templateId: "d-xxxxxxxxxxxxx", // Tu Template ID
   dynamicTemplateData: {
-    recipient_email: 's.pedro@intramedios',
-    recipient_name: 'Daniel',
-    subject: 'Gestione septiembre 2025',
+    recipient_email: "s.pedro@intramedios",
+    recipient_name: "Daniel",
+    subject: "Gestione septiembre 2025",
     // ... resto de variables
   },
 };
@@ -204,7 +243,9 @@ Para probar el template:
 ### Personalización
 
 #### Colores
+
 Los colores principales están definidos inline:
+
 - Primario (enlaces, headers): `#6366F1`
 - Error/Alerta: `#EF4444`
 - Gris oscuro (texto): `#333333`
@@ -212,12 +253,14 @@ Los colores principales están definidos inline:
 - Gris claro (bordes): `#e5e7eb`
 
 #### Tipografía
+
 - Familia: `Arial, Helvetica, sans-serif`
 - Tamaños: 12px (tablas), 13px (notas), 14px (texto), 16px (títulos)
 
 ## Buenas Prácticas
 
 ✅ **DO:**
+
 - Siempre testear en múltiples clientes de email (Gmail, Outlook, Apple Mail)
 - Usar imágenes con URLs absolutas hospedadas en SendGrid
 - Mantener el ancho máximo en 600px para compatibilidad
@@ -226,6 +269,7 @@ Los colores principales están definidos inline:
 - Optimizar imágenes para web (compresión y tamaño adecuado)
 
 ❌ **DON'T:**
+
 - No usar JavaScript
 - No usar CSS externo o en `<style>` tags
 - No usar videos o GIFs complejos
