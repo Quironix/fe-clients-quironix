@@ -11,7 +11,6 @@ import React from "react";
 import { getSidebarData } from "../data";
 import { NavGroup } from "./nav-group";
 import { ProfileDropdown } from "./profile-dropdown";
-import { WebRTCLogin } from "./webrtc-login";
 
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   const { state } = useSidebar();
@@ -48,9 +47,9 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         ))}
       </SidebarContent>
       <SidebarFooter className="bg-primary text-white rounded-md rounded-t-none">
-        <div className="px-2 pb-2">
+        {/* <div className="px-2 pb-2">
           <WebRTCLogin />
-        </div>
+        </div> */}
         <ProfileDropdown />
       </SidebarFooter>
     </Sidebar>

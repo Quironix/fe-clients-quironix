@@ -6,6 +6,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { useWebRTCAutoConnect } from "@/hooks/useWebRTCAutoConnect";
 import { useWebRTCPhone } from "@/hooks/useWebRTCPhone";
 import {
   Clock,
@@ -35,8 +36,11 @@ export const DebtorContacts = ({
   callSchedule,
 }: DebtorContactsProps) => {
   const [openAdd, setOpenAdd] = useState<boolean>(false);
+  const [callDuration, setCallDuration] = useState(0);
   const { dataDebtor } = useDebtorsStore();
   const { isRegistered, callStatus, makeCall, hangup } = useWebRTCPhone();
+
+  const { isConnected } = useWebRTCAutoConnect();
 
   // Usar los contactos del store si están disponibles, sino usar las props
   const contacts =
@@ -58,6 +62,28 @@ export const DebtorContacts = ({
       setCurrentAdditionalContacts(dataDebtor.contacts.slice(1));
     }
   }, [dataDebtor?.contacts]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (callStatus === "in-call") {
+      interval = setInterval(() => {
+        setCallDuration((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setCallDuration(0);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [callStatus]);
+
+  const formatCallDuration = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
 
   const handleContactSwap = (index: number) => {
     const selectedContact = currentAdditionalContacts[index];
@@ -95,9 +121,6 @@ export const DebtorContacts = ({
     callStatus === "in-call" ||
     callStatus === "calling" ||
     callStatus === "ringing";
-
-  console.log(!isRegistered && !isInCall);
-  console.log(isRegistered, isInCall);
 
   return (
     <div className="bg-[#EFF5FF] rounded-lg px-6 py-4 flex flex-col">
@@ -208,28 +231,37 @@ export const DebtorContacts = ({
 
         {/* Botones de acción */}
         <div className="flex items-center gap-3">
-          <Button
-            size="sm"
-            className={
-              isInCall
-                ? "bg-red-600 hover:bg-red-700 text-white"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }
-            onClick={handleCall}
-            disabled={!isRegistered && !isInCall}
-          >
-            {isInCall ? (
-              <>
-                <PhoneOff className="w-4 h-4 mr-2" />
-                Colgar
-              </>
-            ) : (
-              <>
-                <Phone className="w-4 h-4 mr-2" />
-                {isRegistered ? "Llamar" : "Conectando..."}
-              </>
-            )}
-          </Button>
+          {isInCall ? (
+            <>
+              <Button
+                size="lg"
+                className="bg-green-600 hover:bg-green-600 text-white cursor-default font-bold"
+                disabled
+              >
+                <Phone className="w-4 h-4 mr-2 font-bold" strokeWidth={3} />
+                En llamada {formatCallDuration(callDuration)}
+              </Button>
+              <Button
+                size="lg"
+                variant="destructive"
+                className="text-white w-10 h-10 p-0 font-bold"
+                style={{ backgroundColor: "#FF3B30" }}
+                onClick={hangup}
+              >
+                <PhoneOff className="w-5 h-5 font-bold" strokeWidth={3} />
+              </Button>
+            </>
+          ) : (
+            <Button
+              size="lg"
+              onClick={handleCall}
+              disabled={!isRegistered}
+              className="font-bold"
+            >
+              <Phone className="w-4 h-4 mr-2 font-bold" strokeWidth={3} />
+              {isRegistered ? "Llamar" : "Conectando..."}
+            </Button>
+          )}
         </div>
       </div>
     </div>
