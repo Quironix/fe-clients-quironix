@@ -662,7 +662,11 @@ const result = await createTrack(session.token, profile.client_id, payload);
 }
 ```
 
-**Nota:** Los campos `normalization_reason`, `normalization_comment` y `totalAmount` se envían únicamente en el payload de bulk-normalize, NO en el track.
+**Notas Importantes:**
+
+1. Los campos `normalization_reason`, `normalization_comment` y `totalAmount` se envían únicamente en el payload de bulk-normalize, NO en el track.
+
+2. **`invoice_ids`** en normalización contiene **solo las facturas seleccionadas para normalizar** (las que tienen litigios asociados), NO todas las facturas del Step 1. Esto se sobrescribe automáticamente con `litigationData.selectedInvoiceIds`.
 
 ---
 

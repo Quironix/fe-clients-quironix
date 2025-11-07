@@ -405,8 +405,15 @@ export const AddManagementTab = ({
           litigationIds: validatedIds,
         };
 
+        // Sobrescribir invoice_ids con solo las facturas seleccionadas para normalización
+        const normalizationData = managementFormData.caseData.litigationData;
+        if (normalizationData?.selectedInvoiceIds) {
+          payload.invoice_ids = normalizationData.selectedInvoiceIds;
+        }
+
         console.log("📦 Payload de track con normalización de litigios:", {
           litigationIds: validatedIds,
+          invoiceIds: payload.invoice_ids,
           total: validatedIds.length,
         });
       } else {
