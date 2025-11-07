@@ -300,6 +300,44 @@ export const AddManagementTab = ({
     return createdIds;
   };
 
+  const normalizeLitigationsAndGetIds = async (): Promise<string[]> => {
+    if (!managementFormData.caseData?.litigationData) {
+      return [];
+    }
+
+    const { bulkLitigatiions } = await import("../../../litigation/services");
+    const normalizationData = managementFormData.caseData.litigationData;
+
+    const litigationIds = normalizationData.litigationIds || [];
+
+    if (litigationIds.length === 0) {
+      throw new Error("No hay litigios seleccionados para normalizar");
+    }
+
+    const normalizationPayload = {
+      litigation_ids: litigationIds,
+      normalization_reason: normalizationData.reason,
+      normalization_by_contact: managementFormData.selectedContact?.id || managementFormData.contactValue,
+      comment: normalizationData.comment,
+    };
+
+    console.log("📦 Normalization payload:", normalizationPayload);
+
+    const result = await bulkLitigatiions(
+      session.token,
+      profile.client_id,
+      normalizationPayload
+    );
+
+    console.log("🔍 Resultado de bulkLitigatiions:", result);
+
+    if (result.success) {
+      return litigationIds;
+    } else {
+      throw new Error(result.message || "Error al normalizar litigios");
+    }
+  };
+
   const buildTrackPayload = (litigationIds?: string[]) => {
     const dateISO = formatDateToISO(managementFormData.nextManagementDate);
     const time = managementFormData.nextManagementTime || "00:00";
@@ -352,6 +390,30 @@ export const AddManagementTab = ({
         console.log("📦 Payload de track con litigios:", {
           litigationIds: validatedIds,
           total: validatedIds.length
+        });
+      } else if (
+        selectedCombination?.executive_comment === "LITIGATION_NORMALIZATION" &&
+        litigationIds
+      ) {
+        // Caso especial: normalización de litigios
+        const validatedIds = litigationIds
+          .filter(id => id && typeof id === 'string')
+          .map(id => id.toString());
+
+        const normalizationData = managementFormData.caseData?.litigationData;
+
+        payload.case_data = {
+          litigationIds: validatedIds,
+          normalizationReason: normalizationData?.reason,
+          normalizationComment: normalizationData?.comment,
+          totalAmount: normalizationData?.totalAmount,
+        };
+
+        console.log("📦 Payload de track con normalización de litigios:", {
+          litigationIds: validatedIds,
+          total: validatedIds.length,
+          reason: normalizationData?.reason,
+          totalAmount: normalizationData?.totalAmount,
         });
       } else {
         // Caso normal: otros tipos de gestión
@@ -407,6 +469,13 @@ export const AddManagementTab = ({
         toast.info("Creando litigios...");
         litigationIds = await createLitigationsAndGetIds();
         toast.success(`${litigationIds.length} litigio(s) creado(s)`);
+      } else if (
+        managementFormData.executiveComment === "LITIGATION_NORMALIZATION" &&
+        managementFormData.caseData?.litigationData
+      ) {
+        toast.info("Normalizando litigios...");
+        litigationIds = await normalizeLitigationsAndGetIds();
+        toast.success(`${litigationIds.length} litigio(s) normalizado(s)`);
       }
 
       const payload = buildTrackPayload(litigationIds);
@@ -468,6 +537,13 @@ export const AddManagementTab = ({
         toast.info("Creando litigios...");
         litigationIds = await createLitigationsAndGetIds();
         toast.success(`${litigationIds.length} litigio(s) creado(s)`);
+      } else if (
+        managementFormData.executiveComment === "LITIGATION_NORMALIZATION" &&
+        managementFormData.caseData?.litigationData
+      ) {
+        toast.info("Normalizando litigios...");
+        litigationIds = await normalizeLitigationsAndGetIds();
+        toast.success(`${litigationIds.length} litigio(s) normalizado(s)`);
       }
 
       const payload = buildTrackPayload(litigationIds);

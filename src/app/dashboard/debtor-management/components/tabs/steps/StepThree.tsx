@@ -250,6 +250,55 @@ export const StepThree = ({
       );
     }
 
+    if (selectedConfig.executive_comment === "LITIGATION_NORMALIZATION" &&
+        formData.caseData?.litigationData) {
+      const normalizationData = formData.caseData.litigationData;
+      const normalizationReason = require("@/app/dashboard/data").NORMALIZATION_REASONS.find(
+        (r: any) => r.code === normalizationData.reason
+      );
+
+      return (
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <BookUser className="w-4 h-4 text-gray-700" />
+            <h3 className="font-semibold text-sm text-gray-700">
+              Normalización de Litigios
+            </h3>
+          </div>
+          <div className="space-y-3">
+            <div className="border border-gray-200 rounded p-3">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-gray-500">Facturas seleccionadas:</span>{" "}
+                  <span className="font-medium">
+                    {normalizationData.selectedInvoiceIds?.length || 0}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Monto total:</span>{" "}
+                  <span className="font-medium">
+                    {formatCurrency(normalizationData.totalAmount || 0)}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-500">Razón de normalización:</span>{" "}
+                  <span className="font-medium">
+                    {normalizationReason?.label || normalizationData.reason}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-500">Comentario:</span>{" "}
+                  <span className="font-medium">
+                    {normalizationData.comment || "-"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // Campos normales
     let icon = <FileText className="w-6 h-6 text-blue-600" />;
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { Invoice } from "@/app/dashboard/payment-plans/store";
-import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import Required from "@/components/ui/required";
 import {
@@ -17,14 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import InvoiceCardLitigation from "./InvoiceCardLitigation";
-
-const normalizationReasons = [
-  { code: "PAYMENT", label: "Pago total" },
-  { code: "PARTIAL_PAYMENT", label: "Pago parcial" },
-  { code: "AGREEMENT", label: "Acuerdo" },
-  { code: "CONDONATION", label: "Condonación" },
-  { code: "OTHER", label: "Otro" },
-];
+import { NORMALIZATION_REASONS } from "@/app/dashboard/data";
 
 const normalizationFormSchema = z.object({
   selectedInvoiceIds: z
@@ -110,9 +102,21 @@ const ManagementNormalizedLitigationForm = ({
   };
 
   const getTotalAmount = (): number => {
-    return selectedInvoices
-      .filter((inv) => selectedInvoiceIds.includes(inv.id))
-      .reduce((sum, inv) => sum + Number(inv.balance || 0), 0);
+    return selectedInvoiceIds
+      .map((invoiceId) => {
+        const litigation = litigations.find((lit) => lit.invoice_id === invoiceId);
+        return Number(litigation?.litigation_amount || 0);
+      })
+      .reduce((sum, amount) => sum + amount, 0);
+  };
+
+  const getLitigationIds = (): string[] => {
+    return selectedInvoiceIds
+      .map((invoiceId) => {
+        const litigation = litigations.find((lit) => lit.invoice_id === invoiceId);
+        return litigation?.id;
+      })
+      .filter(Boolean) as string[];
   };
 
   useEffect(() => {
@@ -128,6 +132,7 @@ const ManagementNormalizedLitigationForm = ({
 
         onChangeRef.current({
           selectedInvoiceIds,
+          litigationIds: getLitigationIds(),
           reason,
           comment,
           totalAmount: getTotalAmount(),
@@ -137,7 +142,7 @@ const ManagementNormalizedLitigationForm = ({
     };
 
     validateAndNotify();
-  }, [selectedInvoiceIds, reason, comment, form]);
+  }, [selectedInvoiceIds, reason, comment, form, litigations]);
 
   return (
     <div className="space-y-4">
@@ -190,7 +195,16 @@ const ManagementNormalizedLitigationForm = ({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4 pt-4">
+          <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
+            <span className="text-sm text-gray-600">
+              Monto litigios de factura seleccionadas:
+            </span>
+            <span className="text-lg font-bold text-blue-700">
+              ${new Intl.NumberFormat("es-CL").format(getTotalAmount())}
+            </span>
+          </div>
+
+          <div className="space-y-4 pt-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">
                 Razón de normalización <Required />
@@ -200,7 +214,7 @@ const ManagementNormalizedLitigationForm = ({
                   <SelectValue placeholder="Selecciona razón" />
                 </SelectTrigger>
                 <SelectContent>
-                  {normalizationReasons.map((item) => (
+                  {NORMALIZATION_REASONS.map((item) => (
                     <SelectItem key={item.code} value={item.code}>
                       {item.label}
                     </SelectItem>
@@ -217,28 +231,11 @@ const ManagementNormalizedLitigationForm = ({
                 placeholder="Ingresa un comentario sobre la normalización"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="min-h-[40px] resize-none"
+                className="min-h-[80px] resize-none"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">
-                Monto litigios de factura seleccionadas:
-              </span>
-              <span className="text-lg font-bold text-blue-700">
-                ${new Intl.NumberFormat("es-CL").format(getTotalAmount())}
-              </span>
-            </div>
-            <Button
-              type="button"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={selectedInvoiceIds.length === 0 || !reason || !comment}
-            >
-              Normalizar litigios
-            </Button>
-          </div>
         </div>
       </Form>
     </div>

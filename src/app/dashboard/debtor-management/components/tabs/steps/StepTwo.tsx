@@ -112,6 +112,7 @@ const createFormSchema = (hasCompleteSelection: boolean, selectedCombination: an
       baseSchema.caseData = z.object({
         litigationData: z.object({
           selectedInvoiceIds: z.array(z.string()).min(1, "Debe seleccionar al menos una factura"),
+          litigationIds: z.array(z.string()).optional(),
           reason: z.string().min(1, "La razón de normalización es requerida"),
           comment: z.string().min(1, "El comentario es requerido"),
           totalAmount: z.number().optional(),
