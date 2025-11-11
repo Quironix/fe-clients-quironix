@@ -6,6 +6,24 @@ import { Step } from "@/components/Stepper/types";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
+import {
+  bulkLitigatiions,
+  createLitigation,
+} from "../../../litigation/services";
+import {
+  ContactType,
+  FieldConfig,
+  getManagementCombination,
+} from "../../config/management-types";
+import { buildEmailPayload } from "../../services/email-builder";
+import { buildMultipleEmailPayload } from "../../services/email-builder-multiple";
+import {
+  sendTrackEmail,
+  sendMultipleManagementEmail,
+} from "../../services/email-sender";
+import { createTrack } from "../../services/tracks";
+import { CaseData } from "../../types/track";
 import { SavedManagementCard } from "./saved-management-card";
 import { StepOne, StepThree, StepTwo } from "./steps";
 
@@ -15,18 +33,6 @@ interface AddManagementTabProps {
   profile?: any;
 }
 
-// Definir los 3 pasos del stepper
-const steps: Step[] = [
-  { id: 1, label: "Paso 1", completed: false },
-  { id: 2, label: "Paso 2", completed: false },
-  { id: 3, label: "Paso 3", completed: false },
-];
-
-import { ContactType, getManagementCombination, FieldConfig } from "../../config/management-types";
-import { CaseData } from "../../types/track";
-import { buildEmailPayload } from "../../services/email-builder";
-import { sendTrackEmail } from "../../services/email-sender";
-
 export interface DebtorContact {
   id: string;
   type: string;
@@ -34,42 +40,35 @@ export interface DebtorContact {
   label: string;
   name?: string;
 }
-
-// Tipo para los datos del formulario de gestión
 export interface ManagementFormData {
-  // Selección en cascada (3 niveles)
-  managementType: string; // Primer nivel
-  debtorComment: string; // Segundo nivel
-  executiveComment: string; // Tercer nivel
-
-  // Datos de contacto
+  managementType: string;
+  debtorComment: string;
+  executiveComment: string;
   contactType: ContactType | "";
   contactValue: string;
   selectedContact?: DebtorContact | null;
-
-  // Observación
   observation: string;
-
-  // Próxima gestión
   nextManagementDate: string | Date;
   nextManagementTime: string;
-
-  // Datos dinámicos del caso (se llenan según el tipo de gestión)
   caseData: CaseData;
-
-  // Campos del Step 3
   file?: File | null;
   comment?: string;
   sendEmail?: boolean;
 }
 
-// Tipo para una gestión guardada completa
 export interface SavedManagement {
   id: string;
   formData: ManagementFormData;
   selectedInvoices: Invoice[];
   createdAt: Date;
 }
+
+// Definir los 3 pasos del stepper
+const steps: Step[] = [
+  { id: 1, label: "Paso 1", completed: false },
+  { id: 2, label: "Paso 2", completed: false },
+  { id: 3, label: "Paso 3", completed: false },
+];
 
 export const AddManagementTab = ({
   dataDebtor,
@@ -231,7 +230,6 @@ export const AddManagementTab = ({
       return [];
     }
 
-    const { createLitigation } = await import("../../../litigation/services");
     const litigationData = managementFormData.caseData.litigationData;
     const litigations = litigationData.litigations || [];
 
@@ -240,21 +238,19 @@ export const AddManagementTab = ({
 
     for (const litigation of litigations) {
       // Construir el array de facturas con toda la información requerida
-      const invoicesArray = litigation.selectedInvoiceIds.map((invoiceId: string) => {
-        const invoice = selectedInvoices.find((inv) => inv.id === invoiceId);
-        return {
-          documentType: invoice?.type || "INVOICE",
-          invoiceNumber: invoice?.number || "",
-          invoiceAmount: invoice?.balance?.toString() || "0",
-          litigationAmount: litigation.invoiceAmounts[invoiceId] || "0",
-          reason: litigation.reason,
-          subreason: litigation.subreason,
-        };
-      });
-
-      // Payload siguiendo la estructura de /dashboard/litigation
-      // Contacto y comentario se obtienen del formulario principal de gestión
-      console.log("🔍 Selected contact for litigation:", managementFormData.selectedContact);
+      const invoicesArray = litigation.selectedInvoiceIds.map(
+        (invoiceId: string) => {
+          const invoice = selectedInvoices.find((inv) => inv.id === invoiceId);
+          return {
+            documentType: invoice?.type || "INVOICE",
+            invoiceNumber: invoice?.number || "",
+            invoiceAmount: invoice?.balance?.toString() || "0",
+            litigationAmount: litigation.invoiceAmounts[invoiceId] || "0",
+            reason: litigation.reason,
+            subreason: litigation.subreason,
+          };
+        }
+      );
 
       const litigationPayload: any = {
         debtorId: dataDebtor.id,
@@ -263,9 +259,6 @@ export const AddManagementTab = ({
         invoices: invoicesArray,
       };
 
-      console.log("📦 Litigation payload:", litigationPayload);
-
-      // Agregar cliente solo si es FACTORING
       if (isFactoring && profile.client_id) {
         litigationPayload.client = profile.client_id;
       }
@@ -276,22 +269,16 @@ export const AddManagementTab = ({
         dataToInsert: litigationPayload,
       });
 
-      console.log("🔍 Resultado de createLitigation:", result);
-
       if (result.success) {
-        // La API devuelve un objeto con array 'successes' que contiene los litigios creados
         const successes = result.data?.successes;
 
         if (successes && Array.isArray(successes)) {
-          // Extraer todos los IDs de los litigios creados
           const ids = successes
             .map((litigation: any) => litigation.id)
             .filter((id: any) => id);
 
-          console.log(`✅ ${ids.length} litigio(s) creado(s):`, ids);
           createdIds.push(...ids);
         } else {
-          console.error("⚠️ No se encontró array 'successes' en la respuesta:", result.data);
           throw new Error("No se pudo obtener los IDs de los litigios creados");
         }
       } else {
@@ -306,8 +293,6 @@ export const AddManagementTab = ({
     if (!managementFormData.caseData?.litigationData) {
       return [];
     }
-
-    const { bulkLitigatiions } = await import("../../../litigation/services");
     const normalizationData = managementFormData.caseData.litigationData;
 
     const litigationIds = normalizationData.litigationIds || [];
@@ -319,19 +304,17 @@ export const AddManagementTab = ({
     const normalizationPayload = {
       litigation_ids: litigationIds,
       normalization_reason: normalizationData.reason,
-      normalization_by_contact: managementFormData.selectedContact?.id || managementFormData.contactValue,
+      normalization_by_contact:
+        managementFormData.selectedContact?.id ||
+        managementFormData.contactValue,
       comment: normalizationData.comment,
     };
-
-    console.log("📦 Normalization payload:", normalizationPayload);
 
     const result = await bulkLitigatiions(
       session.token,
       profile.client_id,
       normalizationPayload
     );
-
-    console.log("🔍 Resultado de bulkLitigatiions:", result);
 
     if (result.success) {
       return litigationIds;
@@ -344,12 +327,6 @@ export const AddManagementTab = ({
     const dateISO = formatDateToISO(managementFormData.nextManagementDate);
     const time = managementFormData.nextManagementTime || "00:00";
     const nextManagementDateTime = `${dateISO}T${time}:00.000Z`;
-
-    console.log("🔍 Contact data:", {
-      contactType: managementFormData.contactType,
-      contactValue: managementFormData.contactValue,
-      selectedContact: managementFormData.selectedContact,
-    });
 
     const payload: any = {
       debtor_id: dataDebtor.id,
@@ -382,17 +359,12 @@ export const AddManagementTab = ({
       ) {
         // Asegurar que todos los IDs sean strings
         const validatedIds = litigationIds
-          .filter(id => id && typeof id === 'string')
-          .map(id => id.toString());
+          .filter((id) => id && typeof id === "string")
+          .map((id) => id.toString());
 
         payload.case_data = {
           litigationIds: validatedIds,
         };
-
-        console.log("📦 Payload de track con litigios:", {
-          litigationIds: validatedIds,
-          total: validatedIds.length
-        });
       } else if (
         selectedCombination?.executive_comment === "LITIGATION_NORMALIZATION" &&
         litigationIds
@@ -400,8 +372,8 @@ export const AddManagementTab = ({
         // Caso especial: normalización de litigios
         // Solo incluir litigationIds en case_data (sin reason, comment, totalAmount)
         const validatedIds = litigationIds
-          .filter(id => id && typeof id === 'string')
-          .map(id => id.toString());
+          .filter((id) => id && typeof id === "string")
+          .map((id) => id.toString());
 
         payload.case_data = {
           litigationIds: validatedIds,
@@ -412,12 +384,6 @@ export const AddManagementTab = ({
         if (normalizationData?.selectedInvoiceIds) {
           payload.invoice_ids = normalizationData.selectedInvoiceIds;
         }
-
-        console.log("📦 Payload de track con normalización de litigios:", {
-          litigationIds: validatedIds,
-          invoiceIds: payload.invoice_ids,
-          total: validatedIds.length,
-        });
       } else {
         // Caso normal: otros tipos de gestión
         const normalizedCaseData: any = {};
@@ -449,18 +415,12 @@ export const AddManagementTab = ({
         payload.case_data = normalizedCaseData;
       }
     }
-
-    console.log("🚀 Payload construido:", JSON.stringify(payload, null, 2));
-
     return payload;
   };
 
   const handleAddManagement = async () => {
     setIsSubmitting(true);
     try {
-      const { createTrack } = await import("../../services/tracks");
-      const { toast } = await import("sonner");
-
       validateManagementData();
 
       // Si es litigation, crear los litigios primero
@@ -489,38 +449,7 @@ export const AddManagementTab = ({
         payload
       );
 
-      console.log("Gestión creada exitosamente:", result);
       toast.success("Gestión agregada exitosamente");
-
-      if (managementFormData.contactType === "EMAIL") {
-        try {
-          const selectedCombination = getManagementCombination(
-            managementFormData.managementType,
-            managementFormData.debtorComment,
-            managementFormData.executiveComment
-          );
-
-          if (selectedCombination) {
-            const emailPayload = buildEmailPayload({
-              managementFormData,
-              selectedInvoices,
-              profile,
-              managementCombination: selectedCombination,
-            });
-
-            const emailResult = await sendTrackEmail(emailPayload);
-
-            if (emailResult.success) {
-              toast.success("Email enviado al contacto");
-            } else {
-              toast.warning("Gestión creada pero el email no pudo enviarse");
-            }
-          }
-        } catch (error) {
-          console.error("Error al enviar email:", error);
-          toast.warning("Gestión creada pero el email no pudo enviarse");
-        }
-      }
 
       const newManagement: SavedManagement = {
         id: result.track.id,
@@ -537,8 +466,6 @@ export const AddManagementTab = ({
 
       setStepsState(steps.map((step) => ({ ...step, completed: false })));
     } catch (error) {
-      console.error("Error al agregar gestión:", error);
-      const { toast } = await import("sonner");
       toast.error(
         error instanceof Error ? error.message : "Error al crear gestión"
       );
@@ -556,9 +483,6 @@ export const AddManagementTab = ({
   const handleFinish = async () => {
     setIsSubmitting(true);
     try {
-      const { createTrack } = await import("../../services/tracks");
-      const { toast } = await import("sonner");
-
       validateManagementData();
 
       // Si es litigation, crear los litigios primero
@@ -581,41 +505,106 @@ export const AddManagementTab = ({
 
       const payload = buildTrackPayload(litigationIds);
 
-      const result = await createTrack(
-        session.token,
-        profile.client_id,
-        payload
+      const result = await createTrack(session.token, profile.client_id, payload);
+
+      const currentManagement: SavedManagement = {
+        id: result.track.id,
+        formData: { ...managementFormData },
+        selectedInvoices: [...selectedInvoices],
+        createdAt: new Date(result.track.created_at),
+      };
+
+      const allManagements = [...savedManagements, currentManagement];
+
+      const managementsToEmail = allManagements.filter(
+        (m) => m.formData.sendEmail === true
       );
 
-      console.log("Gestión final creada exitosamente:", result);
+      if (managementsToEmail.length > 0) {
+        const groupedByContact: Record<
+          string,
+          { managements: SavedManagement[]; contactName: string }
+        > = {};
 
-      if (managementFormData.contactType === "EMAIL") {
-        try {
-          const selectedCombination = getManagementCombination(
-            managementFormData.managementType,
-            managementFormData.debtorComment,
-            managementFormData.executiveComment
-          );
+        managementsToEmail.forEach((management) => {
+          const contactEmail = management.formData.contactValue;
+          const contactName =
+            management.formData.selectedContact?.name ||
+            management.formData.selectedContact?.label ||
+            "Contacto";
 
-          if (selectedCombination) {
-            const emailPayload = buildEmailPayload({
-              managementFormData,
-              selectedInvoices,
-              profile,
-              managementCombination: selectedCombination,
-            });
-
-            const emailResult = await sendTrackEmail(emailPayload);
-
-            if (emailResult.success) {
-              toast.success("Email enviado al contacto");
-            } else {
-              toast.warning("Gestión creada pero el email no pudo enviarse");
-            }
+          if (!groupedByContact[contactEmail]) {
+            groupedByContact[contactEmail] = {
+              managements: [],
+              contactName,
+            };
           }
-        } catch (error) {
-          console.error("Error al enviar email:", error);
-          toast.warning("Gestión creada pero el email no pudo enviarse");
+          groupedByContact[contactEmail].managements.push(management);
+        });
+
+        const sortedGroups = Object.entries(groupedByContact).map(
+          ([email, data]) => ({
+            email,
+            contactName: data.contactName,
+            managements: data.managements.sort(
+              (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+            ),
+          })
+        );
+
+        for (const group of sortedGroups) {
+          try {
+            if (group.managements.length === 1) {
+              const management = group.managements[0];
+              const selectedCombination = getManagementCombination(
+                management.formData.managementType,
+                management.formData.debtorComment,
+                management.formData.executiveComment
+              );
+
+              if (selectedCombination) {
+                const emailPayload = buildEmailPayload({
+                  managementFormData: management.formData,
+                  selectedInvoices: management.selectedInvoices,
+                  profile,
+                  managementCombination: selectedCombination,
+                });
+
+                const emailResult = await sendTrackEmail(emailPayload);
+
+                if (emailResult.success) {
+                  toast.success(`Email enviado a ${group.email}`);
+                } else {
+                  toast.warning(
+                    `Email a ${group.email} no pudo enviarse`
+                  );
+                }
+              }
+            } else {
+              const emailPayload = buildMultipleEmailPayload({
+                managements: group.managements,
+                profile,
+                contactEmail: group.email,
+                contactName: group.contactName,
+              });
+
+              const emailResult = await sendMultipleManagementEmail(
+                emailPayload
+              );
+
+              if (emailResult.success) {
+                toast.success(
+                  `Email de ${group.managements.length} gestiones enviado a ${group.email}`
+                );
+              } else {
+                toast.warning(
+                  `Email a ${group.email} no pudo enviarse`
+                );
+              }
+            }
+          } catch (error) {
+            toast.warning(`Error al enviar email a ${group.email}`);
+          }
         }
       }
 
@@ -630,8 +619,6 @@ export const AddManagementTab = ({
       setCurrentStep(0);
       setStepsState(steps.map((step) => ({ ...step, completed: false })));
     } catch (error) {
-      console.error("Error al finalizar:", error);
-      const { toast } = await import("sonner");
       toast.error(
         error instanceof Error
           ? error.message

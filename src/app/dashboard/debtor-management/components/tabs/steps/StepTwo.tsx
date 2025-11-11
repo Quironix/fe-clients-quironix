@@ -13,6 +13,7 @@ import {
   getManagementCombination,
   MANAGEMENT_TYPES,
 } from "@/app/dashboard/debtor-management/config/management-types";
+import { getLitigationsByDebtor } from "@/app/dashboard/litigation/services";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import {
   Accordion,
@@ -49,7 +50,6 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { getLitigationsByDebtor } from "@/app/dashboard/litigation/services";
 
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 
@@ -64,7 +64,10 @@ interface StepTwoProps {
 /**
  * Genera esquema de validación dinámico
  */
-const createFormSchema = (hasCompleteSelection: boolean, selectedCombination: any) => {
+const createFormSchema = (
+  hasCompleteSelection: boolean,
+  selectedCombination: any
+) => {
   const baseSchema: any = {
     managementType: z.string().min(1, "Debe seleccionar un tipo de gestión"),
     debtorComment: z
@@ -96,39 +99,59 @@ const createFormSchema = (hasCompleteSelection: boolean, selectedCombination: an
     // Validar caseData para componentes de tipo litigio
     if (selectedCombination?.executive_comment === "DOCUMENT_IN_LITIGATION") {
       baseSchema.caseData = z.object({
-        litigationData: z.object({
-          litigations: z.array(z.object({
-            selectedInvoiceIds: z.array(z.string()).min(1, "Debe seleccionar al menos una factura"),
-            litigationAmount: z.string().optional(),
-            reason: z.string().min(1, "El motivo es requerido"),
-            subreason: z.string().min(1, "El submotivo es requerido"),
-          })).min(1, "Debe crear al menos un litigio"),
-          _isValid: z.boolean().optional(),
-        }).refine((data) => data._isValid !== false, {
-          message: "Debe completar todos los campos requeridos del litigio",
-        }),
+        litigationData: z
+          .object({
+            litigations: z
+              .array(
+                z.object({
+                  selectedInvoiceIds: z
+                    .array(z.string())
+                    .min(1, "Debe seleccionar al menos una factura"),
+                  litigationAmount: z.string().optional(),
+                  reason: z.string().min(1, "El motivo es requerido"),
+                  subreason: z.string().min(1, "El submotivo es requerido"),
+                })
+              )
+              .min(1, "Debe crear al menos un litigio"),
+            _isValid: z.boolean().optional(),
+          })
+          .refine((data) => data._isValid !== false, {
+            message: "Debe completar todos los campos requeridos del litigio",
+          }),
       });
-    } else if (selectedCombination?.executive_comment === "LITIGATION_NORMALIZATION") {
+    } else if (
+      selectedCombination?.executive_comment === "LITIGATION_NORMALIZATION"
+    ) {
       baseSchema.caseData = z.object({
-        litigationData: z.object({
-          selectedInvoiceIds: z.array(z.string()).min(1, "Debe seleccionar al menos una factura"),
-          litigationIds: z.array(z.string()).optional(),
-          reason: z.string().min(1, "La razón de normalización es requerida"),
-          comment: z.string().min(1, "El comentario es requerido"),
-          totalAmount: z.number().optional(),
-          _isValid: z.boolean().optional(),
-        }).refine((data) => data._isValid !== false, {
-          message: "Debe completar todos los campos requeridos de la normalización",
-        }),
+        litigationData: z
+          .object({
+            selectedInvoiceIds: z
+              .array(z.string())
+              .min(1, "Debe seleccionar al menos una factura"),
+            litigationIds: z.array(z.string()).optional(),
+            reason: z.string().min(1, "La razón de normalización es requerida"),
+            comment: z.string().min(1, "El comentario es requerido"),
+            totalAmount: z.number().optional(),
+            _isValid: z.boolean().optional(),
+          })
+          .refine((data) => data._isValid !== false, {
+            message:
+              "Debe completar todos los campos requeridos de la normalización",
+          }),
       });
-    } else if (selectedCombination?.fields && selectedCombination.fields.length > 0) {
+    } else if (
+      selectedCombination?.fields &&
+      selectedCombination.fields.length > 0
+    ) {
       // Validar campos dinámicos según su configuración
       const caseDataSchema: any = {};
 
       selectedCombination.fields.forEach((field: FieldConfig) => {
         if (field.required) {
           if (field.type === "number") {
-            caseDataSchema[field.name] = z.coerce.number().min(1, `${field.label} es requerido`);
+            caseDataSchema[field.name] = z.coerce
+              .number()
+              .min(1, `${field.label} es requerido`);
           } else if (field.type === "date") {
             caseDataSchema[field.name] = z
               .union([z.string(), z.date()])
@@ -136,9 +159,13 @@ const createFormSchema = (hasCompleteSelection: boolean, selectedCombination: an
                 message: `${field.label} es requerido`,
               });
           } else if (field.type === "time") {
-            caseDataSchema[field.name] = z.string().min(1, `${field.label} es requerido`);
+            caseDataSchema[field.name] = z
+              .string()
+              .min(1, `${field.label} es requerido`);
           } else {
-            caseDataSchema[field.name] = z.string().min(1, `${field.label} es requerido`);
+            caseDataSchema[field.name] = z
+              .string()
+              .min(1, `${field.label} es requerido`);
           }
         } else {
           caseDataSchema[field.name] = z.any().optional();
@@ -375,7 +402,12 @@ export const StepTwo = ({
     };
 
     fetchLitigations();
-  }, [selectedCombination?.executive_comment, dataDebtor?.id, session?.token, profile?.client_id]);
+  }, [
+    selectedCombination?.executive_comment,
+    dataDebtor?.id,
+    session?.token,
+    profile?.client_id,
+  ]);
 
   // Crear esquema dinámico
   const formSchema = useMemo(
@@ -425,34 +457,39 @@ export const StepTwo = ({
   // Sincronizar valores cuando cambie formData desde el padre
   useEffect(() => {
     const currentValues = form.getValues();
-    const hasChanges = JSON.stringify({
-      managementType: formData.managementType || "CALL_OUT",
-      debtorComment: formData.debtorComment || "",
-      executiveComment: formData.executiveComment || "",
-      contactType: formData.contactType || "",
-      contactValue: formData.contactValue || "",
-      observation: formData.observation || "",
-      nextManagementDate: formData.nextManagementDate || "",
-      nextManagementTime: formData.nextManagementTime || "",
-      caseData: formData.caseData || {},
-    }) !== JSON.stringify({
-      ...currentValues,
-      selectedContact: undefined,
-    });
-
-    if (hasChanges) {
-      form.reset({
+    const hasChanges =
+      JSON.stringify({
         managementType: formData.managementType || "CALL_OUT",
         debtorComment: formData.debtorComment || "",
         executiveComment: formData.executiveComment || "",
         contactType: formData.contactType || "",
         contactValue: formData.contactValue || "",
-        selectedContact: formData.selectedContact || null,
         observation: formData.observation || "",
         nextManagementDate: formData.nextManagementDate || "",
         nextManagementTime: formData.nextManagementTime || "",
         caseData: formData.caseData || {},
-      }, { keepErrors: true, keepDirty: false, keepTouched: true });
+      }) !==
+      JSON.stringify({
+        ...currentValues,
+        selectedContact: undefined,
+      });
+
+    if (hasChanges) {
+      form.reset(
+        {
+          managementType: formData.managementType || "CALL_OUT",
+          debtorComment: formData.debtorComment || "",
+          executiveComment: formData.executiveComment || "",
+          contactType: formData.contactType || "",
+          contactValue: formData.contactValue || "",
+          selectedContact: formData.selectedContact || null,
+          observation: formData.observation || "",
+          nextManagementDate: formData.nextManagementDate || "",
+          nextManagementTime: formData.nextManagementTime || "",
+          caseData: formData.caseData || {},
+        },
+        { keepErrors: true, keepDirty: false, keepTouched: true }
+      );
     }
   }, [formData, form]);
 
@@ -502,7 +539,11 @@ export const StepTwo = ({
         <form className="space-y-5">
           <Accordion
             type="multiple"
-            defaultValue={["seleccion-gestion", "datos-gestion", "detalles-especificos"]}
+            defaultValue={[
+              "seleccion-gestion",
+              "datos-gestion",
+              "detalles-especificos",
+            ]}
             className="w-full space-y-5"
           >
             {/* ISLA 1: Selección de Gestión (3 selectores en cascada) */}
@@ -654,7 +695,7 @@ export const StepTwo = ({
                     <h4 className="text-sm font-semibold text-gray-700">
                       Contacto
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full items-start">
                       <FormField
                         control={form.control}
                         name="contactType"
@@ -766,9 +807,7 @@ export const StepTwo = ({
                       disabled
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>
-                            Descripción de la interacción
-                          </FormLabel>
+                          <FormLabel>Descripción de la interacción</FormLabel>
                           <FormControl>
                             <Textarea
                               placeholder="Texto será generado por IA según la interacción"
@@ -788,7 +827,7 @@ export const StepTwo = ({
                       <CalendarClock className="w-4 h-4" />
                       Próxima Gestión
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full items-start">
                       <FormField
                         control={form.control}
                         name="nextManagementDate"
@@ -829,8 +868,8 @@ export const StepTwo = ({
                     />
                   </AccordionTrigger>
                 </div>
-                <AccordionContent className="flex flex-col gap-4 text-balance px-1 py-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                <AccordionContent className="flex flex-col gap-4 text-balance px-1 py-4 items-start">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full items-start">
                     {selectedCombination.fields.map((field) => (
                       <DynamicField
                         key={field.name}

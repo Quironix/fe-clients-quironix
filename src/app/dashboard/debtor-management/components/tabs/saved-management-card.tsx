@@ -3,7 +3,11 @@
 
 import { disputes } from "@/app/dashboard/data";
 import { SavedManagement } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
-import { getManagementCombination } from "@/app/dashboard/debtor-management/config/management-types";
+import {
+  getManagementCombination,
+  DEBTOR_COMMENTS,
+  EXECUTIVE_COMMENTS
+} from "@/app/dashboard/debtor-management/config/management-types";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import {
@@ -109,6 +113,16 @@ export const SavedManagementCard = ({
       reason?.submotivo.find((s) => s.code === subreasonCode)?.label ||
       subreasonCode;
     return { reasonLabel, subreasonLabel };
+  };
+
+  const getDebtorCommentLabel = (debtorComment: string) => {
+    const comment = DEBTOR_COMMENTS.find((c) => c.value === debtorComment);
+    return comment?.label || debtorComment;
+  };
+
+  const getExecutiveCommentLabel = (executiveComment: string) => {
+    const comment = EXECUTIVE_COMMENTS.find((c) => c.value === executiveComment);
+    return comment?.label || executiveComment;
   };
 
   const renderCaseDataFields = () => {
@@ -376,7 +390,9 @@ export const SavedManagementCard = ({
           <AccordionTrigger className="flex-1 hover:no-underline px-4">
             <div className="flex items-center gap-3">
               <h3 className="text-base font-semibold text-blue-600">
-                Gestión {index + 1}
+                Gestión - {getDebtorCommentLabel(management.formData.debtorComment)}
+                {" / "}
+                {getExecutiveCommentLabel(management.formData.executiveComment)}
               </h3>
 
               {/* {management.id && (

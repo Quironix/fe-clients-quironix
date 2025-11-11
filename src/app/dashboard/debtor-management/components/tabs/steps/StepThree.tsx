@@ -39,7 +39,7 @@ import {
   User2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { disputes } from "@/app/dashboard/data";
 
 interface StepThreeProps {
@@ -88,6 +88,14 @@ export const StepThree = ({
       (t) => t.value === formData.contactType
     );
     return type?.label || formData.contactType;
+  }, [formData.contactType]);
+
+  useEffect(() => {
+    if (formData.contactType === "EMAIL" && !formData.sendEmail) {
+      onFormChange({ sendEmail: true });
+    } else if (formData.contactType !== "EMAIL" && formData.sendEmail) {
+      onFormChange({ sendEmail: false });
+    }
   }, [formData.contactType]);
 
   const handleFileChange = (file: File | null) => {

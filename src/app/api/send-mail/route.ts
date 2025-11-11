@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 sgMail.setApiKey(process.env.NEXT_SENDGRID_API_KEY || "");
 
-const DEFAULT_TEMPLATE_ID = process.env.NEXT_SG_SINGLE_MANAGEMENT || "";
+const SINGLE_TEMPLATE_ID = process.env.NEXT_SG_SINGLE_MANAGEMENT || "";
+const MULTIPLE_TEMPLATE_ID = process.env.NEXT_SG_MULTIPLE_MANAGEMENT || "";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +20,17 @@ export async function POST(request: NextRequest) {
     let msg: any;
 
     if (body.dynamicTemplateData) {
-      const templateId = body.templateId || DEFAULT_TEMPLATE_ID;
+      let templateId = body.templateId;
+
+      if (!templateId) {
+        const isMultipleManagement =
+          body.dynamicTemplateData.managements &&
+          Array.isArray(body.dynamicTemplateData.managements);
+
+        templateId = isMultipleManagement
+          ? MULTIPLE_TEMPLATE_ID
+          : SINGLE_TEMPLATE_ID;
+      }
 
       if (!templateId) {
         return NextResponse.json(

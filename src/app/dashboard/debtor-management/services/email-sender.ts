@@ -1,4 +1,8 @@
-import { EmailPayload, EmailResponse } from "../types/email";
+import {
+  EmailPayload,
+  EmailResponse,
+  EmailMultiplePayload,
+} from "../types/email";
 
 export async function sendTrackEmail(
   payload: EmailPayload
@@ -22,7 +26,9 @@ export async function sendTrackEmail(
 
     if (!response.ok) {
       throw new Error(
-        data.error || data.details || `Error ${response.status}: ${response.statusText}`
+        data.error ||
+          data.details ||
+          `Error ${response.status}: ${response.statusText}`
       );
     }
 
@@ -45,6 +51,57 @@ export async function sendTrackEmail(
     return {
       success: false,
       message: error.message || "Error al enviar email",
+    };
+  }
+}
+
+export async function sendMultipleManagementEmail(
+  payload: EmailMultiplePayload
+): Promise<EmailResponse> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const response = await fetch("/api/send-mail", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          data.details ||
+          `Error ${response.status}: ${response.statusText}`
+      );
+    }
+
+    return {
+      success: true,
+      message: data.message || "Email de múltiples gestiones enviado exitosamente",
+    };
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+
+    if (error.name === "AbortError") {
+      console.error("Multiple email sending timeout");
+      return {
+        success: false,
+        message: "El envío de email múltiple excedió el tiempo límite",
+      };
+    }
+
+    console.error("Error sending multiple email:", error);
+    return {
+      success: false,
+      message: error.message || "Error al enviar email múltiple",
     };
   }
 }

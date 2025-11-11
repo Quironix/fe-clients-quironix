@@ -18,8 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { FileText, Plus, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { disputes } from "../../../data";
@@ -207,6 +207,20 @@ const ManagementLitigationForm = ({
       .reduce((sum, inv) => sum + Number(inv.balance || 0), 0);
   };
 
+  const getLitigationLabels = (litigation: SingleLitigation) => {
+    if (!litigation.reason || !litigation.subreason) {
+      return null;
+    }
+
+    const reason = disputes.find((d) => d.code === litigation.reason);
+    const reasonLabel = reason?.label || litigation.reason;
+    const subreasonLabel =
+      reason?.submotivo.find((s) => s.code === litigation.subreason)?.label ||
+      litigation.subreason;
+
+    return { reasonLabel, subreasonLabel };
+  };
+
   useEffect(() => {
     const validateAndNotify = async () => {
       form.setValue("litigations", litigations, { shouldValidate: false });
@@ -254,25 +268,36 @@ const ManagementLitigationForm = ({
             {litigations.map((litigation, index) => {
               const usedInvoiceIds = getUsedInvoiceIds(litigation.id);
               const totalInvoicesAmount = getTotalInvoicesAmount(litigation);
+              const litigationLabels = getLitigationLabels(litigation);
 
               return (
                 <AccordionItem
                   key={litigation.id}
                   value={litigation.id}
-                  className="border border-gray-200 rounded-md px-3 py-2 relative mb-4"
+                  className="border border-gray-200 rounded-md relative mb-4 px-3 py-2"
                 >
-                  <div className="flex items-center justify-between">
-                    <AccordionTrigger className="flex items-center justify-between w-full py-2 pr-12 hover:no-underline">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">
-                          Litigio {index + 1}
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <AccordionTrigger className="flex items-center w-full py-0 pr-2 hover:no-underline">
+                      <div className="flex items-center gap-3 w-full">
+                        <span className="font-semibold text-gray-700">
+                          Litigio
                         </span>
-                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
-                          {litigation.selectedInvoiceIds.length} seleccionada
-                          {litigation.selectedInvoiceIds.length !== 1
-                            ? "s"
-                            : ""}
-                        </span>
+                        {litigationLabels ? (
+                          <span className="text-sm text-gray-600">
+                            | {litigationLabels.reasonLabel} -{" "}
+                            {litigationLabels.subreasonLabel}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400 italic">
+                            | Selecciona motivo y submotivo
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1 ml-auto text-gray-600">
+                          <FileText className="w-4 h-4" />
+                          <span className="text-sm">
+                            {litigation.selectedInvoiceIds.length}
+                          </span>
+                        </div>
                       </div>
                     </AccordionTrigger>
                     {litigations.length > 1 && (
@@ -284,7 +309,7 @@ const ManagementLitigationForm = ({
                           e.stopPropagation();
                           handleRemoveLitigation(litigation.id);
                         }}
-                        className="absolute right-2 top-2 bg-red-500 text-white hover:bg-red-600 hover:text-white flex items-center justify-center h-8 w-8"
+                        className="bg-red-500 text-white hover:bg-red-600 hover:text-white flex items-center justify-center h-8 w-8 ml-2"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
