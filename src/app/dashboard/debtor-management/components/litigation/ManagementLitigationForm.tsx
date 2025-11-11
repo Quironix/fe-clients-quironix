@@ -265,7 +265,7 @@ const ManagementLitigationForm = ({
             onValueChange={setActiveLitigation}
             className="space-y-6"
           >
-            {litigations.map((litigation, index) => {
+            {litigations.map((litigation) => {
               const usedInvoiceIds = getUsedInvoiceIds(litigation.id);
               const totalInvoicesAmount = getTotalInvoicesAmount(litigation);
               const litigationLabels = getLitigationLabels(litigation);

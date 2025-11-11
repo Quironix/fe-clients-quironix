@@ -36,3 +36,4 @@ yarn-error.log*
 Thumbs.db
 package-lock.json
 yarn.lock
+.env

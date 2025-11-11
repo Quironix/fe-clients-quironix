@@ -415,23 +415,25 @@ export const StepTwo = ({
     [hasCompleteSelection, selectedCombination]
   );
 
-  // Obtener contactos del deudor para selector
+  // Obtener contactos del deudor para selector (solo con email)
   const debtorContacts = useMemo<DebtorContact[]>(() => {
     if (!dataDebtor?.contacts) return [];
 
     console.log("🔍 Raw contacts from dataDebtor:", dataDebtor.contacts);
 
-    const mappedContacts = dataDebtor.contacts.map(
-      (contact: any, idx: number): DebtorContact => ({
-        id: contact.id || `contact-${idx}`,
-        type: contact.channel?.toUpperCase() || "EMAIL",
-        value: contact.email || contact.phone || "",
-        label: `${contact.name} - ${contact.email || contact.phone}`,
-        name: contact.name || "",
-      })
-    );
+    const mappedContacts = dataDebtor.contacts
+      .filter((contact: any) => contact.email) // Solo contactos con email
+      .map(
+        (contact: any, idx: number): DebtorContact => ({
+          id: contact.id || `contact-${idx}`,
+          type: contact.channel?.toUpperCase() || "EMAIL",
+          value: contact.email,
+          label: `${contact.name} - ${contact.email}`,
+          name: contact.name || "",
+        })
+      );
 
-    console.log("🔍 Mapped debtorContacts:", mappedContacts);
+    console.log("🔍 Mapped debtorContacts (only with email):", mappedContacts);
 
     return mappedContacts;
   }, [dataDebtor]);
@@ -744,7 +746,6 @@ export const StepTwo = ({
                                   if (value === "__manual__") {
                                     field.onChange("");
                                     form.setValue("selectedContact", null);
-                                    form.setValue("contactType", "");
                                   } else {
                                     const contact = debtorContacts.find(
                                       (c) => c.id === value
@@ -752,10 +753,6 @@ export const StepTwo = ({
                                     if (contact) {
                                       field.onChange(contact.value);
                                       form.setValue("selectedContact", contact);
-                                      form.setValue(
-                                        "contactType",
-                                        contact.type
-                                      );
                                     }
                                   }
                                 }}

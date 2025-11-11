@@ -96,7 +96,7 @@ export const AddManagementTab = ({
       caseData: {},
       file: null,
       comment: "",
-      sendEmail: false,
+      sendEmail: true,
     });
 
   const [stepValidations, setStepValidations] = useState({
@@ -179,7 +179,7 @@ export const AddManagementTab = ({
       caseData: {},
       file: null,
       comment: "",
-      sendEmail: false,
+      sendEmail: true,
     });
   };
 
@@ -461,8 +461,9 @@ export const AddManagementTab = ({
       setSavedManagements((prev) => [...prev, newManagement]);
 
       resetManagementForm();
+      setSelectedInvoices([]);
 
-      setCurrentStep(1);
+      setCurrentStep(0);
 
       setStepsState(steps.map((step) => ({ ...step, completed: false })));
     } catch (error) {

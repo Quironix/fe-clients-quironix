@@ -91,12 +91,10 @@ export const StepThree = ({
   }, [formData.contactType]);
 
   useEffect(() => {
-    if (formData.contactType === "EMAIL" && !formData.sendEmail) {
+    if (formData.sendEmail === undefined || formData.sendEmail === false) {
       onFormChange({ sendEmail: true });
-    } else if (formData.contactType !== "EMAIL" && formData.sendEmail) {
-      onFormChange({ sendEmail: false });
     }
-  }, [formData.contactType]);
+  }, []);
 
   const handleFileChange = (file: File | null) => {
     onFormChange({ file });

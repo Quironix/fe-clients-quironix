@@ -93,7 +93,14 @@ function generatePaymentDeclaredHTML(caseData: CaseData): string {
 }
 
 function generateNonPaymentReasonHTML(caseData: CaseData): string {
-  const reason = caseData.nonPaymentReason || "No especificado";
+  const reasonMapping: { [key: string]: string } = {
+    LACK_OF_COMMUNICATION: "Falta de comunicación",
+    FINANCIAL_ISSUES: "Problemas financieros",
+    DISPUTE: "Disputa",
+    OTHER: "Otro",
+  };
+
+  const reason = reasonMapping[caseData.nonPaymentReason || ""] || caseData.nonPaymentReason || "No especificado";
   const customReason = caseData.customReason
     ? `<p>Detalles adicionales: ${caseData.customReason}</p>`
     : "";
@@ -107,7 +114,14 @@ function generateNonPaymentReasonHTML(caseData: CaseData): string {
 }
 
 function generatePendingCommunicationHTML(caseData: CaseData): string {
-  const purpose = caseData.communicationPurpose || "No especificado";
+  const purposeMapping: { [key: string]: string } = {
+    ACCOUNT_STATEMENT_REQUEST: "Solicitud de estado de cuenta",
+    SEND_INVOICE_DETAILS: "Envío de detalles de factura",
+    PAYMENT_CONFIRMATION: "Confirmación de pago",
+    OTHER: "Otro",
+  };
+
+  const purpose = purposeMapping[caseData.communicationPurpose || ""] || caseData.communicationPurpose || "No especificado";
 
   return `
     <p>Se ha enviado <strong>información al deudor</strong>.</p>
@@ -133,7 +147,14 @@ function generatePaymentIdentifiedHTML(caseData: CaseData): string {
 }
 
 function generateInvoiceNotRegisteredHTML(caseData: CaseData): string {
-  const action = caseData.selectionOption || "Verificar estado";
+  const actionMapping: { [key: string]: string } = {
+    SEND_INVOICE_COPY: "Enviar copia de factura",
+    VERIFY_RECEIPT: "Verificar recepción",
+    CONTACT_ACCOUNTING: "Contactar contabilidad",
+    OTHER: "Otro",
+  };
+
+  const action = actionMapping[caseData.selectionOption || ""] || caseData.selectionOption || "Verificar estado";
   const customReason = caseData.customReason
     ? `<p>Explicación del problema: ${caseData.customReason}</p>`
     : "";
