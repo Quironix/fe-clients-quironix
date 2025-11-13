@@ -330,7 +330,14 @@ export const AddManagementTab = ({
     }
 
     const paymentPlanData = managementFormData.caseData.paymentPlanData;
-    const totalAmount = selectedInvoices.reduce((sum, invoice) => {
+
+    const validInvoices = selectedInvoices.filter(inv => inv && inv.id);
+
+    if (validInvoices.length === 0) {
+      throw new Error("No hay facturas válidas seleccionadas para el plan de pago");
+    }
+
+    const totalAmount = validInvoices.reduce((sum, invoice) => {
       const amount =
         typeof invoice.balance === "string"
           ? parseFloat(invoice.balance)
@@ -338,9 +345,13 @@ export const AddManagementTab = ({
       return Math.round(sum + (isNaN(amount) ? 0 : amount));
     }, 0);
 
+    if (totalAmount === 0) {
+      throw new Error("El monto total de las facturas debe ser mayor a 0");
+    }
+
     const paymentPlanPayload = {
       debtorId: dataDebtor.id,
-      selectedInvoices: selectedInvoices.map((inv) => inv.id),
+      selectedInvoices: validInvoices.map((inv) => inv.id),
       totalAmount: totalAmount,
       downPayment: paymentPlanData.downPayment || 0,
       numberOfInstallments: paymentPlanData.numberOfInstallments,
