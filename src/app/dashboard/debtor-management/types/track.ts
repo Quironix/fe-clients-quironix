@@ -41,6 +41,7 @@ export interface CaseData {
 
   // Plan de pago
   paymentPlanId?: string;
+  paymentPlanData?: any;
 
   // Retiro de cheque
   pickupDate?: string | Date;

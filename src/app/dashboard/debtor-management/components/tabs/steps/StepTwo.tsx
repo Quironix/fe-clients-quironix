@@ -140,6 +140,25 @@ const createFormSchema = (
           }),
       });
     } else if (
+      selectedCombination?.executive_comment === "PAYMENT_PLAN_APPROVAL_REQUEST"
+    ) {
+      baseSchema.caseData = z.object({
+        paymentPlanData: z
+          .object({
+            downPayment: z.number().min(0, "Debe ser mayor o igual a 0"),
+            numberOfInstallments: z.number().min(1, "Debe ser al menos 1"),
+            annualInterestRate: z.number().min(0, "Debe ser mayor o igual a 0"),
+            paymentMethod: z.string().min(1, "La forma de pago es requerida"),
+            paymentFrequency: z.string().min(1, "La frecuencia es requerida"),
+            startDate: z.date({ required_error: "La fecha es requerida" }),
+            comments: z.string().optional(),
+            _isValid: z.boolean().optional(),
+          })
+          .refine((data) => data._isValid !== false, {
+            message: "Debe completar todos los campos del plan de pago",
+          }),
+      });
+    } else if (
       selectedCombination?.fields &&
       selectedCombination.fields.length > 0
     ) {

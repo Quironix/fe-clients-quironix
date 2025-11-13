@@ -22,6 +22,7 @@ import {
   sendTrackEmail,
   sendMultipleManagementEmail,
 } from "../../services/email-sender";
+import { createPaymentPlan } from "../../services/payment-plan";
 import { createTrack } from "../../services/tracks";
 import { CaseData } from "../../types/track";
 import { SavedManagementCard } from "./saved-management-card";
@@ -323,7 +324,47 @@ export const AddManagementTab = ({
     }
   };
 
-  const buildTrackPayload = (litigationIds?: string[]) => {
+  const createPaymentPlanAndGetId = async (): Promise<string[]> => {
+    if (!managementFormData.caseData?.paymentPlanData) {
+      return [];
+    }
+
+    const paymentPlanData = managementFormData.caseData.paymentPlanData;
+    const totalAmount = selectedInvoices.reduce((sum, invoice) => {
+      const amount =
+        typeof invoice.balance === "string"
+          ? parseFloat(invoice.balance)
+          : invoice.balance;
+      return Math.round(sum + (isNaN(amount) ? 0 : amount));
+    }, 0);
+
+    const paymentPlanPayload = {
+      debtorId: dataDebtor.id,
+      selectedInvoices: selectedInvoices.map((inv) => inv.id),
+      totalAmount: totalAmount,
+      downPayment: paymentPlanData.downPayment || 0,
+      numberOfInstallments: paymentPlanData.numberOfInstallments,
+      annualInterestRate: paymentPlanData.annualInterestRate,
+      paymentMethod: paymentPlanData.paymentMethod,
+      paymentFrequency: paymentPlanData.paymentFrequency,
+      startDate: formatDateToISO(paymentPlanData.startDate),
+      comments: paymentPlanData.comments || "",
+    };
+
+    const result = await createPaymentPlan({
+      accessToken: session.token,
+      clientId: profile.client_id,
+      dataToInsert: paymentPlanPayload,
+    });
+
+    if (result.success && result.data?.id) {
+      return [result.data.id];
+    } else {
+      throw new Error(result.message || "Error al crear plan de pago");
+    }
+  };
+
+  const buildTrackPayload = (litigationIds?: string[], paymentPlanIds?: string[]) => {
     const dateISO = formatDateToISO(managementFormData.nextManagementDate);
     const time = managementFormData.nextManagementTime || "00:00";
     const nextManagementDateTime = `${dateISO}T${time}:00.000Z`;
@@ -384,6 +425,18 @@ export const AddManagementTab = ({
         if (normalizationData?.selectedInvoiceIds) {
           payload.invoice_ids = normalizationData.selectedInvoiceIds;
         }
+      } else if (
+        selectedCombination?.executive_comment === "PAYMENT_PLAN_APPROVAL_REQUEST" &&
+        paymentPlanIds
+      ) {
+        // Caso especial: plan de pago
+        const validatedIds = paymentPlanIds
+          .filter((id) => id && typeof id === "string")
+          .map((id) => id.toString());
+
+        payload.case_data = {
+          paymentPlanIds: validatedIds,
+        };
       } else {
         // Caso normal: otros tipos de gestión
         const normalizedCaseData: any = {};
@@ -425,6 +478,8 @@ export const AddManagementTab = ({
 
       // Si es litigation, crear los litigios primero
       let litigationIds: string[] | undefined;
+      let paymentPlanIds: string[] | undefined;
+
       if (
         managementFormData.executiveComment === "DOCUMENT_IN_LITIGATION" &&
         managementFormData.caseData?.litigationData
@@ -439,9 +494,16 @@ export const AddManagementTab = ({
         toast.info("Normalizando litigios...");
         litigationIds = await normalizeLitigationsAndGetIds();
         toast.success(`${litigationIds.length} litigio(s) normalizado(s)`);
+      } else if (
+        managementFormData.executiveComment === "PAYMENT_PLAN_APPROVAL_REQUEST" &&
+        managementFormData.caseData?.paymentPlanData
+      ) {
+        toast.info("Creando plan de pago...");
+        paymentPlanIds = await createPaymentPlanAndGetId();
+        toast.success("Plan de pago creado");
       }
 
-      const payload = buildTrackPayload(litigationIds);
+      const payload = buildTrackPayload(litigationIds, paymentPlanIds);
 
       const result = await createTrack(
         session.token,
@@ -488,6 +550,8 @@ export const AddManagementTab = ({
 
       // Si es litigation, crear los litigios primero
       let litigationIds: string[] | undefined;
+      let paymentPlanIds: string[] | undefined;
+
       if (
         managementFormData.executiveComment === "DOCUMENT_IN_LITIGATION" &&
         managementFormData.caseData?.litigationData
@@ -502,9 +566,16 @@ export const AddManagementTab = ({
         toast.info("Normalizando litigios...");
         litigationIds = await normalizeLitigationsAndGetIds();
         toast.success(`${litigationIds.length} litigio(s) normalizado(s)`);
+      } else if (
+        managementFormData.executiveComment === "PAYMENT_PLAN_APPROVAL_REQUEST" &&
+        managementFormData.caseData?.paymentPlanData
+      ) {
+        toast.info("Creando plan de pago...");
+        paymentPlanIds = await createPaymentPlanAndGetId();
+        toast.success("Plan de pago creado");
       }
 
-      const payload = buildTrackPayload(litigationIds);
+      const payload = buildTrackPayload(litigationIds, paymentPlanIds);
 
       const result = await createTrack(session.token, profile.client_id, payload);
 

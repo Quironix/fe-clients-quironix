@@ -6,6 +6,7 @@
 import React from "react";
 import { ManagementLitigationForm } from "../components/litigation";
 import { ManagementNormalizedLitigationForm } from "../components/normalization";
+import { ManagementPaymentPlanForm } from "../components/payment-plan";
 
 export type ContactType = "PHONE" | "EMAIL" | "WHATSAPP" | "SMS" | "LETTER";
 
@@ -255,7 +256,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "payment_plan_request",
-    label: "Solicitud de plan de pago",
+    label: "Plan de Pago",
     description: "Necesito plan de pago",
     management_type: "CALL_OUT",
     debtor_comment: "NEED_PAYMENT_PLAN",
@@ -263,11 +264,11 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
     targetPhase: 4,
     fields: [
       {
-        name: "paymentPlanId",
-        label: "ID de plan de pago",
-        type: "text",
-        required: false,
-        placeholder: "plan-789-2025 (opcional si está pendiente de aprobación)",
+        name: "paymentPlanData",
+        label: "Configuración del Plan de Pago",
+        type: "component",
+        required: true,
+        component: ManagementPaymentPlanForm,
       },
     ],
   },
