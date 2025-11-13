@@ -1,18 +1,30 @@
 "use client";
 
-import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { DatePopover } from "@/app/dashboard/components/date-popover";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Invoice } from "@/app/dashboard/payment-plans/store";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DollarSign, FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { DEBTOR_PAYMENT_METHODS, PAYMENT_FREQUENCY } from "../../../data";
-import { Calculator, FileText, DollarSign } from "lucide-react";
 
 const paymentPlanSchema = z.object({
   downPayment: z.number().min(0, "Debe ser mayor o igual a 0"),
@@ -21,7 +33,6 @@ const paymentPlanSchema = z.object({
   paymentMethod: z.string().min(1, "La forma de pago es requerida"),
   paymentFrequency: z.string().min(1, "La frecuencia es requerida"),
   startDate: z.date({ required_error: "La fecha es requerida" }),
-  comments: z.string().optional(),
 });
 
 type PaymentPlanFormData = z.infer<typeof paymentPlanSchema>;
@@ -55,7 +66,6 @@ const ManagementPaymentPlanForm = ({
       paymentMethod: "",
       paymentFrequency: "",
       startDate: undefined,
-      comments: "",
     },
   });
 
@@ -99,7 +109,7 @@ const ManagementPaymentPlanForm = ({
     if (annualInterestRate === 0) {
       return {
         installment: principal / numberOfInstallments,
-        totalInterest: 0
+        totalInterest: 0,
       };
     }
 
@@ -152,9 +162,9 @@ const ManagementPaymentPlanForm = ({
   const totalAmount = calculateTotalAmount();
   const downPayment = form.watch("downPayment") || 0;
   const amountToFinance = totalAmount - downPayment;
-  const numberOfInstallments = form.watch("numberOfInstallments") || 1;
   const totalToPay = amountToFinance + totalInterest;
-  const downPaymentPercentage = totalAmount > 0 ? ((downPayment / totalAmount) * 100).toFixed(1) : "0";
+  const downPaymentPercentage =
+    totalAmount > 0 ? ((downPayment / totalAmount) * 100).toFixed(1) : "0";
 
   return (
     <div className="grid grid-cols-12 gap-6">
@@ -172,7 +182,9 @@ const ManagementPaymentPlanForm = ({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Facturas seleccionadas:</span>
-                  <span className="font-semibold">{selectedInvoices.length}</span>
+                  <span className="font-semibold">
+                    {selectedInvoices.length}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Monto total:</span>
@@ -245,19 +257,21 @@ const ManagementPaymentPlanForm = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tasa de interés anual (%) <span className="text-red-500">*</span>
+                      Tasa de interés anual (%){" "}
+                      <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         min={0}
                         max={48}
-                        placeholder="Ej: 1"
+                        step="0.01"
+                        placeholder="Ej: 5.5"
                         value={field.value || ""}
                         onChange={(e) => {
                           const value = e.target.value;
-                          if (value === "" || /^\d+$/.test(value)) {
-                            field.onChange(parseInt(value) || 0);
+                          if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                            field.onChange(parseFloat(value) || 0);
                           }
                         }}
                       />
@@ -334,24 +348,6 @@ const ManagementPaymentPlanForm = ({
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="comments"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Comentario</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Completa"
-                      {...field}
-                      rows={4}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
         </Form>
       </div>
@@ -359,55 +355,65 @@ const ManagementPaymentPlanForm = ({
       {/* Resumen Financiero - Derecha (4 columnas) */}
       <div className="col-span-4">
         <div className="sticky top-4 space-y-4">
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <DollarSign className="w-6 h-6 text-blue-600" />
-              <h3 className="text-lg font-bold text-blue-900">
+          <div className="bg-blue-50/50 border border-blue-200/60 rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-5">
+              <DollarSign className="w-5 h-5 text-blue-600" />
+              <h3 className="text-base font-semibold text-gray-900">
                 Resumen financiero
               </h3>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               <div className="flex justify-between items-center">
-                <span className="text-gray-700">Colocación total:</span>
-                <span className="text-lg font-bold text-gray-900">
+                <span className="text-sm text-gray-700">Colocación total:</span>
+                <span className="text-sm font-bold text-gray-900">
                   ${formatNumberWithThousands(totalAmount)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-gray-700">
+                <span className="text-sm text-gray-700">
                   Pago contado ({downPaymentPercentage}%):
                 </span>
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-sm font-bold text-gray-900">
                   ${formatNumberWithThousands(downPayment)}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center pb-4 border-b-2 border-blue-300">
-                <span className="text-gray-700">Monto a financiar:</span>
-                <span className="text-lg font-semibold text-gray-900">
+              <div className="flex justify-between items-center pb-2.5 border-b border-gray-300">
+                <span className="text-sm text-gray-700">
+                  Monto a financiar:
+                </span>
+                <span className="text-sm font-bold text-gray-900">
                   ${formatNumberWithThousands(amountToFinance)}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center pt-2">
-                <span className="text-gray-700 font-medium">Cuota {PAYMENT_FREQUENCY.find(f => f.code === form.watch("paymentFrequency"))?.label.toLowerCase() || 'mensual'}:</span>
-                <span className="text-2xl font-bold text-blue-600">
+              <div className="flex justify-between items-center pt-2.5">
+                <span className="text-sm text-gray-700">
+                  Cuota{" "}
+                  {PAYMENT_FREQUENCY.find(
+                    (f) => f.code === form.watch("paymentFrequency")
+                  )?.label.toLowerCase() || "mensual"}
+                  :
+                </span>
+                <span className="text-sm font-bold text-gray-900">
                   ${formatNumberWithThousands(calculatedInstallment)}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700">Total intereses:</span>
-                <span className="text-lg font-semibold text-gray-900">
+              <div className="flex justify-between items-center pb-2.5">
+                <span className="text-sm text-gray-700">Total intereses:</span>
+                <span className="text-sm font-bold text-gray-900">
                   ${formatNumberWithThousands(totalInterest)}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center pt-4 border-t-2 border-blue-300 bg-blue-100/50 -mx-6 px-6 py-4 -mb-6 rounded-b-lg">
-                <span className="text-gray-800 font-bold">Total a pagar:</span>
-                <span className="text-2xl font-bold text-blue-900">
+              <div className="flex justify-between items-center pt-2.5 border-t border-gray-300 bg-blue-100/60 -mx-5 px-5 py-3 -mb-5 rounded-b-xl">
+                <span className="text-sm font-semibold text-gray-900">
+                  Total a pagar:
+                </span>
+                <span className="text-sm font-bold text-gray-900">
                   ${formatNumberWithThousands(totalToPay)}
                 </span>
               </div>

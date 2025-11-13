@@ -192,6 +192,149 @@ export const SavedManagementCard = ({
       );
     }
 
+    // Caso especial: Plan de Pago
+    if (
+      selectedConfig.executive_comment === "PAYMENT_PLAN_APPROVAL_REQUEST" &&
+      management.formData.caseData?.paymentPlanData
+    ) {
+      const planData = management.formData.caseData.paymentPlanData;
+      const { PAYMENT_FREQUENCY, DEBTOR_PAYMENT_METHODS } = require("@/app/dashboard/data");
+
+      const totalAmount = management.selectedInvoices.reduce((sum, inv) => {
+        const amount = typeof inv.balance === "string" ? parseFloat(inv.balance) : inv.balance;
+        return sum + (isNaN(amount) ? 0 : amount);
+      }, 0);
+
+      const downPayment = planData.downPayment || 0;
+      const amountToFinance = totalAmount - downPayment;
+      const downPaymentPercentage = totalAmount > 0 ? ((downPayment / totalAmount) * 100).toFixed(1) : "0";
+
+      const frequencyLabel = PAYMENT_FREQUENCY.find((f: any) => f.code === planData.paymentFrequency)?.label || planData.paymentFrequency;
+      const methodLabel = DEBTOR_PAYMENT_METHODS.find((m: any) => m.value === planData.paymentMethod)?.label || planData.paymentMethod;
+
+      const getFrequencyFactor = (frequency: string) => {
+        switch (frequency) {
+          case "FREQ_7_DAYS": return 52;
+          case "FREQ_15_DAYS": return 24;
+          case "FREQ_30_DAYS": return 12;
+          case "FREQ_45_DAYS": return 4;
+          case "FREQ_60_DAYS": return 2;
+          default: return 12;
+        }
+      };
+
+      let installment = 0;
+      let totalInterest = 0;
+
+      if (amountToFinance > 0) {
+        if (planData.annualInterestRate === 0) {
+          installment = amountToFinance / planData.numberOfInstallments;
+        } else {
+          const frequencyFactor = getFrequencyFactor(planData.paymentFrequency);
+          const periodRate = planData.annualInterestRate / 100 / frequencyFactor;
+          installment = (amountToFinance * periodRate * Math.pow(1 + periodRate, planData.numberOfInstallments)) /
+            (Math.pow(1 + periodRate, planData.numberOfInstallments) - 1);
+          totalInterest = (installment * planData.numberOfInstallments) - amountToFinance;
+        }
+      }
+
+      const totalToPay = amountToFinance + totalInterest;
+
+      return (
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <div className="flex items-center gap-2 mb-4">
+            <DollarSign className="w-5 h-5 text-blue-600" />
+            <h3 className="font-semibold text-base text-gray-800">
+              Resumen del Plan de Pago
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-blue-900 mb-3">Configuración</h4>
+                <div className="space-y-3">
+                  <IconDescription
+                    icon={<DollarSign className="w-5 h-5 text-blue-600" />}
+                    description="Colocación total"
+                    value={formatCurrency(totalAmount)}
+                  />
+                  <IconDescription
+                    icon={<DollarSign className="w-5 h-5 text-blue-600" />}
+                    description={`Pago contado (${downPaymentPercentage}%)`}
+                    value={formatCurrency(downPayment)}
+                  />
+                  <IconDescription
+                    icon={<FileText className="w-5 h-5 text-blue-600" />}
+                    description="Número de cuotas"
+                    value={planData.numberOfInstallments?.toString() || "0"}
+                  />
+                  <IconDescription
+                    icon={<FileText className="w-5 h-5 text-blue-600" />}
+                    description="Tasa de interés anual"
+                    value={`${planData.annualInterestRate || 0}%`}
+                  />
+                  <IconDescription
+                    icon={<Clock className="w-5 h-5 text-blue-600" />}
+                    description="Frecuencia de pago"
+                    value={frequencyLabel}
+                  />
+                  <IconDescription
+                    icon={<FileText className="w-5 h-5 text-blue-600" />}
+                    description="Forma de pago"
+                    value={methodLabel}
+                  />
+                  <IconDescription
+                    icon={<Calendar className="w-5 h-5 text-blue-600" />}
+                    description="Fecha de inicio"
+                    value={formatDate(planData.startDate)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border-2 border-blue-200">
+                <h4 className="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Resumen Financiero
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center pb-3 border-b border-blue-300">
+                    <span className="text-sm text-gray-700">Monto a financiar:</span>
+                    <span className="text-lg font-bold text-gray-900">
+                      {formatCurrency(amountToFinance)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-sm text-gray-700">Cuota {frequencyLabel.toLowerCase()}:</span>
+                    <span className="text-2xl font-bold text-blue-600">
+                      {formatCurrency(installment)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700">Total intereses:</span>
+                    <span className="text-base font-semibold text-gray-900">
+                      {formatCurrency(totalInterest)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-3 border-t-2 border-blue-400 bg-blue-200/50 -mx-6 px-6 py-3 -mb-6 mt-4 rounded-b-lg">
+                    <span className="text-sm font-bold text-gray-800">Total a pagar:</span>
+                    <span className="text-2xl font-bold text-blue-900">
+                      {formatCurrency(totalToPay)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // Caso especial: Normalización de Litigios
     if (
       selectedConfig.executive_comment === "LITIGATION_NORMALIZATION" &&
