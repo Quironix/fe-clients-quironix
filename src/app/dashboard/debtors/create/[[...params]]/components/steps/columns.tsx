@@ -7,16 +7,21 @@ import { ColumnDef, Row } from "@tanstack/react-table";
 import { Edit, Trash2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AssignExecutiveDialog } from "@/app/dashboard/debtors/components/assign-executive-dialog";
+import { useState } from "react";
 
 const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
   const router = useRouter();
   const { session, profile } = useProfileContext();
   const { deleteDebtor, fetchDebtors } = useDebtorsStore();
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
-  const handleAssignUser = (debtor: Debtor) => {
-    console.log("Asignar usuario a:", debtor);
-    // Aquí iría la lógica para asignar usuario
+  const handleAssignSuccess = () => {
+    if (session?.token && profile?.client?.id) {
+      fetchDebtors(session.token, profile.client.id);
+    }
   };
+
   const handleEdit = (debtor: Debtor) => {
     router.push(`/dashboard/debtors/create?id=${debtor.id}`);
   };
@@ -39,17 +44,25 @@ const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
   };
 
   return (
-    <div className="flex justify-center gap-1">
-      <Button
-        disabled={true}
-        variant="ghost"
-        size="icon"
-        onClick={() => console.log("Asignar usuario")}
-        title="Asignar usuario"
-        className="hover:bg-blue-500 hover:text-white text-primary"
-      >
-        <UserPlus />
-      </Button>
+    <>
+      <div className="flex justify-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsAssignDialogOpen(true)}
+          title={
+            row.original.executive_id
+              ? `Reasignar ejecutivo (actualmente: ${row.original.executive?.first_name} ${row.original.executive?.last_name})`
+              : "Asignar ejecutivo"
+          }
+          className={
+            row.original.executive_id
+              ? "hover:bg-green-500 hover:text-white text-green-600"
+              : "hover:bg-blue-500 hover:text-white text-primary"
+          }
+        >
+          <UserPlus />
+        </Button>
       <Button
         variant="ghost"
         size="icon"
@@ -77,7 +90,17 @@ const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
         onConfirm={() => handleDelete(row.original as Debtor)}
         type="danger"
       />
-    </div>
+      </div>
+
+      <AssignExecutiveDialog
+        isOpen={isAssignDialogOpen}
+        onClose={() => setIsAssignDialogOpen(false)}
+        debtorId={row.original.id as string}
+        debtorName={row.original.name}
+        currentExecutiveId={row.original.executive_id}
+        onSuccess={handleAssignSuccess}
+      />
+    </>
   );
 };
 

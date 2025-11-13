@@ -18,6 +18,8 @@ export interface Debtor {
   economic_activities: string[];
   sales_person: string;
   attention_days_hours: string;
+  executive_id?: string | null;
+  executive?: Executive | null;
 }
 
 interface CompanyDebtor {
@@ -90,4 +92,22 @@ export interface DebtorCompany {
   debtor_code: string | null;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface Executive {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number?: string;
+  type: string;
+  roles?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AssignExecutiveResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
 }

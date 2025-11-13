@@ -168,3 +168,39 @@ export const getDebtorCollectionProfile = async (
   }
   return response.json();
 };
+
+export const assignDebtorToExecutive = async (
+  accessToken: string,
+  clientId: string,
+  debtorId: string,
+  executiveId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/debtors/${debtorId}/executive/${executiveId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Error al asignar ejecutivo al deudor");
+  }
+  return response.json();
+};
+
+export const getExecutives = async (
+  accessToken: string,
+  clientId: string
+) => {
+  const response = await fetch(`${API_URL}/v2/clients/${clientId}/users`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+};
