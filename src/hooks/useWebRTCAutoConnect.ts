@@ -1,15 +1,15 @@
-import { useEffect, useRef, useState } from "react";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useWebRTCContext } from "@/context/WebRTCContext";
 import { createDirectWebRTCConfig } from "@/services/webrtc";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export type ConnectionStatus =
-  | 'disconnected'
-  | 'connecting'
-  | 'connected'
-  | 'retrying'
-  | 'failed';
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "retrying"
+  | "failed";
 
 export interface WebRTCAutoConnectOptions {
   maxRetries?: number;
@@ -125,11 +125,11 @@ export const useWebRTCAutoConnect = (
   const getStatus = (): ConnectionStatus => {
     const connected = !!(config || isRegistered);
 
-    if (connected) return 'connected';
-    if (isConnecting.current && retryCount === 0) return 'connecting';
-    if (isConnecting.current && retryCount > 0) return 'retrying';
-    if (retryCount >= hookConfig.maxRetries) return 'failed';
-    return 'disconnected';
+    if (connected) return "connected";
+    if (isConnecting.current && retryCount === 0) return "connecting";
+    if (isConnecting.current && retryCount > 0) return "retrying";
+    if (retryCount >= hookConfig.maxRetries) return "failed";
+    return "disconnected";
   };
 
   return {

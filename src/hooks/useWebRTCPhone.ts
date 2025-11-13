@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
 import { useWebRTCContext } from "@/context/WebRTCContext";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 // Importar JsSIP de forma dinámica para evitar problemas con SSR
@@ -187,15 +187,27 @@ export const useWebRTCPhone = () => {
               toast.info(`Llamando a ${numberToCall}...`);
             },
             failed: (e: any) => {
-              console.error("❌ Llamada fallida:", e);
+              console.log("❌ Llamada fallida:", e);
               setCallStatus("failed");
               toast.error("Llamada fallida");
+              if (localStreamRef.current) {
+                localStreamRef.current
+                  .getTracks()
+                  .forEach((track) => track.stop());
+                localStreamRef.current = null;
+              }
               setTimeout(() => setCallStatus("registered"), 3000);
             },
             ended: () => {
               console.log("📴 Llamada finalizada");
               setCallStatus("ended");
               toast.info("Llamada finalizada");
+              if (localStreamRef.current) {
+                localStreamRef.current
+                  .getTracks()
+                  .forEach((track) => track.stop());
+                localStreamRef.current = null;
+              }
               currentSessionRef.current = null;
               setTimeout(() => setCallStatus("registered"), 2000);
             },
@@ -234,13 +246,7 @@ export const useWebRTCPhone = () => {
         toast.error("Error al realizar la llamada");
       }
     },
-    [
-      config,
-      isRegistered,
-      initMedia,
-      setCallStatus,
-      setCurrentNumber,
-    ]
+    [config, isRegistered, initMedia, setCallStatus, setCurrentNumber]
   );
 
   // Colgar llamada
