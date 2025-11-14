@@ -179,7 +179,7 @@ const Content = () => {
           title="Lista de Gestiones"
           description="Visualiza y gestiona todas las interacciones registradas"
           icon={<History color="white" />}
-          subDescription={`Histórico de gestiones (${tracksPagination.total} total)`}
+          subDescription={`Histórico de gestiones`}
         />
 
         <Card>
