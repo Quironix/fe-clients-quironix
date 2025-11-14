@@ -1,26 +1,35 @@
-import { User } from "lucide-react";
-import { Badge } from "../../components/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { History, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Badge } from "../../components/badge";
+import { getExecutiveCommentLabel } from "../config/management-types";
 
-const LastManagements = ({ data }: { data: any }) => {
-  const recentManagement = data?.management?.recent_management || [];
-  const previousManagement = data?.management?.previous_management || [];
+const LastManagements = ({
+  data,
+  debtorId,
+}: {
+  data: any;
+  debtorId: string;
+}) => {
+  const router = useRouter();
+  const recentManagement = data?.recent_management || [];
+  const previousManagement = data?.previous_management || [];
+
+  console.log(data);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -33,7 +42,7 @@ const LastManagements = ({ data }: { data: any }) => {
 
   const getManagementTypeLabel = (type: string) => {
     const types: Record<string, string> = {
-      phone_call: "Llamada telefónica",
+      CALL_OUT: "Llamada telefónica",
       email: "Correo electrónico",
       visit: "Visita",
       letter: "Carta",
@@ -50,7 +59,7 @@ const LastManagements = ({ data }: { data: any }) => {
           <div className="flex flex-col gap-0">
             <span className="font-bold text-sm">{management.manager}</span>
             <span className="text-xs text-gray-400 -mt-1">
-              {management.description}
+              {getExecutiveCommentLabel(management.description)}
             </span>
           </div>
         </div>
@@ -113,7 +122,7 @@ const LastManagements = ({ data }: { data: any }) => {
                           </TableCell>
                           <TableCell>{management.manager}</TableCell>
                           <TableCell className="text-right">
-                            {management.description}
+                            {getExecutiveCommentLabel(management.description)}
                           </TableCell>
                         </TableRow>
                       )
@@ -125,6 +134,20 @@ const LastManagements = ({ data }: { data: any }) => {
           </AccordionItem>
         </Accordion>
       )}
+      <div className="flex items-center justify-center">
+        <Button
+          onClick={() =>
+            router.push(
+              `/dashboard/debtor-management/${debtorId}/managements-list`
+            )
+          }
+          variant="outline"
+          className="mt-3 border-2 border-blue-400 w-1/2"
+        >
+          <History className="h-4 w-4 text-blue-600" />
+          Todas las gestiones
+        </Button>
+      </div>
     </div>
   );
 };

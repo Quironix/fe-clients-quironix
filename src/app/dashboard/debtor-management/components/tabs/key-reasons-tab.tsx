@@ -141,7 +141,7 @@ export const KeyReasonsTab = ({
             title="Últimas gestiones"
             defaultOpen={false}
           >
-            <LastManagements data={collectionProfile.management || null} />
+            <LastManagements data={collectionProfile.management || null} debtorId={debtorId} />
           </CardCollapsible>
         </div>
       </div>

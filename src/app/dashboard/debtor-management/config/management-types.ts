@@ -407,7 +407,7 @@ export const DEBTOR_COMMENTS = [
 export const EXECUTIVE_COMMENTS = [
   {
     value: "WITH_PAYMENT_COMMITMENT",
-    label: "Con Compromiso de pago",
+    label: "Con compromiso de pago",
     debtorComment: "WILL_DEPOSIT_OR_TRANSFER",
   },
   {
@@ -447,7 +447,7 @@ export const EXECUTIVE_COMMENTS = [
   },
   {
     value: "PAYMENT_PLAN_APPROVAL_REQUEST",
-    label: "Solicitud de aprobación de Plan de Pago",
+    label: "Solicitud de aprobación de plan de pago",
     debtorComment: "NEED_PAYMENT_PLAN",
   },
   {
@@ -505,4 +505,12 @@ export const getManagementTypeConfig = (
   id: string
 ): ManagementCombination | undefined => {
   return MANAGEMENT_COMBINATIONS.find((config) => config.id === id);
+};
+
+/**
+ * Obtener label de executive_comment por su valor
+ */
+export const getExecutiveCommentLabel = (type: string): string => {
+  const comment = EXECUTIVE_COMMENTS.find((c) => c.value === type);
+  return comment?.label || type;
 };

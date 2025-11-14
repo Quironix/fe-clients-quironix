@@ -41,7 +41,6 @@ export const useWebRTCPhone = () => {
         video: false,
       });
     } catch (err) {
-      console.error("Error al capturar micrófono:", err);
       toast.error("Debes permitir acceso al micrófono");
       throw err;
     }
@@ -50,43 +49,30 @@ export const useWebRTCPhone = () => {
   // Registrar el User Agent
   const register = useCallback(async () => {
     if (!config) {
-      console.error("❌ [WebRTC] No hay configuración disponible");
       toast.error("Configuración de WebRTC no disponible");
       return;
     }
 
     if (uaRef.current) {
-      console.log("⚠️ [WebRTC] User Agent ya registrado");
       return;
     }
 
     try {
-      console.log("🔄 [WebRTC] Iniciando registro...");
-      console.log("📋 [WebRTC] Config:", {
-        sipUser: config.sipUser,
-        sipDomain: config.sipDomain,
-        wsUri: config.wsUri,
-      });
       setCallStatus("registering");
 
       // Cargar JsSIP dinámicamente
       if (!JsSIP && typeof window !== "undefined") {
-        console.log("📦 [WebRTC] Cargando JsSIP...");
         JsSIP = await import("jssip");
-        console.log("✅ [WebRTC] JsSIP cargado correctamente");
 
         // Habilitar debug de JsSIP para ver todos los logs
         JsSIP.debug.enable("JsSIP:*");
-        console.log("🐛 [WebRTC] Debug de JsSIP habilitado");
       }
 
       if (!JsSIP) {
-        console.error("❌ [WebRTC] No se pudo cargar JsSIP");
         toast.error("No se pudo cargar la librería JsSIP");
         return;
       }
 
-      console.log("🔌 [WebRTC] Creando WebSocket:", config.wsUri);
       const socket = new JsSIP.WebSocketInterface(config.wsUri);
 
       const configuration = {
@@ -98,11 +84,6 @@ export const useWebRTCPhone = () => {
         register_expires: 300,
         contact_uri: `sip:${config.sipUser}@${config.sipDomain}`,
       };
-
-      console.log("⚙️ [WebRTC] Configuración UA:", {
-        uri: configuration.uri,
-        contact_uri: configuration.contact_uri,
-      });
 
       uaRef.current = new JsSIP.UA(configuration);
 
@@ -118,7 +99,6 @@ export const useWebRTCPhone = () => {
 
       // Event: Registrado exitosamente
       uaRef.current.on("registered", () => {
-        console.log("✅ [WebRTC] Registrado en PBX exitosamente");
         setIsRegistered(true);
         setCallStatus("registered");
         toast.success("Conectado a la central telefónica");
@@ -126,11 +106,6 @@ export const useWebRTCPhone = () => {
 
       // Event: Fallo en el registro
       uaRef.current.on("registrationFailed", (e: any) => {
-        console.error("❌ [WebRTC] Registro fallido:", e);
-        console.error("❌ [WebRTC] Detalles del error:", {
-          cause: e.cause,
-          response: e.response,
-        });
         setIsRegistered(false);
         setCallStatus("failed");
         toast.error("Error al conectar con la central telefónica");
@@ -141,11 +116,8 @@ export const useWebRTCPhone = () => {
         console.log("📞 [WebRTC] Nueva sesión RTC:", e);
       });
 
-      console.log("🚀 [WebRTC] Iniciando User Agent...");
       uaRef.current.start();
-      console.log("✅ [WebRTC] User Agent iniciado, esperando registro...");
     } catch (error) {
-      console.error("❌ [WebRTC] Error crítico al registrar UA:", error);
       setCallStatus("failed");
       toast.error("Error al inicializar el softphone");
     }
@@ -176,18 +148,15 @@ export const useWebRTCPhone = () => {
         setCurrentNumber(numberToCall);
 
         const targetUri = `sip:${numberToCall}@${config?.sipDomain}`;
-        console.log("Llamando a:", targetUri);
 
         const options = {
           mediaConstraints: { audio: true, video: false },
           eventHandlers: {
             progress: () => {
-              console.log("☎ Sonando...");
               setCallStatus("ringing");
               toast.info(`Llamando a ${numberToCall}...`);
             },
             failed: (e: any) => {
-              console.log("❌ Llamada fallida:", e);
               setCallStatus("failed");
               toast.error("Llamada fallida");
               if (localStreamRef.current) {
@@ -199,7 +168,6 @@ export const useWebRTCPhone = () => {
               setTimeout(() => setCallStatus("registered"), 3000);
             },
             ended: () => {
-              console.log("📴 Llamada finalizada");
               setCallStatus("ended");
               toast.info("Llamada finalizada");
               if (localStreamRef.current) {
@@ -212,7 +180,6 @@ export const useWebRTCPhone = () => {
               setTimeout(() => setCallStatus("registered"), 2000);
             },
             confirmed: () => {
-              console.log("✅ En llamada");
               setCallStatus("in-call");
               toast.success("Llamada conectada");
             },
@@ -241,7 +208,6 @@ export const useWebRTCPhone = () => {
           }
         );
       } catch (error) {
-        console.error("Error al realizar llamada:", error);
         setCallStatus("failed");
         toast.error("Error al realizar la llamada");
       }

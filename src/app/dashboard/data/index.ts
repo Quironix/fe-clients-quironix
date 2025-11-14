@@ -5,6 +5,7 @@ import {
   IconHeartHandshake,
   IconInfoTriangle,
   IconLayoutDashboard,
+  IconPhoneCall,
   IconUsers,
 } from "@tabler/icons-react";
 import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
@@ -241,7 +242,7 @@ export const getSidebarData = (profile: any) => {
           {
             title: "Gestión de deudores",
             url: "/dashboard/debtor-management",
-            icon: IconInfoTriangle,
+            icon: IconPhoneCall,
             scope: "client.debtor_management",
           },
           // {
