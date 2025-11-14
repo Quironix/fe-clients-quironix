@@ -176,7 +176,7 @@ const Content = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Lista de Gestiones"
+          title="Lista de gestiones"
           description="Visualiza y gestiona todas las interacciones registradas"
           icon={<History color="white" />}
           subDescription={`Histórico de gestiones`}
