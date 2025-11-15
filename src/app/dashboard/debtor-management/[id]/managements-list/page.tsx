@@ -12,9 +12,10 @@ import { VisibilityState } from "@tanstack/react-table";
 import { Building2, History, IdCard, Mail, Phone, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { getDebtorTracks } from "../../services/tracks";
-import { DebtorTrack } from "../../types/debtor-tracks";
-import { createColumns } from "./components/columns";
+import { getDebtorTracksByInvoices } from "../../services/tracks";
+import { InvoiceWithTrack } from "../../types/debtor-tracks";
+import { createInvoiceColumns } from "./components/columns-invoices";
+import { TrackDetailModal } from "./components/track-detail-modal";
 
 const IconDescription = ({
   icon,
@@ -39,7 +40,7 @@ const Content = () => {
   const debtorId = params?.id as string;
   const { profile, session } = useProfileContext();
 
-  const [tracks, setTracks] = useState<DebtorTrack[]>([]);
+  const [invoicesWithTracks, setInvoicesWithTracks] = useState<InvoiceWithTrack[]>([]);
   const [dataDebtor, setDataDebtor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -52,6 +53,8 @@ const Content = () => {
     hasNext: false,
     hasPrevious: false,
   });
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [columnConfiguration, setColumnConfiguration] = useState<
     Array<{ name: string; is_visible: boolean }>
@@ -71,6 +74,7 @@ const Content = () => {
     { name: "caseData", is_visible: false },
     { name: "observation", is_visible: true },
     { name: "nextManagementDate", is_visible: true },
+    { name: "actions", is_visible: true },
   ]);
 
   const columnVisibility = useMemo(() => {
@@ -98,6 +102,7 @@ const Content = () => {
       caseData: "Litigio",
       observation: "Observación",
       nextManagementDate: "Fecha de próxima gestión",
+      actions: "Acciones",
     }),
     []
   );
@@ -123,14 +128,14 @@ const Content = () => {
     setLoading(true);
 
     try {
-      const response = await getDebtorTracks(
+      const response = await getDebtorTracksByInvoices(
         session.token,
         profile.client.id,
         debtorId,
         { page: currentPage, limit: currentLimit }
       );
 
-      setTracks(response.data);
+      setInvoicesWithTracks(response.data);
       setTracksPagination({
         page: response.pagination.page,
         limit: response.pagination.limit,
@@ -167,7 +172,17 @@ const Content = () => {
     }
   };
 
-  const columns = useMemo(() => createColumns(), []);
+  const handleViewDetails = (invoice: InvoiceWithTrack) => {
+    setSelectedTrackId(invoice.track.id);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedTrackId(null);
+  };
+
+  const columns = useMemo(() => createInvoiceColumns(handleViewDetails), []);
 
   return (
     <>
@@ -227,7 +242,7 @@ const Content = () => {
             </div>
             <DataTableDynamicColumns
               columns={columns}
-              data={tracks}
+              data={invoicesWithTracks}
               isLoading={loading}
               emptyMessage="No hay gestiones registradas"
               pagination={tracksPagination}
@@ -243,6 +258,14 @@ const Content = () => {
             />
           </CardContent>
         </Card>
+
+        <TrackDetailModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          trackId={selectedTrackId}
+          accessToken={session?.token || null}
+          clientId={profile?.client?.id || null}
+        />
       </Main>
     </>
   );

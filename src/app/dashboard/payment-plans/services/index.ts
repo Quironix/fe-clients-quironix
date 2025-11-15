@@ -308,3 +308,43 @@ export const rejectPaymentPlan = async (
     };
   }
 };
+
+export const getPaymentPlanById = async (
+  accessToken: string,
+  clientId: string,
+  paymentPlanId: string
+): Promise<ApiResponse<PaymentPlan>> => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/payment-plans/${paymentPlanId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        message: errorData?.message || "Error al obtener el plan de pago",
+        data: null,
+      };
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      message: "Plan de pago obtenido correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al obtener el plan de pago",
+      data: null,
+    };
+  }
+};

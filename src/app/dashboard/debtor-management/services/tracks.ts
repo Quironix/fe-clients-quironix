@@ -3,7 +3,7 @@
  */
 
 import { CreateTrackPayload, CreateTrackResponse } from "../types/track";
-import { DebtorTracksResponse, DebtorTracksParams } from "../types/debtor-tracks";
+import { DebtorTracksResponse, DebtorTracksParams, InvoiceTracksResponse, InvoiceTracksParams } from "../types/debtor-tracks";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -131,6 +131,83 @@ export async function getDebtorTracks(
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
       errorData.message || `Error al obtener tracks del deudor: ${response.statusText}`
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Obtiene todos los tracks de un deudor agrupados por facturas con paginación
+ *
+ * @param accessToken - Token de autenticación
+ * @param clientId - ID del cliente
+ * @param debtorId - ID del deudor
+ * @param params - Parámetros de paginación
+ * @param params.page - Número de página (default: 1)
+ * @param params.limit - Cantidad de registros por página (default: 10)
+ * @returns Respuesta con las facturas y sus tracks asociados con metadata de paginación
+ */
+export async function getDebtorTracksByInvoices(
+  accessToken: string,
+  clientId: string,
+  debtorId: string,
+  params: InvoiceTracksParams = { page: 1, limit: 10 }
+): Promise<InvoiceTracksResponse> {
+  const queryParams = new URLSearchParams({
+    page: params.page.toString(),
+    limit: params.limit.toString(),
+  });
+
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/managements/tracks/debtor/${debtorId}/invoices?${queryParams}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.message || `Error al obtener tracks por facturas: ${response.statusText}`
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Obtiene los detalles de un track por su ID
+ *
+ * @param accessToken - Token de autenticación
+ * @param clientId - ID del cliente
+ * @param trackId - ID del track
+ * @returns Detalles completos del track
+ */
+export async function getTrackById(
+  accessToken: string,
+  clientId: string,
+  trackId: string
+): Promise<any> {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/managements/tracks/${trackId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.message || `Error al obtener el track: ${response.statusText}`
     );
   }
 

@@ -346,6 +346,46 @@ export const getLitigationsByDebtor = async (
   }
 };
 
+export const getLitigationById = async (
+  accessToken: string,
+  clientId: string,
+  litigationId: string
+) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/litigations/${litigationId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        message: errorData?.message || "Error al obtener el litigio",
+        data: null,
+      };
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      message: "Litigio obtenido correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al obtener el litigio",
+      data: null,
+    };
+  }
+};
+
 
 export const bulkLitigatiions = async (
   accessToken: string,
