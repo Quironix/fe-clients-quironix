@@ -1,0 +1,21 @@
+Indicador;Tipo;Definicion;Unidad;SLA;Criterio de Aceptación;Valor Bajo;Valor Alto;Colores;
+Generacion de Caja;Calidad Producida;"El Recaudado Real es la sumatoria de los pagos recibidos y debe excluir cheques a fecha, Ajustes y aplicaciones.
+Este debe mostrarse diariamente e ir con el acumulado mensual. 
+Debe tener Cierre mensual. ";%;30;100;95;100;Rojo - Amarillo - Verde;
+% CEI;Calidad Producida;Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.;%;75;75;75;80;Rojo - Amarillo - Verde;
+Indice Credibilidad;Calidad Producida;"Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera.
+No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.";%;30;60;58;60;Rojo - Amarillo - Verde;
+Conciliación Bancaria Quironix;Calidad Producida;Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix;%;20;20;65;90;Rojo - Amarillo - Verde;
+Compensación Tiempo de Servicio - Quironix;Calidad Producida;Busca medir el % de pagos que fueron aplicados de forma autómatica en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.;%;95;95;93;95;Rojo - Amarillo - Verde;
+% Normalizacion Litigios;Eficiencia;Mide el % de litigios que han sido normalizados. ;%;30;70;67;70;Rojo - Amarillo - Verde;
+DDO;Eficiencia;Métrica que se utiliza en algunas empresas, particularmente en sectores como seguros, retail o servicios financieros, para medir el tiempo promedio que toma resolver y aplicar deducciones en pagos o facturas pendientes.;días;;;;;Verde - Amarillo - Rojo;
+% Match Rate;Eficiencia;Mide cuanto % de facturacion tiene NC;%;85;85;85;90;Rojo - Amarillo - Verde;
+Litigios Abiertos;Eficiencia;%de litigios abiertos > 30 dias en gestion. Sobre el total de litigios abiertos.;%;30;20;20;30;Verde - Amarillo - Rojo;
+Pagos en Transito;Eficiencia;Monto de pagos Aplicados v/s pagos Cargados usar todos los tipos de pago, no considerar ajustes y aplicaciones.;%;30;100;98;100;Rojo - Amarillo - Verde;
+Compensación Tiempo de Servicio;Eficiencia;Busca medir el % de pagos que fueron aplicados de forma manual en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.;%;95;95;93;95;Rojo - Amarillo - Verde;
+Efectividad de Negociación;Eficiencia;Mide en %, cuantas veces que interviene un ejecutivo obtiene el compromiso de pago;%;30;70;50;70;Rojo - Amarillo - Verde;
+DBT;Impecabilidad;Dias despues del Vencimiento que se realizo Pago;días;5;5;5;10;Verde - Amarillo - Rojo;
+% Over Due;Impecabilidad;Dias de Deudas Vencida;%;50;50;50;55;Verde - Amarillo - Rojo;
+% Over Due Critico;Impecabilidad;Dias de Deudas Vencida con mas de 30 dias;%;2;2;2;5;Verde - Amarillo - Rojo;
+DSO;Impecabilidad;Dias Calle;nº;60;60;60;85;Verde - Amarillo - Rojo;
+Provisión;Impecabilidad;;%;30;80;80;90;Verde - Amarillo - Rojo;
