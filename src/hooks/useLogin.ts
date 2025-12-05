@@ -40,7 +40,7 @@ const useLogin = () => {
   const { setIsLoading, isLoading } = useAuthLayout();
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       email: "",
       password: "",
@@ -49,7 +49,7 @@ const useLogin = () => {
 
   // Form para recuperación de contraseña
   const forgotPasswordForm = useForm<z.infer<typeof forgotPasswordSchema>>({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: zodResolver(forgotPasswordSchema) as any,
     defaultValues: {
       email: "",
     },

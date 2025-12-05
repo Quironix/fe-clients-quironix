@@ -41,7 +41,7 @@ const formSchema = z.object({
       (type) => type.value
     ) as [string, ...string[]],
     {
-      required_error: "El tipo de documento es requerido",
+      message: "El tipo de documento es requerido",
     }
   ),
   // folio: z.string().min(1, "El folio es requerido"),
@@ -93,7 +93,7 @@ const FormDTE = () => {
   }, [session?.token, profile?.client?.id, id]);
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       client_code: profile?.client?.id || "",
       type: "INVOICE",

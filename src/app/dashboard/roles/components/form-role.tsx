@@ -63,7 +63,7 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
   const { profile } = useProfileContext();
 
   const form = useForm<RoleFormValue>({
-    resolver: zodResolver(roleFormSchema),
+    resolver: zodResolver(roleFormSchema) as any,
     defaultValues: {
       ...defaultValues,
       name: defaultValues?.name || "",

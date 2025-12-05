@@ -53,7 +53,7 @@ const NormalizeFormModals = ({
   const [showDialog, setShowDialog] = useState(false);
 
   const form = useForm<LitigationForm>({
-    resolver: zodResolver(litigationSchema),
+    resolver: zodResolver(litigationSchema) as any,
     defaultValues: {
       client: "",
       debtor: "",

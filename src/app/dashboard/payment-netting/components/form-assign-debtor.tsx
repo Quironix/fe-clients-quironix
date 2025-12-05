@@ -42,7 +42,7 @@ const FormAssignDebtor = ({
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {

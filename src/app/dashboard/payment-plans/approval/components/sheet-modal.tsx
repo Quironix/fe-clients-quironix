@@ -88,7 +88,7 @@ import {
 const paymentPlanSchema = z
   .object({
     type: z.enum(["approve", "reject", "modify"], {
-      required_error: "You need to select a notification type.",
+      message: "You need to select a notification type.",
     }),
     // Información del deudor
     debtorId: z.string().optional(),
@@ -151,7 +151,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
   );
 
   const form = useForm<PaymentPlanForm>({
-    resolver: zodResolver(paymentPlanSchema),
+    resolver: zodResolver(paymentPlanSchema) as any,
     mode: "onChange",
     defaultValues: {
       debtorId: detail?.debtorId || "",

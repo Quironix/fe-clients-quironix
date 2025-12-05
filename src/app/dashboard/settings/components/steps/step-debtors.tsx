@@ -135,7 +135,7 @@ const StepDebtors: React.FC<StepProps> = ({
   type DebtorsFormType = z.infer<typeof debtorsSchema>;
 
   const form = useForm<DebtorsFormType>({
-    resolver: zodResolver(debtorsSchema),
+    resolver: zodResolver(debtorsSchema) as any,
     defaultValues: {
       operational: {
         segmentation: {

@@ -39,7 +39,7 @@ const FilterInputs = React.forwardRef<
   type FilterFormValues = z.infer<typeof filterSchema>;
 
   const form = useForm<FilterFormValues>({
-    resolver: zodResolver(filterSchema),
+    resolver: zodResolver(filterSchema) as any,
     mode: "onChange",
     defaultValues: {
       motivo: initialFilters?.motivo || "ALL",

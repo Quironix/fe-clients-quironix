@@ -3,7 +3,10 @@
 import { Thread } from "@/components/assistant-ui/thread";
 import { useProfileContext } from "@/context/ProfileContext";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
+import {
+  AssistantChatTransport,
+  useChatRuntime,
+} from "@assistant-ui/react-ai-sdk";
 import { useRef } from "react";
 
 interface DebtorChatbotProps {
@@ -18,16 +21,24 @@ export function DebtorChatbot({ debtorId, callBrief }: DebtorChatbotProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const runtime = useChatRuntime({
-    api: `${API_URL}/v2/clients/${profile?.client?.id}/ai-engines/chat`,
-    headers: {
-      Authorization: `Bearer ${session?.token}`,
-    },
-    initialMessages: [
+    messages: [
       {
         role: "assistant",
-        content: callBrief.replace(/```markdown\n?/g, "").replace(/```/g, ""),
+        parts: [
+          {
+            type: "text",
+            text: callBrief.replace(/```markdown\n?/g, "").replace(/```/g, ""),
+          },
+        ],
+        id: "2WW5iArzjLZEFgtQ",
       },
     ],
+    transport: new AssistantChatTransport({
+      api: `${API_URL}/v2/clients/${profile?.client?.id}/ai-engines/chat`,
+      headers: {
+        Authorization: `Bearer ${session?.token}`,
+      },
+    }),
   });
 
   return (

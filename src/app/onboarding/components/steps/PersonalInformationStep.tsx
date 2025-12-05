@@ -74,7 +74,7 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
   }, [session?.token]);
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(userFormSchema),
+    resolver: zodResolver(userFormSchema) as any,
     defaultValues: {
       country_id: profile?.client?.country_id || "",
       business_name: profile?.client?.name || "",

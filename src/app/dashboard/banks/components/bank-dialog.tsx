@@ -46,7 +46,7 @@ const BankDialog = ({
 }: BankDialogProps) => {
   const { data: session }: any = useSession();
   const form = useForm<BankFormValues>({
-    resolver: zodResolver(bankFormSchema),
+    resolver: zodResolver(bankFormSchema) as any,
     defaultValues: {
       bank: defaultValues?.bank || "",
       account_number: defaultValues?.account_number || "",

@@ -107,7 +107,7 @@ const AttentionStep: React.FC<StepProps> = ({
   const timeOptions = generateTimeOptions();
 
   const form = useForm<DebtorFormValues>({
-    resolver: zodResolver(debtorFormSchema),
+    resolver: zodResolver(debtorFormSchema) as any,
     mode: "onChange",
     defaultValues: {
       attention_days_hours: Array.isArray(dataDebtor?.attention_days_hours)

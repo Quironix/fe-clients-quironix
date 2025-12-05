@@ -62,7 +62,7 @@ const LitigationEditModal = ({
   const [displayValue, setDisplayValue] = useState("");
 
   const form = useForm<LitigationEditForm>({
-    resolver: zodResolver(litigationEditSchema),
+    resolver: zodResolver(litigationEditSchema) as any,
     defaultValues: {
       litigation_amount: Number(litigation?.litigation_amount ?? 0),
       motivo: litigation?.motivo ?? "",

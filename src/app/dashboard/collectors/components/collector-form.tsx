@@ -28,7 +28,7 @@ const formSchema = z.object({
     .array(z.string())
     .min(1, "Selecciona al menos una fase de deuda"),
   channel: z.enum(["EMAIL", "WHATSAPP", "SMS"], {
-    required_error: "Selecciona un canal de comunicación",
+    message: "Selecciona un canal de comunicación",
   }),
   subject: z.string().min(1, "El asunto es requerido"),
   body_message: z.string().min(1, "El cuerpo del mensaje es requerido"),
@@ -42,8 +42,8 @@ const formSchema = z.object({
         min_delay_days: z.string().min(1, "Los días de atraso son requeridos"),
         exclusions: z.array(z.string()).default([]),
         frequency: z.enum(["DAILY", "SEVEN_DAYS", "BIWEEKLY", "MONTHLY"], {
-          required_error: "La frecuencia de envío es requerida",
-          invalid_type_error: "Selecciona una frecuencia válida",
+          message: "La frecuencia de envío es requerida",
+          // invalid_type_error: "Selecciona una frecuencia válida",
         }),
         schedule: z.object({
           preferred_time: z.string().min(1, "El horario es requerido"),
@@ -85,7 +85,7 @@ export const CollectorForm = ({
   const [activeSegment, setActiveSegment] = useState<string>("segment-0");
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       status: true,
       send_now: false,

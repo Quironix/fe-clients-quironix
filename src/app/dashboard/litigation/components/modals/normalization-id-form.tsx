@@ -57,7 +57,7 @@ const NormalizationFormId = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<LitigationEditForm>({
-    resolver: zodResolver(litigationEditSchema),
+    resolver: zodResolver(litigationEditSchema) as any,
     defaultValues: {
       normalization_reason: "",
       normalization_by_contact: "",

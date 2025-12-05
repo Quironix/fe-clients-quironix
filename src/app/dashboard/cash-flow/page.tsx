@@ -1,5 +1,6 @@
 "use client";
 
+import Loader from "@/components/Loader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -7,7 +8,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import InputNumberCart from "@/components/ui/input-number-cart";
@@ -19,15 +19,17 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileCog, FilePlus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import Loader from "@/components/Loader";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import Header from "../components/header";
 import { InfoIcon } from "../components/info-icon";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
-import { getCashFlowConfiguration, updateCashFlowConfiguration } from "./services";
+import {
+  getCashFlowConfiguration,
+  updateCashFlowConfiguration,
+} from "./services";
 
 const formSchema = z.object({
   consider_litigation: z.boolean(),
@@ -46,7 +48,7 @@ export default function CashFlowPage() {
   const [cashFlowConfiguration, setCashFlowConfiguration] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       consider_litigation: false,
       litigation: 0,
@@ -69,7 +71,8 @@ export default function CashFlowPage() {
             form.reset({
               consider_litigation: res.consider_litigation ?? false,
               litigation: res.litigation ?? 0,
-              consider_commercial_agreement_invoices: res.consider_commercial_agreement_invoices ?? false,
+              consider_commercial_agreement_invoices:
+                res.consider_commercial_agreement_invoices ?? false,
               nc_cutoff_days: res.nc_cutoff_days ?? 0,
               upper_range_percentage: res.upper_range_percentage ?? 0,
               lower_range_percentage: res.lower_range_percentage ?? 0,
@@ -99,7 +102,7 @@ export default function CashFlowPage() {
           client_id: profile.client.id,
         }
       );
-      
+
       setCashFlowConfiguration(updatedConfig);
       toast.success("Configuración actualizada exitosamente");
     } catch (error: any) {
@@ -155,17 +158,29 @@ export default function CashFlowPage() {
                         <FormItem>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={(value) => field.onChange(value === "true")}
+                              onValueChange={(value) =>
+                                field.onChange(value === "true")
+                              }
                               value={field.value ? "true" : "false"}
                               className="flex gap-2"
                             >
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="true" id="consider-litigation-yes" />
-                                <Label htmlFor="consider-litigation-yes">Si</Label>
+                                <RadioGroupItem
+                                  value="true"
+                                  id="consider-litigation-yes"
+                                />
+                                <Label htmlFor="consider-litigation-yes">
+                                  Si
+                                </Label>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="false" id="consider-litigation-no" />
-                                <Label htmlFor="consider-litigation-no">No</Label>
+                                <RadioGroupItem
+                                  value="false"
+                                  id="consider-litigation-no"
+                                />
+                                <Label htmlFor="consider-litigation-no">
+                                  No
+                                </Label>
                               </div>
                             </RadioGroup>
                           </FormControl>
@@ -220,17 +235,29 @@ export default function CashFlowPage() {
                         <FormItem>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={(value) => field.onChange(value === "true")}
+                              onValueChange={(value) =>
+                                field.onChange(value === "true")
+                              }
                               value={field.value ? "true" : "false"}
                               className="flex gap-2"
                             >
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="true" id="commercial-invoices-yes" />
-                                <Label htmlFor="commercial-invoices-yes">Si</Label>
+                                <RadioGroupItem
+                                  value="true"
+                                  id="commercial-invoices-yes"
+                                />
+                                <Label htmlFor="commercial-invoices-yes">
+                                  Si
+                                </Label>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="false" id="commercial-invoices-no" />
-                                <Label htmlFor="commercial-invoices-no">No</Label>
+                                <RadioGroupItem
+                                  value="false"
+                                  id="commercial-invoices-no"
+                                />
+                                <Label htmlFor="commercial-invoices-no">
+                                  No
+                                </Label>
                               </div>
                             </RadioGroup>
                           </FormControl>
@@ -348,16 +375,24 @@ export default function CashFlowPage() {
                         <FormItem>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={(value) => field.onChange(value === "true")}
+                              onValueChange={(value) =>
+                                field.onChange(value === "true")
+                              }
                               value={field.value ? "true" : "false"}
                               className="flex gap-2"
                             >
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="true" id="average-months-yes" />
+                                <RadioGroupItem
+                                  value="true"
+                                  id="average-months-yes"
+                                />
                                 <Label htmlFor="average-months-yes">Si</Label>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="false" id="average-months-no" />
+                                <RadioGroupItem
+                                  value="false"
+                                  id="average-months-no"
+                                />
                                 <Label htmlFor="average-months-no">No</Label>
                               </div>
                             </RadioGroup>
@@ -428,12 +463,16 @@ export default function CashFlowPage() {
               </div>
 
               <div className="flex items-center justify-center mt-4 border-t-2 border-primary pt-4">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="bg-primary text-white w-[50%] h-[40px]"
                   disabled={isLoading}
                 >
-                  {isLoading ? <Loader size={20} className="text-white" /> : "Guardar"}
+                  {isLoading ? (
+                    <Loader size={20} className="text-white" />
+                  ) : (
+                    "Guardar"
+                  )}
                 </Button>
               </div>
             </Card>
