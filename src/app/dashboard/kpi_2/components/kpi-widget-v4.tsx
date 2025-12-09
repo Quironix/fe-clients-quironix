@@ -119,7 +119,7 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
       {showSettings && (
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
           <p className="text-xs font-medium text-gray-500 mb-2">Tipo de visualización</p>
-          <div className="grid grid-cols-5 gap-1.5">
+          <div className="flex items-center gap-1">
             {viewTypes.map((type) => {
               const Icon = type.icon;
               return (
@@ -129,14 +129,14 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
                     onViewChange(type.id);
                     setShowSettings(false);
                   }}
-                  className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`p-2 rounded-md transition-colors ${
                     viewType === type.id
                       ? "bg-gray-900 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                   }`}
+                  title={type.name}
                 >
-                  <Icon size={12} />
-                  {type.name}
+                  <Icon size={14} />
                 </button>
               );
             })}
