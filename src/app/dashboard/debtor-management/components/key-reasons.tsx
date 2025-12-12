@@ -1,19 +1,10 @@
-import {
-  AlertCircle,
-  Banknote,
-  Calendar,
-  CalendarClock,
-  FileText,
-  Scale,
-  Target,
-  TrendingUp,
-  XCircle,
-} from "lucide-react";
-import { ProgressBarChart } from "./progress-bar-chart";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
+import { formatNumber } from "@/lib/utils";
 import dayjs from "dayjs";
+import { Banknote, CalendarClock, Scale, Target } from "lucide-react";
+import { useEffect, useState } from "react";
 import { CallReasons } from "../types";
+import { ProgressBarChart } from "./progress-bar-chart";
 
 interface KeyReasonsProps {
   callReasons: CallReasons;
@@ -49,10 +40,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
             </div>
             <div className="flex flex-col justify-between items-end">
               <span className="text-sm font-bold text-red-500">
-                $
-                {callReasons.unfulfilled_commitment.amount.toLocaleString(
-                  "es-CL",
-                )}
+                {formatNumber(callReasons.unfulfilled_commitment.amount || 0)}
               </span>
               <span className="text-xs">{date}</span>
             </div>
@@ -67,7 +55,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
             </span>
 
             <span className="text-lg font-bold text-red-500">
-              ${callReasons.overdue_debt.amount.toLocaleString("es-CL")}
+              {formatNumber(callReasons.overdue_debt.amount)}
             </span>
           </div>
           <ProgressBarChart
@@ -81,7 +69,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
         </div>
         <Separator className="mt-3 mb-1" />
         {/* Vencimientos próximos */}
-        <div className="space-y-1">
+        {/* <div className="space-y-1">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-gray-700">
@@ -93,7 +81,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
             </span>
           </div>
         </div>
-        <Separator className="my-1" />
+        <Separator className="my-1" /> */}
 
         {/* Estimación de caja */}
         <div className="space-y-1">
@@ -108,7 +96,9 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
                 <Banknote size={13} />
                 <span>Recaudado</span>
               </div>
-              <span>${callReasons.cash_estimate.collected_amount || 0}</span>
+              <span>
+                {formatNumber(callReasons.cash_estimate.collected_amount || 0)}
+              </span>
             </div>
             <div className="flex flex-col justify-around items-center">
               <div className="flex gap-1 justify-start items-center text-blue-700 text-xs">
@@ -116,7 +106,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
                 <span>Proyectado</span>
               </div>
               <span className="text-red-500 font-semibold">
-                ${callReasons.cash_estimate.projected_amount || 0}
+                {formatNumber(callReasons.cash_estimate.projected_amount || 0)}
               </span>
             </div>
           </div>
@@ -133,9 +123,9 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
               </div>
               <div className="flex flex-col justify-center items-center">
                 <span className="text-red-500 font-semibold">
-                  ${callReasons.upcoming_maturities.amount || 0}
+                  {formatNumber(callReasons.upcoming_maturities.amount || 0)}
                 </span>
-                <span className="text-gray-500 text-xs">11 días</span>
+                <span className="text-gray-500 text-xs">15 días</span>
               </div>
             </div>
             <div className="flex flex-col justify-around items-center">
@@ -145,10 +135,14 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
               </div>
               <div className="flex flex-col justify-center items-center">
                 <span className="text-red-500 font-semibold">
-                  ${callReasons.open_litigations.amount || 0}
+                  {formatNumber(callReasons.open_litigations.amount || 0)}
                 </span>
                 <span className="text-gray-500 text-xs">
-                  {callReasons.open_litigations.quantity || 0} facturas
+                  {formatNumber(
+                    callReasons.open_litigations.quantity || 0,
+                    false
+                  )}{" "}
+                  facturas
                 </span>
               </div>
             </div>

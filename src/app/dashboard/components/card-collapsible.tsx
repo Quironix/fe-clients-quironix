@@ -1,14 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { IconChevronDown } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { IconChevronDown } from "@tabler/icons-react";
+import * as React from "react";
 
 interface CardCollapsibleProps {
   icon: React.ReactNode;
@@ -38,24 +38,24 @@ export function CardCollapsible({
       <div
         className={cn(
           "bg-white p-2 rounded-md w-full h-full flex flex-col",
-          destacado ? "border-2 border-blue-700" : "border border-gray-400",
+          destacado ? "border-2 border-blue-700" : "border border-gray-400"
         )}
       >
         <CollapsibleTrigger className="w-full">
           <div
             className={cn(
-              "flex justify-between items-center gap-1 text-blue-700",
+              "flex justify-between items-center gap-1 text-blue-700"
             )}
           >
             <div className="flex justify-start items-center gap-1">
-              <div className="flex-shrink-0">{icon}</div>
+              <div className="shrink-0">{icon}</div>
               <span className="text-sm font-semibold">{title}</span>
             </div>
             <IconChevronDown
               size={18}
               className={cn(
                 "transition-transform duration-200",
-                isOpen && "transform rotate-180",
+                isOpen && "transform rotate-180"
               )}
             />
           </div>

@@ -176,12 +176,14 @@ export default function PaymentNettingPage() {
           setColumnConfiguration(config);
         }
 
-        const storedProfile = localStorage.getItem("profile");
-        if (storedProfile) {
-          const parsedProfile = JSON.parse(storedProfile);
-          if (parsedProfile?.profile) {
-            parsedProfile.profile.reconciliation_table = configToSave;
-            localStorage.setItem("profile", JSON.stringify(parsedProfile));
+        if (typeof window !== "undefined") {
+          const storedProfile = localStorage.getItem("profile");
+          if (storedProfile) {
+            const parsedProfile = JSON.parse(storedProfile);
+            if (parsedProfile?.profile) {
+              parsedProfile.profile.reconciliation_table = configToSave;
+              localStorage.setItem("profile", JSON.stringify(parsedProfile));
+            }
           }
         }
 

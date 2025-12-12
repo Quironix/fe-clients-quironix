@@ -1,4 +1,5 @@
 import { CardCollapsible } from "@/app/dashboard/components/card-collapsible";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   CreditCard,
   FileX2,
@@ -16,7 +17,6 @@ import LastPaymentReceived from "../last-payment-received";
 import LitigationsCard from "../litigations-card";
 import PaymentCommitment from "../payment-commitment";
 import ProtestedChecks from "../protested-checks";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface KeyReasonsTabProps {
   debtorId: string;
@@ -107,7 +107,7 @@ export const KeyReasonsTab = ({
             title="Riesgo crediticio"
             defaultOpen={false}
           >
-            <CreditRisk data={collectionProfile.call_reasons} />
+            <CreditRisk data={collectionProfile.credit_risk_summary} />
           </CardCollapsible>
 
           <CardCollapsible
@@ -133,7 +133,7 @@ export const KeyReasonsTab = ({
             title="Litigios"
             defaultOpen={false}
           >
-            <LitigationsCard data={collectionProfile.litigations || null} />
+            <LitigationsCard data={collectionProfile || null} />
           </CardCollapsible>
 
           <CardCollapsible
@@ -141,7 +141,10 @@ export const KeyReasonsTab = ({
             title="Últimas gestiones"
             defaultOpen={false}
           >
-            <LastManagements data={collectionProfile.management || null} debtorId={debtorId} />
+            <LastManagements
+              data={collectionProfile.management || null}
+              debtorId={debtorId}
+            />
           </CardCollapsible>
         </div>
       </div>

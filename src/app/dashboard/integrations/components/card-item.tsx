@@ -21,7 +21,7 @@ const CardItem: React.FC<CardItemProps> = ({
   return (
     <div className="w-full bg-white border border-gray-300 rounded-lg flex items-center px-4 py-4 gap-8 shadow-sm">
       <div
-        className="flex-shrink-0 flex items-center justify-center"
+        className="shrink-0 flex items-center justify-center"
         style={{ minWidth: 300 }}
       >
         <Image src={image} alt={title} width={300} height={300} />

@@ -1,6 +1,6 @@
-import { FileText } from "lucide-react";
-import { formatNumber } from "@/lib/utils";
 import { getDocumentTypeDisplayData } from "@/app/dashboard/payment-netting/components/document-type-badge";
+import { formatNumber } from "@/lib/utils";
+import { FileText } from "lucide-react";
 
 const LitigationsCard = ({ data }: { data: any }) => {
   const litigations = data?.litigations;
@@ -8,7 +8,9 @@ const LitigationsCard = ({ data }: { data: any }) => {
   if (!litigations) {
     return (
       <div className="flex flex-col justify-center items-center gap-3">
-        <span className="text-sm text-muted-foreground">No hay datos de litigios disponibles</span>
+        <span className="text-sm text-muted-foreground">
+          No hay datos de litigios disponibles
+        </span>
       </div>
     );
   }
@@ -40,14 +42,18 @@ const LitigationsCard = ({ data }: { data: any }) => {
               <div className="text-sm">
                 {formatNumber(value.amount)}
                 {value.count > 0 && (
-                  <span className="text-muted-foreground ml-1">({value.count})</span>
+                  <span className="text-muted-foreground ml-1">
+                    ({value.count})
+                  </span>
                 )}
               </div>
             </div>
           );
         })
       ) : (
-        <span className="text-sm text-muted-foreground">No hay documentos en litigio</span>
+        <span className="text-sm text-muted-foreground">
+          No hay documentos en litigio
+        </span>
       )}
     </div>
   );

@@ -54,4 +54,5 @@ export interface CollectionProfile {
   last_payment_received?: any;
   litigations?: any;
   management?: any;
+  credit_risk_summary?: CallReasons["credit_risk_summary"];
 }

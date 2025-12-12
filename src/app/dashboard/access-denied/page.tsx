@@ -212,15 +212,15 @@ const AccessDeniedContent = () => {
           <CardContent className="space-y-3">
             <div className="text-sm text-gray-600 space-y-2">
               <p className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                 Contacta con tu administrador del sistema
               </p>
               <p className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                 Solicita los permisos específicos para esta página
               </p>
               <p className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                 Verifica que tu rol tenga las funciones necesarias
               </p>
             </div>

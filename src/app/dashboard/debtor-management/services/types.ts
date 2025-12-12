@@ -1,4 +1,7 @@
-import { PaginationInfo, PaginationParams } from "../../debtors/types/pagination";
+import {
+  PaginationInfo,
+  PaginationParams,
+} from "../../debtors/types/pagination";
 
 // Tipos de cuadrantes disponibles
 export type QuadrantType =
@@ -16,6 +19,9 @@ export interface Debtor {
   name: string;
   email: string | null;
   debtor_code: string;
+  broken_commitments_count: number;
+  broken_commitments_percentage: number;
+  due_debt_amount: number;
 }
 
 // Item de cuadrante (tarea)
