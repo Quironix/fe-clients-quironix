@@ -243,9 +243,9 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               debtorId={task.debtorId}
               code={task.debtor.debtor_code}
               name={task.debtor.name}
-              incidents={0}
+              incidents={task.debtor.broken_commitments_count}
               incidentsLabel="Incumplimientos"
-              debt="-"
+              debt={task.debtor.due_debt_amount}
               debtLabel="Deuda vencida"
               status="SIN CLASIFICAR"
               statusBgColor="bg-gray-100"
