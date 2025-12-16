@@ -84,7 +84,7 @@ const Content = () => {
   >([
     { name: "documentNumber", is_visible: true },
     { name: "order_code", is_visible: false },
-    { name: "numberOfInstallments", is_visible: true },
+    { name: "number_of_installments", is_visible: true },
     { name: "daysOverdue", is_visible: true },
     { name: "amount", is_visible: true },
     { name: "documentPhase", is_visible: true },

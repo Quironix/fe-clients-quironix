@@ -68,7 +68,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
         label: "Fecha de compromiso",
         type: "date",
         required: true,
-        placeholder: "YYYY-MM-DD",
+        placeholder: "DD-MM-YYYY",
       },
       {
         name: "amount",
@@ -93,7 +93,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
         label: "Fecha de pago",
         type: "date",
         required: true,
-        placeholder: "YYYY-MM-DD",
+        placeholder: "DD-MM-YYYY",
       },
       {
         name: "paymentAmount",
@@ -184,7 +184,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
         label: "Fecha de identificación",
         type: "date",
         required: true,
-        placeholder: "YYYY-MM-DD",
+        placeholder: "DD-MM-YYYY",
       },
     ],
   },
@@ -286,7 +286,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
         label: "Fecha de retiro",
         type: "date",
         required: true,
-        placeholder: "YYYY-MM-DD",
+        placeholder: "DD-MM-YYYY",
       },
       {
         name: "paymentCommitmentAmount",
@@ -514,3 +514,730 @@ export const getExecutiveCommentLabel = (type: string): string => {
   const comment = EXECUTIVE_COMMENTS.find((c) => c.value === type);
   return comment?.label || type;
 };
+
+export const NORMAL_CLIENTS = [
+  {
+    label: "Depositará o hará transferencia",
+    code: "WILL_DEPOSIT_OR_TRANSFER",
+    executive_comments: [
+      {
+        label: "Con Compromiso de pago",
+        code: "WITH_PAYMENT_COMMITMENT",
+        fase: 5,
+      },
+    ],
+  },
+  {
+    label: "Depositó o transfirió",
+    code: "DEPOSITED_OR_TRANSFERRED",
+    executive_comments: [
+      {
+        label: "Confirmar abono en cartola",
+        code: "CONFIRM_PAYMENT_IN_STATEMENT",
+        fase: 7,
+      },
+    ],
+  },
+  {
+    label: "Contacto no responde",
+    code: "CONTACT_NOT_RESPONDING",
+    executive_comments: [
+      {
+        label: "Deudor inubicable",
+        code: "DEBTOR_UNREACHABLE",
+        fase: 1,
+      },
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 1,
+      },
+      {
+        label: "Sin contacto",
+        code: "NO_CONTACT",
+        fase: 1,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 1,
+      },
+      {
+        label: "Se solicitará reunión a Deudor",
+        code: "MEETING_WITH_DEBTOR_REQUESTED",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Sin Fondos",
+    code: "NO_FUNDS",
+    executive_comments: [
+      {
+        label: "Se sugiere enviar a Dicom",
+        code: "SUGGEST_SEND_TO_DICOM",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Factura con Litigio",
+    code: "INVOICE_WITH_LITIGATION",
+    executive_comments: [
+      {
+        label: "Aplicar N/C",
+        code: "APPLY_CREDIT_NOTE",
+        fase: 2,
+      },
+      {
+        label: "Documento en litigio",
+        code: "DOCUMENT_IN_LITIGATION",
+        fase: 2,
+      },
+    ],
+  },
+  {
+    label: "Envío Estado de Cuenta",
+    code: "STATEMENT_SENT",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 1,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 1,
+      },
+      {
+        label: "Se envió pdf de factura",
+        code: "INVOICE_PDF_SENT",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Documentos Sin compromiso de pago",
+    code: "DOCUMENTS_WITHOUT_PAYMENT_COMMITMENT",
+    executive_comments: [
+      {
+        label: "Deudor inubicable",
+        code: "DEBTOR_UNREACHABLE",
+        fase: 1,
+      },
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 1,
+      },
+      {
+        label: "Sin contacto",
+        code: "NO_CONTACT",
+        fase: 1,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 1,
+      },
+      {
+        label: "Se solicitará reunión a Deudor",
+        code: "MEETING_WITH_DEBTOR_REQUESTED",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Pago realizado e identificado",
+    code: "PAYMENT_MADE_AND_IDENTIFIED",
+    executive_comments: [
+      {
+        label: "Pago parcial o detalle incompleto",
+        code: "PARTIAL_PAYMENT_OR_INCOMPLETE_DETAIL",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Solicito envío de Notas de Crédito",
+    code: "REQUEST_CREDIT_NOTES_SENDING",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 3,
+      },
+    ],
+  },
+  {
+    label: "Solicito acuse de recibo",
+    code: "REQUEST_ACKNOWLEDGMENT_OF_RECEIPT",
+    executive_comments: [
+      {
+        label: "Aplicar N/C",
+        code: "APPLY_CREDIT_NOTE",
+        fase: 3,
+      },
+      {
+        label: "Confirmar abono en cartola",
+        code: "CONFIRM_PAYMENT_IN_STATEMENT",
+        fase: 7,
+      },
+      {
+        label: "Documento en litigio",
+        code: "DOCUMENT_IN_LITIGATION",
+        fase: 2,
+      },
+    ],
+  },
+  {
+    label: "Solicita aplicar nota de crédito disponible",
+    code: "REQUEST_APPLY_AVAILABLE_CREDIT_NOTE",
+    executive_comments: [
+      {
+        label: "Aplicar N/C",
+        code: "APPLY_CREDIT_NOTE",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Problemas de Caja",
+    code: "CASH_FLOW_PROBLEMS",
+    executive_comments: [
+      {
+        label: "Deudor inubicable",
+        code: "DEBTOR_UNREACHABLE",
+        fase: 1,
+      },
+      {
+        label: "Se sugiere enviar a Dicom",
+        code: "SUGGEST_SEND_TO_DICOM",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Informado Bloqueo de Pedidos",
+    code: "INFORMED_ORDER_BLOCKING",
+    executive_comments: [
+      {
+        label: "Corte de Servicio",
+        code: "SERVICE_CUT",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Informado Documento Protestado",
+    code: "INFORMED_PROTESTED_DOCUMENT",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 4,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 4,
+      },
+      {
+        label: "Redepositar documento",
+        code: "REDEPOSIT_DOCUMENT",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Envío Cedible/ Guía de Despacho",
+    code: "ASSIGNABLE_DOCUMENT_DISPATCH_GUIDE_SENT",
+    executive_comments: [
+      {
+        label: "Enviar copia cedible factura",
+        code: "SEND_ASSIGNABLE_INVOICE_COPY",
+        fase: 1,
+      },
+      {
+        label: "Envío de Guía de Despacho",
+        code: "DISPATCH_GUIDE_SENT",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Revisará tema",
+    code: "WILL_REVIEW_ISSUE",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 1,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Cheque Confirmado",
+    code: "CHECK_CONFIRMED",
+    executive_comments: [
+      {
+        label: "Con Compromiso de pago",
+        code: "WITH_PAYMENT_COMMITMENT",
+        fase: 5,
+      },
+    ],
+  },
+  {
+    label: "Necesito Plan de Pago",
+    code: "NEED_PAYMENT_PLAN",
+    executive_comments: [
+      {
+        label: "Solicitud de aprobación de Plan de Pago",
+        code: "PAYMENT_PLAN_APPROVAL_REQUEST",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Contabilizada sin Compromiso de Pago",
+    code: "ACCOUNTED_WITHOUT_PAYMENT_COMMITMENT",
+    executive_comments: [
+      {
+        label: "Sin contacto",
+        code: "NO_CONTACT",
+        fase: 4,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Compromiso incumplido",
+    code: "COMMITMENT_BREACHED",
+    executive_comments: [
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 6,
+      },
+      {
+        label: "Sin contacto",
+        code: "NO_CONTACT",
+        fase: 6,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 6,
+      },
+    ],
+  },
+  {
+    label: "Motivo de no pago",
+    code: "REASON_FOR_NON_PAYMENT",
+    executive_comments: [
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Notificado de Posible Bloqueo de Pedidos",
+    code: "NOTIFIED_POSSIBLE_ORDER_BLOCKING",
+    executive_comments: [
+      {
+        label: "Sugerir Bloqueo de pedidos",
+        code: "SUGGEST_ORDER_BLOCKING",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Informo Motivo de rechazo SII",
+    code: "INFORM_SII_REJECTION_REASON",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 2,
+      },
+    ],
+  },
+  {
+    label: "Factura registrada en Contabilidad",
+    code: "INVOICE_REGISTERED_IN_ACCOUNTING",
+    executive_comments: [
+      {
+        label: "Contabilizada",
+        code: "ACCOUNTED",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Factura no registrada en contabilidad",
+    code: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING",
+    executive_comments: [
+      {
+        label: "No contabilizada",
+        code: "NOT_ACCOUNTED",
+        fase: 3,
+      },
+    ],
+  },
+  {
+    label: "Notificado de Publicación en Informes Comerciales",
+    code: "NOTIFIED_COMMERCIAL_REPORTS_PUBLICATION",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+    ],
+  },
+];
+
+export const FACTORING_CLIENTS = [
+  {
+    label: "Contacto no responde",
+    code: "CONTACT_NOT_RESPONDING",
+    executive_comments: [
+      {
+        label: "Deudor inubicable",
+        code: "DEBTOR_UNREACHABLE",
+        fase: 1,
+      },
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 1,
+      },
+      {
+        label: "Sin contacto",
+        code: "NO_CONTACT",
+        fase: 1,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Sin Fondos",
+    code: "NO_FUNDS",
+    executive_comments: [
+      {
+        label: "Se sugiere enviar a Dicom",
+        code: "SUGGEST_SEND_TO_DICOM",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Envío Estado de Cuenta",
+    code: "STATEMENT_SENT",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 1,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 1,
+      },
+      {
+        label: "Se envió pdf de factura",
+        code: "INVOICE_PDF_SENT",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Documentos Sin compromiso de pago",
+    code: "DOCUMENTS_WITHOUT_PAYMENT_COMMITMENT",
+    executive_comments: [
+      {
+        label: "Deudor inubicable",
+        code: "DEBTOR_UNREACHABLE",
+        fase: 1,
+      },
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 1,
+      },
+      {
+        label: "Sin contacto",
+        code: "NO_CONTACT",
+        fase: 1,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Pago realizado e identificado",
+    code: "PAYMENT_MADE_AND_IDENTIFIED",
+    executive_comments: [
+      {
+        label: "Pago parcial o detalle incompleto",
+        code: "PARTIAL_PAYMENT_OR_INCOMPLETE_DETAIL",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Revisará tema",
+    code: "WILL_REVIEW_ISSUE",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 1,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Solicito Certificado de Cesión de Factura",
+    code: "SOLICITO_CERTIFICADO_DE_CESI_N_DE_FACTURA",
+    executive_comments: [
+      {
+        label: "Envío de Cesión",
+        code: "ENV_O_DE_CESI_N",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Factura con Litigio",
+    code: "INVOICE_WITH_LITIGATION",
+    executive_comments: [
+      {
+        label: "Documento en litigio",
+        code: "DOCUMENT_IN_LITIGATION",
+        fase: 2,
+      },
+    ],
+  },
+  {
+    label: "Factura en Litigio Pagada al Cliente",
+    code: "FACTURA_EN_LITIGIO_PAGADA_AL_CLIENTE",
+    executive_comments: [
+      {
+        label: "Factura Pagada al Cliente",
+        code: "FACTURA_PAGADA_AL_CLIENTE",
+        fase: 2,
+      },
+    ],
+  },
+  {
+    label: "Factura no registrada en contabilidad",
+    code: "INVOICE_NOT_REGISTERED_IN_ACCOUNTING",
+    executive_comments: [
+      {
+        label: "No contabilizada",
+        code: "NOT_ACCOUNTED",
+        fase: 3,
+      },
+    ],
+  },
+  {
+    label: "Informado Documento Protestado",
+    code: "INFORMED_PROTESTED_DOCUMENT",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 4,
+      },
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 4,
+      },
+      {
+        label: "Redepositar documento",
+        code: "REDEPOSIT_DOCUMENT",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Necesito Plan de Pago",
+    code: "NEED_PAYMENT_PLAN",
+    executive_comments: [
+      {
+        label: "Solicitud de aprobación de Plan de Pago",
+        code: "PAYMENT_PLAN_APPROVAL_REQUEST",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Contabilizada sin Compromiso de Pago",
+    code: "ACCOUNTED_WITHOUT_PAYMENT_COMMITMENT",
+    executive_comments: [
+      {
+        label: "Sin contacto",
+        code: "NO_CONTACT",
+        fase: 4,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Pago Parcial",
+    code: "PARTIAL_PAYMENT",
+    executive_comments: [
+      {
+        label: "Pago parcial o detalle incompleto",
+        code: "PARTIAL_PAYMENT_OR_INCOMPLETE_DETAIL",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Motivo de no pago",
+    code: "REASON_FOR_NON_PAYMENT",
+    executive_comments: [
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Factura registrada en Contabilidad",
+    code: "INVOICE_REGISTERED_IN_ACCOUNTING",
+    executive_comments: [
+      {
+        label: "Contabilizada",
+        code: "ACCOUNTED",
+        fase: 4,
+      },
+    ],
+  },
+  {
+    label: "Depositará o hará transferencia",
+    code: "WILL_DEPOSIT_OR_TRANSFER",
+    executive_comments: [
+      {
+        label: "Con Compromiso de pago",
+        code: "WITH_PAYMENT_COMMITMENT",
+        fase: 5,
+      },
+    ],
+  },
+  {
+    label: "Cheque Confirmado",
+    code: "CHECK_CONFIRMED",
+    executive_comments: [
+      {
+        label: "Con Compromiso de pago",
+        code: "WITH_PAYMENT_COMMITMENT",
+        fase: 5,
+      },
+    ],
+  },
+  {
+    label: "Compromiso incumplido",
+    code: "COMMITMENT_BREACHED",
+    executive_comments: [
+      {
+        label: "Aumentar Presión",
+        code: "INCREASE_PRESSURE",
+        fase: 6,
+      },
+      {
+        label: "Sin contacto",
+        code: "NO_CONTACT",
+        fase: 6,
+      },
+      {
+        label: "Sin progreso",
+        code: "NO_PROGRESS",
+        fase: 6,
+      },
+    ],
+  },
+  {
+    label: "Depositó o transfirió",
+    code: "DEPOSITED_OR_TRANSFERRED",
+    executive_comments: [
+      {
+        label: "Confirmar abono en cartola",
+        code: "CONFIRM_PAYMENT_IN_STATEMENT",
+        fase: 7,
+      },
+    ],
+  },
+];
