@@ -146,6 +146,7 @@ export async function getDebtorTracks(
  * @param params - Parámetros de paginación
  * @param params.page - Número de página (default: 1)
  * @param params.limit - Cantidad de registros por página (default: 10)
+ * @param params.search - Término de búsqueda por número de documento
  * @returns Respuesta con las facturas y sus tracks asociados con metadata de paginación
  */
 export async function getDebtorTracksByInvoices(
@@ -158,6 +159,10 @@ export async function getDebtorTracksByInvoices(
     page: params.page.toString(),
     limit: params.limit.toString(),
   });
+
+  if (params.search) {
+    queryParams.append("search", params.search);
+  }
 
   const response = await fetch(
     `${API_URL}/v2/clients/${clientId}/managements/tracks/debtor/${debtorId}/invoices?${queryParams}`,
