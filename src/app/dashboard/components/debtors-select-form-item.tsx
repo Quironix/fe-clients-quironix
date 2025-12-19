@@ -4,7 +4,7 @@ import { FormItem, FormLabel } from "@/components/ui/form";
 import Required from "@/components/ui/required";
 import { SearchInput } from "@/components/ui/search-input";
 import { useProfileContext } from "@/context/ProfileContext";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FieldValues } from "react-hook-form";
 import { useDebtorsStore } from "../debtors/store";
 import useDebounce from "../hooks/useDebounce";
@@ -13,7 +13,8 @@ export interface DebtorsSelectFormItemProps {
   field: FieldValues;
   title?: string;
   required?: boolean;
-  resetTrigger?: boolean; // Nueva prop para disparar el reset
+  resetTrigger?: boolean;
+  initialDebtor?: { id?: string; name?: string; debtor_code?: string };
 }
 
 export default function DebtorsSelectFormItem({
@@ -21,12 +22,13 @@ export default function DebtorsSelectFormItem({
   title,
   required,
   resetTrigger,
+  initialDebtor,
 }: DebtorsSelectFormItemProps) {
   const { debtors, fetchDebtorsPaginated, loading, isSearching } =
     useDebtorsStore();
   const { profile, session } = useProfileContext();
   const [searchText, setSearchText] = useState("");
-  const debouncedSearchText = useDebounce(searchText, 500); // 500ms debounce delay
+  const debouncedSearchText = useDebounce(searchText, 500);
 
   useEffect(() => {
     if (session?.token && profile?.client?.id && debtors.length === 0) {
@@ -76,6 +78,13 @@ export default function DebtorsSelectFormItem({
     fetchDebtorsPaginated,
   ]);
 
+  const combinedDebtors = useMemo(() => {
+    if (initialDebtor?.id && initialDebtor?.name && !debtors.find(d => d.id === initialDebtor.id)) {
+      return [initialDebtor as { id: string; name: string; debtor_code?: string }, ...debtors];
+    }
+    return debtors;
+  }, [debtors, initialDebtor]);
+
   return (
     <FormItem>
       {title && (
@@ -87,7 +96,7 @@ export default function DebtorsSelectFormItem({
         <SearchInput
           value={field.value}
           onValueChange={(value: string) => field.onChange(value)}
-          options={debtors.map((debtor: any) => {
+          options={combinedDebtors.map((debtor: any) => {
             return {
               value: debtor.id,
               label: debtor.name,
