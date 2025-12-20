@@ -154,7 +154,7 @@ const StepContacts: React.FC<StepProps> = ({
 
   type ContactsFormType = z.infer<typeof contactsSchema>;
   const form = useForm<ContactsFormType>({
-    resolver: zodResolver(contactsSchema),
+    resolver: zodResolver(contactsSchema) as any,
     defaultValues: {
       contacts: profile?.client?.contacts?.length
         ? profile.client.contacts

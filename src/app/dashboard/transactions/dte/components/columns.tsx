@@ -5,18 +5,30 @@ import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
 import { formatDate } from "@/lib/utils";
 import { ColumnDef, Row } from "@tanstack/react-table";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDTEStore } from "../store";
 import { DTE } from "../types";
+import { useState } from "react";
+import InvoiceHistoryModal from "./invoice-history-modal";
 
 const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
   const router = useRouter();
   const { deleteDTE } = useDTEStore();
   const { session, profile } = useProfileContext();
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
   return (
     <div className="flex justify-center gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setIsHistoryModalOpen(true)}
+        title="Ver historial"
+        className="hover:bg-blue-500 hover:text-white text-primary"
+      >
+        <History />
+      </Button>
       <Button
         variant="ghost"
         size="icon"
@@ -51,6 +63,11 @@ const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
           }
         }}
         type="danger"
+      />
+      <InvoiceHistoryModal
+        invoice={row.original}
+        open={isHistoryModalOpen}
+        onOpenChange={setIsHistoryModalOpen}
       />
     </div>
   );

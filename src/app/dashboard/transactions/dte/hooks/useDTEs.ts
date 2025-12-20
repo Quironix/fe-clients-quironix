@@ -22,6 +22,7 @@ interface UseDTEsReturn {
   error: Error | null;
   refetch: () => void;
   handlePaginationChange: (page: number, limit: number) => void;
+  handleSearchChange: (search: string) => void;
   currentPage: number;
   currentLimit: number;
   invalidateDTEs: () => void;
@@ -37,10 +38,11 @@ export const useDTEs = ({
 }: UseDTEsParams): UseDTEsReturn => {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [currentLimit, setCurrentLimit] = useState(initialLimit);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const queryFn = useCallback(
-    () => getDTEs(accessToken, clientId, { page: currentPage, limit: currentLimit }),
-    [accessToken, clientId, currentPage, currentLimit]
+    () => getDTEs(accessToken, clientId, { page: currentPage, limit: currentLimit, search: searchTerm }),
+    [accessToken, clientId, currentPage, currentLimit, searchTerm]
   );
 
   const {
@@ -50,7 +52,7 @@ export const useDTEs = ({
     error,
     refetch,
   } = useQuery({
-    queryKey: [`${DTES_QUERY_KEY}-${clientId}`, currentPage, currentLimit],
+    queryKey: [`${DTES_QUERY_KEY}-${clientId}`, currentPage, currentLimit, searchTerm],
     queryFn,
     enabled: !!accessToken && !!clientId,
     staleTime: 30 * 1000,
@@ -62,6 +64,11 @@ export const useDTEs = ({
   const handlePaginationChange = useCallback((page: number, limit: number) => {
     setCurrentPage(page);
     setCurrentLimit(limit);
+  }, []);
+
+  const handleSearchChange = useCallback((search: string) => {
+    setSearchTerm(search);
+    setCurrentPage(1);
   }, []);
 
   const queryClient = useQueryClient();
@@ -87,6 +94,7 @@ export const useDTEs = ({
     error,
     refetch,
     handlePaginationChange,
+    handleSearchChange,
     currentPage,
     currentLimit,
     invalidateDTEs,

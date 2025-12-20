@@ -179,7 +179,9 @@ export function useCollectors(
       const newSelection =
         typeof updater === "function" ? updater(rowSelection) : updater;
       setRowSelection(newSelection);
-      localStorage.setItem("collectorsSelection", JSON.stringify(newSelection));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("collectorsSelection", JSON.stringify(newSelection));
+      }
     },
     [rowSelection]
   );

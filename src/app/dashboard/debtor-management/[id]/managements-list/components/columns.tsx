@@ -73,6 +73,24 @@ export const createColumns = (): ColumnDef<DebtorTrack>[] => [
     ),
   },
   {
+    accessorKey: "order_code",
+    header: "N° Pedido",
+    cell: ({ row }) => (
+      <div className="font-medium text-sm">
+        {row.original.order_code || "-"}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "numberOfInstallments",
+    header: "N° de cuotas",
+    cell: ({ row }) => (
+      <div className="font-medium text-sm">
+        {row.original.numberOfInstallments || "-"}
+      </div>
+    ),
+  },
+  {
     accessorKey: "daysOverdue",
     header: "Días de atraso",
     cell: ({ row }) => (

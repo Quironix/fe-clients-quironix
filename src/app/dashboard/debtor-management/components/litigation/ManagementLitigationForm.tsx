@@ -86,7 +86,7 @@ const ManagementLitigationForm = ({
   }, [onChange]);
 
   const form = useForm<ManagementLitigationFormData>({
-    resolver: zodResolver(litigationFormSchema),
+    resolver: zodResolver(litigationFormSchema) as any,
     mode: "onChange",
     defaultValues: value || {
       litigations: litigations,

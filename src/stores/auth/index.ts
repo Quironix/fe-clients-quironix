@@ -15,24 +15,11 @@ export interface AuthStore {
 //   setSession: (session: Session | null) => set({ session }),
 // }));
 
-const useAuthStore = create<AuthStore>()(
-  persist(
-    set => ({
-      user: null,
-      session: null,
-      setUser: (user: any | null) => set({ user }),
-      setSession: (session: any) => set({ session }),
-    }),
-    {
-      name: "auth-storage", // nombre único para el almacenamiento
-      storage: createJSONStorage(() => localStorage), // usa localStorage por defecto
-      // Puedes especificar qué partes del estado deben persistir
-      partialize: state => ({
-        user: state.user,
-        session: state.session,
-      }),
-    }
-  )
-);
+const useAuthStore = create<AuthStore>()(set => ({
+  user: null,
+  session: null,
+  setUser: (user: any | null) => set({ user }),
+  setSession: (session: any) => set({ session }),
+}));
 
 export const useAuth = useAuthStore;

@@ -1,13 +1,19 @@
 "use client";
 
 import { useProfileContext } from "@/context/ProfileContext";
+import {
+  AlertTriangle,
+  CircleCheckBig,
+  File,
+  FileText,
+  Scale,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { useCollectorQuadrants } from "../hooks/useCollectorQuadrants";
-import { AlertTriangle, CircleCheckBig, FileText, Scale, File } from "lucide-react";
+import { QuadrantType } from "../services/types";
 import { TaskIsland } from "./task-island";
 import { TaskItem } from "./task-item";
 import { TasksPagination } from "./tasks-pagination";
-import { useState, useEffect } from "react";
-import { QuadrantType } from "../services/types";
 
 interface TasksListProps {
   selectedQuadrant: QuadrantType;
@@ -89,23 +95,25 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
           bgColor="bg-red-100"
           textColor="text-red-700"
         >
-          {riskTasks.map((task, index) => (
-            <TaskItem
-              key={task.debtorId}
-              debtorId={task.debtorId}
-              code={task.debtor.debtor_code}
-              name={task.debtor.name}
-              incidents={0}
-              incidentsLabel="Incumplimientos"
-              debt="-"
-              debtLabel="Deuda vencida"
-              status="DEUDOR CRÍTICO"
-              statusBgColor="bg-red-100"
-              statusTextColor="text-red-700"
-              highlighted={index === 0}
-              borderColor="border-red-500"
-            />
-          ))}
+          {riskTasks
+            .sort((a, b) => b.debtor.due_debt_amount - a.debtor.due_debt_amount)
+            .map((task, index) => (
+              <TaskItem
+                key={task.debtorId}
+                debtorId={task.debtorId}
+                code={task.debtor.debtor_code}
+                name={task.debtor.name}
+                incidents={task.debtor.broken_commitments_count}
+                incidentsLabel="Incumplimientos"
+                debt={task.debtor.due_debt_amount}
+                debtLabel="Deuda vencida"
+                status={`${task.debtor.broken_commitments_percentage}%`}
+                statusBgColor="bg-red-100"
+                statusTextColor="text-red-700"
+                highlighted={index === 0}
+                borderColor="border-red-500"
+              />
+            ))}
         </TaskIsland>
       )}
 
@@ -123,11 +131,11 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               debtorId={task.debtorId}
               code={task.debtor.debtor_code}
               name={task.debtor.name}
-              incidents={0}
+              incidents={task.debtor.broken_commitments_count}
               incidentsLabel="Incumplimientos"
-              debt="-"
+              debt={task.debtor.due_debt_amount}
               debtLabel="Deuda vencida"
-              status="COMPROMISO INCUMPLIDO"
+              status={`${task.debtor.broken_commitments_percentage}%`}
               statusBgColor="bg-red-100"
               statusTextColor="text-red-700"
               highlighted={index === 0}
@@ -151,11 +159,11 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               debtorId={task.debtorId}
               code={task.debtor.debtor_code}
               name={task.debtor.name}
-              incidents={0}
+              incidents={task.debtor.broken_commitments_count}
               incidentsLabel="Incumplimientos"
-              debt="-"
+              debt={task.debtor.due_debt_amount}
               debtLabel="Deuda vencida"
-              status="GENERACIÓN DE CAJA"
+              status={`${task.debtor.broken_commitments_percentage}%`}
               statusBgColor="bg-orange-100"
               statusTextColor="text-orange-700"
               highlighted={index === 0}
@@ -179,11 +187,11 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               debtorId={task.debtorId}
               code={task.debtor.debtor_code}
               name={task.debtor.name}
-              incidents={0}
+              incidents={task.debtor.broken_commitments_count}
               incidentsLabel="Incumplimientos"
-              debt="-"
+              debt={task.debtor.due_debt_amount}
               debtLabel="Deuda vencida"
-              status="LITIGIO"
+              status={`${task.debtor.broken_commitments_percentage}%`}
               statusBgColor="bg-yellow-100"
               statusTextColor="text-yellow-700"
               highlighted={index === 0}
@@ -207,11 +215,11 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               debtorId={task.debtorId}
               code={task.debtor.debtor_code}
               name={task.debtor.name}
-              incidents={0}
+              incidents={task.debtor.broken_commitments_count}
               incidentsLabel="Incumplimientos"
-              debt="-"
+              debt={task.debtor.due_debt_amount}
               debtLabel="Deuda vencida"
-              status="EXPEDIENTE DEFICIENTE"
+              status={`${task.debtor.broken_commitments_percentage}%`}
               statusBgColor="bg-purple-100"
               statusTextColor="text-purple-700"
               highlighted={index === 0}
@@ -235,9 +243,9 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               debtorId={task.debtorId}
               code={task.debtor.debtor_code}
               name={task.debtor.name}
-              incidents={0}
+              incidents={task.debtor.broken_commitments_count}
               incidentsLabel="Incumplimientos"
-              debt="-"
+              debt={task.debtor.due_debt_amount}
               debtLabel="Deuda vencida"
               status="SIN CLASIFICAR"
               statusBgColor="bg-gray-100"

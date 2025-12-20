@@ -57,6 +57,8 @@ export interface DebtorTrack {
   createdAt: string;
   updatedAt: string;
   documentNumber?: string;
+  order_code?: string;
+  numberOfInstallments?: number;
   daysOverdue?: number;
   amount?: number;
   documentPhase?: string;
@@ -145,6 +147,7 @@ export interface InvoiceWithTrack {
 export interface InvoiceTracksParams {
   page: number;
   limit: number;
+  search?: string;
 }
 
 export interface InvoiceTracksResponse {

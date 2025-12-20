@@ -13,8 +13,8 @@
   console.log("🧪 TEST DE CONEXIÓN WEBRTC - ISSABEL PBX");
   console.log("=".repeat(60));
 
-  const WS_URI = "wss://webrtc.quironix.com:8089/ws";
-  const SIP_DOMAIN = "webrtc.quironix.com";
+  const WS_URI = "wss://172.17.16.24:8089/ws";
+  const SIP_DOMAIN = "172.17.16.24";
 
   console.log("\n📋 Configuración:");
   console.log(`   WebSocket URI: ${WS_URI}`);
@@ -44,7 +44,7 @@
       console.error("   - Problemas de firewall");
       console.error("   - Certificado SSL bloqueado");
       console.error("\n   💡 Solución sugerida:");
-      console.error("   1. Navega a https://webrtc.quironix.com:8089");
+      console.error("   1. Navega a http://172.17.16.24:8089");
       console.error("   2. Acepta el certificado SSL");
       console.error("   3. Vuelve a ejecutar este test");
       ws.close();
@@ -88,11 +88,11 @@
     console.error("   - Puerto 8089 bloqueado por firewall");
     console.error("\n   💡 Soluciones:");
     console.error("   1. Acepta el certificado SSL:");
-    console.error("      → https://webrtc.quironix.com:8089");
+    console.error("      → http://172.17.16.24:8089");
     console.error("   2. Verifica conectividad:");
-    console.error("      → ping webrtc.quironix.com");
+    console.error("      → ping 172.17.16.24");
     console.error("   3. Verifica que el puerto esté abierto:");
-    console.error("      → nc -zv webrtc.quironix.com 8089");
+    console.error("      → nc -zv 172.17.16.24 8089");
   };
 
   ws.onclose = (event) => {
@@ -123,7 +123,7 @@
       console.error("   antes de completar el handshake WebSocket.");
       console.error("\n   💡 SOLUCIÓN:");
       console.error(
-        "   1. Abre en una nueva pestaña: https://webrtc.quironix.com:8089"
+        "   1. Abre en una nueva pestaña: http://172.17.16.24:8089"
       );
       console.error(
         "   2. Acepta el certificado SSL (clic en Avanzado → Continuar)"

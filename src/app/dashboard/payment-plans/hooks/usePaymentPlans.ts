@@ -175,10 +175,12 @@ export function usePaymentPlans(
       const newSelection =
         typeof updater === "function" ? updater(rowSelection) : updater;
       setRowSelection(newSelection);
-      localStorage.setItem(
-        "paymentPlansSelection",
-        JSON.stringify(newSelection)
-      );
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "paymentPlansSelection",
+          JSON.stringify(newSelection)
+        );
+      }
     },
     [rowSelection]
   );

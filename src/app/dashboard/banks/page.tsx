@@ -143,7 +143,7 @@ const BanksContent = () => {
               "text-primary focus:text-primary focus:bg-primary/10 dark:focus:bg-primary/20"
             )}
           >
-            <Edit className="h-4 w-4 text-primary flex-shrink-0" />
+            <Edit className="h-4 w-4 text-primary shrink-0" />
             <span className="whitespace-nowrap">Editar cuenta</span>
           </DropdownMenuItem>
         ),
@@ -163,7 +163,7 @@ const BanksContent = () => {
               "text-primary focus:text-primary focus:bg-primary/10 dark:focus:bg-primary/20"
             )}
           >
-            <Trash2 className="h-4 w-4 text-primary flex-shrink-0" />
+            <Trash2 className="h-4 w-4 text-primary shrink-0" />
             <span className="whitespace-nowrap">Eliminar</span>
           </DropdownMenuItem>
           // <DialogConfirm
@@ -171,7 +171,7 @@ const BanksContent = () => {
           //   description={`¿Estás seguro que deseas eliminar la cuenta bancaria "${bank.bank} - ${bank.account_number}"? Esta acción no se puede deshacer.`}
           //   triggerButton={
           //     <DropdownMenuItem className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm text-destructive focus:text-destructive focus:bg-destructive/10">
-          //       <Trash2 className="h-4 w-4 text-primary flex-shrink-0" />
+          //       <Trash2 className="h-4 w-4 text-primary shrink-0" />
           //       <span className="whitespace-nowrap">Eliminar</span>
           //     </DropdownMenuItem>
           //   }

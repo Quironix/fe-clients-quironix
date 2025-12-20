@@ -92,6 +92,7 @@ interface DataTableDynamicColumnsProps<TData, TValue> {
   initialColumnConfiguration?: ColumnConfiguration;
   isApplyingFilters?: boolean;
   onResetFilters?: () => void;
+  rowClassName?: (row: TData) => string;
 }
 
 interface ColumnConfig {
@@ -134,6 +135,7 @@ export function DataTableDynamicColumns<TData, TValue>({
   initialColumnConfiguration,
   isApplyingFilters = false,
   onResetFilters,
+  rowClassName,
 }: DataTableDynamicColumnsProps<TData, TValue>) {
   const [searchValue, setSearchValue] = useState(initialSearchValue);
 
@@ -572,6 +574,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                       <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
+                        className={rowClassName?.(row.original)}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id} className="text-center">

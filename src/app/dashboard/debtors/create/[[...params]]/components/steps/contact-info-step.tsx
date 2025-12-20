@@ -112,7 +112,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
   };
 
   const form = useForm<DebtorFormValues>({
-    resolver: zodResolver(debtorFormSchema),
+    resolver: zodResolver(debtorFormSchema) as any,
     mode: "onChange",
     defaultValues: {
       contact_info:

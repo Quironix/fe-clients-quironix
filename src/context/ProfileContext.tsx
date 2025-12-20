@@ -47,8 +47,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       if (!response.ok) throw new Error("Error al obtener el perfil");
       const data = await response.json();
       setProfile(data);
-      // Opcional: guardar en localStorage
-      localStorage.setItem("profile", JSON.stringify(data));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("profile", JSON.stringify(data));
+      }
     } catch (err: any) {
       setError(err.message);
       setProfile(null);
@@ -59,10 +60,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (status !== "authenticated") return;
-    // Intenta cargar desde localStorage primero
-    const storedProfile = localStorage.getItem("profile");
-    if (storedProfile) {
-      setProfile(JSON.parse(storedProfile));
+    if (typeof window !== "undefined") {
+      const storedProfile = localStorage.getItem("profile");
+      if (storedProfile) {
+        setProfile(JSON.parse(storedProfile));
+      }
     }
     if (session?.token) {
       fetchProfile();

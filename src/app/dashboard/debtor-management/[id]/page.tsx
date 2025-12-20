@@ -108,6 +108,7 @@ const Content = ({ params }: PageProps) => {
               <BreadcrumbItem>
                 <BreadcrumbPage>
                   <span className="font-bold">
+                    {`(${dataDebtor?.debtor_code}) ` || <Skeleton />}
                     {dataDebtor?.name || <Skeleton />}
                   </span>
                 </BreadcrumbPage>

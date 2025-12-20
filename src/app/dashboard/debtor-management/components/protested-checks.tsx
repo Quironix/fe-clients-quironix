@@ -1,11 +1,15 @@
 import { Separator } from "@/components/ui/separator";
 import { Fragment } from "react";
-import { CallReasons } from "../types";
 
 const ProtestedChecks = ({ data }: { data: any[] }) => {
   return (
     <div className="space-y-4 px-3">
       {/* Tu contenido aquí */}
+      {data.length === 0 && (
+        <p className="text-sm text-gray-500 text-center py-3">
+          No hay cheques protestados.
+        </p>
+      )}
 
       {data.map((dt, index) => (
         <Fragment key={dt.id || index}>

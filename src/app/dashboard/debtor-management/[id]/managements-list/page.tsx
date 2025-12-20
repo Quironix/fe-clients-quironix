@@ -5,17 +5,38 @@ import Header from "@/app/dashboard/components/header";
 import { Main } from "@/app/dashboard/components/main";
 import TitleSection from "@/app/dashboard/components/title-section";
 import { getDebtorById } from "@/app/dashboard/debtors/services";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Language from "@/components/ui/language";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { useProfileContext } from "@/context/ProfileContext";
 import { VisibilityState } from "@tanstack/react-table";
-import { Building2, History, IdCard, Mail, Phone, User } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  History,
+  IdCard,
+  Mail,
+  Phone,
+  User,
+} from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { getDebtorTracksByInvoices } from "../../services/tracks";
 import { InvoiceWithTrack } from "../../types/debtor-tracks";
 import { createInvoiceColumns } from "./components/columns-invoices";
 import { TrackDetailModal } from "./components/track-detail-modal";
+import { updateTableProfile } from "./services";
 
 const IconDescription = ({
   icon,
@@ -40,11 +61,14 @@ const Content = () => {
   const debtorId = params?.id as string;
   const { profile, session } = useProfileContext();
 
-  const [invoicesWithTracks, setInvoicesWithTracks] = useState<InvoiceWithTrack[]>([]);
+  const [invoicesWithTracks, setInvoicesWithTracks] = useState<
+    InvoiceWithTrack[]
+  >([]);
   const [dataDebtor, setDataDebtor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
+  const [searchTerm, setSearchTerm] = useState("");
   const [tracksPagination, setTracksPagination] = useState({
     page: 1,
     limit: 15,
@@ -55,11 +79,12 @@ const Content = () => {
   });
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [columnConfiguration, setColumnConfiguration] = useState<
     Array<{ name: string; is_visible: boolean }>
   >([
     { name: "documentNumber", is_visible: true },
+    { name: "order_code", is_visible: false },
+    { name: "number_of_installments", is_visible: true },
     { name: "daysOverdue", is_visible: true },
     { name: "amount", is_visible: true },
     { name: "documentPhase", is_visible: true },
@@ -85,9 +110,20 @@ const Content = () => {
     return visibility;
   }, [columnConfiguration]);
 
+  useEffect(() => {
+    if (profile?.profile?.tracks_table?.length > 0) {
+      const savedConfig = profile.profile.tracks_table;
+      if (Array.isArray(savedConfig)) {
+        setColumnConfiguration(savedConfig);
+      }
+    }
+  }, [profile?.profile]);
+
   const columnLabels = useMemo(
     () => ({
       documentNumber: "N° Documento",
+      order_code: "N° Pedido",
+      numberOfInstallments: "N° de cuotas",
       daysOverdue: "Días de atraso",
       amount: "Monto",
       documentPhase: "Fase del documento",
@@ -122,7 +158,11 @@ const Content = () => {
     }
   };
 
-  const fetchTracks = async (currentPage: number, currentLimit: number) => {
+  const fetchTracks = async (
+    currentPage: number,
+    currentLimit: number,
+    search?: string
+  ) => {
     if (!session?.token || !profile?.client?.id || !debtorId) return;
 
     setLoading(true);
@@ -132,7 +172,7 @@ const Content = () => {
         session.token,
         profile.client.id,
         debtorId,
-        { page: currentPage, limit: currentLimit }
+        { page: currentPage, limit: currentLimit, search }
       );
 
       setInvoicesWithTracks(response.data);
@@ -156,19 +196,60 @@ const Content = () => {
   }, [session, debtorId]);
 
   useEffect(() => {
-    fetchTracks(page, pageSize);
-  }, [session, debtorId, page, pageSize]);
+    fetchTracks(page, pageSize, searchTerm);
+  }, [session, debtorId, page, pageSize, searchTerm]);
 
   const handlePaginationChange = (newPage: number, newPageSize: number) => {
     setPage(newPage);
     setPageSize(newPageSize);
   };
 
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
+  };
+
+  // const handleUpdateColumns = async (
+  //   config?: Array<{ name: string; is_visible: boolean }>
+  // ) => {
+  //   if (config) {
+  //     setColumnConfiguration(config);
+  //   }
+  // };
+
   const handleUpdateColumns = async (
     config?: Array<{ name: string; is_visible: boolean }>
   ) => {
-    if (config) {
-      setColumnConfiguration(config);
+    try {
+      const configToSave = config || columnConfiguration;
+
+      const response = await updateTableProfile({
+        accessToken: session?.token,
+        clientId: profile?.client_id,
+        userId: profile?.id,
+        tracksTable: configToSave,
+      });
+
+      if (response.success) {
+        if (config) {
+          setColumnConfiguration(config);
+        }
+
+        if (typeof window !== "undefined") {
+          const storedProfile = localStorage.getItem("profile");
+          if (storedProfile) {
+            const parsedProfile = JSON.parse(storedProfile);
+            if (parsedProfile?.profile) {
+              parsedProfile.profile.tracks_table = configToSave;
+              localStorage.setItem("profile", JSON.stringify(parsedProfile));
+            }
+          }
+        }
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error("Error al actualizar configuración de columnas:", error);
+      toast.error("Error al guardar la configuración de columnas");
     }
   };
 
@@ -184,6 +265,53 @@ const Content = () => {
 
   const columns = useMemo(() => createInvoiceColumns(handleViewDetails), []);
 
+  const sortedInvoicesWithTracks = useMemo(() => {
+    return [...invoicesWithTracks].sort((a, b) => {
+      const dateA = new Date(a.due_date).getTime();
+      const dateB = new Date(b.due_date).getTime();
+      return dateA - dateB;
+    });
+  }, [invoicesWithTracks]);
+
+  const TableSkeleton = () => (
+    <>
+      {Array.from({ length: pageSize }).map((_, index) => (
+        <TableRow key={index}>
+          <TableCell>
+            <Skeleton className="h-4 w-4" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-5 w-20" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-6 w-16" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-20" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-20" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-24" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-24" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-16" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-12" />
+          </TableCell>
+          <TableCell className="flex justify-center">
+            <Skeleton className="h-5 w-5" />
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
+
   return (
     <>
       <Header fixed>
@@ -196,6 +324,45 @@ const Content = () => {
           icon={<History color="white" />}
           subDescription={`Histórico de gestiones`}
         />
+        <div className="flex justify-between items-center mb-5">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link
+                    href="/dashboard/debtor-management"
+                    className="text-blue-600"
+                  >
+                    Gestión de deudores
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link
+                    href={`/dashboard/debtor-management/${dataDebtor?.id}`}
+                    className="text-blue-600"
+                  >
+                    <span className="font-bold">
+                      {`(${dataDebtor?.debtor_code}) ` || <Skeleton />}
+                      {dataDebtor?.name || <Skeleton />}
+                    </span>
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>Lista de gestiones</BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <Button variant="ghost" asChild>
+            <Link href={`/dashboard/debtor-management/${dataDebtor?.id}`}>
+              <div className="flex gap-1 justify-start items-center text-blue-700">
+                <ArrowLeft /> Volver
+              </div>
+            </Link>
+          </Button>
+        </div>
 
         <Card>
           <CardContent className="space-y-3">
@@ -242,11 +409,15 @@ const Content = () => {
             </div>
             <DataTableDynamicColumns
               columns={columns}
-              data={invoicesWithTracks}
+              data={sortedInvoicesWithTracks}
               isLoading={loading}
               emptyMessage="No hay gestiones registradas"
               pagination={tracksPagination}
+              loadingComponent={<TableSkeleton />}
               onPaginationChange={handlePaginationChange}
+              onSearchChange={handleSearchChange}
+              enableGlobalFilter={true}
+              searchPlaceholder="Buscar por N° Documento"
               showPagination={true}
               enableColumnFilter={true}
               initialColumnVisibility={columnVisibility}
@@ -255,6 +426,9 @@ const Content = () => {
               initialColumnConfiguration={columnConfiguration}
               title="Gestiones"
               description="Selecciona las columnas que deseas mostrar en la tabla."
+              rowClassName={(invoice) =>
+                invoice.type === "CREDIT_NOTE" ? "bg-red-50" : ""
+              }
             />
           </CardContent>
         </Card>

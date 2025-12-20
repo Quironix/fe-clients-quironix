@@ -130,14 +130,19 @@ export const DebtorContacts = ({
           {/* Título */}
 
           {/* Contacto principal */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-64">
             <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
               <User className="w-7 h-7 text-white" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-base font-semibold text-gray-900">
-                {currentMainContact.name}
-              </span>
+            <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-0">
+                <span className="text-sm font-semibold text-gray-900">
+                  {currentMainContact.name}
+                </span>
+                <span className="text-[12px] text-gray-900">
+                  {currentMainContact.email}
+                </span>
+              </div>
               <span className="text-sm text-gray-600">
                 {currentMainContact.phone}
               </span>

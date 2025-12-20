@@ -42,7 +42,7 @@ const PageSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       period_month: "",
     },
@@ -84,7 +84,7 @@ const PageSettings = () => {
         />
 
         <div className="flex items-center justify-center gap-5 p-3 border border-gray-200 rounded-md h-[325px] mb-5">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <Image
               src="/img/payment-projection.svg"
               alt="Deudores"

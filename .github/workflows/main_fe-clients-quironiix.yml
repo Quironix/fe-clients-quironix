@@ -66,10 +66,10 @@ jobs:
           echo NODE_ENV=production >> $ENV_PATH
           cat $ENV_PATH
 
-      - name: npm install, build, and test
+      - name: yarn install and build
         run: |
-          npm install --force
-          npm run build
+          yarn install --frozen-lockfile
+          yarn build
           mv ./build/static ./build/standalone/build
           mv ./public ./build/standalone
           mv $ENV_PATH ./build/standalone

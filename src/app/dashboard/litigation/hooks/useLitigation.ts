@@ -24,14 +24,22 @@ export function useLitigation(accessToken?: string, clientId?: string) {
     hasPrevious: false,
   });
   const [filters, setFilters] = useState<LitigationFilters>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>(() => {
+  useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("paymentNettingSelection");
-      return saved ? JSON.parse(saved) : {};
+      const saved = localStorage.getItem("litigationSelection");
+      if (saved) {
+        try {
+          setRowSelection(JSON.parse(saved));
+        } catch (error) {
+          console.error("Error parsing localStorage selection:", error);
+        }
+      }
+      setIsHydrated(true);
     }
-    return {};
-  });
+  }, []);
 
   const fetchLitigations = useCallback(
     async (
@@ -123,10 +131,12 @@ export function useLitigation(accessToken?: string, clientId?: string) {
       const newSelection =
         typeof updater === "function" ? updater(rowSelection) : updater;
       setRowSelection(newSelection);
-      localStorage.setItem(
-        "paymentNettingSelection",
-        JSON.stringify(newSelection)
-      );
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "litigationSelection",
+          JSON.stringify(newSelection)
+        );
+      }
     },
     [rowSelection]
   );
@@ -137,7 +147,9 @@ export function useLitigation(accessToken?: string, clientId?: string) {
 
   const clearRowSelection = useCallback(() => {
     setRowSelection({});
-    localStorage.removeItem("paymentNettingSelection");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("litigationSelection");
+    }
   }, []);
 
   useEffect(() => {
@@ -159,5 +171,6 @@ export function useLitigation(accessToken?: string, clientId?: string) {
     handleRowSelectionChange,
     getSelectedRows,
     clearRowSelection,
+    isHydrated,
   };
 }

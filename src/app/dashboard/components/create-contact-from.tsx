@@ -73,7 +73,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
   };
 
   const form = useForm<ContactFormValues>({
-    resolver: zodResolver(contactFormSchema),
+    resolver: zodResolver(contactFormSchema) as any,
     mode: "onChange",
     defaultValues: {
       name: "",

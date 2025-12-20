@@ -149,7 +149,7 @@ paymentPlanData: z.object({
   annualInterestRate: z.number().min(0, "Debe ser mayor o igual a 0"),
   paymentMethod: z.string().min(1, "La forma de pago es requerida"),
   paymentFrequency: z.string().min(1, "La frecuencia es requerida"),
-  startDate: z.date({ required_error: "La fecha es requerida" }),
+  startDate: z.date({ message "La fecha es requerida" }),
   comments: z.string().optional(),
   _isValid: z.boolean().optional(),
 })

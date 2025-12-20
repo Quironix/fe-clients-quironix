@@ -19,6 +19,7 @@ interface DTEStore {
     clientId: string,
     dteId: string
   ) => Promise<void>;
+  clearDTE: () => void;
   bulkUploadErrors: BulkUploadResponse | null;
   setBulkUploadErrors: (errors: BulkUploadResponse) => void;
   clearBulkUploadErrors: () => void;
@@ -75,6 +76,9 @@ export const useDTEStore = create<DTEStore>((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+  clearDTE: () => {
+    set({ dte: {} as DTE });
   },
   setBulkUploadErrors: (errors: BulkUploadResponse) => {
     set({ bulkUploadErrors: errors });

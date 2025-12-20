@@ -53,6 +53,15 @@ import * as z from "zod";
 
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 
+export enum ManagementType {
+  CALL_OUT = "Llamada saliente",
+  CALL_IN = "Llamada entrante",
+  MAIL_OUT = "Correo saliente",
+  MAIL_IN = "Correo entrante",
+  SUPPLIER_PORTAL = "Portal de proveedores",
+  WHATSAPP = "Whatsapp",
+}
+
 interface StepTwoProps {
   dataDebtor: any;
   formData: ManagementFormData;
@@ -150,7 +159,7 @@ const createFormSchema = (
             annualInterestRate: z.number().min(0, "Debe ser mayor o igual a 0"),
             paymentMethod: z.string().min(1, "La forma de pago es requerida"),
             paymentFrequency: z.string().min(1, "La frecuencia es requerida"),
-            startDate: z.date({ required_error: "La fecha es requerida" }),
+            startDate: z.date({ message: "La fecha es requerida" }),
             comments: z.string().optional(),
             _isValid: z.boolean().optional(),
           })
@@ -458,8 +467,8 @@ export const StepTwo = ({
   }, [dataDebtor]);
 
   const form = useForm<any>({
-    resolver: zodResolver(formSchema),
-    mode: "onChange",
+    resolver: zodResolver(formSchema) as any,
+    mode: "onSubmit",
     reValidateMode: "onChange",
     defaultValues: {
       managementType: formData.managementType || "CALL_OUT",
@@ -509,20 +518,20 @@ export const StepTwo = ({
           nextManagementTime: formData.nextManagementTime || "",
           caseData: formData.caseData || {},
         },
-        { keepErrors: true, keepDirty: false, keepTouched: true }
+        { keepErrors: false, keepDirty: false, keepTouched: false }
       );
     }
   }, [formData, form]);
 
   // Revalidar cuando cambie el esquema o la selección
-  useEffect(() => {
-    if (hasCompleteSelection) {
-      const timeoutId = setTimeout(() => {
-        form.trigger();
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [hasCompleteSelection, form.trigger]);
+  // useEffect(() => {
+  //   if (hasCompleteSelection) {
+  //     const timeoutId = setTimeout(() => {
+  //       form.trigger();
+  //     }, 100);
+  //     return () => clearTimeout(timeoutId);
+  //   }
+  // }, [hasCompleteSelection, form.trigger]);
 
   // Sincronizar cambios del formulario con el componente padre
   useEffect(() => {
@@ -607,9 +616,11 @@ export const StepTwo = ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="CALL_OUT">
-                            Llamada saliente
-                          </SelectItem>
+                          {Object.entries(ManagementType).map(([key, value]) => (
+                            <SelectItem key={key} value={key}>
+                              {value}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />

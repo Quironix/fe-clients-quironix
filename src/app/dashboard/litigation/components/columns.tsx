@@ -101,7 +101,7 @@ const EditModalWrapper = ({
       onOpenChange={setOpen}
       trigger={
         <div className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
-          <Edit className="h-4 w-4 text-blue-600 flex-shrink-0" />
+          <Edit className="h-4 w-4 text-blue-600 shrink-0" />
           <span className="whitespace-nowrap">Editar litigio</span>
         </div>
       }
@@ -137,7 +137,7 @@ const NormalizeModalWrapper = ({
       onOpenChange={setOpen}
       trigger={
         <div className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
-          <Flag className="h-4 w-4 text-blue-600 flex-shrink-0" />
+          <Flag className="h-4 w-4 text-blue-600 shrink-0" />
           <span className="whitespace-nowrap">Normalizar</span>
         </div>
       }
@@ -181,7 +181,7 @@ const createMenuItems = (
             }
             trigger={
               <div className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
-                <Eye className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <Eye className="h-4 w-4 text-blue-600 shrink-0" />
                 <span className="whitespace-nowrap">Ver detalle</span>
               </div>
             }

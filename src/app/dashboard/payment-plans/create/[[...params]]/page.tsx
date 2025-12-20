@@ -84,7 +84,7 @@ const paymentPlanSchema = z.object({
     .min(0, "La tasa de interés debe ser mayor o igual a 0"),
   paymentMethod: z.string().min(1, "La forma de pago es requerida"),
   paymentFrequency: z.string().min(1, "La frecuencia de pago es requerida"),
-  startDate: z.date({ required_error: "La fecha de inicio es requerida" }),
+  startDate: z.date({ message: "La fecha de inicio es requerida" }),
   comments: z.string().optional(),
 });
 
@@ -120,7 +120,7 @@ const CreatePaymentPlanPage = () => {
 
   // Configuración del formulario con react-hook-form
   const form = useForm<PaymentPlanForm>({
-    resolver: zodResolver(paymentPlanSchema),
+    resolver: zodResolver(paymentPlanSchema) as any,
     mode: "onChange",
     defaultValues: {
       debtorId: "",

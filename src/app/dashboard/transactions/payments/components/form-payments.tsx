@@ -98,7 +98,7 @@ const FormPayments = () => {
   }, [session?.token, profile?.client?.id, fetchPaymentById, id, clearPayment]);
 
   const form = useForm<PaymentFormValues>({
-    resolver: zodResolver(paymentSchema),
+    resolver: zodResolver(paymentSchema) as any,
     defaultValues: {
       id: "",
       company_id: isFactoring ? "" : null,

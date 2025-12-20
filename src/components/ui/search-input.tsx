@@ -156,7 +156,7 @@ export function SearchInput({
                       <span className="truncate">{option.label}</span>
                       <Check
                         className={cn(
-                          "ml-auto h-4 w-4 flex-shrink-0",
+                          "ml-auto h-4 w-4 shrink-0",
                           option.value === value ? "opacity-100" : "opacity-0"
                         )}
                       />

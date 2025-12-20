@@ -32,6 +32,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { createDTE, updateDTE } from "../services";
+import { useInvalidateDTEs } from "../hooks/useDTEs";
 import { useDTEStore } from "../store";
 
 const formSchema = z.object({
@@ -41,7 +42,7 @@ const formSchema = z.object({
       (type) => type.value
     ) as [string, ...string[]],
     {
-      required_error: "El tipo de documento es requerido",
+      message: "El tipo de documento es requerido",
     }
   ),
   // folio: z.string().min(1, "El folio es requerido"),
@@ -51,7 +52,7 @@ const formSchema = z.object({
     .min(1, "El número documento sistema externo es requerido"),
   balance: z.number().min(0, "El saldo debe ser mayor a 0"),
   amount: z.number().min(1, "El monto debe ser mayor a 0"),
-  order_number: z.string().min(1, "La orden de compra es requerida"),
+  order_number: z.string().optional().nullable(),
   reception_date: z.string().min(1, "La fecha de recepción es requerida"),
   issue_date: z.string().min(1, "La fecha de emisión es requerida"),
   operation_date: z.string().optional().nullable(),
@@ -75,63 +76,80 @@ const formSchema = z.object({
 
 const FormDTE = () => {
   const { profile, session } = useProfileContext();
-  const { dte, fetchDTEById, loading } = useDTEStore();
+  const { dte, fetchDTEById, loading, clearDTE } = useDTEStore();
+  const invalidateDTEs = useInvalidateDTEs();
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [loadingForm, setLoadingForm] = useState<boolean>(false);
 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema) as any,
+    defaultValues: {
+      client_code: profile?.client?.id || "",
+      type: "INVOICE",
+      number: "",
+      external_number: "",
+      balance: 0,
+      amount: 0,
+      order_number: "",
+      reception_date: "",
+      issue_date: formatDate(new Date() as unknown as string) || "",
+      operation_date: formatDate(new Date() as unknown as string) || "",
+      due_date: formatDate(new Date() as unknown as string) || "",
+      litigation_balance: 0,
+      is_internal_document: false,
+      observations: "",
+      order_code: "",
+      number_of_installments: 0,
+      reference: "",
+      debtor_id: "",
+      ref_1: "",
+      ref_2: "",
+      ref_3: "",
+      ref_4: "",
+    },
+  });
+
   useEffect(() => {
     if (session?.token && profile?.client?.id) {
       if (id) {
         fetchDTEById(session.token, profile.client.id, id);
+      } else {
+        clearDTE();
+        form.reset({
+          client_code: profile?.client?.id || "",
+          type: "INVOICE",
+          number: "",
+          external_number: "",
+          balance: 0,
+          amount: 0,
+          order_number: "",
+          reception_date: "",
+          issue_date: formatDate(new Date() as unknown as string) || "",
+          operation_date: formatDate(new Date() as unknown as string) || "",
+          due_date: formatDate(new Date() as unknown as string) || "",
+          litigation_balance: 0,
+          is_internal_document: false,
+          observations: "",
+          order_code: "",
+          number_of_installments: 0,
+          reference: "",
+          debtor_id: "",
+          ref_1: "",
+          ref_2: "",
+          ref_3: "",
+          ref_4: "",
+        });
       }
-    }
-    if (!id) {
-      form.reset();
     }
   }, [session?.token, profile?.client?.id, id]);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      client_code: profile?.client?.id || "",
-      type: "INVOICE",
-      // folio: dte?.folio || "",
-      number: dte?.number || "",
-      external_number: dte?.external_number || "",
-      balance: Number(dte?.balance) || 0,
-      amount: Number(dte?.amount) || 0,
-      order_number: dte?.order_number || "",
-      reception_date: dte?.reception_date || "",
-      issue_date:
-        formatDate(dte?.issue_date || (new Date() as unknown as string)) || "",
-      operation_date:
-        formatDate(dte?.operation_date || (new Date() as unknown as string)) ||
-        "",
-      due_date:
-        formatDate(dte?.due_date || (new Date() as unknown as string)) || "",
-      litigation_balance: Number(dte?.litigation_balance) || 0,
-      is_internal_document: dte?.is_internal_document || false,
-      observations: dte?.observations || "", // Cambiado de observations a observation
-      order_code: dte?.order_code || "",
-      number_of_installments: Number(dte?.number_of_installments) || 0, // Convertido usando Number()
-      reference: dte?.reference || "",
-      debtor_id: dte?.debtor_id || "",
-      ref_1: dte?.ref_1 || "",
-      ref_2: dte?.ref_2 || "",
-      ref_3: dte?.ref_3 || "",
-      ref_4: dte?.ref_4 || "",
-    },
-  });
-
-  // Efecto para actualizar el formulario cuando se cargan los datos del DTE
   useEffect(() => {
-    if (dte && Object.keys(dte).length > 0) {
+    if (id && dte && Object.keys(dte).length > 0 && dte.debtor) {
       form.reset({
         client_code: profile?.client?.id || "",
         type: dte.type || "INVOICE",
-        // folio: dte.folio || "",
         number: dte.number || "",
         external_number: dte.external_number || "",
         balance: Number(dte.balance) || 0,
@@ -151,14 +169,14 @@ const FormDTE = () => {
         order_code: dte.order_code || "",
         number_of_installments: Number(dte.number_of_installments) || 0,
         reference: dte.reference || "",
-        debtor_id: dte.debtor_id || "",
+        debtor_id: dte.debtor.id || "",
         ref_1: dte.ref_1 || "",
         ref_2: dte.ref_2 || "",
         ref_3: dte.ref_3 || "",
         ref_4: dte.ref_4 || "",
       });
     }
-  }, [dte, profile?.client?.id]);
+  }, [id, dte, profile?.client?.id]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!profile?.client?.id) {
@@ -196,6 +214,7 @@ const FormDTE = () => {
         );
         if (response) {
           toast.success("DTE actualizado correctamente");
+          invalidateDTEs(profile?.client?.id);
           router.push("/dashboard/transactions/dte");
         } else {
           toast.error(
@@ -210,6 +229,7 @@ const FormDTE = () => {
         response = await createDTE(session?.token, profile?.client?.id, values);
         if (response) {
           toast.success("DTE creado correctamente");
+          invalidateDTEs(profile?.client?.id);
           router.push("/dashboard/transactions/dte");
         } else {
           toast.error("Error al crear el DTE, revisa la información ingresada");
@@ -223,6 +243,8 @@ const FormDTE = () => {
     } catch (error) {
       setLoadingForm(false);
       toast.error(id ? "Error al actualizar el DTE" : "Error al crear el DTE");
+    } finally {
+      form.reset();
     }
   };
 
@@ -245,6 +267,7 @@ const FormDTE = () => {
                     field={field}
                     title="Código deudor"
                     required
+                    initialDebtor={dte?.debtor}
                   />
                 )}
               />
@@ -259,7 +282,7 @@ const FormDTE = () => {
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">

@@ -1,11 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
+import { Eye } from "lucide-react";
 import { getExecutiveCommentLabel } from "../../../config/management-types";
 import { InvoiceWithTrack } from "../../../types/debtor-tracks";
-import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "-";
@@ -69,7 +69,7 @@ const calculateDaysOverdue = (dueDate: string) => {
   const today = new Date();
   const diffTime = today.getTime() - due.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays > 0 ? diffDays : 0;
+  return diffDays;
 };
 
 const getCurrentPhase = (invoice: InvoiceWithTrack) => {
@@ -104,6 +104,24 @@ export const createInvoiceColumns = (
     ),
   },
   {
+    accessorKey: "order_code",
+    header: "N° Pedido",
+    cell: ({ row }) => (
+      <div className="font-medium text-sm">
+        {row.original.order_code || row.original.order_code || "-"}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "number_of_installments",
+    header: "N° de cuotas",
+    cell: ({ row }) => (
+      <div className="font-medium text-sm">
+        {row.original.number_of_installments}
+      </div>
+    ),
+  },
+  {
     accessorKey: "daysOverdue",
     header: "Días de atraso",
     cell: ({ row }) => (
@@ -117,7 +135,9 @@ export const createInvoiceColumns = (
     header: "Monto",
     cell: ({ row }) => (
       <div className="font-bold text-sm">
-        {row.original.balance ? formatNumber(parseFloat(row.original.balance)) : "-"}
+        {row.original.balance
+          ? formatNumber(parseFloat(row.original.balance))
+          : "-"}
       </div>
     ),
   },
@@ -139,20 +159,24 @@ export const createInvoiceColumns = (
     accessorKey: "createdAt",
     header: "Fecha y hora de gestión",
     cell: ({ row }) => (
-      <div className="text-sm">{formatDateTime(row.original.track.createdAt)}</div>
+      <div className="text-sm">
+        {formatDateTime(row.original.track.createdAt)}
+      </div>
     ),
   },
   {
     accessorKey: "managementType",
     header: "Tipo de Gestión",
-    cell: ({ row }) => getManagementTypeBadge(row.original.track.managementType),
+    cell: ({ row }) =>
+      getManagementTypeBadge(row.original.track.managementType),
   },
   {
     accessorKey: "executive",
     header: "Nombre analista",
     cell: ({ row }) => (
       <div className="text-sm">
-        {row.original.track.executive.first_name} {row.original.track.executive.last_name}
+        {row.original.track.executive.first_name}{" "}
+        {row.original.track.executive.last_name}
       </div>
     ),
   },

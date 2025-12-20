@@ -106,7 +106,7 @@ const DisputeForm = ({
   );
 
   const form = useForm<LitigationForm>({
-    resolver: zodResolver(litigationFormSchema),
+    resolver: zodResolver(litigationFormSchema) as any,
     mode: "onSubmit",
     defaultValues: {
       client: isFactoring ? "" : null,

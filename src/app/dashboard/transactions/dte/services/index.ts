@@ -4,6 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 interface DTEPaginationParams {
   page?: number;
   limit?: number;
+  search?: string;
 }
 
 export const bulkData = async (
@@ -46,6 +47,7 @@ export const getDTEs = async (
 
   if (params?.page) queryParams.append("page", params.page.toString());
   if (params?.limit) queryParams.append("limit", params.limit.toString());
+  if (params?.search) queryParams.append("search", params.search);
 
   const queryString = queryParams.toString();
   const url = `${API_URL}/v2/clients/${clientId}/invoices${queryString ? `?${queryString}` : ""}`;
@@ -164,4 +166,49 @@ export const getDTEsByDebtor = async (
     throw new Error("Failed to fetch DTEs");
   }
   return response.json();
+};
+
+export const getInvoiceHistory = async ({
+  accessToken,
+  clientId,
+  invoiceId,
+}: {
+  accessToken: string;
+  clientId: string;
+  invoiceId: string;
+}) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/reconciliation/invoices/${invoiceId}/history`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: data?.message || "Error al obtener el historial de la factura",
+        data: null,
+      };
+    }
+
+    return {
+      success: true,
+      message: "Historial de la factura obtenido correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al obtener el historial de la factura",
+      data: null,
+    };
+  }
 };

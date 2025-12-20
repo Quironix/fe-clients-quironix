@@ -1,22 +1,67 @@
 "use client";
 
-import TitleSection from "@/app/dashboard/components/title-section";
-import { FileStack } from "lucide-react";
 import Header from "@/app/dashboard/components/header";
 import { Main } from "@/app/dashboard/components/main";
+import TitleSection from "@/app/dashboard/components/title-section";
+import { Button } from "@/components/ui/button";
 import Language from "@/components/ui/language";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { useProfileContext } from "@/context/ProfileContext";
-import { DataTable } from "../../components/data-table";
-import LoaderTable from "../../components/loader-table";
+import { VisibilityState } from "@tanstack/react-table";
+import { FileStack } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import { columns } from "./components/columns";
 import DTEUploadSection from "./components/dte-upload-section";
 import { useDTEs } from "./hooks/useDTEs";
-import { Button } from "@/components/ui/button";
+import { updateTableProfile } from "./services/profile";
+import { DTE } from "./types";
 
 const PageDTE = () => {
   const { session, profile } = useProfileContext();
 
-  // Usar el nuevo hook useDTEs con paginación del servidor
+  const [columnConfiguration, setColumnConfiguration] = useState<
+    Array<{ name: string; is_visible: boolean }>
+  >([
+    { name: "number", is_visible: true },
+    { name: "type", is_visible: true },
+    { name: "issue_date", is_visible: true },
+    { name: "due_date", is_visible: true },
+    { name: "amount", is_visible: true },
+    { name: "actions", is_visible: true },
+  ]);
+
+  const columnVisibility = useMemo(() => {
+    const visibility: VisibilityState = {};
+    columnConfiguration.forEach((col) => {
+      visibility[col.name] = col.is_visible;
+    });
+    return visibility;
+  }, [columnConfiguration]);
+
+  const columnLabels = useMemo(
+    () => ({
+      number: "Número de Documento",
+      type: "Tipo de Documento",
+      issue_date: "Fecha de Emisión",
+      due_date: "Fecha de Vencimiento",
+      amount: "Monto",
+      actions: "Acciones",
+    }),
+    []
+  );
+
+  useEffect(() => {
+    if (profile?.profile?.invoices_table?.length > 0) {
+      const savedConfig = profile.profile.invoices_table;
+      if (Array.isArray(savedConfig)) {
+        setColumnConfiguration(savedConfig);
+      }
+    }
+  }, [profile?.profile]);
+
   const {
     dtes,
     pagination,
@@ -25,6 +70,7 @@ const PageDTE = () => {
     error,
     refetch,
     handlePaginationChange,
+    handleSearchChange,
     currentPage,
     currentLimit,
   } = useDTEs({
@@ -33,6 +79,76 @@ const PageDTE = () => {
     initialPage: 1,
     initialLimit: 15,
   });
+
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  const handleUpdateColumns = async (
+    config?: Array<{ name: string; is_visible: boolean }>
+  ) => {
+    try {
+      const configToSave = config || columnConfiguration;
+
+      const response = await updateTableProfile({
+        accessToken: session?.token,
+        clientId: profile?.client_id,
+        userId: profile?.id,
+        invoicesTable: configToSave,
+      });
+
+      if (response.success) {
+        if (config) {
+          setColumnConfiguration(config);
+        }
+
+        if (typeof window !== "undefined") {
+          const storedProfile = localStorage.getItem("profile");
+          if (storedProfile) {
+            const parsedProfile = JSON.parse(storedProfile);
+            if (parsedProfile?.profile) {
+              parsedProfile.profile.invoices_table = configToSave;
+              localStorage.setItem("profile", JSON.stringify(parsedProfile));
+            }
+          }
+        }
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error("Error al actualizar configuración de columnas:", error);
+      toast.error("Error al guardar la configuración de columnas");
+    }
+  };
+
+  const TableSkeleton = () => (
+    <>
+      {Array.from({ length: currentLimit }).map((_, index) => (
+        <TableRow key={index}>
+          <TableCell>
+            <Skeleton className="h-5 w-20" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-5 w-32" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-5 w-24" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-5 w-24" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-5 w-28" />
+          </TableCell>
+          <TableCell className="flex justify-center gap-1">
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-8" />
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
 
   // Manejo de errores
   if (isError) {
@@ -86,19 +202,30 @@ const PageDTE = () => {
         />
         <DTEUploadSection />
         <div className="mt-5 border border-gray-200 rounded-md p-3">
-          <DataTable
+          <DataTableDynamicColumns
             columns={columns}
             data={dtes}
-            // Configuración para paginación del servidor (requerida)
             pagination={pagination}
             onPaginationChange={handlePaginationChange}
+            onSearchChange={handleSearchChange}
             isServerSideLoading={isLoading}
-            // Configuración de carga
-            loadingComponent={<LoaderTable cols={7} />}
+            loadingComponent={<TableSkeleton />}
             emptyMessage="No se encontraron DTEs"
-            // Configuración de paginación
             pageSize={currentLimit}
             pageSizeOptions={[15, 20, 25, 30, 40, 50]}
+            enableGlobalFilter={true}
+            searchPlaceholder="Buscar por N° de Documento"
+            showPagination={true}
+            enableColumnFilter={true}
+            initialColumnVisibility={columnVisibility}
+            columnLabels={columnLabels}
+            handleSuccessButton={handleUpdateColumns}
+            initialColumnConfiguration={columnConfiguration}
+            title="DTEs"
+            description="Selecciona las columnas que deseas mostrar en la tabla."
+            rowClassName={(dte: DTE) =>
+              dte.type === "CREDIT_NOTE" ? "bg-red-50" : ""
+            }
           />
         </div>
       </Main>

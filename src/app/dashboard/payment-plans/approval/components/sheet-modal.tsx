@@ -88,7 +88,7 @@ import {
 const paymentPlanSchema = z
   .object({
     type: z.enum(["approve", "reject", "modify"], {
-      required_error: "You need to select a notification type.",
+      message: "You need to select a notification type.",
     }),
     // Información del deudor
     debtorId: z.string().optional(),
@@ -151,7 +151,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
   );
 
   const form = useForm<PaymentPlanForm>({
-    resolver: zodResolver(paymentPlanSchema),
+    resolver: zodResolver(paymentPlanSchema) as any,
     mode: "onChange",
     defaultValues: {
       debtorId: detail?.debtorId || "",
@@ -1043,7 +1043,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                             </div>
                             {detail.debtConcept && (
                               <div className="flex justify-start items-center gap-2 bg-amber-100 border border-amber-300 p-4 rounded-lg">
-                                <MessageSquare className="w-6 h-6 text-amber-300 flex-shrink-0" />
+                                <MessageSquare className="w-6 h-6 text-amber-300 shrink-0" />
                                 <span className="text-sm text-gray-500 flex flex-col gap-0">
                                   <span className="text-black text-xs">
                                     Comentario
@@ -1078,7 +1078,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
 
               {detail?.status === "APPROVED" && (
                 <div className="border border-green-300 bg-green-100 p-3 rounded-lg flex gap-2 items-start justify-start">
-                  <Info className="w-4 h-4 text-green-600 flex-shrink-0" />{" "}
+                  <Info className="w-4 h-4 text-green-600 shrink-0" />{" "}
                   <div className="flex flex-col gap-0">
                     <span className="text-sm text-black font-bold">
                       Plan de pago aprobado
@@ -1092,7 +1092,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
 
               {detail?.status === "REJECTED" && (
                 <div className="border border-red-300 bg-red-100 p-3 rounded-lg flex gap-2 items-start justify-start">
-                  <Info className="w-4 h-4 text-red-600 flex-shrink-0" />{" "}
+                  <Info className="w-4 h-4 text-red-600 shrink-0" />{" "}
                   <div className="flex flex-col gap-0">
                     <span className="text-sm text-black font-bold">
                       Plan de pago denegado
@@ -1164,7 +1164,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                       <div>
                         {typeSelected === "modify" && (
                           <div className="border border-blue-300 p-3 rounded-lg flex gap-2 items-start justify-start">
-                            <Info className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            <Info className="w-4 h-4 text-blue-600 shrink-0" />
                             <div className="flex flex-col gap-0">
                               <span className="text-sm text-black font-bold">
                                 ¿Necesitas hacer cambios?

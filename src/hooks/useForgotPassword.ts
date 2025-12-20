@@ -22,7 +22,7 @@ export const useForgotPassword = () => {
 
   // Form para solicitar recuperación
   const forgotPasswordForm = useForm<z.infer<typeof forgotPasswordSchema>>({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: zodResolver(forgotPasswordSchema) as any,
     defaultValues: {
       email: "",
     },

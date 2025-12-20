@@ -141,7 +141,7 @@ const CompanyForm = ({
   }, [session?.token, profile?.client?.id, getCompanyById, id, clearCompany]);
 
   const form = useForm<CompanyFormValues>({
-    resolver: zodResolver(companyFormSchema),
+    resolver: zodResolver(companyFormSchema) as any,
     mode: "onChange",
     defaultValues: {
       name: defaultValues?.name || "",

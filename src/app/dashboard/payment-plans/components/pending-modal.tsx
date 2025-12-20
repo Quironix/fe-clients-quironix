@@ -72,7 +72,7 @@ const PendingModal = ({
 
       {detailPaymentPlan.status === "REJECTED" && (
         <div className="flex justify-start items-center gap-2 bg-red-100 border border-red-300 p-4 rounded-lg">
-          <MessageSquare className="w-6 h-6 text-red-300 flex-shrink-0" />
+          <MessageSquare className="w-6 h-6 text-red-300 shrink-0" />
           <span className="text-sm text-gray-500 flex flex-col gap-0">
             <span className="text-black text-xs">Comentario supervisor</span>
             <span className="text-md text-gray-500">
@@ -83,7 +83,7 @@ const PendingModal = ({
       )}
       {detailPaymentPlan.status === "PENDING" && (
         <div className="flex justify-start items-center gap-2 bg-blue-100 border border-blue-300 p-4 rounded-lg">
-          <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <Info className="w-5 h-5 text-blue-600 shrink-0" />
           <span className="text-sm text-gray-500 flex flex-col gap-0">
             <span className="text-md font-bold text-black">
               La solicitud se encuentra en revisión
@@ -550,7 +550,7 @@ const PendingModal = ({
                 </div>
                 {detailPaymentPlan.debtConcept && (
                   <div className="flex justify-start items-center gap-2 bg-purple-300/30 border border-purple-300 p-4 rounded-lg">
-                    <MessageSquare className="w-6 h-6 text-purple-500 flex-shrink-0" />
+                    <MessageSquare className="w-6 h-6 text-purple-500 shrink-0" />
                     <span className="text-sm text-gray-500 flex flex-col gap-0">
                       <span className="text-black text-xs">
                         Comentario supervisor
@@ -569,7 +569,7 @@ const PendingModal = ({
 
       {detailPaymentPlan.debtConcept && (
         <div className="flex justify-start items-center gap-2 bg-amber-100 border border-amber-300 p-4 rounded-lg">
-          <MessageSquare className="w-6 h-6 text-amber-300 flex-shrink-0" />
+          <MessageSquare className="w-6 h-6 text-amber-300 shrink-0" />
           <span className="text-sm text-gray-500 flex flex-col gap-0">
             <span className="text-black text-xs">Comentario</span>
             <span className="text-md text-gray-500">

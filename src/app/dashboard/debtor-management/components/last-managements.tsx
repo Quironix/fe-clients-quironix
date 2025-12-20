@@ -5,14 +5,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { History, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "../../components/badge";
@@ -94,41 +86,14 @@ const LastManagements = ({
           className="border border-gray-200 p-1 rounded-sm"
         >
           <AccordionItem value="item-1" className="border-0">
-            <AccordionTrigger className="px-2">
+            <AccordionTrigger className="px-2 py-2">
               Todas las gestiones anteriores ({previousManagement.length})
             </AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="mt-3">
               <div className="space-y-4 px-3">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[100px]">Fecha</TableHead>
-                      <TableHead>Tipo de gestión</TableHead>
-                      <TableHead>Contacto</TableHead>
-                      <TableHead className="text-right">
-                        Observaciones
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {previousManagement.map(
-                      (management: any, index: number) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">
-                            {formatDate(management.date)}
-                          </TableCell>
-                          <TableCell>
-                            {getManagementTypeLabel(management.management_type)}
-                          </TableCell>
-                          <TableCell>{management.manager}</TableCell>
-                          <TableCell className="text-right">
-                            {getExecutiveCommentLabel(management.description)}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    )}
-                  </TableBody>
-                </Table>
+                {previousManagement.map((management: any, index: number) => (
+                  <IconPerson key={index} management={management} />
+                ))}
               </div>
             </AccordionContent>
           </AccordionItem>

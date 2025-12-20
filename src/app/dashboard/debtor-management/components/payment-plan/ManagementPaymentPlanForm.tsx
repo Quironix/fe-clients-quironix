@@ -32,7 +32,7 @@ const paymentPlanSchema = z.object({
   annualInterestRate: z.number().min(0, "Debe ser mayor o igual a 0"),
   paymentMethod: z.string().min(1, "La forma de pago es requerida"),
   paymentFrequency: z.string().min(1, "La frecuencia es requerida"),
-  startDate: z.date({ required_error: "La fecha es requerida" }),
+  startDate: z.date({ message: "La fecha es requerida" }),
 });
 
 type PaymentPlanFormData = z.infer<typeof paymentPlanSchema>;
@@ -57,7 +57,7 @@ const ManagementPaymentPlanForm = ({
   }, [onChange]);
 
   const form = useForm<PaymentPlanFormData>({
-    resolver: zodResolver(paymentPlanSchema),
+    resolver: zodResolver(paymentPlanSchema) as any,
     mode: "onChange",
     defaultValues: value || {
       downPayment: 0,

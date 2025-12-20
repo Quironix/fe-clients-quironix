@@ -80,7 +80,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
   );
 
   const form = useForm<LitigationForm>({
-    resolver: zodResolver(litigationSchema(isFactoring)),
+    resolver: zodResolver(litigationSchema(isFactoring)) as any,
     defaultValues: {
       litigation_ids: [],
       normalization_reason: "",

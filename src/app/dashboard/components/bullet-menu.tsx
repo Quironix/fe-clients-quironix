@@ -88,7 +88,7 @@ export default function BulletMenu({
               )}
             >
               {item.icon && (
-                <item.icon className="h-4 w-4 text-primary flex-shrink-0" />
+                <item.icon className="h-4 w-4 text-primary shrink-0" />
               )}
               <span className="whitespace-nowrap">{item.label}</span>
             </DropdownMenuItem>

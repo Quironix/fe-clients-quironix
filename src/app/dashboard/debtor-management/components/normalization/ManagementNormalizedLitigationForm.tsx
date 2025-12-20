@@ -63,7 +63,7 @@ const ManagementNormalizedLitigationForm = ({
   }, [onChange]);
 
   const form = useForm<ManagementNormalizedLitigationFormData>({
-    resolver: zodResolver(normalizationFormSchema),
+    resolver: zodResolver(normalizationFormSchema) as any,
     mode: "onChange",
     defaultValues: value || {
       selectedInvoiceIds: [],

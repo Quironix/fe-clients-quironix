@@ -69,7 +69,7 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(userFormSchema),
+    resolver: zodResolver(userFormSchema) as any,
     mode: "onChange",
     defaultValues: {
       first_name: defaultValues?.first_name || "",

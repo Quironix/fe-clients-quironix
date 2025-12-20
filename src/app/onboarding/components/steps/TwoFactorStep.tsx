@@ -53,7 +53,7 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
   const [isValidatingCode, setIsValidatingCode] = useState<boolean>(false);
 
   const form = useForm<TwoFactorFormData>({
-    resolver: zodResolver(twoFactorSchema),
+    resolver: zodResolver(twoFactorSchema) as any,
     defaultValues: {
       code: "",
     },

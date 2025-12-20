@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,12 +8,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signOut, useSession } from "next-auth/react";
-import { Briefcase, ChevronsUpDown, User } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
 import { useProfileContext } from "@/context/ProfileContext";
-import { useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { Briefcase, ChevronsUpDown, User } from "lucide-react";
+import { signOut } from "next-auth/react";
+import Link from "next/link";
 
 export const ProfileDropdown = () => {
   const { state } = useSidebar();
@@ -30,7 +29,7 @@ export const ProfileDropdown = () => {
               state === "expanded" ? "justify-start" : "justify-center"
             )}
           >
-            <div className="flex-shrink-0 flex items-center justify-center bg-[#0233A3] text-white rounded-md p-2">
+            <div className="shrink-0 flex items-center justify-center bg-[#0233A3] text-white rounded-md p-2">
               <User />
             </div>
             {state === "expanded" && (

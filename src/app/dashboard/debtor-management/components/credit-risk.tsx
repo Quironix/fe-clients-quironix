@@ -1,11 +1,11 @@
-import { Circle } from "lucide-react";
-import { CallReasons } from "../types";
-import { Badge } from "../../components/badge";
 import { formatNumber } from "@/lib/utils";
+import { Circle } from "lucide-react";
+import { Badge } from "../../components/badge";
+import { CallReasons } from "../types";
 
-const CreditRisk = ({ data }: { data: CallReasons }) => {
+const CreditRisk = ({ data }: { data: CallReasons["credit_risk_summary"] }) => {
   // Valores por defecto si credit_risk_summary no existe
-  const credit_risk_summary = data.credit_risk_summary || {
+  const credit_risk_summary = data || {
     current_credit: 0,
     available_credit: 0,
     risk_category: "UNKNOWN" as const,
@@ -61,7 +61,11 @@ const CreditRisk = ({ data }: { data: CallReasons }) => {
       <div className="flex justify-between items-center w-full">
         <span className="text-xs">Cat. de riesgo</span>
         <span className="text-xs font-bold flex items-center gap-1">
-          <Circle color={riskDisplay.color} fill={riskDisplay.color} size={15} />{" "}
+          <Circle
+            color={riskDisplay.color}
+            fill={riskDisplay.color}
+            size={15}
+          />{" "}
           {riskDisplay.text}
         </span>
       </div>
