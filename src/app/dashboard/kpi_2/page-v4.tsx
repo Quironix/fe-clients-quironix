@@ -24,7 +24,6 @@ const viewTypes: Array<{
 }> = [
   { id: "card", name: "Card", icon: LayoutGrid },
   { id: "gauge", name: "Gauge", icon: Gauge },
-  { id: "bullet", name: "Bullet", icon: BarChart3 },
   { id: "sparkline", name: "Sparkline", icon: LineChart },
 ];
 

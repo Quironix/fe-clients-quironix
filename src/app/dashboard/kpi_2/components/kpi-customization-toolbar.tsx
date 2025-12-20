@@ -16,8 +16,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  ActivityIcon,
   AlertCircleIcon,
   BarChart3Icon,
+  CircleDotIcon,
   GridIcon,
   LayoutDashboardIcon,
   LayoutGridIcon,
@@ -67,6 +69,8 @@ export const KPICustomizationToolbar = ({
     compact: <MinimizeIcon className="h-4 w-4" />,
     gauge: <BarChart3Icon className="h-4 w-4" />,
     detailed: <MaximizeIcon className="h-4 w-4" />,
+    sparkline: <ActivityIcon className="h-4 w-4" />,
+    ring: <CircleDotIcon className="h-4 w-4" />,
   };
 
   const layoutModeIcons: Record<LayoutMode, React.ReactNode> = {

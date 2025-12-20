@@ -1,5 +1,6 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { KPI } from "../services/types";
+import { KPICardDetailed } from "./kpi-card-detailed";
 import { GaugeChart, RingChart, Sparkline } from "./kpi-visualizations";
 
 interface ViewProps {
@@ -191,4 +192,8 @@ export const CompactView: React.FC<ViewProps> = ({ kpi, status, trend }) => (
       <Sparkline data={kpi.history.map((h) => h.value)} color="#9ca3af" height={24} width={50} />
     )}
   </div>
+);
+
+export const DetailedView: React.FC<ViewProps> = ({ kpi }) => (
+  <KPICardDetailed kpi={kpi} isDragging={false} />
 );

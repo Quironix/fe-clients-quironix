@@ -1,4 +1,4 @@
-export type ViewMode = "card" | "gauge" | "sparkline" | "ring" | "compact";
+export type ViewMode = "card" | "gauge" | "sparkline" | "ring" | "compact" | "detailed";
 export type LayoutMode = "grid" | "list" | "kanban" | "dashboard";
 
 export interface KPIPreferences {

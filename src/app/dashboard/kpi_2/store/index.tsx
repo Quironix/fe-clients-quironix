@@ -27,7 +27,7 @@ interface KPIStore {
 }
 
 const cleanupPreferences = (preferences: KPIPreferences): KPIPreferences => {
-  const validViewModes: ViewMode[] = ["card", "gauge", "sparkline", "ring", "compact"];
+  const validViewModes: ViewMode[] = ["card", "gauge", "sparkline", "ring", "compact", "detailed"];
 
   const cleanedViewMode = validViewModes.includes(preferences.viewMode)
     ? preferences.viewMode

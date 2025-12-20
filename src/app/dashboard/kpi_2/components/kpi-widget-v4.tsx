@@ -1,9 +1,9 @@
-import { Gauge, GripVertical, LayoutGrid, LineChart, List, PieChart, Settings } from "lucide-react";
+import { Gauge, GripVertical, LayoutGrid, LineChart, List, Maximize, PieChart, Settings } from "lucide-react";
 import { useState } from "react";
 import { KPI } from "../services/types";
-import { CardView, CompactView, GaugeView, RingView, SparklineView } from "./kpi-view-types";
+import { CardView, CompactView, DetailedView, GaugeView, RingView, SparklineView } from "./kpi-view-types";
 
-export type ViewType = "card" | "gauge" | "sparkline" | "ring" | "compact";
+export type ViewType = "card" | "gauge" | "sparkline" | "ring" | "compact" | "detailed";
 
 interface KPIWidgetProps {
   kpi: KPI;
@@ -21,6 +21,7 @@ const viewTypes: Array<{ id: ViewType; name: string; icon: React.ElementType }> 
   { id: "sparkline", name: "Sparkline", icon: LineChart },
   { id: "ring", name: "Ring", icon: PieChart },
   { id: "compact", name: "Compacto", icon: List },
+  { id: "detailed", name: "Detallado", icon: Maximize },
 ];
 
 const getStatus = (kpi: KPI): { status: string; color: string } => {
@@ -74,6 +75,7 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
     sparkline: SparklineView,
     ring: RingView,
     compact: CompactView,
+    detailed: DetailedView,
   };
 
   const ViewComponent = views[viewType];

@@ -6,6 +6,7 @@ import {
   LayoutGrid,
   LineChart,
   List,
+  Maximize,
   PieChart,
   RotateCcw,
 } from "lucide-react";
@@ -28,6 +29,7 @@ const viewTypes: Array<{
   { id: "sparkline", name: "Sparkline", icon: LineChart },
   { id: "ring", name: "Ring", icon: PieChart },
   { id: "compact", name: "Compacto", icon: List },
+  { id: "detailed", name: "Detallado", icon: Maximize },
 ];
 
 const categories = ["all", "Calidad Producida", "Eficiencia", "Impecabilidad"];
@@ -182,6 +184,7 @@ const KPIContent = () => {
                       "sparkline",
                       "ring",
                       "compact",
+                      "detailed",
                     ];
                     const storedView =
                       preferences.kpiViews[kpi.id] || preferences.viewMode;
