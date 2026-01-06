@@ -225,12 +225,14 @@ const DynamicField = ({
   dataDebtor,
   selectedInvoices,
   litigations,
+  totalizeSelectedInvoices,
 }: {
   field: FieldConfig;
   control: any;
   dataDebtor?: any;
   selectedInvoices?: Invoice[];
   litigations?: any[];
+  totalizeSelectedInvoices?: number;
 }) => {
   const fieldName = `caseData.${field.name}` as any;
   const { data: session } = useSession();
@@ -296,49 +298,58 @@ const DynamicField = ({
     <FormField
       control={control}
       name={fieldName}
-      render={({ field: formField }) => (
-        <FormItem>
-          <FormLabel>
-            {field.label}
-            {field.required && <span className="text-red-500 ml-1">*</span>}
-          </FormLabel>
-          <FormControl>
-            {field.type === "select" ? (
-              <Select
-                onValueChange={formField.onChange}
-                value={formField.value || ""}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecciona una opción" />
-                </SelectTrigger>
-                <SelectContent>
-                  {field.options?.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : field.type === "textarea" ? (
-              <Textarea
-                placeholder={field.placeholder}
-                value={formField.value || ""}
-                onChange={formField.onChange}
-                className="min-h-[100px] resize-none"
-              />
-            ) : (
-              <Input
-                type={field.type}
-                placeholder={field.placeholder}
-                value={formField.value || ""}
-                onChange={formField.onChange}
-                className="w-full"
-              />
-            )}
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
+      render={({ field: formField }) => {
+        const isAutoFillField = field.name === "amount" || field.name === "paymentAmount";
+        const fieldValue =
+          isAutoFillField && totalizeSelectedInvoices
+            ? totalizeSelectedInvoices.toString()
+            : formField.value || "";
+
+        return (
+          <FormItem>
+            <FormLabel>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </FormLabel>
+            <FormControl>
+              {field.type === "select" ? (
+                <Select
+                  onValueChange={formField.onChange}
+                  value={formField.value || ""}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {field.options?.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : field.type === "textarea" ? (
+                <Textarea
+                  placeholder={field.placeholder}
+                  value={fieldValue}
+                  onChange={formField.onChange}
+                  className="min-h-25 resize-none"
+                />
+              ) : (
+                <Input
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  value={fieldValue}
+                  onChange={formField.onChange}
+                  className="w-full"
+                  // disabled={isAutoFillField}
+                />
+              )}
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 };
@@ -350,6 +361,11 @@ export const StepTwo = ({
   selectedInvoices = [],
   onValidationChange,
 }: StepTwoProps) => {
+  const totalizeSelectedInvoices = useMemo(() => {
+    const invoices = selectedInvoices || [];
+    return invoices.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+  }, [selectedInvoices]);
+
   const { data: session } = useSession();
   const { profile } = useProfileContext();
 
@@ -552,6 +568,41 @@ export const StepTwo = ({
     return () => subscription.unsubscribe();
   }, [form.watch]);
 
+  useEffect(() => {
+    if (
+      hasCompleteSelection &&
+      selectedCombination?.fields &&
+      totalizeSelectedInvoices > 0
+    ) {
+      const autoFillFields = ["amount", "paymentAmount"];
+
+      autoFillFields.forEach((fieldName) => {
+        const field = selectedCombination.fields.find(
+          (f) => f.name === fieldName
+        );
+        if (field) {
+          const currentValue = form.getValues(`caseData.${fieldName}`);
+          const newValue =
+            field.type === "number"
+              ? totalizeSelectedInvoices
+              : totalizeSelectedInvoices.toString();
+
+          if (currentValue !== newValue) {
+            form.setValue(`caseData.${fieldName}`, newValue, {
+              shouldValidate: false,
+              shouldDirty: false,
+            });
+          }
+        }
+      });
+    }
+  }, [
+    hasCompleteSelection,
+    selectedCombination?.fields,
+    totalizeSelectedInvoices,
+    form,
+  ]);
+
   // Notificar estado de validación solo cuando cambie
   useEffect(() => {
     const isValid = form.formState.isValid;
@@ -616,11 +667,13 @@ export const StepTwo = ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Object.entries(ManagementType).map(([key, value]) => (
-                            <SelectItem key={key} value={key}>
-                              {value}
-                            </SelectItem>
-                          ))}
+                          {Object.entries(ManagementType).map(
+                            ([key, value]) => (
+                              <SelectItem key={key} value={key}>
+                                {value}
+                              </SelectItem>
+                            )
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -905,6 +958,7 @@ export const StepTwo = ({
                         dataDebtor={dataDebtor}
                         selectedInvoices={selectedInvoices}
                         litigations={debtorLitigations}
+                        totalizeSelectedInvoices={totalizeSelectedInvoices}
                       />
                     ))}
                   </div>
