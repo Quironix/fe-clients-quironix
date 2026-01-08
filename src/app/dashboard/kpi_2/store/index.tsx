@@ -1,21 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getAll } from "../services";
 import { KPI, KPIFilters, KPIType } from "../services/types";
-import { DEFAULT_PREFERENCES, KPIPreferences, ViewMode } from "../types/preferences";
+import {
+  DEFAULT_PREFERENCES,
+  KPIPreferences,
+  ViewMode,
+} from "../types/preferences";
 
 interface KPIStore {
   kpis: KPI[];
   filteredKpis: KPI[];
-  loading: boolean;
-  error: string | null;
   filters: KPIFilters;
   preferences: KPIPreferences;
+  setKPIs: (kpis: KPI[]) => void;
   setFilters: (filters: KPIFilters) => void;
   setSearchTerm: (term: string) => void;
   setTypeFilter: (type: KPIType | "all") => void;
   setDateRange: (from?: Date, to?: Date) => void;
-  fetchKPIs: (accessToken: string, clientId: string) => Promise<void>;
   applyFilters: () => void;
   setViewMode: (mode: ViewMode) => void;
   setKPIView: (kpiId: string, mode: ViewMode) => void;
@@ -27,7 +28,14 @@ interface KPIStore {
 }
 
 const cleanupPreferences = (preferences: KPIPreferences): KPIPreferences => {
-  const validViewModes: ViewMode[] = ["card", "gauge", "sparkline", "ring", "compact", "detailed"];
+  const validViewModes: ViewMode[] = [
+    "card",
+    "gauge",
+    "sparkline",
+    "ring",
+    "compact",
+    "detailed",
+  ];
 
   const cleanedViewMode = validViewModes.includes(preferences.viewMode)
     ? preferences.viewMode
@@ -35,7 +43,9 @@ const cleanupPreferences = (preferences: KPIPreferences): KPIPreferences => {
 
   const cleanedKpiViews: Record<string, ViewMode> = {};
   Object.entries(preferences.kpiViews).forEach(([kpiId, viewMode]) => {
-    cleanedKpiViews[kpiId] = validViewModes.includes(viewMode) ? viewMode : "card";
+    cleanedKpiViews[kpiId] = validViewModes.includes(viewMode)
+      ? viewMode
+      : "card";
   });
 
   return {
@@ -50,13 +60,16 @@ export const useKPIStore = create<KPIStore>()(
     (set, get) => ({
       kpis: [],
       filteredKpis: [],
-      loading: true,
-      error: null,
       filters: {
         type: "all",
         searchTerm: "",
       },
       preferences: DEFAULT_PREFERENCES,
+
+      setKPIs: (kpis) => {
+        set({ kpis, filteredKpis: kpis });
+        get().applyFilters();
+      },
 
       setFilters: (filters) => {
         set({ filters });
@@ -81,37 +94,17 @@ export const useKPIStore = create<KPIStore>()(
         set((state) => ({
           filters: {
             ...state.filters,
-            dateRange: from || to
-              ? {
-                  from: from?.toISOString() || "",
-                  to: to?.toISOString() || "",
-                }
-              : undefined,
+            dateRange:
+              from || to
+                ? {
+                    from: from?.toISOString() || "",
+                    to: to?.toISOString() || "",
+                  }
+                : undefined,
           },
         }));
         if (get().kpis.length > 0) {
           get().applyFilters();
-        }
-      },
-
-      fetchKPIs: async (accessToken: string, clientId: string) => {
-        set({ loading: true, error: null });
-        try {
-          const { filters } = get();
-          const response = await getAll(accessToken, clientId, {
-            from: filters.dateRange?.from,
-            to: filters.dateRange?.to,
-          });
-          set({ kpis: response.data, filteredKpis: response.data, loading: false });
-          get().applyFilters();
-        } catch (error) {
-          console.error("Error al obtener KPIs:", error);
-          set({
-            error: "Error al obtener KPIs",
-            loading: false,
-            kpis: [],
-            filteredKpis: [],
-          });
         }
       },
 
@@ -133,11 +126,15 @@ export const useKPIStore = create<KPIStore>()(
         }
 
         if (preferences.filterCategory !== "all") {
-          filtered = filtered.filter((kpi) => kpi.type === preferences.filterCategory);
+          filtered = filtered.filter(
+            (kpi) => kpi.type === preferences.filterCategory
+          );
         }
 
         if (preferences.showCriticalOnly) {
-          filtered = filtered.filter((kpi) => kpi.status === "error" || kpi.status === "warning");
+          filtered = filtered.filter(
+            (kpi) => kpi.status === "error" || kpi.status === "warning"
+          );
         }
 
         if (preferences.kpiOrder.length > 0) {

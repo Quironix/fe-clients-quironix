@@ -1,6 +1,58 @@
-import { KPI, KPIResponse, KPIStatus } from "./types";
+import { KPI, KPIResponse, KPIStatus, KPIType, ResponseKPIV2 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const KPI_NAME_MAP: Record<string, string> = {
+  CASH_GENERATION: "Generación de Caja",
+  CEI_PERCENTAGE: "% CEI",
+  CREDIBILITY_INDEX: "Índice Credibilidad",
+  QUIRONIX_BANK_RECONCILIATION: "Conciliación Bancaria Quironix",
+  QUIRONIX_SERVICE_TIME_COMPENSATION: "Compensación Tiempo de Servicio - Quironix",
+  LITIGATION_NORMALIZATION_PERCENTAGE: "% Normalización Litigios",
+  DDO: "DDO",
+  MATCH_RATE_PERCENTAGE: "% Match Rate",
+  OPEN_LITIGATIONS: "Litigios Abiertos",
+  PAYMENTS_IN_TRANSIT: "Pagos en Tránsito",
+  SERVICE_TIME_COMPENSATION: "Compensación Tiempo de Servicio",
+  NEGOTIATION_EFFECTIVENESS: "Efectividad de Negociación",
+  DBT: "DBT",
+  OVER_DUE_PERCENTAGE: "% Over Due",
+  CRITICAL_OVER_DUE_PERCENTAGE: "% Over Due Crítico",
+  DSO: "DSO",
+  PROVISION: "Provisión",
+};
+
+const KPI_DEFINITION_MAP: Record<string, string> = {
+  CASH_GENERATION: "El Recaudado Real es la sumatoria de los pagos recibidos y debe excluir cheques a fecha, Ajustes y aplicaciones. Este debe mostrarse diariamente e ir con el acumulado mensual. Debe tener Cierre mensual.",
+  CEI_PERCENTAGE: "Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.",
+  CREDIBILITY_INDEX: "Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera. No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.",
+  QUIRONIX_BANK_RECONCILIATION: "Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix",
+  QUIRONIX_SERVICE_TIME_COMPENSATION: "Busca medir el % de pagos que fueron aplicados de forma automática en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
+  LITIGATION_NORMALIZATION_PERCENTAGE: "Mide el % de litigios que han sido normalizados.",
+  DDO: "Métrica que se utiliza en algunas empresas, particularmente en sectores como seguros, retail o servicios financieros, para medir el tiempo promedio que toma resolver y aplicar deducciones en pagos o facturas pendientes.",
+  MATCH_RATE_PERCENTAGE: "Mide cuanto % de facturación tiene NC",
+  OPEN_LITIGATIONS: "%de litigios abiertos > 30 días en gestión. Sobre el total de litigios abiertos.",
+  PAYMENTS_IN_TRANSIT: "Monto de pagos Aplicados v/s pagos Cargados usar todos los tipos de pago, no considerar ajustes y aplicaciones.",
+  SERVICE_TIME_COMPENSATION: "Busca medir el % de pagos que fueron aplicados de forma manual en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
+  NEGOTIATION_EFFECTIVENESS: "Mide en %, cuantas veces que interviene un ejecutivo obtiene el compromiso de pago",
+  DBT: "Días después del Vencimiento que se realizó Pago",
+  OVER_DUE_PERCENTAGE: "Días de Deudas Vencida",
+  CRITICAL_OVER_DUE_PERCENTAGE: "Días de Deudas Vencida con más de 30 días",
+  DSO: "Días Calle",
+  PROVISION: "Provisión de cobranza dudosa",
+};
+
+const UNIT_MAP: Record<string, string> = {
+  PERCENT: "%",
+  DAYS: "días",
+  NUMBER: "nº",
+};
+
+const CATEGORY_MAP: Record<string, KPIType> = {
+  produced_quality: "Calidad Producida",
+  efficiency: "Eficiencia",
+  impeccability: "Impecabilidad",
+};
 
 const getKPIStatus = (
   value: number,
@@ -27,8 +79,8 @@ const generateHistory = (currentValue: number, months: number = 6) => {
     const variation = (Math.random() - 0.5) * 20;
     const value = Math.max(0, currentValue + variation);
     history.push({
-      date: date.toISOString().split('T')[0],
-      value: Math.round(value * 10) / 10,
+      date: date.toISOString().split("T")[0],
+      value: Math.round(value * 100) / 100,
     });
   }
 
@@ -40,7 +92,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "1",
     name: "Generación de Caja",
     type: "Calidad Producida",
-    definition: "El Recaudado Real es la sumatoria de los pagos recibidos y debe excluir cheques a fecha, Ajustes y aplicaciones. Este debe mostrarse diariamente e ir con el acumulado mensual. Debe tener Cierre mensual.",
+    definition:
+      "El Recaudado Real es la sumatoria de los pagos recibidos y debe excluir cheques a fecha, Ajustes y aplicaciones. Este debe mostrarse diariamente e ir con el acumulado mensual. Debe tener Cierre mensual.",
     unit: "%",
     value: 97,
     target: 100,
@@ -56,7 +109,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "2",
     name: "% CEI",
     type: "Calidad Producida",
-    definition: "Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.",
+    definition:
+      "Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.",
     unit: "%",
     value: 76,
     target: 80,
@@ -72,7 +126,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "3",
     name: "Índice Credibilidad",
     type: "Calidad Producida",
-    definition: "Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera. No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.",
+    definition:
+      "Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera. No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.",
     unit: "%",
     value: 59,
     target: 60,
@@ -88,7 +143,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "4",
     name: "Conciliación Bancaria Quironix",
     type: "Calidad Producida",
-    definition: "Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix",
+    definition:
+      "Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix",
     unit: "%",
     value: 75,
     target: 90,
@@ -104,7 +160,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "5",
     name: "Compensación Tiempo de Servicio - Quironix",
     type: "Calidad Producida",
-    definition: "Busca medir el % de pagos que fueron aplicados de forma automática en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
+    definition:
+      "Busca medir el % de pagos que fueron aplicados de forma automática en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
     unit: "%",
     value: 94,
     target: 95,
@@ -136,7 +193,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "7",
     name: "DDO",
     type: "Eficiencia",
-    definition: "Métrica que se utiliza en algunas empresas, particularmente en sectores como seguros, retail o servicios financieros, para medir el tiempo promedio que toma resolver y aplicar deducciones en pagos o facturas pendientes.",
+    definition:
+      "Métrica que se utiliza en algunas empresas, particularmente en sectores como seguros, retail o servicios financieros, para medir el tiempo promedio que toma resolver y aplicar deducciones en pagos o facturas pendientes.",
     unit: "días",
     value: 15,
     target: 10,
@@ -168,7 +226,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "9",
     name: "Litigios Abiertos",
     type: "Eficiencia",
-    definition: "%de litigios abiertos > 30 días en gestión. Sobre el total de litigios abiertos.",
+    definition:
+      "%de litigios abiertos > 30 días en gestión. Sobre el total de litigios abiertos.",
     unit: "%",
     value: 25,
     target: 20,
@@ -184,7 +243,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "10",
     name: "Pagos en Tránsito",
     type: "Eficiencia",
-    definition: "Monto de pagos Aplicados v/s pagos Cargados usar todos los tipos de pago, no considerar ajustes y aplicaciones.",
+    definition:
+      "Monto de pagos Aplicados v/s pagos Cargados usar todos los tipos de pago, no considerar ajustes y aplicaciones.",
     unit: "%",
     value: 99,
     target: 100,
@@ -200,7 +260,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "11",
     name: "Compensación Tiempo de Servicio",
     type: "Eficiencia",
-    definition: "Busca medir el % de pagos que fueron aplicados de forma manual en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
+    definition:
+      "Busca medir el % de pagos que fueron aplicados de forma manual en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
     unit: "%",
     value: 94,
     target: 95,
@@ -216,7 +277,8 @@ const DUMMY_KPIS: KPI[] = [
     id: "12",
     name: "Efectividad de Negociación",
     type: "Eficiencia",
-    definition: "Mide en %, cuantas veces que interviene un ejecutivo obtiene el compromiso de pago",
+    definition:
+      "Mide en %, cuantas veces que interviene un ejecutivo obtiene el compromiso de pago",
     unit: "%",
     value: 60,
     target: 70,
@@ -314,42 +376,127 @@ DUMMY_KPIS.forEach((kpi) => {
   kpi.status = getKPIStatus(kpi.value, kpi.thresholds);
 });
 
+const transformResponseToKPIs = (response: ResponseKPIV2): KPI[] => {
+  const kpis: KPI[] = [];
+  let index = 0;
+
+  const processCategory = (
+    items: typeof response.produced_quality,
+    categoryKey: keyof typeof CATEGORY_MAP
+  ) => {
+    items.forEach((item) => {
+      const name = KPI_NAME_MAP[item.name] || item.name;
+      const definition = KPI_DEFINITION_MAP[item.name] || "";
+      const unit = UNIT_MAP[item.unit] || item.unit;
+      const category = CATEGORY_MAP[categoryKey];
+      const rawValue = item.value ?? 0;
+      const value = Math.round(rawValue * 100) / 100;
+      const target = item.acceptance_criteria ?? 0;
+      const sla = item.sla?.toString() || "";
+      const criterio = item.acceptance_criteria?.toString() || "";
+
+      let direction: "ascending" | "descending" = "ascending";
+      if (
+        item.name.includes("OVER_DUE") ||
+        item.name === "DDO" ||
+        item.name === "DBT" ||
+        item.name === "DSO"
+      ) {
+        direction = "descending";
+      }
+
+      const thresholds = {
+        low: direction === "ascending" ? target * 0.9 : target * 1.1,
+        high: target,
+        direction,
+      };
+
+      const status = getKPIStatus(value, thresholds);
+
+      let trend: "up" | "down" | "stable" = "stable";
+      if (value > target) {
+        trend = direction === "ascending" ? "up" : "down";
+      } else if (value < target) {
+        trend = direction === "ascending" ? "down" : "up";
+      }
+
+      kpis.push({
+        id: (++index).toString(),
+        name,
+        type: category,
+        definition,
+        unit: unit as KPI["unit"],
+        value,
+        target,
+        thresholds,
+        status,
+        trend,
+        sla,
+        criterio,
+        lastUpdated: new Date().toISOString(),
+        history: generateHistory(value),
+      });
+    });
+  };
+
+  processCategory(response.produced_quality, "produced_quality");
+  processCategory(response.efficiency, "efficiency");
+  processCategory(response.impeccability, "impeccability");
+
+  return kpis;
+};
+
 export const getAll = async (
   accessToken: string,
   clientId: string,
   filters?: { from?: string; to?: string }
 ): Promise<KPIResponse> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let filteredKPIs = [...DUMMY_KPIS];
-
-      if (filters?.from || filters?.to) {
-        filteredKPIs = filteredKPIs.map(kpi => ({
-          ...kpi,
-          history: kpi.history?.filter(h => {
-            const date = new Date(h.date);
-            const from = filters.from ? new Date(filters.from) : null;
-            const to = filters.to ? new Date(filters.to) : null;
-
-            if (from && to) {
-              return date >= from && date <= to;
-            } else if (from) {
-              return date >= from;
-            } else if (to) {
-              return date <= to;
-            }
-            return true;
-          })
-        }));
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/reports/dashboard/kpis`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
+    );
 
-      resolve({
-        data: filteredKPIs,
-        total: filteredKPIs.length,
-        lastUpdated: new Date().toISOString(),
-      });
-    }, 500);
-  });
+    if (!response.ok) {
+      throw new Error("Failed to fetch KPIs");
+    }
+
+    const apiData: ResponseKPIV2 = await response.json();
+    let kpis = transformResponseToKPIs(apiData);
+
+    if (filters?.from || filters?.to) {
+      kpis = kpis.map((kpi) => ({
+        ...kpi,
+        history: kpi.history?.filter((h) => {
+          const date = new Date(h.date);
+          const from = filters.from ? new Date(filters.from) : null;
+          const to = filters.to ? new Date(filters.to) : null;
+
+          if (from && to) {
+            return date >= from && date <= to;
+          } else if (from) {
+            return date >= from;
+          } else if (to) {
+            return date <= to;
+          }
+          return true;
+        }),
+      }));
+    }
+
+    return {
+      data: kpis,
+      total: kpis.length,
+      lastUpdated: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Error fetching KPI data:", error);
+    throw error;
+  }
 };
 
 export const getById = async (
@@ -363,4 +510,29 @@ export const getById = async (
       resolve(kpi || null);
     }, 300);
   });
+};
+
+export const getAllKPI = async (
+  accessToken: string,
+  clientId: string
+): Promise<ResponseKPIV2> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/reports/dashboard/kpis`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch countries");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching KPI data:", error);
+    throw error;
+  }
 };

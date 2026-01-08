@@ -2,6 +2,9 @@
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import {
+  Columns2,
+  Columns3,
+  Columns4,
   Gauge,
   LayoutGrid,
   LineChart,
@@ -17,6 +20,7 @@ import TitleSection from "../components/title-section";
 import { KPIAIChat } from "./components/kpi-ai-chat";
 import { KPISummaryHeader } from "./components/kpi-summary-header";
 import { KPIWidget, ViewType } from "./components/kpi-widget-v4";
+import { useKPIData } from "./hooks/useKPIData";
 import { useKPIStore } from "./store";
 
 const viewTypes: Array<{
@@ -32,16 +36,15 @@ const viewTypes: Array<{
   { id: "detailed", name: "Detallado", icon: Maximize },
 ];
 
-const categories = ["all", "Calidad Producida", "Eficiencia", "Impecabilidad"];
+const categories = ["all", "Calidad producida", "Eficiencia", "Impecabilidad"];
 
 const KPIContent = () => {
   const { profile, session } = useProfileContext();
   const {
     filteredKpis,
     kpis,
-    loading,
     preferences,
-    fetchKPIs,
+    setKPIs,
     setKPIView,
     setAllViews,
     setGridColumns,
@@ -52,11 +55,23 @@ const KPIContent = () => {
 
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
+  const {
+    data: kpiData,
+    isLoading,
+    error,
+    isFetching,
+    dataUpdatedAt,
+  } = useKPIData({
+    accessToken: session?.token || "",
+    clientId: profile?.client?.id || "",
+    enabled: !!session?.token && !!profile?.client?.id,
+  });
+
   useEffect(() => {
-    if (session?.token && profile?.client?.id) {
-      fetchKPIs(session?.token, profile.client.id);
+    if (kpiData?.data) {
+      setKPIs(kpiData.data);
     }
-  }, [session?.token, profile?.client?.id, fetchKPIs]);
+  }, [kpiData, setKPIs]);
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
     setDraggedId(id);
@@ -89,18 +104,29 @@ const KPIContent = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Dashboard dinámico"
-          description="Arrastra las tarjetas para reorganizar"
+          title="Dashboard"
+          description="Revisa tus indicadores clave de rendimiento"
           icon={<LayoutGrid color="white" />}
           subDescription="KPIs"
         />
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1">
-          {loading ? (
+          {isLoading ? (
             <div className="flex flex-col items-center justify-center gap-4 p-12">
               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500"></div>
               <p className="text-lg font-semibold text-gray-700">
                 Cargando indicadores...
               </p>
+              <p className="text-sm text-gray-500">
+                Los datos se almacenarán en caché por 5 minutos
+              </p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center gap-4 p-12">
+              <div className="text-red-500 text-4xl">⚠️</div>
+              <p className="text-lg font-semibold text-gray-700">
+                Error al cargar los indicadores
+              </p>
+              <p className="text-sm text-gray-500">{error.message}</p>
             </div>
           ) : (
             <div className="grid grid-cols-12 gap-6">
@@ -116,7 +142,7 @@ const KPIContent = () => {
                             onClick={() => setAllViews(type.id)}
                             className={`p-2 rounded-md transition-colors ${
                               preferences.viewMode === type.id
-                                ? "bg-gray-900 text-white"
+                                ? "bg-orange-500 text-white"
                                 : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
                             }`}
                             title={`Todos a ${type.name}`}
@@ -132,28 +158,54 @@ const KPIContent = () => {
                         <button
                           key={n}
                           onClick={() => setGridColumns(n)}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          className={`px-3 py-1.5 text-xs font-medium  rounded-md transition-colors ${
                             preferences.gridColumns === n
-                              ? "bg-gray-900 text-white"
+                              ? "bg-orange-500 text-white"
                               : "text-gray-500 hover:bg-gray-50"
                           }`}
                         >
-                          {n} col
+                          {n === 2 && <Columns2 size={19} />}
+                          {n === 3 && <Columns3 size={19} />}
+                          {n === 4 && <Columns4 size={19} />}
                         </button>
                       ))}
                     </div>
 
                     <button
                       onClick={resetLayout}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 px-3 py-3 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <RotateCcw size={14} />
-                      Reset
+                      Limpiar
                     </button>
                   </div>
                 </header>
 
                 <KPISummaryHeader kpis={kpis} />
+
+                {dataUpdatedAt && (
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-1.5">
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          isFetching
+                            ? "bg-orange-500 animate-pulse"
+                            : "bg-emerald-500"
+                        }`}
+                      />
+                      <span>
+                        {isFetching
+                          ? "Actualizando datos..."
+                          : `Última actualización: ${new Date(
+                              dataUpdatedAt
+                            ).toLocaleTimeString("es-CL")}`}
+                      </span>
+                    </div>
+                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium">
+                      Caché: 5 min
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2 overflow-x-auto pb-2">
                   {categories.map((cat) => (
@@ -162,7 +214,7 @@ const KPIContent = () => {
                       onClick={() => setFilterCategory(cat)}
                       className={`px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
                         preferences.filterCategory === cat
-                          ? "bg-gray-900 text-white"
+                          ? "bg-orange-500 text-white"
                           : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                       }`}
                     >
@@ -210,15 +262,9 @@ const KPIContent = () => {
                     );
                   })}
                 </div>
-
-                <footer className="mt-12 pt-6 border-t border-gray-200 text-center">
-                  <p className="text-xs text-gray-400">
-                    Dashboard KPI v4.0 · Personalizable · Drag & Drop
-                  </p>
-                </footer>
               </div>
 
-              <div className="col-span-12 lg:col-span-3">
+              <div className="col-span-12 lg:col-span-3 mt-18">
                 <KPIAIChat />
               </div>
             </div>

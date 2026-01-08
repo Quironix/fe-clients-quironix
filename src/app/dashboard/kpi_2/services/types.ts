@@ -48,3 +48,17 @@ export interface KPIResponse {
   total: number;
   lastUpdated: string;
 }
+
+export interface ResponseKPIV2 {
+  produced_quality: ItemKPI[];
+  efficiency: ItemKPI[];
+  impeccability: ItemKPI[];
+}
+
+export interface ItemKPI {
+  name: string;
+  unit: string;
+  value: null | number;
+  sla: null | number;
+  acceptance_criteria: null | number;
+}

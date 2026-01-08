@@ -56,6 +56,35 @@ const getTrend = (kpi: KPI): { value: string; direction: string; isGood: boolean
   };
 };
 
+const getCategoryBadge = (type: string): { bg: string; text: string; border: string } => {
+  switch (type) {
+    case "Calidad Producida":
+      return {
+        bg: "bg-blue-50",
+        text: "text-blue-700",
+        border: "border-blue-200",
+      };
+    case "Eficiencia":
+      return {
+        bg: "bg-purple-50",
+        text: "text-purple-700",
+        border: "border-purple-200",
+      };
+    case "Impecabilidad":
+      return {
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+      };
+    default:
+      return {
+        bg: "bg-gray-50",
+        text: "text-gray-700",
+        border: "border-gray-200",
+      };
+  }
+};
+
 export const KPIWidget: React.FC<KPIWidgetProps> = ({
   kpi,
   viewType,
@@ -68,6 +97,7 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
   const [showSettings, setShowSettings] = useState(false);
   const status = getStatus(kpi);
   const trend = getTrend(kpi);
+  const categoryBadge = getCategoryBadge(kpi.type);
 
   const views: Record<ViewType, React.ComponentType<any>> = {
     card: CardView,
@@ -148,8 +178,10 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
 
       <ViewComponent kpi={kpi} status={status} trend={trend} />
 
-      <div className="px-4 py-2 bg-gray-50/50 border-t border-gray-100">
-        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">
+      <div className="px-4 py-2.5 bg-gray-50/50 border-t border-gray-100 flex items-center justify-center">
+        <span
+          className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${categoryBadge.bg} ${categoryBadge.text} ${categoryBadge.border}`}
+        >
           {kpi.type}
         </span>
       </div>
