@@ -28,10 +28,8 @@ export interface KPI {
   sla?: string;
   criterio?: string;
   lastUpdated?: string;
-  history?: Array<{
-    date: string;
-    value: number;
-  }>;
+  history?: any[];
+  invoices?: any[];
 }
 
 export interface KPIFilters {
@@ -43,16 +41,24 @@ export interface KPIFilters {
   };
 }
 
+export interface Indicators {
+  optimal: number;
+  alert: number;
+  healthScore: number;
+}
+
 export interface KPIResponse {
   data: KPI[];
   total: number;
   lastUpdated: string;
+  indicators?: Indicators;
 }
 
 export interface ResponseKPIV2 {
   produced_quality: ItemKPI[];
   efficiency: ItemKPI[];
   impeccability: ItemKPI[];
+  indicators: Indicators;
 }
 
 export interface ItemKPI {
@@ -61,4 +67,6 @@ export interface ItemKPI {
   value: null | number;
   sla: null | number;
   acceptance_criteria: null | number;
+  history: any[];
+  invoices: any[];
 }

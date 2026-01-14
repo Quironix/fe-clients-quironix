@@ -42,11 +42,7 @@ export const Sparkline: React.FC<SparklineProps> = ({
       />
       <circle
         cx={width}
-        cy={
-          height -
-          ((data[data.length - 1] - min) / range) * (height - 8) -
-          4
-        }
+        cy={height - ((data[data.length - 1] - min) / range) * (height - 8) - 4}
         r="3"
         fill={color}
       />
@@ -100,7 +96,7 @@ export const GaugeChart: React.FC<GaugeChartProps> = ({
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
+          strokeDashoffset={offset || 0}
           className="transition-all duration-1000"
         />
       </svg>
@@ -141,16 +137,16 @@ export const RingChart: React.FC<RingChartProps> = ({
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
         <circle
-          cx={size / 2}
-          cy={size / 2}
+          cx={(size || 2) / 2}
+          cy={(size || 2) / 2}
           r={radius}
           fill="none"
           stroke="#f3f4f6"
           strokeWidth={strokeWidth}
         />
         <circle
-          cx={size / 2}
-          cy={size / 2}
+          cx={(size || 2) / 2}
+          cy={(size || 2) / 2}
           r={radius}
           fill="none"
           stroke={colors[color]}
@@ -163,7 +159,9 @@ export const RingChart: React.FC<RingChartProps> = ({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-2xl font-bold text-gray-900">{value}</span>
-        <span className="text-[10px] text-gray-400">{Math.round(percentage)}%</span>
+        <span className="text-[10px] text-gray-400">
+          {Math.round(percentage)}%
+        </span>
       </div>
     </div>
   );

@@ -44,6 +44,7 @@ const KPIContent = () => {
     filteredKpis,
     kpis,
     preferences,
+    indicators,
     setKPIs,
     setKPIView,
     setAllViews,
@@ -51,6 +52,7 @@ const KPIContent = () => {
     setFilterCategory,
     setKPIOrder,
     resetLayout,
+    setIndicators,
   } = useKPIStore();
 
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -71,7 +73,10 @@ const KPIContent = () => {
     if (kpiData?.data) {
       setKPIs(kpiData.data);
     }
-  }, [kpiData, setKPIs]);
+    if (kpiData?.indicators) {
+      setIndicators(kpiData.indicators);
+    }
+  }, [kpiData, setKPIs, setIndicators]);
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
     setDraggedId(id);
@@ -173,7 +178,7 @@ const KPIContent = () => {
 
                     <button
                       onClick={resetLayout}
-                      className="flex items-center gap-2 px-3 py-3 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <RotateCcw size={14} />
                       Limpiar
@@ -181,31 +186,7 @@ const KPIContent = () => {
                   </div>
                 </header>
 
-                <KPISummaryHeader kpis={kpis} />
-
-                {dataUpdatedAt && (
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <div className="flex items-center gap-1.5">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          isFetching
-                            ? "bg-orange-500 animate-pulse"
-                            : "bg-emerald-500"
-                        }`}
-                      />
-                      <span>
-                        {isFetching
-                          ? "Actualizando datos..."
-                          : `Última actualización: ${new Date(
-                              dataUpdatedAt
-                            ).toLocaleTimeString("es-CL")}`}
-                      </span>
-                    </div>
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium">
-                      Caché: 5 min
-                    </span>
-                  </div>
-                )}
+                <KPISummaryHeader indicators={kpiData?.indicators} />
 
                 <div className="flex items-center gap-2 overflow-x-auto pb-2">
                   {categories.map((cat) => (
@@ -264,7 +245,7 @@ const KPIContent = () => {
                 </div>
               </div>
 
-              <div className="col-span-12 lg:col-span-3 mt-18">
+              <div className="col-span-12 lg:col-span-3 mt-16.5">
                 <KPIAIChat />
               </div>
             </div>

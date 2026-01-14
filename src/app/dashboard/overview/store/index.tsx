@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { KPI, KPIFilters, KPIType } from "../services/types";
+import { KPI, KPIFilters, KPIType, Indicators } from "../services/types";
 import {
   DEFAULT_PREFERENCES,
   KPIPreferences,
@@ -12,6 +12,7 @@ interface KPIStore {
   filteredKpis: KPI[];
   filters: KPIFilters;
   preferences: KPIPreferences;
+  indicators: Indicators | null;
   setKPIs: (kpis: KPI[]) => void;
   setFilters: (filters: KPIFilters) => void;
   setSearchTerm: (term: string) => void;
@@ -25,6 +26,7 @@ interface KPIStore {
   setFilterCategory: (category: string) => void;
   setKPIOrder: (order: string[]) => void;
   resetLayout: () => void;
+  setIndicators: (indicators: Indicators | null) => void;
 }
 
 const cleanupPreferences = (preferences: KPIPreferences): KPIPreferences => {
@@ -65,10 +67,15 @@ export const useKPIStore = create<KPIStore>()(
         searchTerm: "",
       },
       preferences: DEFAULT_PREFERENCES,
+      indicators: null,
 
       setKPIs: (kpis) => {
         set({ kpis, filteredKpis: kpis });
         get().applyFilters();
+      },
+
+      setIndicators: (indicators) => {
+        set({ indicators });
       },
 
       setFilters: (filters) => {

@@ -3,38 +3,49 @@ import { KPI, KPIResponse, KPIStatus, KPIType, ResponseKPIV2 } from "./types";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const KPI_NAME_MAP: Record<string, string> = {
-  CASH_GENERATION: "Generación de Caja",
+  CASH_GENERATION: "Generación de caja",
   CEI_PERCENTAGE: "% CEI",
-  CREDIBILITY_INDEX: "Índice Credibilidad",
-  QUIRONIX_BANK_RECONCILIATION: "Conciliación Bancaria Quironix",
-  QUIRONIX_SERVICE_TIME_COMPENSATION: "Compensación Tiempo de Servicio - Quironix",
-  LITIGATION_NORMALIZATION_PERCENTAGE: "% Normalización Litigios",
+  CREDIBILITY_INDEX: "Índice credibilidad",
+  QUIRONIX_BANK_RECONCILIATION: "Conciliación bancaria Quironix",
+  QUIRONIX_SERVICE_TIME_COMPENSATION:
+    "Compensación tiempo de servicio - Quironix",
+  LITIGATION_NORMALIZATION_PERCENTAGE: "% Normalización litigios",
   DDO: "DDO",
-  MATCH_RATE_PERCENTAGE: "% Match Rate",
-  OPEN_LITIGATIONS: "Litigios Abiertos",
-  PAYMENTS_IN_TRANSIT: "Pagos en Tránsito",
-  SERVICE_TIME_COMPENSATION: "Compensación Tiempo de Servicio",
-  NEGOTIATION_EFFECTIVENESS: "Efectividad de Negociación",
+  MATCH_RATE_PERCENTAGE: "% Match rate",
+  OPEN_LITIGATIONS: "Litigios abiertos",
+  PAYMENTS_IN_TRANSIT: "Pagos en tránsito",
+  SERVICE_TIME_COMPENSATION: "Compensación tiempo de servicio",
+  NEGOTIATION_EFFECTIVENESS: "Efectividad de negociación",
   DBT: "DBT",
-  OVER_DUE_PERCENTAGE: "% Over Due",
-  CRITICAL_OVER_DUE_PERCENTAGE: "% Over Due Crítico",
+  OVER_DUE_PERCENTAGE: "% Over due",
+  CRITICAL_OVER_DUE_PERCENTAGE: "% Over due crítico",
   DSO: "DSO",
   PROVISION: "Provisión",
 };
 
 const KPI_DEFINITION_MAP: Record<string, string> = {
-  CASH_GENERATION: "El Recaudado Real es la sumatoria de los pagos recibidos y debe excluir cheques a fecha, Ajustes y aplicaciones. Este debe mostrarse diariamente e ir con el acumulado mensual. Debe tener Cierre mensual.",
-  CEI_PERCENTAGE: "Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.",
-  CREDIBILITY_INDEX: "Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera. No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.",
-  QUIRONIX_BANK_RECONCILIATION: "Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix",
-  QUIRONIX_SERVICE_TIME_COMPENSATION: "Busca medir el % de pagos que fueron aplicados de forma automática en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
-  LITIGATION_NORMALIZATION_PERCENTAGE: "Mide el % de litigios que han sido normalizados.",
+  CASH_GENERATION:
+    "El Recaudado Real es la sumatoria de los pagos recibidos y debe excluir cheques a fecha, Ajustes y aplicaciones. Este debe mostrarse diariamente e ir con el acumulado mensual. Debe tener Cierre mensual.",
+  CEI_PERCENTAGE:
+    "Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.",
+  CREDIBILITY_INDEX:
+    "Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera. No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.",
+  QUIRONIX_BANK_RECONCILIATION:
+    "Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix",
+  QUIRONIX_SERVICE_TIME_COMPENSATION:
+    "Busca medir el % de pagos que fueron aplicados de forma automática en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
+  LITIGATION_NORMALIZATION_PERCENTAGE:
+    "Mide el % de litigios que han sido normalizados.",
   DDO: "Métrica que se utiliza en algunas empresas, particularmente en sectores como seguros, retail o servicios financieros, para medir el tiempo promedio que toma resolver y aplicar deducciones en pagos o facturas pendientes.",
   MATCH_RATE_PERCENTAGE: "Mide cuanto % de facturación tiene NC",
-  OPEN_LITIGATIONS: "%de litigios abiertos > 30 días en gestión. Sobre el total de litigios abiertos.",
-  PAYMENTS_IN_TRANSIT: "Monto de pagos Aplicados v/s pagos Cargados usar todos los tipos de pago, no considerar ajustes y aplicaciones.",
-  SERVICE_TIME_COMPENSATION: "Busca medir el % de pagos que fueron aplicados de forma manual en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
-  NEGOTIATION_EFFECTIVENESS: "Mide en %, cuantas veces que interviene un ejecutivo obtiene el compromiso de pago",
+  OPEN_LITIGATIONS:
+    "%de litigios abiertos > 30 días en gestión. Sobre el total de litigios abiertos.",
+  PAYMENTS_IN_TRANSIT:
+    "Monto de pagos Aplicados v/s pagos Cargados usar todos los tipos de pago, no considerar ajustes y aplicaciones.",
+  SERVICE_TIME_COMPENSATION:
+    "Busca medir el % de pagos que fueron aplicados de forma manual en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
+  NEGOTIATION_EFFECTIVENESS:
+    "Mide en %, cuantas veces que interviene un ejecutivo obtiene el compromiso de pago",
   DBT: "Días después del Vencimiento que se realizó Pago",
   OVER_DUE_PERCENTAGE: "Días de Deudas Vencida",
   CRITICAL_OVER_DUE_PERCENTAGE: "Días de Deudas Vencida con más de 30 días",
@@ -87,295 +98,6 @@ const generateHistory = (currentValue: number, months: number = 6) => {
   return history;
 };
 
-const DUMMY_KPIS: KPI[] = [
-  {
-    id: "1",
-    name: "Generación de Caja",
-    type: "Calidad Producida",
-    definition:
-      "El Recaudado Real es la sumatoria de los pagos recibidos y debe excluir cheques a fecha, Ajustes y aplicaciones. Este debe mostrarse diariamente e ir con el acumulado mensual. Debe tener Cierre mensual.",
-    unit: "%",
-    value: 97,
-    target: 100,
-    thresholds: { low: 95, high: 100, direction: "ascending" },
-    status: "success",
-    trend: "up",
-    sla: "30",
-    criterio: "100",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(97),
-  },
-  {
-    id: "2",
-    name: "% CEI",
-    type: "Calidad Producida",
-    definition:
-      "Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.",
-    unit: "%",
-    value: 76,
-    target: 80,
-    thresholds: { low: 75, high: 80, direction: "ascending" },
-    status: "warning",
-    trend: "stable",
-    sla: "75",
-    criterio: "75",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(76),
-  },
-  {
-    id: "3",
-    name: "Índice Credibilidad",
-    type: "Calidad Producida",
-    definition:
-      "Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera. No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.",
-    unit: "%",
-    value: 59,
-    target: 60,
-    thresholds: { low: 58, high: 60, direction: "ascending" },
-    status: "warning",
-    trend: "up",
-    sla: "30",
-    criterio: "60",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(59),
-  },
-  {
-    id: "4",
-    name: "Conciliación Bancaria Quironix",
-    type: "Calidad Producida",
-    definition:
-      "Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix",
-    unit: "%",
-    value: 75,
-    target: 90,
-    thresholds: { low: 65, high: 90, direction: "ascending" },
-    status: "warning",
-    trend: "up",
-    sla: "20",
-    criterio: "20",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(75),
-  },
-  {
-    id: "5",
-    name: "Compensación Tiempo de Servicio - Quironix",
-    type: "Calidad Producida",
-    definition:
-      "Busca medir el % de pagos que fueron aplicados de forma automática en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
-    unit: "%",
-    value: 94,
-    target: 95,
-    thresholds: { low: 93, high: 95, direction: "ascending" },
-    status: "warning",
-    trend: "stable",
-    sla: "95",
-    criterio: "95",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(94),
-  },
-  {
-    id: "6",
-    name: "% Normalización Litigios",
-    type: "Eficiencia",
-    definition: "Mide el % de litigios que han sido normalizados.",
-    unit: "%",
-    value: 68,
-    target: 70,
-    thresholds: { low: 67, high: 70, direction: "ascending" },
-    status: "warning",
-    trend: "up",
-    sla: "30",
-    criterio: "70",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(68),
-  },
-  {
-    id: "7",
-    name: "DDO",
-    type: "Eficiencia",
-    definition:
-      "Métrica que se utiliza en algunas empresas, particularmente en sectores como seguros, retail o servicios financieros, para medir el tiempo promedio que toma resolver y aplicar deducciones en pagos o facturas pendientes.",
-    unit: "días",
-    value: 15,
-    target: 10,
-    thresholds: { low: 0, high: 0, direction: "descending" },
-    status: "warning",
-    trend: "stable",
-    sla: "",
-    criterio: "",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(15),
-  },
-  {
-    id: "8",
-    name: "% Match Rate",
-    type: "Eficiencia",
-    definition: "Mide cuanto % de facturación tiene NC",
-    unit: "%",
-    value: 87,
-    target: 90,
-    thresholds: { low: 85, high: 90, direction: "ascending" },
-    status: "warning",
-    trend: "up",
-    sla: "85",
-    criterio: "85",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(87),
-  },
-  {
-    id: "9",
-    name: "Litigios Abiertos",
-    type: "Eficiencia",
-    definition:
-      "%de litigios abiertos > 30 días en gestión. Sobre el total de litigios abiertos.",
-    unit: "%",
-    value: 25,
-    target: 20,
-    thresholds: { low: 20, high: 30, direction: "descending" },
-    status: "warning",
-    trend: "down",
-    sla: "30",
-    criterio: "20",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(25),
-  },
-  {
-    id: "10",
-    name: "Pagos en Tránsito",
-    type: "Eficiencia",
-    definition:
-      "Monto de pagos Aplicados v/s pagos Cargados usar todos los tipos de pago, no considerar ajustes y aplicaciones.",
-    unit: "%",
-    value: 99,
-    target: 100,
-    thresholds: { low: 98, high: 100, direction: "ascending" },
-    status: "warning",
-    trend: "up",
-    sla: "30",
-    criterio: "100",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(99),
-  },
-  {
-    id: "11",
-    name: "Compensación Tiempo de Servicio",
-    type: "Eficiencia",
-    definition:
-      "Busca medir el % de pagos que fueron aplicados de forma manual en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
-    unit: "%",
-    value: 94,
-    target: 95,
-    thresholds: { low: 93, high: 95, direction: "ascending" },
-    status: "warning",
-    trend: "stable",
-    sla: "95",
-    criterio: "95",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(94),
-  },
-  {
-    id: "12",
-    name: "Efectividad de Negociación",
-    type: "Eficiencia",
-    definition:
-      "Mide en %, cuantas veces que interviene un ejecutivo obtiene el compromiso de pago",
-    unit: "%",
-    value: 60,
-    target: 70,
-    thresholds: { low: 50, high: 70, direction: "ascending" },
-    status: "warning",
-    trend: "up",
-    sla: "30",
-    criterio: "70",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(60),
-  },
-  {
-    id: "13",
-    name: "DBT",
-    type: "Impecabilidad",
-    definition: "Días después del Vencimiento que se realizó Pago",
-    unit: "días",
-    value: 7,
-    target: 5,
-    thresholds: { low: 5, high: 10, direction: "descending" },
-    status: "warning",
-    trend: "stable",
-    sla: "5",
-    criterio: "5",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(7),
-  },
-  {
-    id: "14",
-    name: "% Over Due",
-    type: "Impecabilidad",
-    definition: "Días de Deudas Vencida",
-    unit: "%",
-    value: 52,
-    target: 50,
-    thresholds: { low: 50, high: 55, direction: "descending" },
-    status: "warning",
-    trend: "down",
-    sla: "50",
-    criterio: "50",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(52),
-  },
-  {
-    id: "15",
-    name: "% Over Due Crítico",
-    type: "Impecabilidad",
-    definition: "Días de Deudas Vencida con más de 30 días",
-    unit: "%",
-    value: 3,
-    target: 2,
-    thresholds: { low: 2, high: 5, direction: "descending" },
-    status: "warning",
-    trend: "down",
-    sla: "2",
-    criterio: "2",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(3),
-  },
-  {
-    id: "16",
-    name: "DSO",
-    type: "Impecabilidad",
-    definition: "Días Calle",
-    unit: "nº",
-    value: 70,
-    target: 60,
-    thresholds: { low: 60, high: 85, direction: "descending" },
-    status: "warning",
-    trend: "stable",
-    sla: "60",
-    criterio: "60",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(70),
-  },
-  {
-    id: "17",
-    name: "Provisión",
-    type: "Impecabilidad",
-    definition: "Provisión de cobranza dudosa",
-    unit: "%",
-    value: 85,
-    target: 80,
-    thresholds: { low: 80, high: 90, direction: "descending" },
-    status: "success",
-    trend: "stable",
-    sla: "30",
-    criterio: "80",
-    lastUpdated: new Date().toISOString(),
-    history: generateHistory(85),
-  },
-];
-
-DUMMY_KPIS.forEach((kpi) => {
-  kpi.status = getKPIStatus(kpi.value, kpi.thresholds);
-});
-
 const transformResponseToKPIs = (response: ResponseKPIV2): KPI[] => {
   const kpis: KPI[] = [];
   let index = 0;
@@ -394,6 +116,7 @@ const transformResponseToKPIs = (response: ResponseKPIV2): KPI[] => {
       const target = item.acceptance_criteria ?? 0;
       const sla = item.sla?.toString() || "";
       const criterio = item.acceptance_criteria?.toString() || "";
+      const history = item.history || [];
 
       let direction: "ascending" | "descending" = "ascending";
       if (
@@ -434,7 +157,8 @@ const transformResponseToKPIs = (response: ResponseKPIV2): KPI[] => {
         sla,
         criterio,
         lastUpdated: new Date().toISOString(),
-        history: generateHistory(value),
+        history: history || [],
+        invoices: [],
       });
     });
   };
@@ -492,6 +216,7 @@ export const getAll = async (
       data: kpis,
       total: kpis.length,
       lastUpdated: new Date().toISOString(),
+      indicators: apiData.indicators,
     };
   } catch (error) {
     console.error("Error fetching KPI data:", error);
@@ -499,18 +224,18 @@ export const getAll = async (
   }
 };
 
-export const getById = async (
-  id: string,
-  accessToken: string,
-  clientId: string
-): Promise<KPI | null> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const kpi = DUMMY_KPIS.find((k) => k.id === id);
-      resolve(kpi || null);
-    }, 300);
-  });
-};
+// export const getById = async (
+//   id: string,
+//   accessToken: string,
+//   clientId: string
+// ): Promise<KPI | null> => {
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       const kpi = DUMMY_KPIS.find((k) => k.id === id);
+//       resolve(kpi || null);
+//     }, 300);
+//   });
+// };
 
 export const getAllKPI = async (
   accessToken: string,
