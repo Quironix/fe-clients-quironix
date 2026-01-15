@@ -17,7 +17,6 @@ import { Suspense, useEffect, useState } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
-import { KPIAIChat } from "./components/kpi-ai-chat";
 import { KPISummaryHeader } from "./components/kpi-summary-header";
 import { KPIWidget, ViewType } from "./components/kpi-widget-v4";
 import { useKPIData } from "./hooks/useKPIData";
@@ -129,8 +128,7 @@ const KPIContent = () => {
               <p className="text-sm text-gray-500">{error.message}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 lg:col-span-9 space-y-6">
+            <div className="space-y-6">
                 <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
@@ -262,11 +260,6 @@ const KPIContent = () => {
                     );
                   })}
                 </div>
-              </div>
-
-              <div className="col-span-12 lg:col-span-3 mt-18">
-                <KPIAIChat />
-              </div>
             </div>
           )}
         </div>

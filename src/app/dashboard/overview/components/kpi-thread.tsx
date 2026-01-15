@@ -66,9 +66,9 @@ const UserMessage: FC = () => {
   return (
     <MessagePrimitive.Root className="flex gap-3 justify-end mb-4">
       <div className="max-w-[80%] rounded-lg p-3 bg-blue-600 text-white">
-        <p className="text-xs">
+        <div className="text-xs">
           <MessagePrimitive.Content />
-        </p>
+        </div>
         <span className="text-[10px] text-blue-100">
           {new Date().toLocaleTimeString("es-CL", {
             hour: "2-digit",
@@ -90,9 +90,9 @@ const AssistantMessage: FC = () => {
         <BotIcon className="h-4 w-4 text-white" />
       </div>
       <div className="max-w-[80%] rounded-lg p-3 bg-gray-100 text-gray-900">
-        <p className="text-xs">
+        <div className="text-xs">
           <MessagePrimitive.Content />
-        </p>
+        </div>
         <span className="text-[10px] text-gray-500">
           {new Date().toLocaleTimeString("es-CL", {
             hour: "2-digit",
