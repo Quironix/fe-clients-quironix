@@ -1,24 +1,87 @@
 "use client";
-import React from "react";
+import Language from "@/components/ui/language";
+import { useProfileContext } from "@/context/ProfileContext";
+import { LayoutGrid, RotateCcw } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
-import { Button } from "@/components/ui/button";
 import TitleSection from "../components/title-section";
-import { LayoutDashboard } from "lucide-react";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { TabsContent, TabsList, TabsTrigger, Tabs } from "@/components/ui/tabs";
+import { KPIAIChat } from "./components/kpi-ai-chat";
+import { KPISummaryHeader } from "./components/kpi-summary-header";
+import { KPIWidget } from "./components/kpi-widget-v4";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { RecentSales } from "./recent-sales";
-import { Overview } from "./overview";
-import Language from "@/components/ui/language";
+  CATEGORIES,
+  GRID_COLUMN_OPTIONS,
+  VIEW_TYPES,
+  ViewType,
+} from "./constants/kpi-constants";
+import { useKPIData } from "./hooks/useKPIData";
+import { useKPIStore } from "./store";
 
-const OverviewPage = () => {
+const KPIContent = () => {
+  const { profile, session } = useProfileContext();
+  const {
+    filteredKpis,
+    kpis,
+    preferences,
+    indicators,
+    setKPIs,
+    setKPIView,
+    setAllViews,
+    setGridColumns,
+    setFilterCategory,
+    setKPIOrder,
+    resetLayout,
+    setIndicators,
+  } = useKPIStore();
+
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+
+  const {
+    data: kpiData,
+    isLoading,
+    error,
+    isFetching,
+    dataUpdatedAt,
+  } = useKPIData({
+    accessToken: session?.token || "",
+    clientId: profile?.client?.id || "",
+    enabled: !!session?.token && !!profile?.client?.id,
+  });
+
+  useEffect(() => {
+    if (kpiData?.data) {
+      setKPIs(kpiData.data);
+    }
+    if (kpiData?.indicators) {
+      setIndicators(kpiData.indicators);
+    }
+  }, [kpiData, setKPIs, setIndicators]);
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedId(id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedId || draggedId === targetId) return;
+
+    const newKpis = [...filteredKpis];
+    const draggedIndex = newKpis.findIndex((k) => k.id === draggedId);
+    const targetIndex = newKpis.findIndex((k) => k.id === targetId);
+    const [removed] = newKpis.splice(draggedIndex, 1);
+    newKpis.splice(targetIndex, 0, removed);
+
+    setKPIOrder(newKpis.map((k) => k.id));
+    setDraggedId(null);
+  };
+
   return (
     <>
       <Header fixed>
@@ -26,164 +89,166 @@ const OverviewPage = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Overview"
-          description="Aquí puedes ver un resumen de tus deudas y pagos."
-          icon={<LayoutDashboard color="white" />}
-          subDescription="Dashboard"
+          title="Dashboard"
+          description="Revisa tus indicadores clave de rendimiento"
+          icon={<LayoutGrid color="white" />}
+          subDescription="KPIs"
         />
-        <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
-          <Tabs
-            orientation="vertical"
-            defaultValue="overview"
-            className="space-y-4"
-          >
-            <div className="w-full overflow-x-auto pb-2">
-              <TabsList>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="analytics" disabled>
-                  Analytics
-                </TabsTrigger>
-                <TabsTrigger value="reports" disabled>
-                  Reports
-                </TabsTrigger>
-                <TabsTrigger value="notifications" disabled>
-                  Notifications
-                </TabsTrigger>
-              </TabsList>
+        <div className="-mx-4 flex-1 overflow-auto px-4 py-1">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center gap-4 p-12">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500"></div>
+              <p className="text-lg font-semibold text-gray-700">
+                Cargando indicadores...
+              </p>
+              <p className="text-sm text-gray-500">
+                Los datos se almacenarán en caché por 5 minutos
+              </p>
             </div>
-            <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Total de deudas
-                    </CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="text-muted-foreground h-4 w-4"
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center gap-4 p-12">
+              <div className="text-red-500 text-4xl">⚠️</div>
+              <p className="text-lg font-semibold text-gray-700">
+                Error al cargar los indicadores
+              </p>
+              <p className="text-sm text-gray-500">{error.message}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-12 gap-6">
+              <div className="col-span-12 lg:col-span-9 space-y-6">
+                <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
+                      {VIEW_TYPES.map((type) => {
+                        const Icon = type.icon;
+                        return (
+                          <button
+                            key={type.id}
+                            onClick={() => setAllViews(type.id)}
+                            className={`p-2 rounded-md transition-colors ${
+                              preferences.viewMode === type.id
+                                ? "bg-orange-500 text-white"
+                                : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                            }`}
+                            title={`Todos a ${type.name}`}
+                          >
+                            <Icon size={16} />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
+                      {GRID_COLUMN_OPTIONS.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <button
+                            key={option.value}
+                            onClick={() => setGridColumns(option.value)}
+                            className={`px-3 py-1.5 text-xs font-medium  rounded-md transition-colors ${
+                              preferences.gridColumns === option.value
+                                ? "bg-orange-500 text-white"
+                                : "text-gray-500 hover:bg-gray-50"
+                            }`}
+                          >
+                            <Icon size={19} />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={resetLayout}
+                      className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">$45,231.89</div>
-                    <p className="text-muted-foreground text-xs">
-                      +20.1% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Total de pagos
-                    </CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="text-muted-foreground h-4 w-4"
+                      <RotateCcw size={14} />
+                      Limpiar
+                    </button>
+                  </div>
+                </header>
+
+                <KPISummaryHeader indicators={kpiData?.indicators} />
+
+                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setFilterCategory(cat)}
+                      className={`px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+                        preferences.filterCategory === cat
+                          ? "bg-orange-500 text-white"
+                          : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                      }`}
                     >
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+2350</div>
-                    <p className="text-muted-foreground text-xs">
-                      +180.1% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Cobros por realizar
-                    </CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="text-muted-foreground h-4 w-4"
-                    >
-                      <rect width="20" height="14" x="2" y="5" rx="2" />
-                      <path d="M2 10h20" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+12,234</div>
-                    <p className="text-muted-foreground text-xs">
-                      +19% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Transacciones realizadas
-                    </CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="text-muted-foreground h-4 w-4"
-                    >
-                      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+573</div>
-                    <p className="text-muted-foreground text-xs">
-                      +201 since last hour
-                    </p>
-                  </CardContent>
-                </Card>
+                      {cat === "all" ? "Todos" : cat}
+                    </button>
+                  ))}
+                </div>
+
+                <div
+                  className="grid gap-4"
+                  style={{
+                    gridTemplateColumns: `repeat(${preferences.gridColumns}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {filteredKpis.map((kpi) => {
+                    const validViewTypes: ViewType[] = VIEW_TYPES.map(
+                      (vt) => vt.id
+                    );
+                    const storedView =
+                      preferences.kpiViews[kpi.id] || preferences.viewMode;
+                    const viewType = validViewTypes.includes(
+                      storedView as ViewType
+                    )
+                      ? (storedView as ViewType)
+                      : "card";
+
+                    return (
+                      <KPIWidget
+                        key={kpi.id}
+                        kpi={kpi}
+                        viewType={viewType}
+                        onViewChange={(viewType) =>
+                          setKPIView(kpi.id, viewType)
+                        }
+                        onDragStart={(e) => handleDragStart(e, kpi.id)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, kpi.id)}
+                        isDragging={draggedId === kpi.id}
+                      />
+                    );
+                  })}
+                </div>
               </div>
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
-                <Card className="col-span-1 lg:col-span-4">
-                  <CardHeader>
-                    <CardTitle>Estadísticas de transacciones</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pl-2">
-                    <Overview />
-                  </CardContent>
-                </Card>
-                <Card className="col-span-1 lg:col-span-3">
-                  <CardHeader>
-                    <CardTitle>Transacciones recientes</CardTitle>
-                    <CardDescription>
-                      Tienes un total de 256 cobros y pagos.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <RecentSales />
-                  </CardContent>
-                </Card>
+
+              <div className="col-span-12 lg:col-span-3 mt-16.5">
+                <KPIAIChat />
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
         </div>
       </Main>
     </>
   );
 };
 
-export default OverviewPage;
+const KPIPageV4 = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500"></div>
+            <p className="text-lg font-semibold text-gray-700">
+              Cargando Dashboard KPI...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <KPIContent />
+    </Suspense>
+  );
+};
+
+export default KPIPageV4;
