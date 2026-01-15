@@ -6,18 +6,22 @@ interface KPISummaryHeaderProps {
 }
 
 const getStatus = (kpi: KPI): string => {
-  const { low, high, direction } = kpi.thresholds;
+  const { sla, acceptance_criteria, direction } = kpi.thresholds;
   const { value } = kpi;
 
   if (direction === "ascending") {
-    if (value >= high) return "optimal";
-    if (value >= low) return "warning";
+    if (value >= acceptance_criteria) return "optimal";
+    if (value >= sla) return "warning";
     return "critical";
   }
 
-  if (value <= low) return "optimal";
-  if (value <= high) return "warning";
+  if (value <= acceptance_criteria) return "optimal";
+  if (value <= sla) return "warning";
   return "critical";
+};
+
+const toPercentage = (value) => {
+  return (value * 100).toFixed(0) + "%";
 };
 
 export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
@@ -36,12 +40,12 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
 
   return (
     <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 mb-6">
-      <div className="bg-white border border-gray-200 rounded-xl p-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 py-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-400">Health Score</p>
+            <p className="text-md font-medium text-gray-400">Health score</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
-              {indicators?.optimal}%
+              {toPercentage(indicators?.optimal || 0)}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
@@ -50,12 +54,12 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 py-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-400">Óptimos</p>
+            <p className="text-md font-medium text-gray-400">Óptimos</p>
             <p className="text-2xl font-bold text-emerald-600 mt-1">
-              {indicators?.optimal || 0}
+              {toPercentage(indicators?.optimal || 0)}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
@@ -64,10 +68,10 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 py-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-400">En Alerta</p>
+            <p className="text-md font-medium text-gray-400">En alerta</p>
             <p className="text-2xl font-bold text-amber-600 mt-1">
               {indicators?.alert || 0}
             </p>

@@ -1,9 +1,9 @@
-import { Gauge, GripVertical, LayoutGrid, LineChart, List, Maximize, PieChart, Settings } from "lucide-react";
+import { GripVertical, Settings } from "lucide-react";
 import { useState } from "react";
+import { VIEW_TYPES, ViewType } from "../constants/kpi-constants";
+import { useKPIMetrics } from "../hooks/useKPIMetrics";
 import { KPI } from "../services/types";
 import { CardView, CompactView, DetailedView, GaugeView, RingView, SparklineView } from "./kpi-view-types";
-
-export type ViewType = "card" | "gauge" | "sparkline" | "ring" | "compact" | "detailed";
 
 interface KPIWidgetProps {
   kpi: KPI;
@@ -15,76 +15,6 @@ interface KPIWidgetProps {
   isDragging: boolean;
 }
 
-const viewTypes: Array<{ id: ViewType; name: string; icon: React.ElementType }> = [
-  { id: "card", name: "Card", icon: LayoutGrid },
-  { id: "gauge", name: "Gauge", icon: Gauge },
-  { id: "sparkline", name: "Sparkline", icon: LineChart },
-  { id: "ring", name: "Ring", icon: PieChart },
-  { id: "compact", name: "Compacto", icon: List },
-  { id: "detailed", name: "Detallado", icon: Maximize },
-];
-
-const getStatus = (kpi: KPI): { status: string; color: string } => {
-  const { low, high, direction } = kpi.thresholds;
-  const { value } = kpi;
-
-  if (direction === "ascending") {
-    if (value >= high) return { status: "success", color: "emerald" };
-    if (value >= low) return { status: "warning", color: "amber" };
-    return { status: "error", color: "red" };
-  }
-
-  if (value <= low) return { status: "success", color: "emerald" };
-  if (value <= high) return { status: "warning", color: "amber" };
-  return { status: "error", color: "red" };
-};
-
-const getTrend = (kpi: KPI): { value: string; direction: string; isGood: boolean } => {
-  const current = kpi.value;
-  const previous =
-    kpi.history && kpi.history.length > 1
-      ? kpi.history[kpi.history.length - 2].value
-      : current * 0.95;
-
-  const diff = ((current - previous) / previous) * 100;
-  const isGood = kpi.thresholds.direction === "ascending" ? diff >= 0 : diff <= 0;
-
-  return {
-    value: Math.abs(diff).toFixed(1),
-    direction: diff >= 0 ? "up" : "down",
-    isGood,
-  };
-};
-
-const getCategoryBadge = (type: string): { bg: string; text: string; border: string } => {
-  switch (type) {
-    case "Calidad Producida":
-      return {
-        bg: "bg-blue-50",
-        text: "text-blue-700",
-        border: "border-blue-200",
-      };
-    case "Eficiencia":
-      return {
-        bg: "bg-purple-50",
-        text: "text-purple-700",
-        border: "border-purple-200",
-      };
-    case "Impecabilidad":
-      return {
-        bg: "bg-emerald-50",
-        text: "text-emerald-700",
-        border: "border-emerald-200",
-      };
-    default:
-      return {
-        bg: "bg-gray-50",
-        text: "text-gray-700",
-        border: "border-gray-200",
-      };
-  }
-};
-
 export const KPIWidget: React.FC<KPIWidgetProps> = ({
   kpi,
   viewType,
@@ -95,9 +25,7 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
   isDragging,
 }) => {
   const [showSettings, setShowSettings] = useState(false);
-  const status = getStatus(kpi);
-  const trend = getTrend(kpi);
-  const categoryBadge = getCategoryBadge(kpi.type);
+  const { status, trend, categoryBadge } = useKPIMetrics(kpi);
 
   const views: Record<ViewType, React.ComponentType<any>> = {
     card: CardView,
@@ -152,7 +80,7 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
           <p className="text-xs font-medium text-gray-500 mb-2">Tipo de visualización</p>
           <div className="flex items-center gap-1">
-            {viewTypes.map((type) => {
+            {VIEW_TYPES.map((type) => {
               const Icon = type.icon;
               return (
                 <button

@@ -1,4 +1,4 @@
-export type KPIType = "Calidad Producida" | "Eficiencia" | "Impecabilidad";
+export type KPIType = "Calidad producida" | "Eficiencia" | "Impecabilidad";
 
 export type KPIUnit = "%" | "días" | "nº" | "$";
 
@@ -9,8 +9,8 @@ export type KPITrend = "up" | "down" | "stable";
 export type ColorDirection = "ascending" | "descending";
 
 export interface KPIThresholds {
-  low: number;
-  high: number;
+  sla: number;
+  acceptance_criteria: number;
   direction: ColorDirection;
 }
 

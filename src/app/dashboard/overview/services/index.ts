@@ -1,101 +1,66 @@
-import { KPI, KPIResponse, KPIStatus, KPIType, ResponseKPIV2 } from "./types";
+import {
+  CATEGORY_MAP,
+  DESCENDING_METRICS,
+  KPI_DEFINITION_MAP,
+  KPI_NAME_MAP,
+  UNIT_MAP,
+} from "../constants/kpi-constants";
+import { calculateKPIStatus, getTrendDirection } from "../utils/kpi-utils";
+import { KPI, KPIResponse, KPIThresholds, KPIType, ResponseKPIV2 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const KPI_NAME_MAP: Record<string, string> = {
-  CASH_GENERATION: "Generación de caja",
-  CEI_PERCENTAGE: "% CEI",
-  CREDIBILITY_INDEX: "Índice credibilidad",
-  QUIRONIX_BANK_RECONCILIATION: "Conciliación bancaria Quironix",
-  QUIRONIX_SERVICE_TIME_COMPENSATION:
-    "Compensación tiempo de servicio - Quironix",
-  LITIGATION_NORMALIZATION_PERCENTAGE: "% Normalización litigios",
-  DDO: "DDO",
-  MATCH_RATE_PERCENTAGE: "% Match rate",
-  OPEN_LITIGATIONS: "Litigios abiertos",
-  PAYMENTS_IN_TRANSIT: "Pagos en tránsito",
-  SERVICE_TIME_COMPENSATION: "Compensación tiempo de servicio",
-  NEGOTIATION_EFFECTIVENESS: "Efectividad de negociación",
-  DBT: "DBT",
-  OVER_DUE_PERCENTAGE: "% Over due",
-  CRITICAL_OVER_DUE_PERCENTAGE: "% Over due crítico",
-  DSO: "DSO",
-  PROVISION: "Provisión",
+const calculateThresholds = (
+  sla: number,
+  acceptance_criteria: number,
+  direction: "ascending" | "descending"
+): KPIThresholds => {
+  return {
+    sla,
+    acceptance_criteria,
+    direction,
+  };
 };
 
-const KPI_DEFINITION_MAP: Record<string, string> = {
-  CASH_GENERATION:
-    "El Recaudado Real es la sumatoria de los pagos recibidos y debe excluir cheques a fecha, Ajustes y aplicaciones. Este debe mostrarse diariamente e ir con el acumulado mensual. Debe tener Cierre mensual.",
-  CEI_PERCENTAGE:
-    "Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.",
-  CREDIBILITY_INDEX:
-    "Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera. No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.",
-  QUIRONIX_BANK_RECONCILIATION:
-    "Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix",
-  QUIRONIX_SERVICE_TIME_COMPENSATION:
-    "Busca medir el % de pagos que fueron aplicados de forma automática en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
-  LITIGATION_NORMALIZATION_PERCENTAGE:
-    "Mide el % de litigios que han sido normalizados.",
-  DDO: "Métrica que se utiliza en algunas empresas, particularmente en sectores como seguros, retail o servicios financieros, para medir el tiempo promedio que toma resolver y aplicar deducciones en pagos o facturas pendientes.",
-  MATCH_RATE_PERCENTAGE: "Mide cuanto % de facturación tiene NC",
-  OPEN_LITIGATIONS:
-    "%de litigios abiertos > 30 días en gestión. Sobre el total de litigios abiertos.",
-  PAYMENTS_IN_TRANSIT:
-    "Monto de pagos Aplicados v/s pagos Cargados usar todos los tipos de pago, no considerar ajustes y aplicaciones.",
-  SERVICE_TIME_COMPENSATION:
-    "Busca medir el % de pagos que fueron aplicados de forma manual en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
-  NEGOTIATION_EFFECTIVENESS:
-    "Mide en %, cuantas veces que interviene un ejecutivo obtiene el compromiso de pago",
-  DBT: "Días después del Vencimiento que se realizó Pago",
-  OVER_DUE_PERCENTAGE: "Días de Deudas Vencida",
-  CRITICAL_OVER_DUE_PERCENTAGE: "Días de Deudas Vencida con más de 30 días",
-  DSO: "Días Calle",
-  PROVISION: "Provisión de cobranza dudosa",
+const determineDirection = (metricName: string): "ascending" | "descending" => {
+  return DESCENDING_METRICS.includes(metricName) ? "descending" : "ascending";
 };
 
-const UNIT_MAP: Record<string, string> = {
-  PERCENT: "%",
-  DAYS: "días",
-  NUMBER: "nº",
-};
+const buildKPIObject = (
+  item: any,
+  categoryKey: keyof typeof CATEGORY_MAP,
+  index: number
+): KPI => {
+  const name = KPI_NAME_MAP[item.name] || item.name;
+  const definition = KPI_DEFINITION_MAP[item.name] || "";
+  const unit = UNIT_MAP[item.unit] || item.unit;
+  const category = CATEGORY_MAP[categoryKey];
+  const rawValue = item.value ?? 0;
+  const value = Math.round(rawValue * 100) / 100;
+  const sla = item.sla ?? 0;
+  const acceptance_criteria = item.acceptance_criteria ?? 0;
+  const direction = determineDirection(item.name);
+  const thresholds = calculateThresholds(sla, acceptance_criteria, direction);
+  const statusInfo = calculateKPIStatus(value, thresholds);
+  const trend = getTrendDirection(value, acceptance_criteria, direction);
 
-const CATEGORY_MAP: Record<string, KPIType> = {
-  produced_quality: "Calidad Producida",
-  efficiency: "Eficiencia",
-  impeccability: "Impecabilidad",
-};
-
-const getKPIStatus = (
-  value: number,
-  thresholds: { low: number; high: number; direction: string }
-): KPIStatus => {
-  if (thresholds.direction === "ascending") {
-    if (value >= thresholds.high) return "success";
-    if (value >= thresholds.low) return "warning";
-    return "error";
-  } else {
-    if (value <= thresholds.low) return "success";
-    if (value <= thresholds.high) return "warning";
-    return "error";
-  }
-};
-
-const generateHistory = (currentValue: number, months: number = 6) => {
-  const history = [];
-  const today = new Date();
-
-  for (let i = months - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setMonth(date.getMonth() - i);
-    const variation = (Math.random() - 0.5) * 20;
-    const value = Math.max(0, currentValue + variation);
-    history.push({
-      date: date.toISOString().split("T")[0],
-      value: Math.round(value * 100) / 100,
-    });
-  }
-
-  return history;
+  return {
+    id: index.toString(),
+    name,
+    type: category,
+    definition,
+    unit: unit as KPI["unit"],
+    value,
+    target: acceptance_criteria,
+    thresholds,
+    status: statusInfo.status,
+    trend,
+    sla: item.sla?.toString() || "",
+    criterio: item.acceptance_criteria?.toString() || "",
+    lastUpdated: new Date().toISOString(),
+    history: item.history || [],
+    invoices: item.invoices || [],
+  };
 };
 
 const transformResponseToKPIs = (response: ResponseKPIV2): KPI[] => {
@@ -107,59 +72,7 @@ const transformResponseToKPIs = (response: ResponseKPIV2): KPI[] => {
     categoryKey: keyof typeof CATEGORY_MAP
   ) => {
     items.forEach((item) => {
-      const name = KPI_NAME_MAP[item.name] || item.name;
-      const definition = KPI_DEFINITION_MAP[item.name] || "";
-      const unit = UNIT_MAP[item.unit] || item.unit;
-      const category = CATEGORY_MAP[categoryKey];
-      const rawValue = item.value ?? 0;
-      const value = Math.round(rawValue * 100) / 100;
-      const target = item.acceptance_criteria ?? 0;
-      const sla = item.sla?.toString() || "";
-      const criterio = item.acceptance_criteria?.toString() || "";
-      const history = item.history || [];
-
-      let direction: "ascending" | "descending" = "ascending";
-      if (
-        item.name.includes("OVER_DUE") ||
-        item.name === "DDO" ||
-        item.name === "DBT" ||
-        item.name === "DSO"
-      ) {
-        direction = "descending";
-      }
-
-      const thresholds = {
-        low: direction === "ascending" ? target * 0.9 : target * 1.1,
-        high: target,
-        direction,
-      };
-
-      const status = getKPIStatus(value, thresholds);
-
-      let trend: "up" | "down" | "stable" = "stable";
-      if (value > target) {
-        trend = direction === "ascending" ? "up" : "down";
-      } else if (value < target) {
-        trend = direction === "ascending" ? "down" : "up";
-      }
-
-      kpis.push({
-        id: (++index).toString(),
-        name,
-        type: category,
-        definition,
-        unit: unit as KPI["unit"],
-        value,
-        target,
-        thresholds,
-        status,
-        trend,
-        sla,
-        criterio,
-        lastUpdated: new Date().toISOString(),
-        history: history || [],
-        invoices: [],
-      });
+      kpis.push(buildKPIObject(item, categoryKey, ++index));
     });
   };
 

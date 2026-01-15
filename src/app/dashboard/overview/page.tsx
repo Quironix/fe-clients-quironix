@@ -1,42 +1,22 @@
 "use client";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
-import {
-  Columns2,
-  Columns3,
-  Columns4,
-  Gauge,
-  LayoutGrid,
-  LineChart,
-  List,
-  Maximize,
-  PieChart,
-  RotateCcw,
-} from "lucide-react";
+import { LayoutGrid, RotateCcw } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import { KPIAIChat } from "./components/kpi-ai-chat";
 import { KPISummaryHeader } from "./components/kpi-summary-header";
-import { KPIWidget, ViewType } from "./components/kpi-widget-v4";
+import { KPIWidget } from "./components/kpi-widget-v4";
+import {
+  CATEGORIES,
+  GRID_COLUMN_OPTIONS,
+  VIEW_TYPES,
+  ViewType,
+} from "./constants/kpi-constants";
 import { useKPIData } from "./hooks/useKPIData";
 import { useKPIStore } from "./store";
-
-const viewTypes: Array<{
-  id: ViewType;
-  name: string;
-  icon: React.ElementType;
-}> = [
-  { id: "card", name: "Card", icon: LayoutGrid },
-  { id: "gauge", name: "Gauge", icon: Gauge },
-  { id: "sparkline", name: "Sparkline", icon: LineChart },
-  { id: "ring", name: "Ring", icon: PieChart },
-  { id: "compact", name: "Compacto", icon: List },
-  { id: "detailed", name: "Detallado", icon: Maximize },
-];
-
-const categories = ["all", "Calidad producida", "Eficiencia", "Impecabilidad"];
 
 const KPIContent = () => {
   const { profile, session } = useProfileContext();
@@ -139,7 +119,7 @@ const KPIContent = () => {
                 <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
-                      {viewTypes.map((type) => {
+                      {VIEW_TYPES.map((type) => {
                         const Icon = type.icon;
                         return (
                           <button
@@ -159,21 +139,22 @@ const KPIContent = () => {
                     </div>
 
                     <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
-                      {[2, 3, 4].map((n) => (
-                        <button
-                          key={n}
-                          onClick={() => setGridColumns(n)}
-                          className={`px-3 py-1.5 text-xs font-medium  rounded-md transition-colors ${
-                            preferences.gridColumns === n
-                              ? "bg-orange-500 text-white"
-                              : "text-gray-500 hover:bg-gray-50"
-                          }`}
-                        >
-                          {n === 2 && <Columns2 size={19} />}
-                          {n === 3 && <Columns3 size={19} />}
-                          {n === 4 && <Columns4 size={19} />}
-                        </button>
-                      ))}
+                      {GRID_COLUMN_OPTIONS.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <button
+                            key={option.value}
+                            onClick={() => setGridColumns(option.value)}
+                            className={`px-3 py-1.5 text-xs font-medium  rounded-md transition-colors ${
+                              preferences.gridColumns === option.value
+                                ? "bg-orange-500 text-white"
+                                : "text-gray-500 hover:bg-gray-50"
+                            }`}
+                          >
+                            <Icon size={19} />
+                          </button>
+                        );
+                      })}
                     </div>
 
                     <button
@@ -189,7 +170,7 @@ const KPIContent = () => {
                 <KPISummaryHeader indicators={kpiData?.indicators} />
 
                 <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                  {categories.map((cat) => (
+                  {CATEGORIES.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setFilterCategory(cat)}
@@ -211,14 +192,9 @@ const KPIContent = () => {
                   }}
                 >
                   {filteredKpis.map((kpi) => {
-                    const validViewTypes: ViewType[] = [
-                      "card",
-                      "gauge",
-                      "sparkline",
-                      "ring",
-                      "compact",
-                      "detailed",
-                    ];
+                    const validViewTypes: ViewType[] = VIEW_TYPES.map(
+                      (vt) => vt.id
+                    );
                     const storedView =
                       preferences.kpiViews[kpi.id] || preferences.viewMode;
                     const viewType = validViewTypes.includes(
