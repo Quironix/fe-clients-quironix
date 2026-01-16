@@ -105,7 +105,9 @@ const AssistantMessage: FC = () => {
 };
 
 const SuggestedQuestions: FC = () => {
-  const messageCount = useAssistantState(({ thread }) => thread.messages.length);
+  const messageCount = useAssistantState(
+    ({ thread }) => thread.messages.length
+  );
 
   if (messageCount !== 1) return null;
 
@@ -124,9 +126,7 @@ const SuggestedQuestions: FC = () => {
               ) as HTMLTextAreaElement;
               if (input) {
                 input.value = question;
-                input.dispatchEvent(
-                  new Event("input", { bubbles: true })
-                );
+                input.dispatchEvent(new Event("input", { bubbles: true }));
                 const form = input.closest("form");
                 if (form) {
                   form.requestSubmit();

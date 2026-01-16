@@ -2,12 +2,17 @@
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { LayoutGrid, RotateCcw } from "lucide-react";
+import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
-import { KPIAIChat } from "./components/kpi-ai-chat";
 import { KPISummaryHeader } from "./components/kpi-summary-header";
+
+const KPIAIChat = dynamic(
+  () => import("./components/kpi-ai-chat").then((mod) => ({ default: mod.KPIAIChat })),
+  { ssr: false }
+);
 import { KPIWidget } from "./components/kpi-widget-v4";
 import {
   CATEGORIES,
