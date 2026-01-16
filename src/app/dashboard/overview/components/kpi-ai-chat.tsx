@@ -24,7 +24,7 @@ export const KPIAIChat = () => {
             text: "¡Hola! Soy tu asistente de KPIs. Puedo ayudarte a analizar tus indicadores, interpretar tendencias y sugerir mejoras. ¿En qué puedo ayudarte hoy?",
           },
         ],
-        id: "kpi-welcome-message",
+        id: "3WW5iArzjLZEFgtQ",
       },
     ],
     transport: new AssistantChatTransport({

@@ -20,9 +20,9 @@
   "dependencies": {
     "@ai-sdk/provider-utils": "3.0.18",
     "@ai-sdk/react": "2.0.107",
-    "@assistant-ui/react": "0.11.47",
-    "@assistant-ui/react-ai-sdk": "1.1.16",
-    "@assistant-ui/react-markdown": "0.11.6",
+    "@assistant-ui/react": "^0.11.53",
+    "@assistant-ui/react-ai-sdk": "^1.1.20",
+    "@assistant-ui/react-markdown": "^0.11.9",
     "@dnd-kit/core": "6.3.1",
     "@dnd-kit/sortable": "10.0.0",
     "@dnd-kit/utilities": "3.2.2",
