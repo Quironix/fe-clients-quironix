@@ -8,31 +8,43 @@ const WEBRTC_API_URL =
   process.env.NEXT_PUBLIC_WEBRTC_API_URL || "http://172.17.16.24";
 
 const SIP_DOMAIN = process.env.NEXT_PUBLIC_WEBRTC_SIP_DOMAIN || "172.17.16.24";
-const WS_URI =
-  process.env.NEXT_PUBLIC_WEBRTC_WS_URI || "wss://172.17.16.24:8089/ws";
 
-/**
- * Crea la configuración de WebRTC directamente sin llamar a provision.php
- * Conecta directamente al WebSocket de Issabel PBX usando JsSIP
- */
+const WS_URI =
+  process.env.NEXT_PUBLIC_WEBRTC_WS_URI || "wss://pbx.quironix.com/ws";
+
+const TURN_USERNAME = process.env.NEXT_PUBLIC_TURN_USERNAME || "";
+const TURN_CREDENTIAL = process.env.NEXT_PUBLIC_TURN_CREDENTIAL || "";
+
+const ICE_SERVERS: RTCIceServer[] = [
+  {
+    urls: "stun:stun.cloudflare.com:3478",
+  },
+  {
+    urls: [
+      "turn:turn.cloudflare.com:3478?transport=udp",
+      "turn:turn.cloudflare.com:3478?transport=tcp",
+      "turns:turn.cloudflare.com:5349?transport=tcp",
+    ],
+    username: TURN_USERNAME,
+    credential: TURN_CREDENTIAL,
+  },
+];
+
 export function createDirectWebRTCConfig(
   sipUser: string,
-  sipPass: string
+  sipPass: string,
 ): WebRTCCredentials {
   return {
     sipUser,
     sipPass,
     sipDomain: SIP_DOMAIN,
     wsUri: WS_URI,
+    iceServers: ICE_SERVERS,
   };
 }
 
-/**
- * @deprecated Este método llama a provision.php y ya no se usa.
- * Usar createDirectWebRTCConfig() en su lugar para conectar directamente al WebSocket.
- */
 export async function provisionWebRTC(
-  credentials: ProvisionRequest
+  credentials: ProvisionRequest,
 ): Promise<WebRTCCredentials> {
   try {
     const response = await fetch(`${WEBRTC_API_URL}/api/provision.php`, {
@@ -58,6 +70,7 @@ export async function provisionWebRTC(
       sipPass: data.sip_pass || "",
       sipDomain: data.sip_domain || "",
       wsUri: data.ws_uri,
+      iceServers: ICE_SERVERS,
     };
   } catch (error) {
     console.error("Error en provisión WebRTC:", error);
@@ -65,9 +78,6 @@ export async function provisionWebRTC(
   }
 }
 
-/**
- * Credenciales de prueba para desarrollo
- */
 export const TEST_CREDENTIALS = {
   "6170": {
     username: "6170",

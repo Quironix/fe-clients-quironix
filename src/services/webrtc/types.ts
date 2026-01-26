@@ -17,4 +17,5 @@ export interface WebRTCCredentials {
   sipPass: string;
   sipDomain: string;
   wsUri: string;
+  iceServers?: RTCIceServer[];
 }

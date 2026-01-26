@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 export type CallStatus =
   | "idle"
@@ -18,6 +18,7 @@ interface WebRTCConfig {
   sipPass: string;
   sipDomain: string;
   wsUri: string;
+  iceServers?: RTCIceServer[];
 }
 
 interface WebRTCContextType {

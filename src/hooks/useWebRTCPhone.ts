@@ -83,6 +83,7 @@ export const useWebRTCPhone = () => {
         session_timers: false,
         register_expires: 300,
         contact_uri: `sip:${config.sipUser}@${config.sipDomain}`,
+        ice_servers: config.iceServers || [],
       };
 
       uaRef.current = new JsSIP.UA(configuration);
@@ -205,14 +206,14 @@ export const useWebRTCPhone = () => {
                   .catch((err) => console.warn("Autoplay bloqueado:", err));
               }
             }
-          }
+          },
         );
       } catch (error) {
         setCallStatus("failed");
         toast.error("Error al realizar la llamada");
       }
     },
-    [config, isRegistered, initMedia, setCallStatus, setCurrentNumber]
+    [config, isRegistered, initMedia, setCallStatus, setCurrentNumber],
   );
 
   // Colgar llamada
