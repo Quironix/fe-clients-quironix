@@ -1,6 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useProfileContext } from "@/context/ProfileContext";
+import { Copy } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -20,6 +23,18 @@ const DTEUploadSection = () => {
   const { session, profile } = useProfileContext();
   const { setBulkUploadErrors } = useDTEStore();
   const router = useRouter();
+
+  const clientId = profile?.client?.id || "";
+  const dteEmail = `reception_dte+${clientId}@quironix.com`;
+
+  const handleCopyDteEmail = () => {
+    if (!clientId) {
+      toast.error("No se pudo obtener el ID del cliente");
+      return;
+    }
+    navigator.clipboard.writeText(dteEmail);
+    toast.success("Email copiado al portapapeles");
+  };
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -90,7 +105,7 @@ const DTEUploadSection = () => {
 
   return (
     <div className="flex justify-between items-start gap-5 p-3 border border-gray-200 rounded-md h-[320px]">
-      <div className="w-[25%] h-full">
+      <div className="w-[20%] h-full">
         <Image
           src="/img/debtors-image.svg"
           alt="Deudores"
@@ -99,7 +114,7 @@ const DTEUploadSection = () => {
           height={100}
         />
       </div>
-      <div className="w-[37.5%] h-full">
+      <div className="w-[22%] h-full">
         <CreateManual
           title={
             <>
@@ -112,7 +127,34 @@ const DTEUploadSection = () => {
           buttonLink="/dashboard/transactions/dte/create"
         />
       </div>
-      <div className="w-[37.5%] h-full">
+      <div className="w-[26%] h-full">
+        <div className="w-full h-full border border-gray-200 rounded-md p-3 space-y-4">
+          <h2 className="text-lg font-bold border-b border-gray-300 pb-2">
+            Recepción <span className="text-orange-500">automática</span> de DTE
+          </h2>
+          <div className="flex flex-col w-full">
+            <span className="text-sm text-gray-500">
+              Configura este correo en tu sistema de facturación. Al recibir tus DTEs en esta dirección, los procesaremos automáticamente, los cargaremos al sistema y almacenaremos el PDF asociado.
+            </span>
+            <div className="flex items-center gap-2 mt-4">
+              <Input
+                value={dteEmail}
+                disabled
+                className="bg-gray-50 text-sm"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopyDteEmail}
+                title="Copiar email"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="w-[32%] h-full">
         <BulkData
           title={
             <>
