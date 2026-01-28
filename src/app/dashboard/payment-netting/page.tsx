@@ -277,6 +277,12 @@ export default function PaymentNettingPage() {
                     description=""
                     open={openDialog}
                     onOpenChange={setOpenDialog}
+                    onInteractOutside={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest('[data-radix-popper-content-wrapper]') || target.closest('[role="listbox"]')) {
+                        e.preventDefault();
+                      }
+                    }}
                     trigger={
                       <Button
                         disabled={selectedPayments.length === 0}

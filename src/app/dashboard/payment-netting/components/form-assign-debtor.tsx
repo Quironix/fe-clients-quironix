@@ -23,7 +23,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
+import DebtorsSelectInline from "../../components/debtors-select-inline";
 import { assignDebtor } from "../services";
 
 const FormAssignDebtor = ({
@@ -43,6 +43,9 @@ const FormAssignDebtor = ({
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
+    defaultValues: {
+      debtor_id: "",
+    },
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
@@ -110,8 +113,9 @@ const FormAssignDebtor = ({
             </p>
           </div>
 
-          <div className="border rounded-lg">
-            <Table>
+          <div className="border rounded-lg overflow-hidden">
+            <div className="max-h-[300px] overflow-y-auto">
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Estado</TableHead>
@@ -169,6 +173,7 @@ const FormAssignDebtor = ({
                 ))}
               </TableBody>
             </Table>
+            </div>
           </div>
         </div>
 
@@ -176,7 +181,7 @@ const FormAssignDebtor = ({
           control={form.control}
           name="debtor_id"
           render={({ field }) => (
-            <DebtorsSelectFormItem field={field} title="Deudor" required />
+            <DebtorsSelectInline field={field} title="Deudor" required />
           )}
         />
         <div className="flex items-center justify-center border-t border-orange-500 pt-4 w-full">

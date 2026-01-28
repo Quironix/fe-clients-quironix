@@ -17,6 +17,7 @@ interface DialogFormProps<T> {
   onSubmit?: (data: T) => Promise<void>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onInteractOutside?: (event: Event) => void;
 }
 
 const DialogForm = <T,>({
@@ -29,18 +30,24 @@ const DialogForm = <T,>({
   onSubmit,
   open,
   onOpenChange,
+  onInteractOutside,
 }: DialogFormProps<T>) => {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[50vw] max-h-[calc(100vh-3rem)] overflow-y-auto bg-white">
-        <DialogHeader>
+      <DialogContent
+        className="sm:max-w-[50vw] max-h-[90vh] overflow-hidden bg-white flex flex-col"
+        onInteractOutside={onInteractOutside}
+      >
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="font-extrabold">{title}</DialogTitle>
           <div className="text-sm">
             <span>{description}</span>
           </div>
         </DialogHeader>
-        {children}
+        <div className="overflow-y-auto flex-1 pr-2">
+          {children}
+        </div>
       </DialogContent>
     </Dialog>
   );

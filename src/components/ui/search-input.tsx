@@ -93,7 +93,7 @@ export function SearchInput({
   }, [resetTrigger]);
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
+    <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -113,7 +113,7 @@ export function SearchInput({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 !z-[100]">
         <Command filter={() => 1}>
           <CommandInput
             placeholder={searchPlaceholder}
