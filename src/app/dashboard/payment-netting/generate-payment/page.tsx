@@ -19,7 +19,8 @@ import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { FileCheck2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
@@ -29,28 +30,59 @@ import ListAccountReceivable from "../components/list-account-receivable";
 import ListCreditFavor from "../components/list-credit-favor";
 import StepperPN from "../components/stepper";
 import SummaryPaymentNetting from "../components/summary-payment-netting";
-import { usePaymentNetting } from "../hooks/usePaymentNetting";
 import { usePaymentNettingStore } from "../store";
+import { getPaymentNetting } from "../services";
 
-const GeneratePayment = () => {
+function GeneratePaymentContent() {
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const { resetSelected } = usePaymentNettingStore();
-  const { getSelectedRows, isHydrated } = usePaymentNetting(
-    session?.token,
-    profile?.client_id,
-    false
-  );
+  const searchParams = useSearchParams();
+  const [selectedPayments, setSelectedPayments] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Reset selections when entering this page
+  const debtorId = searchParams.get("debtorId");
+  const movementsParam = searchParams.get("movements");
+  const movementIds = useMemo(() => {
+    return movementsParam ? movementsParam.split(",") : [];
+  }, [movementsParam]);
+
   useEffect(() => {
     resetSelected();
   }, [resetSelected]);
 
-  const selectedPayments = useMemo(() => {
-    if (!isHydrated) return [];
-    return getSelectedRows();
-  }, [getSelectedRows, isHydrated]);
+  useEffect(() => {
+    const fetchPaymentsData = async () => {
+      if (!session?.token || !profile?.client_id || movementIds.length === 0) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await getPaymentNetting({
+          accessToken: session.token,
+          clientId: profile.client_id,
+          page: 1,
+          limit: 100,
+          status: "ALL",
+        });
+
+        if (response.data) {
+          const filteredPayments = response.data.filter((payment: any) =>
+            movementIds.includes(payment.id)
+          );
+          setSelectedPayments(filteredPayments);
+        }
+      } catch (error) {
+        console.error("Error fetching payment data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPaymentsData();
+  }, [session?.token, profile?.client_id, movementIds]);
 
   return (
     <>
@@ -107,8 +139,8 @@ const GeneratePayment = () => {
                       <DataTableDynamicColumns
                         columns={columns}
                         data={selectedPayments}
-                        isLoading={false}
-                        isServerSideLoading={false}
+                        isLoading={isLoading}
+                        isServerSideLoading={isLoading}
                         onPaginationChange={() => {}}
                         onSearchChange={() => {}}
                         enableGlobalFilter={false}
@@ -164,6 +196,16 @@ const GeneratePayment = () => {
       </Main>
     </>
   );
-};
+}
 
-export default GeneratePayment;
+export default function GeneratePayment() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
+      </div>
+    }>
+      <GeneratePaymentContent />
+    </Suspense>
+  );
+}

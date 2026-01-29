@@ -3,50 +3,42 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { useQuery } from "@tanstack/react-query";
 import { Clock2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useMemo } from "react";
-import { usePaymentNetting } from "../hooks/usePaymentNetting";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo } from "react";
 import { getInvoices } from "../services";
 import { usePaymentNettingStore } from "../store";
 import ItemListPayment from "./item-list-payment";
 
-const ListAccountReceivable = () => {
+function ListAccountReceivableContent() {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const { selectedInvoices } = usePaymentNettingStore();
-  const { getSelectedRows, isHydrated } = usePaymentNetting(
-    session?.token,
-    profile?.client_id,
-    false
-  );
-  const selectedPayments = useMemo(() => {
-    if (!isHydrated) return [];
-    return getSelectedRows();
-  }, [getSelectedRows, isHydrated]);
+  const searchParams = useSearchParams();
+  const debtorId = searchParams.get("debtorId");
 
-  // Validar que todos los parámetros requeridos estén disponibles
   const canFetchInvoices = useMemo(() => {
     return !!(
       session?.token &&
       profile?.client_id &&
-      selectedPayments[0]?.payment?.debtor?.id
+      debtorId
     );
-  }, [session?.token, profile?.client_id, selectedPayments]);
+  }, [session?.token, profile?.client_id, debtorId]);
 
   const {
     data: invoices,
     isLoading: isLoadingInvoices,
     error: invoicesError,
   } = useQuery({
-    queryKey: ["invoices", selectedPayments[0]?.payment?.debtor?.id],
+    queryKey: ["invoices", debtorId],
     queryFn: async () =>
       await getInvoices({
         accessToken: session?.token as string,
         clientId: profile?.client_id as string,
-        debtorId: selectedPayments[0]?.payment?.debtor?.id as string,
+        debtorId: debtorId as string,
       }),
-    enabled: canFetchInvoices, // Solo ejecutar si todos los parámetros están disponibles
-    retry: 1, // Reintentar solo una vez en caso de error
-    refetchOnWindowFocus: false, // No refetch al enfocar la ventana
+    enabled: canFetchInvoices,
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   const mapInvoiceData = (invoice: any) => ({
@@ -181,6 +173,24 @@ const ListAccountReceivable = () => {
       )}
     </div>
   );
-};
+}
 
-export default ListAccountReceivable;
+export default function ListAccountReceivable() {
+  return (
+    <Suspense fallback={
+      <div className="border border-gray-300 rounded-lg p-4">
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-bold flex items-center gap-2">
+            <Clock2 className="w-4 h-4 text-orange-400" /> Cuenta por cobrar
+          </span>
+        </div>
+        <div className="mt-4 space-y-4">
+          <Skeleton className="h-[150px] w-full rounded-md" />
+          <Skeleton className="h-[150px] w-full rounded-md" />
+        </div>
+      </div>
+    }>
+      <ListAccountReceivableContent />
+    </Suspense>
+  );
+}

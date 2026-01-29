@@ -60,10 +60,16 @@ const FormAssignDebtor = ({
       if (response.success) {
         toast.success(response.message);
         form.reset();
-        // Cierra el diálogo, refresca la tabla y deselecciona los registros
+
+        const movementIds = selectedMovements.map((movement) => movement.id).join(',');
+
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("paymentNettingSelection");
+        }
+
         handleClose();
-        // Redirigir a la página de generar pago
-        router.push("/dashboard/payment-netting/generate-payment");
+
+        router.push(`/dashboard/payment-netting/generate-payment?debtorId=${data.debtor_id}&movements=${movementIds}`);
       } else {
         toast.error(response.message || "Error al asignar el deudor");
       }

@@ -93,12 +93,30 @@ export default function DebtorsSelectInline({
     }
   }, [isOpen]);
 
-  const combinedDebtors = useMemo(() => {
-    if (initialDebtor?.id && initialDebtor?.name && !debtors.find(d => d.id === initialDebtor.id)) {
-      return [initialDebtor as { id: string; name: string; debtor_code?: string }, ...debtors];
+  const [selectedDebtorData, setSelectedDebtorData] = useState<{ id: string; name: string; debtor_code?: string } | null>(null);
+
+  useEffect(() => {
+    if (field.value && !selectedDebtorData) {
+      const debtor = debtors.find(d => d.id === field.value);
+      if (debtor) {
+        setSelectedDebtorData(debtor);
+      }
     }
-    return debtors;
-  }, [debtors, initialDebtor]);
+  }, [field.value, debtors, selectedDebtorData]);
+
+  const combinedDebtors = useMemo(() => {
+    const debtorsList = [...debtors];
+
+    if (initialDebtor?.id && initialDebtor?.name && !debtorsList.find(d => d.id === initialDebtor.id)) {
+      debtorsList.unshift(initialDebtor as { id: string; name: string; debtor_code?: string });
+    }
+
+    if (selectedDebtorData && !debtorsList.find(d => d.id === selectedDebtorData.id)) {
+      debtorsList.unshift(selectedDebtorData);
+    }
+
+    return debtorsList;
+  }, [debtors, initialDebtor, selectedDebtorData]);
 
   const selectedDebtor = combinedDebtors.find((d) => d.id === field.value);
 
@@ -172,6 +190,7 @@ export default function DebtorsSelectInline({
                         )}
                         onClick={() => {
                           field.onChange(debtor.id);
+                          setSelectedDebtorData(debtor);
                           setSearchText("");
                           setIsOpen(false);
                         }}

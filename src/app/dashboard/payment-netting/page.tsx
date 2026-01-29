@@ -371,9 +371,14 @@ export default function PaymentNettingPage() {
                     disabled={!isValidSelectionForPayment}
                     className="bg-orange-400 text-white hover:bg-orange-400/90 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => {
-                      router.push(
-                        "/dashboard/payment-netting/generate-payment"
-                      );
+                      const debtorId = selectedPayments[0]?.payment?.debtor?.id;
+                      const movementIds = selectedPayments.map(p => p.id).join(',');
+
+                      if (debtorId && movementIds) {
+                        router.push(
+                          `/dashboard/payment-netting/generate-payment?debtorId=${debtorId}&movements=${movementIds}`
+                        );
+                      }
                     }}
                   >
                     Generar pago
