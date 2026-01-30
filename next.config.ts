@@ -108,7 +108,9 @@ const nextConfig: NextConfig = {
 
   // Configuración de imágenes optimizada
   images: {
-    unoptimized: process.env.NODE_ENV === "development", // Solo en desarrollo
+    // Deshabilitar optimización de imágenes para evitar problemas de cache en Azure
+    // Azure App Service tiene restricciones de filesystem que causan errores ENOENT
+    unoptimized: true,
   },
 
   // Configuración de compilación
