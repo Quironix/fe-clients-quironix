@@ -15,6 +15,7 @@ export interface DebtorsSelectFormItemProps {
   required?: boolean;
   resetTrigger?: boolean;
   initialDebtor?: { id?: string; name?: string; debtor_code?: string };
+  modal?: boolean;
 }
 
 export default function DebtorsSelectFormItem({
@@ -23,6 +24,7 @@ export default function DebtorsSelectFormItem({
   required,
   resetTrigger,
   initialDebtor,
+  modal = false,
 }: DebtorsSelectFormItemProps) {
   const { debtors, fetchDebtorsPaginated, loading, isSearching } =
     useDebtorsStore();
@@ -109,6 +111,7 @@ export default function DebtorsSelectFormItem({
           }}
           isLoading={isSearching}
           resetTrigger={resetTrigger}
+          modal={modal}
         />
       </FormControl>
       <FormMessage />

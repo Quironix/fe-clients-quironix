@@ -224,7 +224,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
               control={control}
               name="debtorId"
               render={({ field }) => (
-                <DebtorsSelectFormItem field={field} title="Deudor" />
+                <DebtorsSelectFormItem field={field} title="Deudor" modal />
               )}
             />
           </div>

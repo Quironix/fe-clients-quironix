@@ -309,7 +309,7 @@ const DisputeForm = ({
                     </div>
                   </div>
                 ) : (
-                  <DebtorsSelectFormItem field={field} title="Deudor" required />
+                  <DebtorsSelectFormItem field={field} title="Deudor" required modal />
                 )
               )}
             />

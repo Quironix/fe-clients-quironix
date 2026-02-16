@@ -12,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import * as React from "react";
@@ -27,6 +28,7 @@ interface SearchInputProps {
   onSearchChange?: (searchValue: string) => void;
   isLoading?: boolean;
   resetTrigger?: boolean; // Nueva prop para resetear el campo de búsqueda
+  modal?: boolean;
 }
 
 export function SearchInput({
@@ -40,6 +42,7 @@ export function SearchInput({
   onSearchChange,
   isLoading = false,
   resetTrigger = false,
+  modal = false,
 }: SearchInputProps) {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
@@ -93,7 +96,7 @@ export function SearchInput({
   }, [resetTrigger]);
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -113,61 +116,123 @@ export function SearchInput({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 !z-[100]">
-        <Command filter={() => 1}>
-          <CommandInput
-            placeholder={searchPlaceholder}
-            className="h-9"
-            value={searchValue}
-            onValueChange={(value) => {
-              setSearchValue(value);
-              onSearchChange?.(value);
-            }}
-          />
-          <CommandList>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span className="text-sm text-muted-foreground">
-                  Buscando...
-                </span>
-              </div>
-            ) : (
-              <>
-                <CommandEmpty>{emptyMessage}</CommandEmpty>
-                <CommandGroup>
-                  {options.map((option, index) => (
-                    <CommandItem
-                      key={option.value}
-                      value={`${option.label}`}
-                      onSelect={(currentValue) => {
-                        const selectedOption = options.find(
-                          (opt) =>
-                            opt.label === currentValue ||
-                            opt.custom === currentValue
-                        );
-                        if (selectedOption) {
-                          onValueChange(selectedOption.value);
-                        }
-                        setJustSelected(true);
-                        handleOpenChange(false);
-                      }}
-                    >
-                      <span className="truncate">{option.label}</span>
-                      <Check
-                        className={cn(
-                          "ml-auto h-4 w-4 shrink-0",
-                          option.value === value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
+      {modal ? (
+        <PopoverPrimitive.Content
+          align="start"
+          sideOffset={4}
+          className="w-[var(--radix-popover-trigger-width)] p-0 z-[100] bg-popover text-popover-foreground rounded-md border shadow-md outline-hidden"
+        >
+          <Command filter={() => 1}>
+            <CommandInput
+              placeholder={searchPlaceholder}
+              className="h-9"
+              value={searchValue}
+              onValueChange={(value) => {
+                setSearchValue(value);
+                onSearchChange?.(value);
+              }}
+            />
+            <CommandList>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <span className="text-sm text-muted-foreground">
+                    Buscando...
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <CommandEmpty>{emptyMessage}</CommandEmpty>
+                  <CommandGroup>
+                    {options.map((option) => (
+                      <CommandItem
+                        key={option.value}
+                        value={`${option.label}`}
+                        onSelect={(currentValue) => {
+                          const selectedOption = options.find(
+                            (opt) =>
+                              opt.label === currentValue ||
+                              opt.custom === currentValue
+                          );
+                          if (selectedOption) {
+                            onValueChange(selectedOption.value);
+                          }
+                          setJustSelected(true);
+                          handleOpenChange(false);
+                        }}
+                      >
+                        <span className="truncate">{option.label}</span>
+                        <Check
+                          className={cn(
+                            "ml-auto h-4 w-4 shrink-0",
+                            option.value === value ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverPrimitive.Content>
+      ) : (
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 !z-[100]">
+          <Command filter={() => 1}>
+            <CommandInput
+              placeholder={searchPlaceholder}
+              className="h-9"
+              value={searchValue}
+              onValueChange={(value) => {
+                setSearchValue(value);
+                onSearchChange?.(value);
+              }}
+            />
+            <CommandList>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <span className="text-sm text-muted-foreground">
+                    Buscando...
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <CommandEmpty>{emptyMessage}</CommandEmpty>
+                  <CommandGroup>
+                    {options.map((option) => (
+                      <CommandItem
+                        key={option.value}
+                        value={`${option.label}`}
+                        onSelect={(currentValue) => {
+                          const selectedOption = options.find(
+                            (opt) =>
+                              opt.label === currentValue ||
+                              opt.custom === currentValue
+                          );
+                          if (selectedOption) {
+                            onValueChange(selectedOption.value);
+                          }
+                          setJustSelected(true);
+                          handleOpenChange(false);
+                        }}
+                      >
+                        <span className="truncate">{option.label}</span>
+                        <Check
+                          className={cn(
+                            "ml-auto h-4 w-4 shrink-0",
+                            option.value === value ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      )}
     </Popover>
   );
 }
