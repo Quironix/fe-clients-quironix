@@ -1,4 +1,5 @@
 "use client";
+import { InfoIcon } from "@/app/dashboard/components/info-icon";
 import Stepper from "@/components/Stepper";
 import {
   Accordion,
@@ -71,7 +72,7 @@ const StepContacts: React.FC<StepProps> = ({
       try {
         const usersData = await getUsersService(
           session.token,
-          profile.client.id
+          profile.client.id,
         );
         setUsers(usersData || []);
       } catch (error) {
@@ -138,7 +139,7 @@ const StepContacts: React.FC<StepProps> = ({
             .array(z.string())
             .min(1, "Debe seleccionar al menos un tipo de contacto"),
           is_default: z.boolean(),
-        })
+        }),
       )
       .min(1, "Debe agregar al menos un contacto"),
     operational: z.object({
@@ -206,7 +207,7 @@ const StepContacts: React.FC<StepProps> = ({
     if (profile?.client) {
       if (profile.client.operational) {
         setApprovingUsers(
-          (profile.client.operational as any).approving_users || []
+          (profile.client.operational as any).approving_users || [],
         );
       }
       const newValues: ContactsFormType = {
@@ -241,7 +242,7 @@ const StepContacts: React.FC<StepProps> = ({
             (profile.client.operational as any)?.maximum_extension_period ?? 0,
           approving_users:
             (profile.client.operational as any).approving_users.map(
-              (user: any) => user.id
+              (user: any) => user.id,
             ) || [],
         },
       };
@@ -488,7 +489,7 @@ const StepContacts: React.FC<StepProps> = ({
                                         defaultCountry="CL"
                                         value={field.value as E164Number}
                                         onChange={(
-                                          value: E164Number | undefined
+                                          value: E164Number | undefined,
                                         ) => field.onChange(value || "")}
                                         error={
                                           !!form.formState.errors.contacts?.[
@@ -541,7 +542,7 @@ const StepContacts: React.FC<StepProps> = ({
                                         <FormControl>
                                           <Checkbox
                                             checked={field.value?.includes(
-                                              item.id
+                                              item.id,
                                             )}
                                             onCheckedChange={(checked) => {
                                               return checked
@@ -552,8 +553,8 @@ const StepContacts: React.FC<StepProps> = ({
                                                 : field.onChange(
                                                     field.value?.filter(
                                                       (value: any) =>
-                                                        value !== item.id
-                                                    )
+                                                        value !== item.id,
+                                                    ),
                                                   );
                                             }}
                                           />
@@ -579,6 +580,16 @@ const StepContacts: React.FC<StepProps> = ({
                     title="Criterios para prorroga de cheques"
                     icon={<Banknote className="w-5 h-5" />}
                   />
+                  <p className="text-sm">
+                    Esta sección forma parte de tus políticas de crédito. Aquí
+                    defines las condiciones bajo las cuales tu empresa permitirá
+                    extender el vencimiento de cheques emitidos por deudores.
+                    <br />
+                    Las prórrogas deben gestionarse como una excepción
+                    controlada, ya que impactan directamente en la exposición
+                    financiera y en la disciplina de pago de la cartera. Para
+                    ello, debes definir:
+                  </p>
                   <div className="space-y-2 flex justify-between items-start w-full gap-4">
                     <div className="grid grid-cols-3 gap-5 w-full">
                       <FormField
@@ -588,6 +599,18 @@ const StepContacts: React.FC<StepProps> = ({
                           <FormItem>
                             <FormLabel>
                               Plazo Para solicitud de prórroga
+                              <InfoIcon
+                                color="#FF8113"
+                                tooltipContent={
+                                  <span>
+                                    Número de días de anticipación con los que
+                                    el deudor debe solicitar la extensión antes
+                                    del vencimiento del cheque. <br />
+                                    Esto evita decisiones reactivas y permite
+                                    una evaluación adecuada del riesgo.
+                                  </span>
+                                }
+                              />
                             </FormLabel>
                             <FormControl>
                               <InputNumberCart
@@ -608,6 +631,19 @@ const StepContacts: React.FC<StepProps> = ({
                           <FormItem>
                             <FormLabel>
                               Nro. Prórrogas anuales por deudor
+                              <InfoIcon
+                                color="#FF8113"
+                                tooltipContent={
+                                  <span>
+                                    Establece cuántas extensiones podrá
+                                    solicitar un mismo deudor dentro de un año.
+                                    <br />
+                                    Este parámetro permite controlar
+                                    recurrencias y detectar posibles deterioros
+                                    en su comportamiento de pago.
+                                  </span>
+                                }
+                              />
                             </FormLabel>
                             <FormControl>
                               <InputNumberCart
@@ -626,7 +662,21 @@ const StepContacts: React.FC<StepProps> = ({
                         name="operational.maximum_extension_period"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Plazo Máximo de prorroga</FormLabel>
+                            <FormLabel>
+                              Plazo Máximo de prorroga
+                              <InfoIcon
+                                color="#FF8113"
+                                tooltipContent={
+                                  <span>
+                                    Cantidad máxima de días que podrá extenderse
+                                    un cheque.
+                                    <br /> Debe definirse considerando las
+                                    políticas bancarias y los límites internos
+                                    de financiamiento implícito.
+                                  </span>
+                                }
+                              />
+                            </FormLabel>
                             <FormControl>
                               <InputNumberCart
                                 value={field.value ?? 0}
@@ -645,7 +695,20 @@ const StepContacts: React.FC<StepProps> = ({
                         name="operational.approving_users"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Aprobadores</FormLabel>
+                            <FormLabel>
+                              Aprobadores{" "}
+                              <InfoIcon
+                                color="#FF8113"
+                                tooltipContent={
+                                  <span>
+                                    Usuarios responsables de autorizar o
+                                    rechazar solicitudes. <br />
+                                    Esto asegura trazabilidad y control interno
+                                    en decisiones excepcionales.
+                                  </span>
+                                }
+                              />
+                            </FormLabel>
                             <FormControl>
                               <div className="space-y-2">
                                 {loadingUsers ? (
@@ -660,7 +723,7 @@ const StepContacts: React.FC<StepProps> = ({
                                     >
                                       <Checkbox
                                         checked={field.value?.includes(
-                                          user.id!
+                                          user.id!,
                                         )}
                                         onCheckedChange={(checked) => {
                                           if (checked) {
@@ -672,8 +735,8 @@ const StepContacts: React.FC<StepProps> = ({
                                           } else {
                                             setApprovingUsers(
                                               approvingUsers.filter(
-                                                (id) => id !== user.id
-                                              )
+                                                (id) => id !== user.id,
+                                              ),
                                             );
                                             field.onChange([]);
                                           }
@@ -695,7 +758,7 @@ const StepContacts: React.FC<StepProps> = ({
                                 <div className="mt-1 flex flex-wrap gap-1">
                                   {field.value.map((userId) => {
                                     const user = users.find(
-                                      (u) => u.id === userId
+                                      (u) => u.id === userId,
                                     );
                                     if (!user) return null;
                                     return (
@@ -713,8 +776,8 @@ const StepContacts: React.FC<StepProps> = ({
                                               field.value || [];
                                             field.onChange(
                                               currentValue.filter(
-                                                (id) => id !== userId
-                                              )
+                                                (id) => id !== userId,
+                                              ),
                                             );
                                           }}
                                           className="text-blue-600 hover:text-blue-800"
@@ -738,6 +801,11 @@ const StepContacts: React.FC<StepProps> = ({
                       />
                     </div>
                   </div>
+                  <small>
+                    Estos criterios determinan qué solicitudes serán aceptadas,
+                    cuáles requerirán aprobación y cuándo se bloquearán
+                    automáticamente por incumplimiento de la política definida.
+                  </small>
                 </div>
 
                 <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">

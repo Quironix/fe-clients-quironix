@@ -1,4 +1,5 @@
 "use client";
+import { InfoIcon } from "@/app/dashboard/components/info-icon";
 import Stepper from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
 import {
@@ -128,7 +129,7 @@ const StepDebtors: React.FC<StepProps> = ({
         {
           message: "El monto inicial debe ser menor al monto final",
           path: ["amount_from"],
-        }
+        },
       ),
   });
 
@@ -257,7 +258,7 @@ const StepDebtors: React.FC<StepProps> = ({
       const response = await updateDataClient(
         formData,
         profile.client_id,
-        session.token
+        session.token,
       );
 
       if (!response.error) {
@@ -270,7 +271,9 @@ const StepDebtors: React.FC<StepProps> = ({
     } catch (error) {
       console.error("Error al enviar el formulario:", error);
       toast.error(
-        error instanceof Error ? error.message : "Error al actualizar los datos"
+        error instanceof Error
+          ? error.message
+          : "Error al actualizar los datos",
       );
     } finally {
       setLoading(false);
@@ -320,7 +323,42 @@ const StepDebtors: React.FC<StepProps> = ({
                   title="Políticas de segmentación de deudores"
                   icon={<Calculator size={16} />}
                 />
-                <span className="text-sm font-bold">Facturación</span>
+                <p className="text-sm">
+                  Clasifica tus clientes en segmentos según su nivel de
+                  facturación y su comportamiento de pago (DBT). La combinación
+                  de Facturación y DBT le permitirá a Qurionix determinar la
+                  prioridad de gestión, los cuadrantes de riesgo y la asignación
+                  de tareas automáticas. Para que funcione correctamente, debes
+                  definir los rangos que determinarán cada nivel:
+                </p>
+                <span className="text-sm font-bold flex justify-start gap-2">
+                  Facturación{" "}
+                  <InfoIcon
+                    color="#FF8113"
+                    tooltipContent={
+                      <div>
+                        <p>
+                          Permite identificar el peso financiero de cada cliente
+                          en tu cartera.
+                        </p>
+                        <ul>
+                          <li>
+                            - <strong>Alta:</strong> Clientes con mayor volumen
+                            de facturación.
+                          </li>
+                          <li>
+                            - <strong>Media:</strong> Clientes con facturación
+                            intermedia.
+                          </li>
+                          <li>
+                            - <strong>Baja:</strong> Clientes con bajo nivel de
+                            facturación.
+                          </li>
+                        </ul>
+                      </div>
+                    }
+                  />
+                </span>
                 <div className="space-y-2 w-full mt-1">
                   <div className="grid grid-cols-3 gap-2">
                     <FormField
@@ -329,7 +367,7 @@ const StepDebtors: React.FC<StepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Bajo<span className="text-orange-500">*</span>
+                            Bajo<span className="text-orange-500">*</span>{" "}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -352,7 +390,7 @@ const StepDebtors: React.FC<StepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Medio<span className="text-orange-500">*</span>
+                            Medio<span className="text-orange-500">*</span>{" "}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -395,7 +433,40 @@ const StepDebtors: React.FC<StepProps> = ({
                   </div>
                 </div>
 
-                <span className="text-sm font-bold mt-5">DBT</span>
+                <span className="text-sm font-bold mt-5 flex justify-start gap-2">
+                  DBT (Days Beyond Terms){" "}
+                  <InfoIcon
+                    color="#FF8113"
+                    tooltipContent={
+                      <div>
+                        <p>
+                          Mide los días promedio que un cliente tarda en pagar
+                          después del vencimiento.
+                        </p>
+                        <ul>
+                          <li>
+                            - <strong>Alto:</strong> Clientes que pagan muy por
+                            encima del plazo acordado (ej. más de 15 días de
+                            atraso).
+                          </li>
+                          <li>
+                            - <strong>Medio:</strong> Clientes que pagan con
+                            cierto retraso (ej. entre 8 y 15 días).
+                          </li>
+                          <li>
+                            - <strong>Bajo:</strong> Clientes que pagan en
+                            término o con poco atraso (menos de 7 días).
+                          </li>
+                        </ul>
+                        <small>
+                          Si los rangos no están correctamente definidos, la
+                          priorización de la cartera puede no reflejar la
+                          realidad financiera del negocio.
+                        </small>
+                      </div>
+                    }
+                  />
+                </span>
                 <div className="space-y-2 w-full mt-1">
                   <div className="grid grid-cols-3 gap-2">
                     <FormField
@@ -475,6 +546,14 @@ const StepDebtors: React.FC<StepProps> = ({
                   title="Políticas para ajustes automáticos"
                   icon={<Settings2 size={16} />}
                 />
+                <p className="text-sm">
+                  En esta sección defines las reglas bajo las cuales Quironix
+                  podrá compensar o ajustar automáticamente diferencias entre
+                  facturas y notas de crédito, sin intervención manual. Una
+                  correcta configuración permite reducir tareas operativas y
+                  mantener los saldos contables alineados con la realidad
+                  financiera.
+                </p>
                 <div className="space-y-2 w-full mt-1">
                   <div className="grid grid-cols-3 gap-2">
                     <FormField
@@ -484,7 +563,20 @@ const StepDebtors: React.FC<StepProps> = ({
                         <FormItem>
                           <FormLabel>
                             Proceso automático Netting
-                            <span className="text-orange-500">*</span>
+                            <span className="text-orange-500">*</span>{" "}
+                            <InfoIcon
+                              color="#FF8113"
+                              tooltipContent={
+                                <span>
+                                  Permite la compensación automática entre
+                                  facturas y notas de crédito que estén
+                                  correctamente <br />
+                                  referenciadas entre sí. Si esta opción está
+                                  desactivada, las compensaciones deberán
+                                  gestionarse manualmente
+                                </span>
+                              }
+                            />
                           </FormLabel>
                           <FormControl>
                             <Switch
@@ -504,6 +596,19 @@ const StepDebtors: React.FC<StepProps> = ({
                           <FormLabel>
                             Monto desde
                             <span className="text-orange-500">*</span>
+                            <InfoIcon
+                              color="#FF8113"
+                              tooltipContent={
+                                <span>
+                                  Define el valor mínimo y máximo que puede
+                                  tener una diferencia para que el sistema
+                                  realice un ajuste automático. <br />
+                                  Este rango controla el nivel de tolerancia
+                                  frente a pequeñas diferencias (por ejemplo,
+                                  redondeos o ajustes menores).
+                                </span>
+                              }
+                            />
                           </FormLabel>
                           <FormControl>
                             <InputNumberCart
@@ -549,6 +654,14 @@ const StepDebtors: React.FC<StepProps> = ({
                   title="Políticas de incumplimiento"
                   icon={<ShieldAlert size={16} />}
                 />
+                <p className="text-sm">
+                  En esta sección defines las reglas que permitirán a Quironix
+                  determinar automáticamente cuándo un compromiso de pago debe
+                  considerarse cumplido o incumplido. Estos parámetros son
+                  fundamentales para medir la confiabilidad de tus deudores y
+                  alimentar los indicadores de credibilidad, priorización y
+                  gestión.
+                </p>
                 <div className="space-y-2 w-full mt-1">
                   <div className="grid grid-cols-3 gap-2">
                     <FormField
@@ -558,7 +671,24 @@ const StepDebtors: React.FC<StepProps> = ({
                         <FormItem>
                           <FormLabel>
                             Tolerancia monto comprometido (%)
-                            <span className="text-orange-500">*</span>
+                            <span className="text-orange-500">*</span>{" "}
+                            <InfoIcon
+                              color="#FF8113"
+                              tooltipContent={
+                                <div>
+                                  <p>
+                                    Define qué porcentaje del monto acordado
+                                    debe ser efectivamente pagado para que el
+                                    compromiso sea considerado cumplido.
+                                  </p>
+                                  <p>
+                                    Ejemplo: si configuras 90%, un compromiso de
+                                    $1.000.000 se considerará cumplido cuando el
+                                    pago alcance al menos $900.000.
+                                  </p>
+                                </div>
+                              }
+                            />
                           </FormLabel>
                           <FormControl>
                             <InputNumberCart
@@ -582,6 +712,49 @@ const StepDebtors: React.FC<StepProps> = ({
                           <FormLabel>
                             Tolerancia en días
                             <span className="text-orange-500">*</span>
+                            <InfoIcon
+                              color="#FF8113"
+                              tooltipContent={
+                                <div>
+                                  <p>
+                                    Establece cuántos días adicionales se
+                                    otorgarán después de la fecha comprometida
+                                    antes de marcar el compromiso como
+                                    incumplido. <br />
+                                    Si transcurre este plazo sin pago
+                                    suficiente, el sistema clasificará
+                                    automáticamente el compromiso como
+                                    incumplido.
+                                  </p>
+                                  <br />
+                                  <p>Estos criterios afectan:</p>
+                                  <ul>
+                                    <li>
+                                      - El indicador de cumplimiento de
+                                      compromisos
+                                    </li>
+                                    <li>
+                                      - La medición de credibilidad del deudor
+                                    </li>
+                                    <li>
+                                      - La priorización automática de gestión
+                                    </li>
+                                    <li>
+                                      - La activación de alertas o acciones
+                                      correctivas
+                                    </li>
+                                    <li></li>
+                                  </ul>
+                                  <small>
+                                    Una configuración demasiado flexible puede
+                                    ocultar riesgos reales. Una configuración
+                                    demasiado estricta puede generar alertas
+                                    innecesarias y distorsionar la evaluación de
+                                    la cartera.
+                                  </small>
+                                </div>
+                              }
+                            />
                           </FormLabel>
                           <FormControl>
                             <InputNumberCart
