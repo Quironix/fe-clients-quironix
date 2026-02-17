@@ -34,14 +34,14 @@ export function InfoIcon({
           className={cn(
             "inline-flex justify-center rounded-full text-white font-bold cursor-help relative",
             sizeClasses[size],
-            className
+            className,
           )}
           style={{ backgroundColor: color }}
         >
           ¡
         </div>
       </TooltipTrigger>
-      <TooltipContent>{tooltipContent}</TooltipContent>
+      <TooltipContent className="whitespace-pre-line">{tooltipContent}</TooltipContent>
     </Tooltip>
   );
 }

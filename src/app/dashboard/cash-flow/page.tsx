@@ -81,7 +81,7 @@ export default function CashFlowPage() {
               factor: res.factor ?? 0,
             });
           }
-        }
+        },
       );
     }
   }, [profile?.client?.id, session?.token, form]);
@@ -100,7 +100,7 @@ export default function CashFlowPage() {
         {
           ...data,
           client_id: profile.client.id,
-        }
+        },
       );
 
       setCashFlowConfiguration(updatedConfig);
@@ -148,7 +148,7 @@ export default function CashFlowPage() {
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="This is important information!"
+                        tooltipContent="Define si las facturas que se encuentran en estado de litigio serán consideradas dentro del cálculo de estimación de caja."
                       />
                     </div>
                     <FormField
@@ -196,7 +196,7 @@ export default function CashFlowPage() {
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="This is important information!"
+                        tooltipContent="Permite definir el porcentaje de recuperación estimado para documentos en litigio."
                       />
                     </div>
                     <FormField
@@ -225,7 +225,7 @@ export default function CashFlowPage() {
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="This is important information!"
+                        tooltipContent="Define si las facturas asociadas a acuerdos comerciales especiales serán consideradas en la estimación."
                       />
                     </div>
                     <FormField
@@ -276,7 +276,7 @@ export default function CashFlowPage() {
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="This is important information!"
+                        tooltipContent="Define el número de días dentro del cual una Nota de Crédito será considerada para ajustar la estimación de caja."
                       />
                     </div>
                     <FormField
@@ -304,7 +304,7 @@ export default function CashFlowPage() {
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="This is important information!"
+                        tooltipContent="Define qué porcentaje del monto de las notas de crédito que exceden los días de corte será incorporado en la estimación, permitiendo controlar su impacto en la proyección de ingresos."
                       />
                     </div>
                     <FormField
@@ -333,7 +333,7 @@ export default function CashFlowPage() {
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="This is important information!"
+                        tooltipContent="Establece qué porcentaje de las notas de crédito que no superan los días de corte impactará en la proyección de flujo de caja."
                       />
                     </div>
                     <FormField
@@ -365,7 +365,25 @@ export default function CashFlowPage() {
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="This is important information!"
+                        tooltipContent={
+                          <div>
+                            <p>
+                              Determina si el cálculo se basará en un promedio
+                              histórico de comportamiento de pago de tus
+                              clientes.
+                            </p>
+                            <ul className="list-disc pl-4 mt-1">
+                              <li>
+                                A mayor cantidad de meses, mayor estabilidad en
+                                la estimación.
+                              </li>
+                              <li>
+                                A menor cantidad, mayor sensibilidad a cambios
+                                recientes.
+                              </li>
+                            </ul>
+                          </div>
+                        }
                       />
                     </div>
                     <FormField
@@ -409,7 +427,7 @@ export default function CashFlowPage() {
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="This is important information!"
+                        tooltipContent="Define la cantidad de meses históricos que serán considerados para calcular el promedio."
                       />
                     </div>
                     <FormField
@@ -438,7 +456,20 @@ export default function CashFlowPage() {
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="This is important information!"
+                        tooltipContent={
+                          <div>
+                            <p>
+                              Permite aplicar un coeficiente de ajuste manual
+                              sobre el resultado final de la estimación.
+                            </p>
+                            <ul className="list-disc pl-4 mt-1">
+                              <li>
+                                Un factor mayor a 1 aumenta la proyección.
+                              </li>
+                              <li>Un factor menor a 1 la reduce.</li>
+                            </ul>
+                          </div>
+                        }
                       />
                     </div>
                     <FormField
