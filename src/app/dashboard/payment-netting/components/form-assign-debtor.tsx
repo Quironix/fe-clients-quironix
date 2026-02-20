@@ -19,7 +19,7 @@ import { Eye, Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -41,12 +41,24 @@ const FormAssignDebtor = ({
     debtor_id: z.string().min(1, "El código deudor es requerido"),
   });
 
+  const existingDebtor = useMemo(() => {
+    const debtor = selectedMovements.find((m) => m.payment?.debtor)?.payment?.debtor;
+    if (!debtor?.id) return null;
+    return { id: debtor.id, name: debtor.name, debtor_code: debtor.debtor_code };
+  }, [selectedMovements]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      debtor_id: "",
+      debtor_id: existingDebtor?.id || "",
     },
   });
+
+  useEffect(() => {
+    if (existingDebtor?.id) {
+      form.setValue("debtor_id", existingDebtor.id);
+    }
+  }, [existingDebtor, form]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
@@ -187,7 +199,7 @@ const FormAssignDebtor = ({
           control={form.control}
           name="debtor_id"
           render={({ field }) => (
-            <DebtorsSelectInline field={field} title="Deudor" required />
+            <DebtorsSelectInline field={field} title="Deudor" required initialDebtor={existingDebtor} />
           )}
         />
         <div className="flex items-center justify-center border-t border-orange-500 pt-4 w-full">
