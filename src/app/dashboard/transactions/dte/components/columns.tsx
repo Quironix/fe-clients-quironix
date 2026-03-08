@@ -2,15 +2,71 @@
 import DialogConfirm from "@/app/dashboard/components/dialog-confirm";
 import { INVOICE_TYPES } from "@/app/dashboard/data";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useProfileContext } from "@/context/ProfileContext";
 import { formatDate } from "@/lib/utils";
 import { ColumnDef, Row } from "@tanstack/react-table";
-import { Edit, Trash2, History } from "lucide-react";
+import { Edit, FileText, History, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDTEStore } from "../store";
 import { DTE } from "../types";
 import { useState } from "react";
 import InvoiceHistoryModal from "./invoice-history-modal";
+
+const DocumentCellComponent = ({ row }: { row: Row<DTE> }) => {
+  const [previewFile, setPreviewFile] = useState<{ url: string; name: string } | null>(null);
+  const file = row.original.file;
+  const isValidUrl =
+    typeof file === "string" &&
+    (file.startsWith("http://") || file.startsWith("https://"));
+
+  return (
+    <div className="flex justify-center">
+      {isValidUrl ? (
+        <>
+          <button
+            type="button"
+            onClick={() =>
+              setPreviewFile({
+                url: file,
+                name: row.original.number || "Documento",
+              })
+            }
+            className="text-blue-600 hover:text-blue-800 cursor-pointer"
+          >
+            <FileText className="w-5 h-5" />
+          </button>
+          <Dialog open={!!previewFile} onOpenChange={(open) => !open && setPreviewFile(null)}>
+            <DialogContent className="max-w-[80vw]! h-[85vh] flex flex-col p-0">
+              <DialogHeader className="px-6 pt-6 pb-2">
+                <DialogTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  {previewFile?.name}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 px-6 pb-6 min-h-0">
+                {previewFile?.url && (
+                  <iframe
+                    src={`https://docs.google.com/gview?url=${encodeURIComponent(previewFile.url)}&embedded=true`}
+                    className="w-full h-full rounded-md border border-gray-200"
+                    title={`Preview ${previewFile.name}`}
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
+      ) : (
+        <FileText className="w-5 h-5 text-gray-400 cursor-not-allowed" />
+      )}
+    </div>
+  );
+};
 
 const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
   const router = useRouter();
@@ -122,6 +178,13 @@ export const columns: ColumnDef<DTE>[] = [
         currency: "CLP",
       }).format(amount);
       return <div className="font-medium">{formatted}</div>;
+    },
+  },
+  {
+    id: "document",
+    header: "Documento",
+    cell: ({ row }) => {
+      return <DocumentCellComponent row={row} />;
     },
   },
   {

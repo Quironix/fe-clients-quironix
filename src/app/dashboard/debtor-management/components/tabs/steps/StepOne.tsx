@@ -5,6 +5,12 @@ import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/docume
 import { getInvoices } from "@/app/dashboard/payment-netting/services";
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useProfileContext } from "@/context/ProfileContext";
@@ -28,6 +34,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
   const [searchTerm, setSearchTerm] = useState("");
+  const [previewFile, setPreviewFile] = useState<{ url: string; name: string } | null>(null);
 
   // Usar refs para evitar recrear handleRowSelectionChange
   const onInvoicesSelectedRef = useRef(onInvoicesSelected);
@@ -225,19 +232,26 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
         header: "Documento",
         cell: ({ row }) => {
           const file = row.original.file;
+          const isValidUrl =
+            typeof file === "string" &&
+            (file.startsWith("http://") || file.startsWith("https://"));
           return (
             <div className="flex justify-center">
-              {file ? (
-                <a
-                  href={file}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800"
+              {isValidUrl ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPreviewFile({
+                      url: file,
+                      name: row.original.number || row.original.folio || "Documento",
+                    })
+                  }
+                  className="text-blue-600 hover:text-blue-800 cursor-pointer"
                 >
                   <FileText className="w-5 h-5" />
-                </a>
+                </button>
               ) : (
-                <FileText className="w-5 h-5 text-gray-400" />
+                <FileText className="w-5 h-5 text-gray-400 cursor-not-allowed" />
               )}
             </div>
           );
@@ -378,6 +392,26 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
         }
         description="Selecciona las columnas que deseas mostrar en la tabla de facturas."
       />
+
+      <Dialog open={!!previewFile} onOpenChange={(open) => !open && setPreviewFile(null)}>
+        <DialogContent className="max-w-[80vw]! h-[85vh] flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-2">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              {previewFile?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 px-6 pb-6 min-h-0">
+            {previewFile?.url && (
+              <iframe
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(previewFile.url)}&embedded=true`}
+                className="w-full h-full rounded-md border border-gray-200"
+                title={`Preview ${previewFile.name}`}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

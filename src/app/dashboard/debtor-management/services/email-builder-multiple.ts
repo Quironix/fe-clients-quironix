@@ -69,20 +69,18 @@ function formatInvoices(invoices: Invoice[]): EmailInvoice[] {
   });
 }
 
-function getInvoicesToSend(
-  management: SavedManagement
-): Invoice[] {
+function getInvoicesToSend(management: SavedManagement): Invoice[] {
   const managementCombination = getManagementCombination(
     management.formData.managementType,
     management.formData.debtorComment,
-    management.formData.executiveComment
+    management.formData.executiveComment,
   );
 
   if (managementCombination?.executive_comment === "LITIGATION_NORMALIZATION") {
     const normalizationData = management.formData.caseData?.litigationData;
     if (normalizationData?.selectedInvoiceIds) {
       return management.selectedInvoices.filter((inv) =>
-        normalizationData.selectedInvoiceIds.includes(inv.id)
+        normalizationData.selectedInvoiceIds.includes(inv.id),
       );
     }
   }
@@ -96,44 +94,48 @@ export function buildMultipleEmailPayload({
   contactEmail,
   contactName,
 }: BuildMultipleEmailPayloadParams): EmailMultiplePayload {
-  const emailManagements: EmailManagement[] = managements.map((management, index) => {
-    const managementCombination = getManagementCombination(
-      management.formData.managementType,
-      management.formData.debtorComment,
-      management.formData.executiveComment
-    );
-
-    if (!managementCombination) {
-      throw new Error(
-        `No se encontró configuración para la gestión: ${management.formData.managementType}/${management.formData.debtorComment}/${management.formData.executiveComment}`
+  const emailManagements: EmailManagement[] = managements.map(
+    (management, index) => {
+      const managementCombination = getManagementCombination(
+        management.formData.managementType,
+        management.formData.debtorComment,
+        management.formData.executiveComment,
       );
-    }
 
-    const invoicesToSend = getInvoicesToSend(management);
+      if (!managementCombination) {
+        throw new Error(
+          `No se encontró configuración para la gestión: ${management.formData.managementType}/${management.formData.debtorComment}/${management.formData.executiveComment}`,
+        );
+      }
 
-    const totalAmount = invoicesToSend.reduce((sum, inv) => {
-      const balance =
-        typeof inv.balance === "string" ? parseFloat(inv.balance) : inv.balance;
-      return sum + (balance || 0);
-    }, 0);
+      const invoicesToSend = getInvoicesToSend(management);
 
-    const formattedInvoices = formatInvoices(invoicesToSend);
+      const totalAmount = invoicesToSend.reduce((sum, inv) => {
+        const balance =
+          typeof inv.balance === "string"
+            ? parseFloat(inv.balance)
+            : inv.balance;
+        return sum + (balance || 0);
+      }, 0);
 
-    const bodyHtml = generateBodyDescription(
-      managementCombination,
-      management.formData.caseData || {},
-      invoicesToSend.length
-    );
+      const formattedInvoices = formatInvoices(invoicesToSend);
 
-    return {
-      id: index + 1,
-      header_text: managementCombination.label,
-      header_amount: totalAmount > 0 ? formatCurrency(totalAmount) : "",
-      is_invoices: invoicesToSend.length > 0,
-      invoices: formattedInvoices,
-      body_html: bodyHtml,
-    };
-  });
+      const bodyHtml = generateBodyDescription(
+        managementCombination,
+        management.formData.caseData || {},
+        invoicesToSend.length,
+      );
+
+      return {
+        id: index + 1,
+        header_text: managementCombination.label,
+        header_amount: totalAmount > 0 ? formatCurrency(totalAmount) : "",
+        is_invoices: invoicesToSend.length > 0,
+        invoices: formattedInvoices,
+        body_html: bodyHtml,
+      };
+    },
+  );
 
   const clientContact = profile?.client?.contacts?.[0];
   const clientLogoUrl = profile?.client?.operational?.logo_url || "";
@@ -145,7 +147,7 @@ export function buildMultipleEmailPayload({
     to: contactEmail,
     from: {
       name: "Comunicaciones Quironix",
-      email: "contacto@birdxlab.com",
+      email: "collector@quironix.com",
     },
     templateId: "",
     dynamicTemplateData: {

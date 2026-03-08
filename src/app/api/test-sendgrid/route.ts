@@ -15,7 +15,7 @@ export async function GET() {
           error: "NEXT_SENDGRID_API_KEY is not configured",
           timestamp: new Date().toISOString(),
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -23,7 +23,7 @@ export async function GET() {
       to: "ignacionorambuenag@gmail.com",
       from: {
         name: "Birdxlab SPA",
-        email: "contacto@birdxlab.com",
+        email: "collector@quironix.com",
       },
       subject: "SendGrid API Key Test",
       text: "This is a test email to validate SendGrid API key",
@@ -52,7 +52,7 @@ export async function GET() {
         details: errorDetails,
         timestamp: new Date().toISOString(),
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 }

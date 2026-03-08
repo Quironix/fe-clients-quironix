@@ -21,6 +21,8 @@ export interface DTE {
   ref_2?: string | null; //Ref2
   ref_3?: string | null; //Ref3
   ref_4?: string | null; //Ref4
+  file?: string;
+  file_processed?: boolean;
   debtor_id: string; //Codigodeudor
   debtor?: {
     id?: string;

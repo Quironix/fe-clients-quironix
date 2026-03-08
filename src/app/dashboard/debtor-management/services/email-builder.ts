@@ -68,13 +68,13 @@ function formatInvoices(invoices: Invoice[]): EmailInvoice[] {
 function getInvoicesToSend(
   managementFormData: ManagementFormData,
   selectedInvoices: Invoice[],
-  managementCombination: ManagementCombination
+  managementCombination: ManagementCombination,
 ): Invoice[] {
   if (managementCombination.executive_comment === "LITIGATION_NORMALIZATION") {
     const normalizationData = managementFormData.caseData?.litigationData;
     if (normalizationData?.selectedInvoiceIds) {
       return selectedInvoices.filter((inv) =>
-        normalizationData.selectedInvoiceIds.includes(inv.id)
+        normalizationData.selectedInvoiceIds.includes(inv.id),
       );
     }
   }
@@ -97,7 +97,7 @@ export function buildEmailPayload({
   const invoicesToSend = getInvoicesToSend(
     managementFormData,
     selectedInvoices,
-    managementCombination
+    managementCombination,
   );
 
   const totalAmount = invoicesToSend.reduce((sum, inv) => {
@@ -111,7 +111,7 @@ export function buildEmailPayload({
   const bodyHtml = generateBodyDescription(
     managementCombination,
     managementFormData.caseData || {},
-    invoicesToSend.length
+    invoicesToSend.length,
   );
 
   const clientContact = profile?.client?.contacts?.[0];
@@ -130,7 +130,7 @@ export function buildEmailPayload({
     to: contactEmail,
     from: {
       name: "Comunicaciones Quironix",
-      email: "contacto@birdxlab.com",
+      email: "collector@quironix.com",
     },
     templateId: "",
     dynamicTemplateData: {

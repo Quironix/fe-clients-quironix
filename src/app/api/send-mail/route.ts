@@ -3,8 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 sgMail.setApiKey(process.env.NEXT_SENDGRID_API_KEY || "");
 
-const SINGLE_TEMPLATE_ID = process.env.NEXT_SG_SINGLE_MANAGEMENT || "";
-const MULTIPLE_TEMPLATE_ID = process.env.NEXT_SG_MULTIPLE_MANAGEMENT || "";
+const SINGLE_TEMPLATE_ID =
+  process.env.NEXT_SG_SINGLE_MANAGEMENT || "d-2ab3e2439491440c951a1cf46fdec7aa";
+const MULTIPLE_TEMPLATE_ID =
+  process.env.NEXT_SG_MULTIPLE_MANAGEMENT ||
+  "d-f3db644c64b1410f981ee7642d28aba4";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,14 +16,14 @@ export async function POST(request: NextRequest) {
     if (!body.to || !body.from) {
       return NextResponse.json(
         { error: "Missing required fields: to, from" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     let msg: any;
 
     if (body.dynamicTemplateData) {
-      let templateId = body.templateId;
+      let templateId = body.templateId || "";
 
       if (!templateId) {
         const isMultipleManagement =
@@ -35,7 +38,7 @@ export async function POST(request: NextRequest) {
       if (!templateId) {
         return NextResponse.json(
           { error: "Template ID not configured" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
@@ -57,7 +60,7 @@ export async function POST(request: NextRequest) {
         message: "Email sent successfully",
         timestamp: new Date().toISOString(),
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: any) {
     console.error("SendGrid error:", error);
@@ -68,7 +71,7 @@ export async function POST(request: NextRequest) {
         error: "Failed to send email",
         details: error.response?.body?.errors || error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
