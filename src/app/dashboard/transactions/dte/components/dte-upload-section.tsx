@@ -25,7 +25,7 @@ const DTEUploadSection = () => {
   const router = useRouter();
 
   const clientId = profile?.client?.id || "";
-  const dteEmail = `reception_dte+${clientId}@quironix.com`;
+  const dteEmail = `recepcion_dte+${clientId}@quironix.com`;
 
   const handleCopyDteEmail = () => {
     if (!clientId) {
