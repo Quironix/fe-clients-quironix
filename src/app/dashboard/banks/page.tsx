@@ -28,6 +28,7 @@ import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import Search from "../users/components/search";
 import BankDialog from "./components/bank-dialog";
+import FintocDateDialog from "./components/fintoc-date-dialog";
 import {
   createFintocLinkIntent,
   exchangeDataFintoc,
@@ -46,6 +47,11 @@ const BanksContent = () => {
     useState<BankInformation | null>(null);
   const [isFintocProccessOpen, setIsFintocProccessOpen] =
     useState<boolean>(false);
+  const [isFintocDateDialogOpen, setIsFintocDateDialogOpen] =
+    useState<boolean>(false);
+  const [selectedSinceDate, setSelectedSinceDate] = useState<
+    string | undefined
+  >(undefined);
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const {
@@ -62,7 +68,13 @@ const BanksContent = () => {
     }
   }, [session?.token, profile?.client?.id]);
 
-  const openFintocModal = async () => {
+  const handleFintocDateConfirm = (date?: string) => {
+    setSelectedSinceDate(date);
+    setIsFintocDateDialogOpen(false);
+    openFintocModal(date);
+  };
+
+  const openFintocModal = async (since?: string) => {
     try {
       setIsFintocProccessOpen(true);
       const linkIntent = await createFintocLinkIntent(
@@ -79,7 +91,8 @@ const BanksContent = () => {
           const response = await exchangeDataFintoc(
             session?.token,
             profile?.client?.id,
-            data.exchangeToken
+            data.exchangeToken,
+            since
           );
           if (response.code === "SUCCESSFULLY_CONNECTED") {
             toast.success("Has conectado tu banco correctamente");
@@ -236,7 +249,7 @@ const BanksContent = () => {
                     <div className="flex items-center gap-2">
                       <Button
                         className="bg-orange-500 text-white hover:bg-orange-400"
-                        onClick={openFintocModal}
+                        onClick={() => setIsFintocDateDialogOpen(true)}
                         disabled={isFintocProccessOpen}
                       >
                         <div className="flex items-center gap-2">
@@ -321,6 +334,12 @@ const BanksContent = () => {
         clientId={profile?.client?.id || ""}
         defaultValues={selectedBank || undefined}
         showButton={false}
+      />
+      <FintocDateDialog
+        isOpen={isFintocDateDialogOpen}
+        setIsOpen={setIsFintocDateDialogOpen}
+        onConfirm={handleFintocDateConfirm}
+        isLoading={isFintocProccessOpen}
       />
       <DialogConfirm
         title="¿Eliminar cuenta bancaria?"

@@ -24,10 +24,11 @@ export const createFintocLinkIntent = async (
 export const exchangeDataFintoc = async (
   accessToken: string,
   clientId: string,
-  exchangeToken: string
+  exchangeToken: string,
+  since?: string
 ) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/fintoc/exchange-data?exchangeToken=${exchangeToken}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/fintoc/exchange-data?exchangeToken=${exchangeToken}${since ? `&since=${since}` : ""}`,
     {
       method: "POST",
       headers: {
