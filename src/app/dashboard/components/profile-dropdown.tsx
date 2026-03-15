@@ -14,10 +14,12 @@ import { cn } from "@/lib/utils";
 import { logout } from "@/lib/logout";
 import { Briefcase, ChevronsUpDown, User } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export const ProfileDropdown = () => {
   const { state } = useSidebar();
   const { profile, session, isLoading } = useProfileContext();
+  const t = useTranslations("dashboard.profile");
 
   return (
     <>
@@ -55,7 +57,7 @@ export const ProfileDropdown = () => {
             <div className="flex flex-col space-y-1">
               <p className="text-sm leading-none font-medium">
                 {isLoading && !profile
-                  ? "Cargando..."
+                  ? t("loading")
                   : profile?.first_name + " " + profile?.last_name}
               </p>
 
@@ -67,15 +69,15 @@ export const ProfileDropdown = () => {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem asChild disabled>
-              <Link href="/settings">Perfil</Link>
+              <Link href="/settings">{t("myProfile")}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild disabled>
-              <Link href="/settings">Configuraciones</Link>
+              <Link href="/settings">{t("settings")}</Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => logout()}>
-            Cerrar sesión
+            {t("logout")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

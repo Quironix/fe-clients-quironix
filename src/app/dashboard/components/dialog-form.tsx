@@ -1,3 +1,4 @@
+"use client";
 import {
   Dialog,
   DialogContent,
@@ -6,6 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 interface DialogFormProps<T> {
   defaultValues?: Partial<T>;
@@ -22,8 +24,8 @@ interface DialogFormProps<T> {
 
 const DialogForm = <T,>({
   defaultValues,
-  title = "Crear",
-  description = "Completa los campos obligatorios.",
+  title,
+  description,
   isEdit = false,
   children,
   trigger,
@@ -32,6 +34,9 @@ const DialogForm = <T,>({
   onOpenChange,
   onInteractOutside,
 }: DialogFormProps<T>) => {
+  const t = useTranslations("common.dialog");
+  const resolvedTitle = title ?? t("defaultTitle");
+  const resolvedDescription = description ?? t("defaultDescription");
   return (
     <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -40,9 +45,9 @@ const DialogForm = <T,>({
         onInteractOutside={onInteractOutside}
       >
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="font-extrabold">{title}</DialogTitle>
+          <DialogTitle className="font-extrabold">{resolvedTitle}</DialogTitle>
           <div className="text-sm">
-            <span>{description}</span>
+            <span>{resolvedDescription}</span>
           </div>
         </DialogHeader>
         <div className="overflow-y-auto flex-1 pr-2">

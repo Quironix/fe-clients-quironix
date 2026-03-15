@@ -32,6 +32,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -67,22 +68,25 @@ export function DataTable<TData, TValue>({
   data,
   isLoading = false,
   loadingComponent,
-  emptyMessage = "No se encontraron datos",
+  emptyMessage,
   pageSize = 15,
   pageSizeOptions = [15, 20, 25, 30, 40, 50],
   showPagination = true,
   className = "",
-  // Valores por defecto para búsqueda del servidor
   enableGlobalFilter = false,
-  searchPlaceholder = "Buscar...",
+  searchPlaceholder,
   debounceMs = 300,
   initialSearchValue = "",
-  // Paginación del servidor (requerida)
   pagination,
   onPaginationChange,
   onSearchChange,
   isServerSideLoading = false,
 }: DataTableProps<TData, TValue>) {
+  const tTable = useTranslations("common.table");
+  const tPagination = useTranslations("common.pagination");
+  const tLoading = useTranslations("common.loading");
+  const resolvedEmptyMessage = emptyMessage ?? tTable("empty");
+  const resolvedSearchPlaceholder = searchPlaceholder ?? tLoading("searching");
   // Estado para el valor de búsqueda del servidor
   const [searchValue, setSearchValue] = useState(initialSearchValue);
 
@@ -152,7 +156,7 @@ export function DataTable<TData, TValue>({
           <div className="relative flex-1 max-w-sm bg-white">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder={searchPlaceholder}
+              placeholder={resolvedSearchPlaceholder}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="pl-9 pr-9"
@@ -173,10 +177,10 @@ export function DataTable<TData, TValue>({
               {isServerSideLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-muted-foreground"></div>
-                  Buscando...
+                  {tLoading("searching")}
                 </>
               ) : (
-                `${paginationInfo.total} resultado(s)`
+                tPagination("results", { count: paginationInfo.total })
               )}
             </div>
           )}
@@ -215,7 +219,7 @@ export function DataTable<TData, TValue>({
                       colSpan={columns.length}
                       className="text-center py-8"
                     >
-                      Cargando...
+                      {tLoading("generic")}
                     </TableCell>
                   </TableRow>
                 )
@@ -244,8 +248,8 @@ export function DataTable<TData, TValue>({
                         className="text-center py-8"
                       >
                         {searchValue
-                          ? "No se encontraron resultados para tu búsqueda"
-                          : emptyMessage}
+                          ? tTable("noResults")
+                          : resolvedEmptyMessage}
                       </TableCell>
                     </TableRow>
                   )}
@@ -259,18 +263,17 @@ export function DataTable<TData, TValue>({
         {showPagination && (
           <div className="flex items-center justify-between px-2 py-1">
             <div className="text-sm text-muted-foreground">
-              Mostrando {paginationInfo.showingFrom} a{" "}
-              {paginationInfo.showingTo} de {paginationInfo.total} registros
+              {tPagination("showing", { from: paginationInfo.showingFrom, to: paginationInfo.showingTo, total: paginationInfo.total })}
               {searchValue && (
                 <span className="text-muted-foreground">
                   {" "}
-                  (filtrado por búsqueda)
+                  {tPagination("filteredBySearch")}
                 </span>
               )}
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
               <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium">Filas por página</p>
+                <p className="text-sm font-medium">{tPagination("rowsPerPage")}</p>
                 <Select
                   value={`${paginationInfo.pageSize}`}
                   onValueChange={(value) => {
@@ -293,8 +296,7 @@ export function DataTable<TData, TValue>({
                 </Select>
               </div>
               <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Página {paginationInfo.currentPage} de{" "}
-                {paginationInfo.totalPages}
+                {tPagination("page", { current: paginationInfo.currentPage, total: paginationInfo.totalPages })}
               </div>
               <div className="flex items-center space-x-2">
                 <Button
@@ -306,7 +308,7 @@ export function DataTable<TData, TValue>({
                   }}
                   disabled={!paginationInfo.hasPrevious}
                 >
-                  <span className="sr-only">Ir a la primera página</span>
+                  <span className="sr-only">{tPagination("goToFirst")}</span>
                   <ChevronsLeft className="h-4 w-4" />
                 </Button>
                 <Button
@@ -321,7 +323,7 @@ export function DataTable<TData, TValue>({
                   }}
                   disabled={!paginationInfo.hasPrevious}
                 >
-                  <span className="sr-only">Ir a la página anterior</span>
+                  <span className="sr-only">{tPagination("goToPrevious")}</span>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <Button
@@ -336,7 +338,7 @@ export function DataTable<TData, TValue>({
                   }}
                   disabled={!paginationInfo.hasNext}
                 >
-                  <span className="sr-only">Ir a la página siguiente</span>
+                  <span className="sr-only">{tPagination("goToNext")}</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button
@@ -351,7 +353,7 @@ export function DataTable<TData, TValue>({
                   }}
                   disabled={!paginationInfo.hasNext}
                 >
-                  <span className="sr-only">Ir a la última página</span>
+                  <span className="sr-only">{tPagination("goToLast")}</span>
                   <ChevronsRight className="h-4 w-4" />
                 </Button>
               </div>

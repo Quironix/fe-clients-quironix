@@ -6,9 +6,11 @@ import {
 } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 import { formatDate, formatNumber } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import { Badge } from "../../components/badge";
 
 const LastPaymentReceived = ({ data }: { data: any }) => {
+  const t = useTranslations("debtorManagement.lastPaymentCard");
   // "last_payment_received": {
   //         "amount": 0,
   //         "type": null,
@@ -43,7 +45,7 @@ const LastPaymentReceived = ({ data }: { data: any }) => {
           >
             <AccordionItem value="item-1" className="border-0">
               <AccordionTrigger className="px-2">
-                Otros pagos pendientes
+                {t("otherPending")}
               </AccordionTrigger>
               <AccordionContent>
                 {data.other_pending_payments.map((data) => (

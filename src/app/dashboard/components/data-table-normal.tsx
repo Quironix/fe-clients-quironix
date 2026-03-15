@@ -34,6 +34,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -63,18 +64,22 @@ export default function DataTableNormal<TData, TValue>({
   data,
   isLoading = false,
   loadingComponent,
-  emptyMessage = "No se encontraron datos",
+  emptyMessage,
   pageSize = 15,
   pageSizeOptions = [10, 15, 20, 25, 30, 40, 50],
   showPagination = true,
   className = "",
-  // Valores por defecto para búsqueda
   enableGlobalFilter = false,
-  searchPlaceholder = "Buscar...",
+  searchPlaceholder,
   searchableColumns,
   globalFilterFunction,
   debounceMs = 300,
 }: DataTableProps<TData, TValue>) {
+  const tTable = useTranslations("common.table");
+  const tPagination = useTranslations("common.pagination");
+  const tLoading = useTranslations("common.loading");
+  const resolvedEmptyMessage = emptyMessage ?? tTable("empty");
+  const resolvedSearchPlaceholder = searchPlaceholder ?? tLoading("searching");
   // Estado para el valor de búsqueda
   const [globalFilter, setGlobalFilter] = useState("");
   const [searchValue, setSearchValue] = useState("");
@@ -148,7 +153,7 @@ export default function DataTableNormal<TData, TValue>({
           <div className="relative flex-1 max-w-sm bg-white">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder={searchPlaceholder}
+              placeholder={resolvedSearchPlaceholder}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="pl-9 pr-9"
@@ -166,7 +171,7 @@ export default function DataTableNormal<TData, TValue>({
           </div>
           {searchValue && (
             <div className="text-sm text-muted-foreground">
-              {table.getFilteredRowModel().rows.length} resultado(s)
+              {tPagination("results", { count: table.getFilteredRowModel().rows.length })}
             </div>
           )}
         </div>
@@ -206,7 +211,7 @@ export default function DataTableNormal<TData, TValue>({
                       colSpan={columns.length}
                       className="text-center py-8"
                     >
-                      Cargando...
+                      {tLoading("generic")}
                     </TableCell>
                   </TableRow>
                 )
@@ -235,8 +240,8 @@ export default function DataTableNormal<TData, TValue>({
                         className="text-center py-8"
                       >
                         {globalFilter
-                          ? "No se encontraron resultados para tu búsqueda"
-                          : emptyMessage}
+                          ? tTable("noResults")
+                          : resolvedEmptyMessage}
                       </TableCell>
                     </TableRow>
                   )}
@@ -250,28 +255,25 @@ export default function DataTableNormal<TData, TValue>({
         {showPagination && (
           <div className="flex items-center justify-between px-2 py-1">
             <div className="text-sm text-muted-foreground">
-              Mostrando{" "}
-              {table.getState().pagination.pageIndex *
-                table.getState().pagination.pageSize +
-                1}{" "}
-              a{" "}
-              {Math.min(
-                (table.getState().pagination.pageIndex + 1) *
-                  table.getState().pagination.pageSize,
-                table.getFilteredRowModel().rows.length
-              )}{" "}
-              de {table.getFilteredRowModel().rows.length} registros
+              {tPagination("showing", {
+                from: table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1,
+                to: Math.min(
+                  (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+                  table.getFilteredRowModel().rows.length
+                ),
+                total: table.getFilteredRowModel().rows.length,
+              })}
               {globalFilter &&
                 table.getFilteredRowModel().rows.length !== data.length && (
                   <span className="text-muted-foreground">
                     {" "}
-                    (filtrado de {data.length} total)
+                    {tPagination("filteredOfTotal", { total: data.length })}
                   </span>
                 )}
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
               <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium">Filas por página</p>
+                <p className="text-sm font-medium">{tPagination("rowsPerPage")}</p>
                 <Select
                   value={`${table.getState().pagination.pageSize}`}
                   onValueChange={(value) => {
@@ -293,8 +295,7 @@ export default function DataTableNormal<TData, TValue>({
                 </Select>
               </div>
               <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Página {table.getState().pagination.pageIndex + 1} de{" "}
-                {table.getPageCount()}
+                {tPagination("page", { current: table.getState().pagination.pageIndex + 1, total: table.getPageCount() })}
               </div>
               <div className="flex items-center space-x-2">
                 <Button
@@ -304,7 +305,7 @@ export default function DataTableNormal<TData, TValue>({
                   onClick={() => table.setPageIndex(0)}
                   disabled={!table.getCanPreviousPage()}
                 >
-                  <span className="sr-only">Ir a la primera página</span>
+                  <span className="sr-only">{tPagination("goToFirst")}</span>
                   <ChevronsLeft className="h-4 w-4" />
                 </Button>
                 <Button
@@ -314,7 +315,7 @@ export default function DataTableNormal<TData, TValue>({
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
                 >
-                  <span className="sr-only">Ir a la página anterior</span>
+                  <span className="sr-only">{tPagination("goToPrevious")}</span>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <Button
@@ -324,7 +325,7 @@ export default function DataTableNormal<TData, TValue>({
                   onClick={() => table.nextPage()}
                   disabled={!table.getCanNextPage()}
                 >
-                  <span className="sr-only">Ir a la página siguiente</span>
+                  <span className="sr-only">{tPagination("goToNext")}</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button
@@ -334,7 +335,7 @@ export default function DataTableNormal<TData, TValue>({
                   onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                   disabled={!table.getCanNextPage()}
                 >
-                  <span className="sr-only">Ir a la última página</span>
+                  <span className="sr-only">{tPagination("goToLast")}</span>
                   <ChevronsRight className="h-4 w-4" />
                 </Button>
               </div>

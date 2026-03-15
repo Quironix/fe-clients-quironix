@@ -26,20 +26,22 @@ import { FormProvider, useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { useDashboard } from "@/stores/dashboard/dashboardStore";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import useOnboardingStore from "../../store";
 import { ContinueAndBackButtons } from "./ContinueAndBackButtons";
 
-const userFormSchema = z.object({
-  country_id: z.string().min(1, "El país es requerido"),
-  business_name: z.string().min(1, "La razón social es requerida"),
-  first_name: z.string().min(1, "El nombre es requerido"),
-  last_name: z.string().min(1, "El apellido es requerido"),
-  phone_number: z.string().min(1, "El número de teléfono es requerido"),
-  email: z.string().email("El email no es válido"),
-});
+const createUserFormSchema = (t: ReturnType<typeof useTranslations<"onboarding">>) =>
+  z.object({
+    country_id: z.string().min(1, t("personalInfo.validation.countryRequired")),
+    business_name: z.string().min(1, t("personalInfo.validation.businessNameRequired")),
+    first_name: z.string().min(1, t("personalInfo.validation.firstNameRequired")),
+    last_name: z.string().min(1, t("personalInfo.validation.lastNameRequired")),
+    phone_number: z.string().min(1, t("personalInfo.validation.phoneRequired")),
+    email: z.string().email(t("personalInfo.validation.emailInvalid")),
+  });
 
-type UserFormValues = z.infer<typeof userFormSchema>;
+type UserFormValues = z.infer<ReturnType<typeof createUserFormSchema>>;
 
 const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
   onNext,
@@ -51,10 +53,13 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
   onStepChange,
   profile,
 }) => {
+  const t = useTranslations("onboarding");
+  const tCommon = useTranslations("common");
   const { countries, refreshCountries } = useDashboard();
   const { data: session } = useSession();
   const [isLoadingData, setIsLoadingData] = useState(true);
   const { sendCode, error, loading } = useOnboardingStore();
+  const userFormSchema = createUserFormSchema(t);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,8 +96,8 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
 
   return (
     <StepLayout
-      title="Datos personales"
-      description="Completa los campos obligatorios para acceder a tu cuenta."
+      title={t("personalInfo.title")}
+      description={t("personalInfo.description")}
     >
       <section className="h-full">
         <FormProvider {...form}>
@@ -119,7 +124,7 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            País<span className="text-orange-500">*</span>
+                            {t("personalInfo.country")}<span className="text-orange-500">*</span>
                           </FormLabel>
                           <Select
                             onValueChange={field.onChange}
@@ -127,13 +132,13 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
                           >
                             <FormControl>
                               <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Selecciona un país" />
+                                <SelectValue placeholder={t("personalInfo.selectCountry")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                               {isLoadingData && countries.length === 0 ? (
                                 <SelectItem value="loading" disabled>
-                                  Cargando...
+                                  {tCommon("loading.generic")}
                                 </SelectItem>
                               ) : (
                                 countries?.map((country: any) => (
@@ -157,12 +162,12 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Razón social
+                            {t("personalInfo.businessName")}
                             <span className="text-orange-500">*</span>
                           </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Ingresa razón social"
+                              placeholder={t("personalInfo.businessNamePlaceholder")}
                               {...field}
                             />
                           </FormControl>
@@ -179,10 +184,10 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Nombre<span className="text-orange-500">*</span>
+                            {t("personalInfo.firstName")}<span className="text-orange-500">*</span>
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="Nombre" {...field} />
+                            <Input placeholder={t("personalInfo.firstName")} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -194,10 +199,10 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Apellido<span className="text-orange-500">*</span>
+                            {t("personalInfo.lastName")}<span className="text-orange-500">*</span>
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="Apellido" {...field} />
+                            <Input placeholder={t("personalInfo.lastName")} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -231,12 +236,12 @@ const PersonalInformationStep: React.FC<OnboardingStepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Número de teléfono
+                            {t("personalInfo.phone")}
                             <span className="text-orange-500">*</span>
                           </FormLabel>
                           <FormControl>
                             <PhoneInput
-                              placeholder="Ingresa tu número de teléfono"
+                              placeholder={t("personalInfo.phonePlaceholder")}
                               {...field}
                               country={form.getValues("country_id")}
                             />

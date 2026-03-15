@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslations } from "next-intl";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { BANK_LIST } from "../../data";
@@ -36,6 +37,7 @@ const BankForm: React.FC<BankFormProps> = ({
   isLoading,
   isLinkedAccount = false,
 }) => {
+  const t = useTranslations("banks");
   return (
     <div className="grid gap-4">
       <FormField
@@ -44,7 +46,7 @@ const BankForm: React.FC<BankFormProps> = ({
         render={({ field }) => (
           <FormItem>
             <FormLabel>
-              Banco<span className="text-orange-500">*</span>
+              {t("bankLabel")}<span className="text-orange-500">*</span>
             </FormLabel>
             <Select
               onValueChange={field.onChange}
@@ -54,7 +56,7 @@ const BankForm: React.FC<BankFormProps> = ({
             >
               <FormControl>
                 <SelectTrigger className="w-full" disabled={isLinkedAccount}>
-                  <SelectValue placeholder="Selecciona una opción" />
+                  <SelectValue placeholder={t("selectOption")} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -77,10 +79,10 @@ const BankForm: React.FC<BankFormProps> = ({
         render={({ field }) => (
           <FormItem>
             <FormLabel>
-              Número de cuenta<span className="text-orange-500">*</span>
+              {t("accountNumberLabel")}<span className="text-orange-500">*</span>
             </FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Completa" />
+              <Input {...field} placeholder={t("fillPlaceholder")} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -93,9 +95,9 @@ const BankForm: React.FC<BankFormProps> = ({
         disabled={isLoading}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Cuenta contable</FormLabel>
+            <FormLabel>{t("ledgerAccountLabel")}</FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Completa" />
+              <Input {...field} placeholder={t("fillPlaceholder")} />
             </FormControl>
             <FormMessage />
           </FormItem>

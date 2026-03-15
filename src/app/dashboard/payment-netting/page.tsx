@@ -20,6 +20,7 @@ import {
 import { format, parseISO } from "date-fns";
 
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -37,6 +38,7 @@ import { usePaymentNetting } from "./hooks/usePaymentNetting";
 import { reversePayment, updateReconciliationTableProfile } from "./services";
 
 export default function PaymentNettingPage() {
+  const t = useTranslations("paymentNetting");
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const [openDialog, setOpenDialog] = useState(false);
@@ -114,23 +116,23 @@ export default function PaymentNettingPage() {
   }, [profile?.profile]);
   const columnLabels = useMemo(
     () => ({
-      id: "ID",
-      status: "Estado",
-      amount: "Importe",
-      bank: "Banco",
-      account_number: "Nº de cuenta",
-      code: "Códigode deudor",
-      description: "Descripción",
-      comment: "Comentario",
-      actions: "Acciones",
+      id: t("columnLabels.id"),
+      status: t("columnLabels.status"),
+      amount: t("columnLabels.amount"),
+      bank: t("columnLabels.bank"),
+      account_number: t("columnLabels.accountNumber"),
+      code: t("columnLabels.debtorCode"),
+      description: t("columnLabels.description"),
+      comment: t("columnLabels.comment"),
+      actions: t("columnLabels.actions"),
     }),
-    []
+    [t]
   );
 
   const bulkActions = useMemo(
     () => [
       {
-        label: "Ver detalles",
+        label: t("bulkActions.viewDetails"),
         onClick: (selectedRows: any[]) => {
           console.log("Ver detalles de elementos seleccionados:", selectedRows);
         },
@@ -138,7 +140,7 @@ export default function PaymentNettingPage() {
         icon: <Eye className="h-4 w-4" />,
       },
       {
-        label: "Archivar",
+        label: t("bulkActions.archive"),
         onClick: (selectedRows: any[]) => {
           console.log("Archivar elementos seleccionados:", selectedRows);
         },
@@ -146,7 +148,7 @@ export default function PaymentNettingPage() {
         icon: <Archive className="h-4 w-4" />,
       },
       {
-        label: "Eliminar",
+        label: t("bulkActions.delete"),
         onClick: (selectedRows: any[]) => {
           console.log("Eliminar elementos seleccionados:", selectedRows);
         },
@@ -154,7 +156,7 @@ export default function PaymentNettingPage() {
         icon: <Trash2 className="h-4 w-4" />,
       },
     ],
-    []
+    [t]
   );
 
   const handleUpdateColumns = async (
@@ -196,7 +198,7 @@ export default function PaymentNettingPage() {
       }
     } catch (error) {
       console.error("Error al actualizar configuración de columnas:", error);
-      toast.error("Error al guardar la configuración de columnas");
+      toast.error(t("columnConfigError"));
     } finally {
       setIsApplyingFilters(false);
     }
@@ -248,10 +250,10 @@ export default function PaymentNettingPage() {
       </Header>
       <Main>
         <TitleSection
-          title="Compensación de pagos"
-          description="En esta sección podrás realizar la compensación de pagos entre tus clientes y proveedores."
+          title={t("title")}
+          description={t("description")}
           icon={<FileCheck2 color="white" />}
-          subDescription="Compensación de pagos"
+          subDescription={t("subDescription")}
         />
 
         <Card>
@@ -265,7 +267,7 @@ export default function PaymentNettingPage() {
               onPaginationChange={handlePaginationChange}
               onSearchChange={handleSearchChange}
               enableGlobalFilter={true}
-              searchPlaceholder="Buscar"
+              searchPlaceholder={t("searchPlaceholder")}
               enableColumnFilter={true}
               initialColumnVisibility={columnVisibility}
               initialColumnConfiguration={columnConfiguration}
@@ -273,7 +275,7 @@ export default function PaymentNettingPage() {
               ctaNode={
                 <>
                   <DialogForm
-                    title="Detalle del depósito"
+                    title={t("depositDetail")}
                     description=""
                     open={openDialog}
                     onOpenChange={setOpenDialog}
@@ -289,7 +291,7 @@ export default function PaymentNettingPage() {
                         className="bg-orange-400 text-white hover:bg-orange-400/90"
                         onClick={() => setOpenDialog(true)}
                       >
-                        Asignar deudor
+                        {t("assignDebtor")}
                       </Button>
                     }
                   >
@@ -299,41 +301,41 @@ export default function PaymentNettingPage() {
                         <span className="font-medium">
                           {selectedPayments.length === 1
                             ? `MOV-${selectedPayments[0]?.id}`
-                            : `${selectedPayments.length} movimientos seleccionados`}
+                            : t("movementsSelected", { count: selectedPayments.length })}
                         </span>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 border-b border-t border-gray-200 py-4">
                       <IconDescription
                         icon={<File className="w-4 h-4 text-gray-400" />}
-                        description="Descripción"
-                        value="Transferencia bancaria"
+                        description={t("columnLabels.description")}
+                        value={t("bankTransfer")}
                       />
                       <IconDescription
                         icon={<Building2 className="w-4 h-4 text-gray-400" />}
-                        description="Banco"
+                        description={t("columnLabels.bank")}
                         value={
                           selectedPayments.length === 1
                             ? selectedPayments[0]?.bank_information?.bank
-                            : "Múltiples bancos"
+                            : t("multipleBanks")
                         }
                       />
                       <IconDescription
                         icon={<Calendar className="w-4 h-4 text-gray-400" />}
-                        description="Fecha de depósito"
+                        description={t("depositDate")}
                         value={
                           selectedPayments.length === 1
                             ? selectedPayments[0]?.created_at
                               ? format(parseISO(selectedPayments[0].created_at), "dd/MM/yyyy")
                               : "N/A"
-                            : "Múltiples fechas"
+                            : t("multipleDates")
                         }
                       />
                       <IconDescription
                         icon={
                           <ArrowLeftRight className="w-4 h-4 text-gray-400" />
                         }
-                        description="Transferencia"
+                        description={t("transfer")}
                         value={`$ ${new Intl.NumberFormat("es-ES", {}).format(
                           selectedPayments.reduce(
                             (sum, payment) =>
@@ -348,13 +350,11 @@ export default function PaymentNettingPage() {
                         <div className="flex items-center gap-2">
                           <TriangleAlert className="w-4 h-4" />
                           <span className="font-bold">
-                            Información no encontrada
+                            {t("infoNotFound")}
                           </span>
                         </div>
                         <span>
-                          No hemos logrado asociar este pago a un deudor
-                          registrado. Por favor completa los datos requeridos
-                          para poder avanzar con el proceso.
+                          {t("paymentNotAssociated")}
                         </span>
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export default function PaymentNettingPage() {
                       }
                     }}
                   >
-                    Generar pago
+                    {t("generatePayment")}
                   </Button>
                 </>
               }
@@ -389,9 +389,9 @@ export default function PaymentNettingPage() {
               initialRowSelection={isHydrated ? rowSelection : {}}
               onRowSelectionChange={handleRowSelectionChange}
               bulkActions={bulkActions}
-              emptyMessage="No se encontraron conciliaciones"
+              emptyMessage={t("emptyMessage")}
               className="rounded-lg"
-              title="Historial de pagos"
+              title={t("historyTitle")}
               handleSuccessButton={handleUpdateColumns}
               filterInputs={
                 <FilterInputs

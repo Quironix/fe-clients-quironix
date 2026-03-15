@@ -11,6 +11,7 @@ import {
   MinusIcon,
   TrendingUpIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useKPIMetrics } from "../hooks/useKPIMetrics";
 import { KPI } from "../services/types";
 import { getStatusColors } from "../utils/kpi-utils";
@@ -21,6 +22,7 @@ interface KPICardDetailedProps {
 }
 
 export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
+  const t = useTranslations("overview");
   const { status, trend, progressPercentage } = useKPIMetrics(kpi);
   const statusColors = getStatusColors(status.status);
 
@@ -112,7 +114,7 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-gray-600">
               <TrendingUpIcon className="h-4 w-4" />
-              <span className="font-medium">Meta</span>
+              <span className="font-medium">{t("targetShort")}</span>
             </div>
             <span className="font-bold text-gray-900">
               {kpi.target}
@@ -122,7 +124,7 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-gray-600">Progreso</span>
+              <span className="font-medium text-gray-600">{t("progress")}</span>
               <span className="font-bold text-gray-900">
                 {progressPercentage.toFixed(1)}%
               </span>
@@ -131,7 +133,7 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 font-medium">Rango Óptimo</span>
+            <span className="text-gray-600 font-medium">{t("optimalRange")}</span>
             <span className="font-semibold text-gray-900">
               {kpi.thresholds.direction === "ascending"
                 ? `≥ ${kpi.thresholds.acceptance_criteria}${kpi.unit}`
@@ -155,11 +157,12 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <CalendarIcon className="h-3.5 w-3.5" />
               <span>
-                Actualizado:{" "}
-                {new Date(kpi.lastUpdated).toLocaleDateString("es-CL", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
+                {t("updated", {
+                  date: new Date(kpi.lastUpdated).toLocaleDateString("es-CL", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  }),
                 })}
               </span>
             </div>
@@ -178,7 +181,7 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
               )}
               {kpi.criterio && (
                 <div className="text-xs">
-                  <span className="font-semibold text-gray-700">Criterio:</span>{" "}
+                  <span className="font-semibold text-gray-700">{t("criteria")}:</span>{" "}
                   <span className="text-gray-600">{kpi.criterio}</span>
                 </div>
               )}

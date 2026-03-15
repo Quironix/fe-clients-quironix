@@ -1,4 +1,5 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { KPI } from "../services/types";
 import { KPIStatusInfo, KPITrendInfoNullable } from "../utils/kpi-utils";
 import { KPICardDetailed } from "./kpi-card-detailed";
@@ -10,7 +11,9 @@ interface ViewProps {
   trend: KPITrendInfoNullable;
 }
 
-export const CardView: React.FC<ViewProps> = ({ kpi, status, trend }) => (
+export const CardView: React.FC<ViewProps> = ({ kpi, status, trend }) => {
+  const t = useTranslations("overview");
+  return (
   <div className="p-4">
     <div className="flex justify-between items-start mb-3">
       <div>
@@ -19,8 +22,7 @@ export const CardView: React.FC<ViewProps> = ({ kpi, status, trend }) => (
           <span className="text-sm text-gray-400">{kpi.unit}</span>
         </div>
         <div className="text-xs text-gray-400 mt-1">
-          Meta: {kpi.target}
-          {kpi.unit}
+          {t("target", { value: kpi.target, unit: kpi.unit })}
         </div>
       </div>
       {trend && (
@@ -64,8 +66,11 @@ export const CardView: React.FC<ViewProps> = ({ kpi, status, trend }) => (
     )}
   </div>
 );
+};
 
-export const GaugeView: React.FC<ViewProps> = ({ kpi, status }) => (
+export const GaugeView: React.FC<ViewProps> = ({ kpi, status }) => {
+  const t = useTranslations("overview");
+  return (
   <div className="p-4 flex flex-col items-center">
     <GaugeChart value={kpi.value} max={kpi.target} color={status.color} />
     <div
@@ -80,12 +85,15 @@ export const GaugeView: React.FC<ViewProps> = ({ kpi, status }) => (
       {status.label}
     </div>
     <div className="text-xs text-gray-500 mt-2">
-      Meta: {kpi.target}{kpi.unit}
+      {t("target", { value: kpi.target, unit: kpi.unit })}
     </div>
   </div>
 );
+};
 
-export const SparklineView: React.FC<ViewProps> = ({ kpi, status, trend }) => (
+export const SparklineView: React.FC<ViewProps> = ({ kpi, status, trend }) => {
+  const t = useTranslations("overview");
+  return (
   <div className="p-4">
     <div className="flex justify-between items-start mb-2">
       <div className="flex items-baseline gap-2">
@@ -118,18 +126,19 @@ export const SparklineView: React.FC<ViewProps> = ({ kpi, status, trend }) => (
           width={220}
         />
         <div className="flex justify-between mt-2 text-[10px] text-gray-400">
-          <span>{kpi.history.length} períodos</span>
+          <span>{t("periods", { count: kpi.history.length })}</span>
           <span>
-            Meta: {kpi.target}
-            {kpi.unit}
+            {t("target", { value: kpi.target, unit: kpi.unit })}
           </span>
         </div>
       </>
     )}
   </div>
 );
+};
 
 export const RingView: React.FC<ViewProps> = ({ kpi, status, trend }) => {
+  const t = useTranslations("overview");
   const previousValue = kpi.history && kpi.history.length > 1
     ? kpi.history[kpi.history.length - 2].value
     : null;
@@ -149,13 +158,11 @@ export const RingView: React.FC<ViewProps> = ({ kpi, status, trend }) => {
           </div>
         )}
         <div className="text-xs text-gray-500">
-          Meta: {kpi.target}
-          {kpi.unit}
+          {t("target", { value: kpi.target, unit: kpi.unit })}
         </div>
         {previousValue !== null && (
           <div className="text-xs text-gray-400">
-            Anterior: {previousValue}
-            {kpi.unit}
+            {t("previous", { value: previousValue, unit: kpi.unit })}
           </div>
         )}
       </div>
@@ -164,6 +171,7 @@ export const RingView: React.FC<ViewProps> = ({ kpi, status, trend }) => {
 };
 
 export const CompactView: React.FC<ViewProps> = ({ kpi, status, trend }) => {
+  const t = useTranslations("overview");
   const progressWidth = kpi.target === 0 ? 0 : Math.min((kpi.value / kpi.target) * 100, 100);
 
   return (
@@ -193,7 +201,7 @@ export const CompactView: React.FC<ViewProps> = ({ kpi, status, trend }) => {
           )}
         </div>
         <div className="text-xs text-gray-400 mb-1">
-          Meta: {kpi.target}{kpi.unit}
+          {t("target", { value: kpi.target, unit: kpi.unit })}
         </div>
         <div className="h-1 bg-gray-100 rounded-full">
           <div

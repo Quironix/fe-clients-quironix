@@ -16,6 +16,7 @@ import useLogin from "@/hooks/useLogin";
 import { cn } from "@/lib/utils";
 import { useAuthLayout } from "@/stores/authLayout";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { HTMLAttributes } from "react";
 import AuthLayout from "../AuthLayout";
 
@@ -24,16 +25,17 @@ type UserAuthFormProps = HTMLAttributes<HTMLDivElement>;
 export default function Login({ className, ...props }: UserAuthFormProps) {
   const { onSubmit, form, isLoading } = useLogin();
   const { isLoading: isLoadingAuthLayout } = useAuthLayout();
+  const t = useTranslations("auth");
 
   return (
     <AuthLayout>
       <div className={cn("grid gap-3 space-y-1", className)} {...props}>
         <div className="flex flex-col space-y-2 text-left">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Bienvenidos/as
+            {t("login.title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Por favor, completa los datos para ingresar.
+            {t("login.subtitle")}
           </p>
         </div>
         <Form {...form}>
@@ -44,7 +46,7 @@ export default function Login({ className, ...props }: UserAuthFormProps) {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="space-y-1">
-                    <FormLabel>Correo electrónico</FormLabel>
+                    <FormLabel>{t("login.email")}</FormLabel>
                     <FormControl>
                       <Input placeholder="jhon@doe.com" {...field} />
                     </FormControl>
@@ -58,13 +60,7 @@ export default function Login({ className, ...props }: UserAuthFormProps) {
                 render={({ field }) => (
                   <FormItem className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <FormLabel>Contraseña</FormLabel>
-                      {/* <Link
-                      href="/forgot-password"
-                      className="text-sm font-medium text-muted-foreground hover:opacity-75"
-                    >
-                      Forgot password?
-                    </Link> */}
+                      <FormLabel>{t("login.password")}</FormLabel>
                     </div>
                     <FormControl>
                       <PasswordInput placeholder="********" {...field} />
@@ -78,7 +74,7 @@ export default function Login({ className, ...props }: UserAuthFormProps) {
                   href="/forgot-password"
                   className="text-sm text-primary font-medium text-center"
                 >
-                  ¿Olvidaste tu contraseña?
+                  {t("login.forgotPassword")}
                 </Link>
               </div>
               <Button
@@ -88,10 +84,10 @@ export default function Login({ className, ...props }: UserAuthFormProps) {
                 {isLoadingAuthLayout ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="animate-spin" />
-                    Iniciando
+                    {t("login.submitting")}
                   </span>
                 ) : (
-                  "Iniciar sesión"
+                  t("login.submit")
                 )}
               </Button>
             </div>

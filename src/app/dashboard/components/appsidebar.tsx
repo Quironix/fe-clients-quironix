@@ -1,3 +1,4 @@
+"use client";
 import {
   Sidebar,
   SidebarContent,
@@ -8,6 +9,7 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import Image from "next/image";
 import React from "react";
+import { useTranslations } from "next-intl";
 import { getSidebarData } from "../data";
 import { NavGroup } from "./nav-group";
 import { ProfileDropdown } from "./profile-dropdown";
@@ -15,9 +17,9 @@ import { ProfileDropdown } from "./profile-dropdown";
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   const { state } = useSidebar();
   const { profile } = useProfileContext();
+  const t = useTranslations("dashboard.sidebar");
 
-  // Obtener la configuración del sidebar basada en el perfil del usuario
-  const sidebarData = getSidebarData(profile);
+  const sidebarData = getSidebarData(profile, t);
 
   return (
     <Sidebar collapsible="icon" variant="floating" {...props}>

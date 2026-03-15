@@ -2,6 +2,7 @@ import { ArrowRightIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, Loader } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export interface ContinueAndBackButtonsProps {
   isFirstStep: boolean;
@@ -20,6 +21,7 @@ export const ContinueAndBackButtons = ({
   blockContinue,
   onContinue,
 }: ContinueAndBackButtonsProps) => {
+  const t = useTranslations("common");
   return (
     <>
       <div
@@ -32,7 +34,7 @@ export const ContinueAndBackButtons = ({
             variant="outline"
             className="px-6 py-2 border-2 border-primary h-10 w-40"
           >
-            <ArrowLeftIcon className="w-4 h-4 text-primary" /> Volver
+            <ArrowLeftIcon className="w-4 h-4 text-primary" /> {t("buttons.back")}
           </Button>
         )}
         <Button
@@ -43,11 +45,11 @@ export const ContinueAndBackButtons = ({
         >
           {loading || form?.formState?.isSubmitting ? (
             <div className="flex items-center gap-2">
-              <Loader className="w-4 h-4 animate-spin" /> Cargando
+              <Loader className="w-4 h-4 animate-spin" /> {t("loading.submitting")}
             </div>
           ) : (
             <>
-              Continuar <ArrowRightIcon className="w-4 h-4" />
+              {t("buttons.continue")} <ArrowRightIcon className="w-4 h-4" />
             </>
           )}
         </Button>

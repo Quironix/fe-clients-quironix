@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import React from "react";
 
 interface SparklineProps {
@@ -63,6 +64,7 @@ export const GaugeChart: React.FC<GaugeChartProps> = ({
   color,
   size = 140,
 }) => {
+  const t = useTranslations("overview");
   const percentage = max === 0 ? 0 : Math.min((value / max) * 100, 100);
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
@@ -102,7 +104,7 @@ export const GaugeChart: React.FC<GaugeChartProps> = ({
       </svg>
       <div className="absolute bottom-2 flex flex-col items-center">
         <span className="text-3xl font-bold text-gray-900">{value}</span>
-        <span className="text-xs text-gray-400">de {max}</span>
+        <span className="text-xs text-gray-400">{t("of", { max })}</span>
       </div>
     </div>
   );
@@ -182,6 +184,7 @@ export const BulletChart: React.FC<BulletChartProps> = ({
   high,
   color,
 }) => {
+  const t = useTranslations("overview");
   const max = Math.max(value, target, high) * 1.15;
   const colors: Record<string, string> = {
     emerald: "#10b981",
@@ -218,7 +221,7 @@ export const BulletChart: React.FC<BulletChartProps> = ({
       </div>
       <div className="flex justify-between mt-1 text-[10px] text-gray-400">
         <span>0</span>
-        <span>Meta: {target}</span>
+        <span>{t("target", { value: target, unit: "" })}</span>
         <span>{Math.round(max)}</span>
       </div>
     </div>

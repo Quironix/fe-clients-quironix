@@ -17,6 +17,7 @@ import {
   ShieldX,
   User,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -24,105 +25,52 @@ import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 
-// Mapeo de rutas a descripciones amigables y categorías
-const getRouteInfo = (
-  route: string
-): { description: string; category: string; icon: string } => {
-  const routeMap: Record<
-    string,
-    { description: string; category: string; icon: string }
-  > = {
-    "/dashboard/overview": {
-      description: "Dashboard Principal",
-      category: "General",
-      icon: "📊",
-    },
-    "/dashboard/settings": {
-      description: "Configuración del Cliente",
-      category: "Onboarding",
-      icon: "⚙️",
-    },
-    "/dashboard/integrations": {
-      description: "Integraciones",
-      category: "Onboarding",
-      icon: "🔗",
-    },
-    "/dashboard/banks": {
-      description: "Bancos y Cuentas",
-      category: "Onboarding",
-      icon: "🏦",
-    },
-    "/dashboard/users": {
-      description: "Gestión de Usuarios",
-      category: "Usuarios",
-      icon: "👥",
-    },
-    "/dashboard/roles": {
-      description: "Gestión de Roles",
-      category: "Usuarios",
-      icon: "🔑",
-    },
-    "/dashboard/actions-history": {
-      description: "Historial de Acciones",
-      category: "Usuarios",
-      icon: "📋",
-    },
-    "/dashboard/debtors": {
-      description: "Creación de Deudores",
-      category: "Cartera",
-      icon: "👤",
-    },
-    "/dashboard/monthly-period": {
-      description: "Periodo Mensual y Cierre",
-      category: "Cartera",
-      icon: "📅",
-    },
-    "/dashboard/cash-flow": {
-      description: "Flujo de Caja",
-      category: "Cartera",
-      icon: "💰",
-    },
-    "/dashboard/communications": {
-      description: "Comunicaciones",
-      category: "Cartera",
-      icon: "📧",
-    },
-    "/dashboard/indicators": {
-      description: "Configuración de Indicadores",
-      category: "Cartera",
-      icon: "📈",
-    },
-    "/dashboard/transactions/dte": {
-      description: "Ingreso DTE",
-      category: "Transacciones",
-      icon: "📄",
-    },
-    "/dashboard/transactions/payments": {
-      description: "Ingreso de Pagos",
-      category: "Transacciones",
-      icon: "💳",
-    },
-    "/dashboard/transactions/movements": {
-      description: "Carga de Cartolas",
-      category: "Transacciones",
-      icon: "📊",
-    },
-  };
-
-  return (
-    routeMap[route] || {
-      description: route,
-      category: "Desconocido",
-      icon: "❓",
-    }
-  );
-};
-
-// Componente que usa useSearchParams
 const AccessDeniedContent = () => {
+  const t = useTranslations("dashboard.accessDenied");
+  const tRoutes = useTranslations("dashboard.routes");
   const router = useRouter();
   const searchParams = useSearchParams();
   const attemptedRoute = searchParams.get("route");
+
+  const getRouteInfo = (
+    route: string
+  ): { description: string; category: string; icon: string } => {
+    const routeMap: Record<
+      string,
+      { descriptionKey: string; category: string; icon: string }
+    > = {
+      "/dashboard/overview": { descriptionKey: "dashboardOverview", category: "General", icon: "📊" },
+      "/dashboard/settings": { descriptionKey: "settings", category: "Onboarding", icon: "⚙️" },
+      "/dashboard/integrations": { descriptionKey: "integrations", category: "Onboarding", icon: "🔗" },
+      "/dashboard/banks": { descriptionKey: "banks", category: "Onboarding", icon: "🏦" },
+      "/dashboard/users": { descriptionKey: "users", category: "Usuarios", icon: "👥" },
+      "/dashboard/roles": { descriptionKey: "roles", category: "Usuarios", icon: "🔑" },
+      "/dashboard/actions-history": { descriptionKey: "actionsHistory", category: "Usuarios", icon: "📋" },
+      "/dashboard/debtors": { descriptionKey: "debtors", category: "Cartera", icon: "👤" },
+      "/dashboard/monthly-period": { descriptionKey: "monthlyPeriod", category: "Cartera", icon: "📅" },
+      "/dashboard/cash-flow": { descriptionKey: "cashFlow", category: "Cartera", icon: "💰" },
+      "/dashboard/communications": { descriptionKey: "communications", category: "Comunicaciones", icon: "📧" },
+      "/dashboard/indicators": { descriptionKey: "indicators", category: "Cartera", icon: "📈" },
+      "/dashboard/transactions/dte": { descriptionKey: "transactionsDte", category: "Transacciones", icon: "📄" },
+      "/dashboard/transactions/payments": { descriptionKey: "transactionsPayments", category: "Transacciones", icon: "💳" },
+      "/dashboard/transactions/movements": { descriptionKey: "transactionsMovements", category: "Transacciones", icon: "📊" },
+    };
+
+    const entry = routeMap[route];
+    if (entry) {
+      return {
+        description: tRoutes(entry.descriptionKey as any),
+        category: entry.category,
+        icon: entry.icon,
+      };
+    }
+    return {
+      description: route,
+      category: t("unknown"),
+      icon: "❓",
+    };
+  };
+
   const routeInfo = attemptedRoute ? getRouteInfo(attemptedRoute) : null;
 
   return (
@@ -136,11 +84,10 @@ const AccessDeniedContent = () => {
             </div>
           </div>
           <CardTitle className="text-xl text-red-800">
-            Permisos Insuficientes
+            {t("insufficientPermissions")}
           </CardTitle>
           <CardDescription className="text-red-600">
-            Tu usuario no tiene los permisos necesarios para acceder a esta
-            funcionalidad.
+            {t("permissionsMessage")}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -151,7 +98,7 @@ const AccessDeniedContent = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-orange-600" />
-              Página Solicitada
+              {t("requestedPage")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -162,7 +109,7 @@ const AccessDeniedContent = () => {
                   {routeInfo.description}
                 </h4>
                 <p className="text-sm text-orange-700">
-                  Categoría: {routeInfo.category}
+                  {t("category", { category: routeInfo.category })}
                 </p>
                 <code className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded mt-1 inline-block">
                   {attemptedRoute}
@@ -180,7 +127,7 @@ const AccessDeniedContent = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Home className="w-5 h-5 text-blue-600" />
-              Acciones Disponibles
+              {t("availableActions")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -190,12 +137,12 @@ const AccessDeniedContent = () => {
               className="w-full justify-start"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver a la página anterior
+              {t("goBack")}
             </Button>
             <Link href="/dashboard/overview">
               <Button className="w-full justify-start bg-primary hover:bg-primary/90">
                 <Home className="w-4 h-4 mr-2" />
-                Ir al Dashboard Principal
+                {t("goToDashboard")}
               </Button>
             </Link>
           </CardContent>
@@ -206,22 +153,22 @@ const AccessDeniedContent = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5 text-green-600" />
-              ¿Necesitas Acceso?
+              {t("needAccess")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-sm text-gray-600 space-y-2">
               <p className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                Contacta con tu administrador del sistema
+                {t("contactAdmin")}
               </p>
               <p className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                Solicita los permisos específicos para esta página
+                {t("requestPermissions")}
               </p>
               <p className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                Verifica que tu rol tenga las funciones necesarias
+                {t("verifyRole")}
               </p>
             </div>
           </CardContent>
@@ -232,8 +179,8 @@ const AccessDeniedContent = () => {
       <Card className="bg-gray-50">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between text-sm text-gray-500">
-            <span>Código de Error: 403 - Forbidden</span>
-            <span>Sistema de Permisos Activo</span>
+            <span>{t("errorCode")}</span>
+            <span>{t("permissionsActive")}</span>
           </div>
         </CardContent>
       </Card>
@@ -242,7 +189,9 @@ const AccessDeniedContent = () => {
 };
 
 // Componente de loading para el Suspense
-const AccessDeniedFallback = () => (
+const AccessDeniedFallback = () => {
+  const t = useTranslations("dashboard.accessDenied");
+  return (
   <div className="space-y-6">
     <Card className="border-red-200 bg-red-50">
       <CardHeader className="text-center pb-4">
@@ -251,16 +200,18 @@ const AccessDeniedFallback = () => (
             <Lock className="w-8 h-8 text-red-600" />
           </div>
         </div>
-        <CardTitle className="text-xl text-red-800">Acceso Denegado</CardTitle>
+        <CardTitle className="text-xl text-red-800">{t("fallback")}</CardTitle>
         <CardDescription className="text-red-600">
-          Cargando información...
+          {t("loadingInfo")}
         </CardDescription>
       </CardHeader>
     </Card>
   </div>
 );
+};
 
 const AccessDeniedPage = () => {
+  const t = useTranslations("accessDenied");
   return (
     <>
       <Header fixed>
@@ -268,10 +219,10 @@ const AccessDeniedPage = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Acceso Denegado"
-          description="No tienes permisos suficientes para acceder a la página solicitada."
+          title={t("title")}
+          description={t("description")}
           icon={<ShieldX color="white" />}
-          subDescription="Error 403"
+          subDescription={t("subDescription")}
         />
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
           <Suspense fallback={<AccessDeniedFallback />}>

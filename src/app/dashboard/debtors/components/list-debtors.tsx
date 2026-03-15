@@ -6,8 +6,10 @@ import { DataTable } from "../../components/data-table";
 import LoaderTable from "../../components/loader-table";
 import { columns } from "../create/[[...params]]/components/steps/columns";
 import { Debtor } from "../types";
+import { useTranslations } from "next-intl";
 
 const ListDebtors = () => {
+  const t = useTranslations("debtors.list");
   const { session, profile } = useProfileContext();
 
   // Usar el nuevo hook useDebtors con paginación del servidor
@@ -35,23 +37,23 @@ const ListDebtors = () => {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-md font-bold">Lista de deudores</h3>
+          <h3 className="text-md font-bold">{t("title")}</h3>
         </div>
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
               <p className="text-red-600 font-medium mb-2">
-                Error al cargar los deudores
+                {t("errorLoading")}
               </p>
               <p className="text-red-500 text-sm mb-4">
-                {error?.message || "Error desconocido"}
+                {error?.message || t("unknownError")}
               </p>
               <Button
                 onClick={() => refetch()}
                 variant="outline"
                 className="border-red-200 text-red-600 hover:bg-red-50"
               >
-                Reintentar
+                {t("retry")}
               </Button>
             </div>
           </div>
@@ -72,11 +74,11 @@ const ListDebtors = () => {
         isServerSideLoading={isLoading || isSearching}
         // Configuración de búsqueda
         enableGlobalFilter={true}
-        searchPlaceholder="Buscar por DNI, nombre o email..."
+        searchPlaceholder={t("searchPlaceholder")}
         initialSearchValue={currentSearch}
         // Configuración de carga
         loadingComponent={<LoaderTable cols={7} />}
-        emptyMessage="No se encontraron deudores"
+        emptyMessage={t("emptyMessage")}
         // Configuración de paginación
         pageSize={currentLimit}
         pageSizeOptions={[15, 20, 25, 30, 40, 50]}

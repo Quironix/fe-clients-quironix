@@ -14,6 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, subDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { Loader2, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 interface FintocDateDialogProps {
@@ -29,6 +30,8 @@ const FintocDateDialog = ({
   onConfirm,
   isLoading = false,
 }: FintocDateDialogProps) => {
+  const t = useTranslations("banks.fintocDateDialog");
+  const tCommon = useTranslations("common.buttons");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   const handleOpenChange = (open: boolean) => {
@@ -55,12 +58,10 @@ const FintocDateDialog = ({
         <div className="flex flex-col justify-center py-10">
           <AlertDialogHeader className="flex">
             <AlertDialogTitle className="font-extrabold">
-              {"¿Desde cuándo traer los movimientos?"}
+              {t("title")}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm">
-              Selecciona una fecha para importar movimientos anteriores
-              (máximo 30 días) o continúa sin seleccionar para usar la fecha
-              actual.
+              {t("description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
         </div>
@@ -81,7 +82,7 @@ const FintocDateDialog = ({
 
         <AlertDialogFooter className="flex gap-3 mt-6 border-t border-orange-500 pt-4">
           <AlertDialogCancel onClick={() => setSelectedDate(undefined)}>
-            Cancelar
+            {tCommon("cancel")}
           </AlertDialogCancel>
           <Button
             className="bg-[#1249C7] hover:bg-[#1249C7]/90 h-10 rounded-sm"
@@ -90,10 +91,10 @@ const FintocDateDialog = ({
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Continuar...
+                <Loader2 className="w-4 h-4 animate-spin" /> {t("continuing")}
               </>
             ) : (
-              "Continuar"
+              tCommon("continue")
             )}
           </Button>
         </AlertDialogFooter>

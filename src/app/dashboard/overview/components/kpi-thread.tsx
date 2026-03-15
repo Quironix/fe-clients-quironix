@@ -7,13 +7,8 @@ import {
   useAssistantState,
 } from "@assistant-ui/react";
 import { BotIcon, SendIcon, UserIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { FC } from "react";
-
-const suggestedQuestions = [
-  "¿Cuáles son mis KPIs críticos?",
-  "¿Cómo mejorar el % CEI?",
-  "Explica el indicador DSO",
-];
 
 export const KPIThread: FC = () => {
   return (
@@ -105,16 +100,23 @@ const AssistantMessage: FC = () => {
 };
 
 const SuggestedQuestions: FC = () => {
+  const t = useTranslations("overview");
   const messageCount = useAssistantState(
     ({ thread }) => thread.messages.length
   );
+
+  const suggestedQuestions = [
+    t("suggestedQuestion1"),
+    t("suggestedQuestion2"),
+    t("suggestedQuestion3"),
+  ];
 
   if (messageCount !== 1) return null;
 
   return (
     <div className="px-4 pb-3 border-t border-gray-200 pt-3">
       <p className="text-xs text-gray-600 mb-2 font-medium">
-        Preguntas sugeridas:
+        {t("suggestedQuestions")}
       </p>
       <div className="flex flex-wrap gap-2">
         {suggestedQuestions.map((question, index) => (
@@ -122,7 +124,7 @@ const SuggestedQuestions: FC = () => {
             key={index}
             onClick={() => {
               const input = document.querySelector(
-                'textarea[placeholder="Escribe tu pregunta..."]'
+                `textarea[placeholder="${t("composerPlaceholder")}"]`
               ) as HTMLTextAreaElement;
               if (input) {
                 input.value = question;
@@ -144,12 +146,13 @@ const SuggestedQuestions: FC = () => {
 };
 
 const Composer: FC = () => {
+  const t = useTranslations("overview");
   return (
     <div className="p-4 border-t border-gray-200 bg-white">
       <ComposerPrimitive.Root className="flex gap-2">
         <ComposerPrimitive.Input
           autoFocus
-          placeholder="Escribe tu pregunta..."
+          placeholder={t("composerPlaceholder")}
           className="flex-1 flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
         />
         <ThreadPrimitive.If running={false}>

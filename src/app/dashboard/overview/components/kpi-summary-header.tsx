@@ -1,4 +1,5 @@
 import { Activity, TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Indicators, KPI } from "../services/types";
 
 interface KPISummaryHeaderProps {
@@ -27,6 +28,7 @@ const toPercentage = (value) => {
 export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
   indicators,
 }) => {
+  const t = useTranslations("overview");
   // const stats = kpis.reduce(
   //   (acc, k) => {
   //     const s = getStatus(k);
@@ -43,7 +45,7 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
       <div className="bg-white border border-gray-200 rounded-xl p-4 py-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-md font-medium text-gray-400">Health score</p>
+            <p className="text-md font-medium text-gray-400">{t("healthScore")}</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
               {toPercentage(indicators?.optimal || 0)}
             </p>
@@ -57,7 +59,7 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
       <div className="bg-white border border-gray-200 rounded-xl p-4 py-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-md font-medium text-gray-400">Óptimos</p>
+            <p className="text-md font-medium text-gray-400">{t("optimal")}</p>
             <p className="text-2xl font-bold text-emerald-600 mt-1">
               {toPercentage(indicators?.optimal || 0)}
             </p>
@@ -71,7 +73,7 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
       <div className="bg-white border border-gray-200 rounded-xl p-4 py-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-md font-medium text-gray-400">En alerta</p>
+            <p className="text-md font-medium text-gray-400">{t("alert")}</p>
             <p className="text-2xl font-bold text-amber-600 mt-1">
               {indicators?.alert || 0}
             </p>

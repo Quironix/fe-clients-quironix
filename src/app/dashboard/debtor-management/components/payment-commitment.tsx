@@ -1,4 +1,5 @@
 import { ShieldCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { PaymentCommitment as PaymentCommitmentType } from "../types";
 import { Separator } from "@/components/ui/separator";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -23,11 +24,12 @@ interface PaymentCommitmentProps {
 }
 
 const PaymentCommitment = ({ data }: PaymentCommitmentProps) => {
+  const t = useTranslations("debtorManagement.paymentCommitmentCard");
   const { complete, incomplete, percentage } = data.credibility;
 
   const chartData = [
-    { name: "Incumplidas", value: incomplete || 0 },
-    { name: "Cumplidas", value: complete || 0 },
+    { name: t("unfulfilled"), value: incomplete || 0 },
+    { name: t("fulfilled"), value: complete || 0 },
   ];
 
   const COLORS = {
@@ -40,22 +42,22 @@ const PaymentCommitment = ({ data }: PaymentCommitmentProps) => {
   const getStatusBadge = (status: "completed" | "incomplete") => {
     return status === "completed" ? (
       <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
-        Cumplido
+        {t("fulfilledBadge")}
       </span>
     ) : (
       <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700">
-        Incumplido
+        {t("unfulfilledBadge")}
       </span>
     );
   };
 
   return (
     <div className="flex flex-col justify-center items-center gap-1 flex-1">
-      <span className="text-xs font-medium">Credibilidad</span>
+      <span className="text-xs font-medium">{t("credibility")}</span>
       <div className="flex justify-center items-center text-[11px] gap-1">
-        <span className="text-gray-600">{complete} cumplidas</span>
+        <span className="text-gray-600">{complete} {t("fulfilled")}</span>
         <span className="text-gray-400">-</span>
-        <span className="text-gray-600">{incomplete} incumplidas</span>
+        <span className="text-gray-600">{incomplete} {t("unfulfilled")}</span>
       </div>
 
       {/* Gráfico circular */}
@@ -91,18 +93,18 @@ const PaymentCommitment = ({ data }: PaymentCommitmentProps) => {
         >
           <AccordionItem value="item-1" className="border-0">
             <AccordionTrigger className="px-2 text-xs">
-              Últimos {latestCommitments.length} compromisos
+              {t("latestCommitments", { count: latestCommitments.length })}
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-4 px-3">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[100px]">Fecha</TableHead>
-                      <TableHead>Monto</TableHead>
-                      <TableHead>Estado</TableHead>
+                      <TableHead className="w-[100px]">{t("date")}</TableHead>
+                      <TableHead>{t("amount")}</TableHead>
+                      <TableHead>{t("status")}</TableHead>
                       <TableHead className="text-right">
-                        Observaciones
+                        {t("observations")}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -136,7 +138,7 @@ const PaymentCommitment = ({ data }: PaymentCommitmentProps) => {
         </Accordion>
       ) : (
         <div className="w-full text-center py-2">
-          <p className="text-xs text-gray-500">No hay compromisos registrados</p>
+          <p className="text-xs text-gray-500">{t("noCommitments")}</p>
         </div>
       )}
     </div>

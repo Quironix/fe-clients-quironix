@@ -18,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { FileCheck2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -34,6 +35,8 @@ import { usePaymentNettingStore } from "../store";
 import { getPaymentNetting } from "../services";
 
 function GeneratePaymentContent() {
+  const t = useTranslations("paymentNetting.generatePaymentPage");
+  const tParent = useTranslations("paymentNetting");
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const { resetSelected } = usePaymentNettingStore();
@@ -91,26 +94,26 @@ function GeneratePaymentContent() {
       </Header>
       <Main>
         <TitleSection
-          title="Generar pago"
-          description="En esta sección podrás realizar la compensación de pagos entre tus clientes y proveedores."
+          title={t("title")}
+          description={tParent("description")}
           icon={<FileCheck2 color="white" />}
-          subDescription="Compensación de pagos"
+          subDescription={tParent("subDescription")}
         />
         <Breadcrumb className="mb-4">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard">Home</BreadcrumbLink>
+              <BreadcrumbLink href="/dashboard">{t("breadcrumbHome")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink href="/dashboard/payment-netting">
-                Compensación de pagos
+                {t("breadcrumbNetting")}
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage className="font-bold text-primary">
-                Generar pago
+                {t("breadcrumbGenerate")}
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
@@ -119,8 +122,8 @@ function GeneratePaymentContent() {
           <StepperPN
             number={1}
             is_active={true}
-            title="Selección de pago"
-            description="Selecciona la o las filas que necesitas compensar"
+            title={t("paymentSelection")}
+            description={t("paymentSelectionDesc")}
           />
 
           <Card>
@@ -130,7 +133,7 @@ function GeneratePaymentContent() {
                   <AccordionTrigger className="px-4 hover:no-underline">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">
-                        Pagos seleccionados ({selectedPayments.length})
+                        {t("selectedPayments", { count: selectedPayments.length })}
                       </span>
                     </div>
                   </AccordionTrigger>
@@ -153,7 +156,7 @@ function GeneratePaymentContent() {
                         initialRowSelection={{}}
                         onRowSelectionChange={() => {}}
                         bulkActions={[]}
-                        emptyMessage="No hay pagos seleccionados"
+                        emptyMessage={t("noPaymentsSelected")}
                         className="rounded-lg"
                         title=""
                         handleSuccessButton={() => {}}
@@ -161,10 +164,9 @@ function GeneratePaymentContent() {
                       />
                     ) : (
                       <div className="text-center py-8 text-gray-500">
-                        <p className="text-sm">No hay pagos seleccionados</p>
+                        <p className="text-sm">{t("noPaymentsSelected")}</p>
                         <p className="text-xs mt-2">
-                          Regresa a la página anterior y selecciona los pagos
-                          que deseas procesar
+                          {t("goBackAndSelect")}
                         </p>
                       </div>
                     )}
@@ -176,8 +178,8 @@ function GeneratePaymentContent() {
           <StepperPN
             number={2}
             is_active={true}
-            title="Compensación manual"
-            description="Selecciona una tarjeta de la columna de “facturas pendientes” y otra de “pagos disponibles”. El sistema te guiará para realizar una compensación correcta."
+            title={t("manualCompensation")}
+            description={t("manualCompensationDesc")}
           />
           <section className="grid grid-cols-2 md:grid-cols-2 gap-4">
             <div className="grid grid-cols-2 gap-4">

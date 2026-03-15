@@ -7,6 +7,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { VisibilityState } from "@tanstack/react-table";
 import { Archive, CheckCircle, Coins, Eye, Trash2 } from "lucide-react";
 
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,8 @@ import { approvePaymentPlan, deletePaymentPlan } from "./services";
 import { PaymentPlan, PaymentPlanResponse } from "./types";
 
 const PaymentPlansPage = () => {
+  const t = useTranslations("paymentPlans");
+  const tCommon = useTranslations("common.buttons");
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const [openDialog, setOpenDialog] = useState(false);
@@ -79,26 +82,26 @@ const PaymentPlansPage = () => {
 
   const columnLabels = useMemo(
     () => ({
-      id: "ID",
-      debtor_id: "Deudor",
-      status: "Estado",
-      total_debt: "Deuda Total",
-      number_of_installments: "Cuotas",
-      installment_amount: "Monto Cuota",
-      payment_frequency: "Frecuencia",
-      plan_start_date: "Fecha Inicio",
-      payment_end_date: "Fecha Fin",
-      annual_interest_rate: "Tasa Interés",
-      created_at: "Fecha Creación",
-      actions: "Acciones",
+      id: t("columnLabels.id"),
+      debtor_id: t("columnLabels.debtor"),
+      status: t("columnLabels.status"),
+      total_debt: t("columnLabels.totalDebt"),
+      number_of_installments: t("columnLabels.installments"),
+      installment_amount: t("columnLabels.installmentAmount"),
+      payment_frequency: t("columnLabels.frequency"),
+      plan_start_date: t("columnLabels.startDate"),
+      payment_end_date: t("columnLabels.endDate"),
+      annual_interest_rate: t("columnLabels.interestRate"),
+      created_at: t("columnLabels.createdAt"),
+      actions: t("columnLabels.actions"),
     }),
-    []
+    [t]
   );
 
   const bulkActions = useMemo(
     () => [
       {
-        label: "Ver detalles",
+        label: tCommon("viewDetails"),
         onClick: (selectedRows: PaymentPlan[]) => {
           console.log("Ver detalles de planes seleccionados:", selectedRows);
         },
@@ -106,7 +109,7 @@ const PaymentPlansPage = () => {
         icon: <Eye className="h-4 w-4" />,
       },
       {
-        label: "Aprobar planes",
+        label: tCommon("approve"),
         onClick: async (selectedRows: PaymentPlan[]) => {
           if (!session?.token || !profile?.client_id) return;
 
@@ -118,17 +121,17 @@ const PaymentPlansPage = () => {
                 plan.id
               );
             }
-            toast.success("Planes aprobados correctamente");
+            toast.success(t("toast.approveSuccess"));
             refetch();
           } catch (error) {
-            toast.error("Error al aprobar los planes");
+            toast.error(t("toast.approveError"));
           }
         },
         variant: "default" as const,
         icon: <CheckCircle className="h-4 w-4" />,
       },
       {
-        label: "Archivar",
+        label: tCommon("archive"),
         onClick: (selectedRows: PaymentPlanResponse[]) => {
           console.log("Archivar planes seleccionados:", selectedRows);
         },
@@ -136,7 +139,7 @@ const PaymentPlansPage = () => {
         icon: <Archive className="h-4 w-4" />,
       },
       {
-        label: "Eliminar",
+        label: tCommon("delete"),
         onClick: async (selectedRows: PaymentPlanResponse[]) => {
           if (!session?.token || !profile?.client_id) return;
 
@@ -148,10 +151,10 @@ const PaymentPlansPage = () => {
                 plan.id
               );
             }
-            toast.success("Planes eliminados correctamente");
+            toast.success(t("toast.deleteBulkSuccess"));
             refetch();
           } catch (error) {
-            toast.error("Error al eliminar los planes");
+            toast.error(t("toast.deleteBulkError"));
           }
         },
         variant: "destructive" as const,
@@ -175,7 +178,7 @@ const PaymentPlansPage = () => {
       }
     } catch (error) {
       console.error("Error al actualizar configuración de columnas:", error);
-      toast.error("Error al guardar la configuración de columnas");
+      toast.error(t("toast.columnConfigError"));
     } finally {
       setIsApplyingFilters(false);
     }
@@ -195,10 +198,10 @@ const PaymentPlansPage = () => {
 
     try {
       await deletePaymentPlan(session.token, profile.client_id, paymentPlan.id);
-      toast.success("Plan de pago eliminado correctamente");
+      toast.success(t("toast.deleteSuccess"));
       refetch();
     } catch (error) {
-      toast.error("Error al eliminar el plan de pago");
+      toast.error(t("toast.deleteError"));
     }
   };
 
@@ -211,10 +214,10 @@ const PaymentPlansPage = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Planes de pago"
-          description="En esta sección podrás crear y gestionar planes de pago para tus deudores."
+          title={t("title")}
+          description={t("description")}
           icon={<Coins color="white" />}
-          subDescription="Planes de pago"
+          subDescription={t("subDescription")}
         />
         <div className="flex items-center justify-center gap-5 p-3 border border-gray-200 rounded-md h-[325px] mb-5">
           <div className="shrink-0">
@@ -229,9 +232,7 @@ const PaymentPlansPage = () => {
 
           <div className="w-full h-full border border-gray-200 rounded-md p-5 flex flex-col items-start justify-center gap-6">
             <span>
-              Aquí podrás gestionar y organizar los pagos de tus deudores de
-              manera sencilla y eficiente. Crea tu primer plan de pago para
-              comenzar a llevar un mejor control de tus finanzas.
+              {t("introText")}
             </span>
             <Button
               className="bg-blue-600 text-white hover:bg-blue-600/80 w-xs"
@@ -239,7 +240,7 @@ const PaymentPlansPage = () => {
                 router.push("/dashboard/payment-plans/create");
               }}
             >
-              Crear plan de pago
+              {t("createPlan")}
             </Button>
           </div>
         </div>
@@ -255,7 +256,7 @@ const PaymentPlansPage = () => {
               onPaginationChange={handlePaginationChange}
               onSearchChange={handleSearchChange}
               enableGlobalFilter={true}
-              searchPlaceholder="Buscar planes de pago..."
+              searchPlaceholder={t("searchPlaceholder")}
               enableColumnFilter={true}
               initialColumnVisibility={columnVisibility}
               initialColumnConfiguration={columnConfiguration}
@@ -264,9 +265,9 @@ const PaymentPlansPage = () => {
               initialRowSelection={isHydrated ? rowSelection : {}}
               onRowSelectionChange={handleRowSelectionChange}
               bulkActions={bulkActions}
-              emptyMessage="No se encontraron planes de pago"
+              emptyMessage={t("emptyMessage")}
               className="rounded-lg"
-              title="Planes de pago"
+              title={t("title")}
               handleSuccessButton={handleUpdateColumns}
               filterInputs={
                 <FilterInputs
@@ -280,7 +281,7 @@ const PaymentPlansPage = () => {
             <DialogForm
               open={openDetailModal}
               onOpenChange={setOpenDetailModal}
-              title="Detalle del plan de pago"
+              title={t("detailTitle")}
               description={
                 <div className="flex justify-between items-center bg-gray-50 rounded-lg">
                   <span className="text-sm font-medium text-gray-700">
@@ -289,22 +290,22 @@ const PaymentPlansPage = () => {
                   <div className="flex gap-2">
                     {selectedPaymentPlan?.status === "APPROVED" && (
                       <span className="text-xs font-semibold border border-green-600 px-4 py-1 text-green-600 rounded-full bg-green-50">
-                        Aprobado
+                        {t("status.approved")}
                       </span>
                     )}
                     {selectedPaymentPlan?.status === "PENDING" && (
                       <span className="text-xs font-semibold border border-blue-600 px-4 py-1 text-blue-600 rounded-full bg-blue-50">
-                        En revisión
+                        {t("status.pending")}
                       </span>
                     )}
                     {selectedPaymentPlan?.status === "REJECTED" && (
                       <span className="text-xs font-semibold border border-red-600 px-4 py-1 text-red-600 rounded-full bg-red-50">
-                        Denegado
+                        {t("status.rejected")}
                       </span>
                     )}
                     {selectedPaymentPlan?.status === "OBJECTED" && (
                       <span className="text-xs font-semibold border border-purple-600 px-4 py-1 text-purple-600 rounded-full bg-purple-50">
-                        Con observaciones
+                        {t("status.objected")}
                       </span>
                     )}
                   </div>

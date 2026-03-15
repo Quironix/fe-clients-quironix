@@ -2,6 +2,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { ProfileProvider } from "@/context/ProfileContext";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -18,13 +20,16 @@ export const metadata: Metadata = {
     "Quironix es una aplicación web que te permite gestionar tus deudas de manera fácil y rápida.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={`${inter.className} antialiased`}>
         <Script id="hotjar" strategy="afterInteractive">
           {`
@@ -39,14 +44,16 @@ export default function RootLayout({
           `}
         </Script>
 
-        <Providers>
-          <SessionProvider>
-            <ProfileProvider>
-              {children}
-              <Toaster position="top-right" />
-            </ProfileProvider>
-          </SessionProvider>
-        </Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
+            <SessionProvider>
+              <ProfileProvider>
+                {children}
+                <Toaster position="top-right" />
+              </ProfileProvider>
+            </SessionProvider>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

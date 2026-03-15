@@ -2,6 +2,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatNumber } from "@/lib/utils";
 import dayjs from "dayjs";
 import { Banknote, CalendarClock, Scale, Target } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { CallReasons } from "../types";
 import { ProgressBarChart } from "./progress-bar-chart";
@@ -11,6 +12,7 @@ interface KeyReasonsProps {
 }
 
 export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
+  const t = useTranslations("debtorManagement.keyReasons");
   const [currentTime, setCurrentTime] = useState(dayjs());
   useEffect(() => {
     const timer = setInterval(() => {
@@ -26,7 +28,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
   return (
     <div className="bg-white space-y-3 border-2 border-[#1249C7] rounded-md text-xs">
       <h3 className="text-sm font-semibold bg-[#1249C7] text-white p-2 px-4 flex justify-start items-center gap-1">
-        <Target size={15} /> Razones clave de llamada
+        <Target size={15} /> {t("title")}
       </h3>
 
       {/* Compromiso incumplido */}
@@ -35,7 +37,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-gray-700">
-                Compromiso incumplido
+                {t("unfulfilledCommitment")}
               </span>
             </div>
             <div className="flex flex-col justify-between items-end">
@@ -51,7 +53,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
         <div className="space-y-1">
           <div className="flex justify-between items-center">
             <span className="text-xs font-medium text-gray-700">
-              Deuda vencida
+              {t("overdueDebt")}
             </span>
 
             <span className="text-lg font-bold text-red-500">
@@ -87,14 +89,14 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
         <div className="space-y-1">
           <div className="flex items-center gap-1">
             <span className="text-xs font-medium text-gray-700">
-              Estimación de caja
+              {t("cashEstimate")}
             </span>
           </div>
           <div className="flex justify-around items-center gap-2 mb-2">
             <div className="flex flex-col justify-around items-center">
               <div className="flex gap-1 justify-start items-center text-blue-700 text-xs">
                 <Banknote size={13} />
-                <span>Recaudado</span>
+                <span>{t("collected")}</span>
               </div>
               <span>
                 {formatNumber(callReasons.cash_estimate.collected_amount || 0)}
@@ -103,7 +105,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
             <div className="flex flex-col justify-around items-center">
               <div className="flex gap-1 justify-start items-center text-blue-700 text-xs">
                 <Target size={13} />
-                <span>Proyectado</span>
+                <span>{t("projected")}</span>
               </div>
               <span className="text-red-500 font-semibold">
                 {formatNumber(callReasons.cash_estimate.projected_amount || 0)}
@@ -119,19 +121,19 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
             <div className="flex flex-col justify-around items-center">
               <div className="flex gap-1 justify-start items-center text-blue-700 text-xs">
                 <CalendarClock size={13} />
-                <span>Próximos vencimientos</span>
+                <span>{t("upcomingMaturities")}</span>
               </div>
               <div className="flex flex-col justify-center items-center">
                 <span className="text-red-500 font-semibold">
                   {formatNumber(callReasons.upcoming_maturities.amount || 0)}
                 </span>
-                <span className="text-gray-500 text-xs">15 días</span>
+                <span className="text-gray-500 text-xs">{t("days15")}</span>
               </div>
             </div>
             <div className="flex flex-col justify-around items-center">
               <div className="flex gap-1 justify-start items-center text-blue-700 text-xs">
                 <Scale size={13} />
-                <span>Litigios abiertos</span>
+                <span>{t("openLitigations")}</span>
               </div>
               <div className="flex flex-col justify-center items-center">
                 <span className="text-red-500 font-semibold">
@@ -142,7 +144,7 @@ export const KeyReasons = ({ callReasons }: KeyReasonsProps) => {
                     callReasons.open_litigations.quantity || 0,
                     false
                   )}{" "}
-                  facturas
+                  {t("invoices")}
                 </span>
               </div>
             </div>

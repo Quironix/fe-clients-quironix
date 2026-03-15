@@ -2,6 +2,7 @@
 
 import Language from "@/components/ui/language";
 import { PhoneCall } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Suspense, useState } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
@@ -12,6 +13,7 @@ import { TasksList } from "./components/tasks-list";
 import { QuadrantType } from "./services/types";
 
 const Content = () => {
+  const t = useTranslations("debtorManagement");
   const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantType>(null);
 
   return (
@@ -21,10 +23,10 @@ const Content = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Gestión de deudores"
-          description="Visualización de tareas asignadas"
+          title={t("title")}
+          description={t("description")}
           icon={<PhoneCall color="white" />}
-          subDescription="Gestión de deudores"
+          subDescription={t("subDescription")}
         />
         <div className="flex gap-5 w-full overflow-x-auto mb-10 pb-10">
           <div className="w-60 shrink-0">
@@ -45,7 +47,7 @@ const Content = () => {
 
 const DebtorManagementPage = () => {
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={<div></div>}>
       <Content />
     </Suspense>
   );

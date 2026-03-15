@@ -4,6 +4,7 @@ import Stepper from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import React, { useState } from "react";
 import { OnboardingStepProps } from "../../types";
@@ -20,6 +21,7 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
   onStepChange,
   profile,
 }) => {
+  const t = useTranslations("onboarding");
   const [hasReadTerms, setHasReadTerms] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -36,8 +38,8 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
 
   return (
     <StepLayout
-      title="Términos y condiciones"
-      description="Estos son los términos y condiciones. Léelos detenidamente antes de continuar."
+      title={t("terms.title")}
+      description={t("terms.description")}
     >
       <section className="h-full">
         <div className="h-1/6">
@@ -66,8 +68,7 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
                     className="border-2 border-orange-300 text-gray-500 bg-white"
                     onClick={handleOpenTerms}
                   >
-                    <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
-                    términos y condiciones
+                    <FileText className="w-4 h-4 mr-2 text-orange-300" /> {t("terms.readButton")}
                   </Button>
                 </div>
               </div>
@@ -85,7 +86,7 @@ const TermsAndConditionStep: React.FC<OnboardingStepProps> = ({
                     !hasReadTerms ? "text-gray-400" : ""
                   }`}
                 >
-                  Acepto los términos y condiciones
+                  {t("terms.accept")}
                 </label>
               </div>
             </div>

@@ -1,3 +1,4 @@
+"use client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AlertCircle, Trash2, X } from "lucide-react";
 import React from "react";
+import { useTranslations } from "next-intl";
 
 interface DialogConfirmProps {
   title: string;
@@ -29,14 +31,17 @@ const DialogConfirm: React.FC<DialogConfirmProps> = ({
   title,
   description,
   triggerButton,
-  cancelButtonText = "Volver",
-  confirmButtonText = "Eliminar",
+  cancelButtonText,
+  confirmButtonText,
   onConfirm,
   onCancel,
   type = "warning",
   isOpen = false,
   setIsOpen,
 }) => {
+  const t = useTranslations("common.buttons");
+  const resolvedCancelText = cancelButtonText ?? t("back");
+  const resolvedConfirmText = confirmButtonText ?? t("delete");
   return (
     <AlertDialog
       {...(isOpen && setIsOpen && { open: isOpen, onOpenChange: setIsOpen })}
@@ -75,13 +80,13 @@ const DialogConfirm: React.FC<DialogConfirmProps> = ({
             onClick={onCancel}
             className="flex-1 bg-white border-[1.5px] border-gray-200 hover:bg-gray-50"
           >
-            {cancelButtonText}
+            {resolvedCancelText}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="flex-1 bg-blue-600 hover:bg-blue-700"
           >
-            {confirmButtonText}
+            {resolvedConfirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

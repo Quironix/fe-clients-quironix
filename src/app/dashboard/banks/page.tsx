@@ -16,6 +16,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import { getFintoc } from "@fintoc/fintoc-js";
 import { Edit, FileText, Link, Loader2, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Suspense, useEffect, useState } from "react";
@@ -37,6 +38,9 @@ import { BankInformation } from "./services/types";
 import { useBankInformationStore } from "./store";
 
 const BanksContent = () => {
+  const t = useTranslations("banks");
+  const tCommon = useTranslations("common.buttons");
+  const tLoading = useTranslations("common.loading");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
@@ -95,7 +99,7 @@ const BanksContent = () => {
             since
           );
           if (response.code === "SUCCESSFULLY_CONNECTED") {
-            toast.success("Has conectado tu banco correctamente");
+            toast.success(t("toast.connectSuccess"));
             getAllBanksInformations(session?.token, profile?.client?.id);
             setIsLoading(false);
           }
@@ -104,20 +108,20 @@ const BanksContent = () => {
 
         onExit: () => {
           setIsFintocProccessOpen(false);
-          toast.error("Has cancelado la conexión para conectar tu banco");
+          toast.error(t("toast.connectCancelled"));
         },
       };
 
       const widget = Fintoc?.create(options);
       if (!widget) {
-        toast.error("❌ Error creando el widget de Fintoc");
+        toast.error(t("toast.connectError"));
         return;
       }
       widget?.open();
     } catch (error) {
       console.error("Error al abrir el widget de Fintoc:", error);
-      toast.error("Error al abrir el widget de Fintoc", {
-        description: "Por favor, intenta nuevamente.",
+      toast.error(t("toast.connectError"), {
+        description: t("toast.connectErrorDescription"),
       });
       setIsFintocProccessOpen(false);
     }
@@ -142,7 +146,7 @@ const BanksContent = () => {
     const items: BulletMenuItem[] = [
       {
         id: "edit",
-        label: "Editar cuenta",
+        label: t("editAccount"),
         icon: Edit,
         component: (
           <DropdownMenuItem
@@ -157,13 +161,13 @@ const BanksContent = () => {
             )}
           >
             <Edit className="h-4 w-4 text-primary shrink-0" />
-            <span className="whitespace-nowrap">Editar cuenta</span>
+            <span className="whitespace-nowrap">{t("editAccount")}</span>
           </DropdownMenuItem>
         ),
       },
       {
         id: "delete",
-        label: "Eliminar",
+        label: tCommon("delete"),
         component: (
           <DropdownMenuItem
             key={bank.id}
@@ -177,7 +181,7 @@ const BanksContent = () => {
             )}
           >
             <Trash2 className="h-4 w-4 text-primary shrink-0" />
-            <span className="whitespace-nowrap">Eliminar</span>
+            <span className="whitespace-nowrap">{tCommon("delete")}</span>
           </DropdownMenuItem>
           // <DialogConfirm
           //   title="¿Eliminar cuenta bancaria?"
@@ -208,7 +212,7 @@ const BanksContent = () => {
     if (bank.bank_provider) {
       items.unshift({
         id: "linked",
-        label: "Cuenta conectada",
+        label: t("linkedAccount"),
         icon: Link,
         disabled: true,
         onClick: () => {},
@@ -225,10 +229,10 @@ const BanksContent = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Bancos y cuentas"
-          description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
+          title={t("title")}
+          description={t("description")}
           icon={<FileText color="white" />}
-          subDescription="Integraciones"
+          subDescription={t("subDescription")}
         />
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
           <div className="w-full h-full">
@@ -245,7 +249,7 @@ const BanksContent = () => {
                 </div>
                 <div className="w-3/3">
                   <div className="flex justify-between items-center">
-                    <Search placeholder="Buscar" />
+                    <Search placeholder={t("searchPlaceholder")} />
                     <div className="flex items-center gap-2">
                       <Button
                         className="bg-orange-500 text-white hover:bg-orange-400"
@@ -255,11 +259,11 @@ const BanksContent = () => {
                         <div className="flex items-center gap-2">
                           {isFintocProccessOpen ? (
                             <>
-                              <Loader2 className="animate-spin" /> Conectando...
+                              <Loader2 className="animate-spin" /> {tLoading("connecting")}
                             </>
                           ) : (
                             <>
-                              <Link /> Conecta tu banco
+                              <Link /> {t("connectBank")}
                             </>
                           )}
                         </div>
@@ -276,15 +280,15 @@ const BanksContent = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-primary">Bancos</TableHead>
+                          <TableHead className="text-primary">{t("tableHeaders.banks")}</TableHead>
                           <TableHead className="text-primary">
-                            N° de cuenta
+                            {t("tableHeaders.accountNumber")}
                           </TableHead>
                           <TableHead className="text-primary">
-                            Cuenta contable
+                            {t("tableHeaders.ledgerAccount")}
                           </TableHead>
                           <TableHead className="text-primary text-center">
-                            Acciones
+                            {t("tableHeaders.actions")}
                           </TableHead>
                         </TableRow>
                       </TableHeader>
@@ -298,7 +302,7 @@ const BanksContent = () => {
                             {banksInformations.length === 0 ? (
                               <TableRow>
                                 <TableCell colSpan={4} className="text-center">
-                                  No se encontraron cuentas bancarias
+                                  {t("emptyMessage")}
                                 </TableCell>
                               </TableRow>
                             ) : (
@@ -342,12 +346,12 @@ const BanksContent = () => {
         isLoading={isFintocProccessOpen}
       />
       <DialogConfirm
-        title="¿Eliminar cuenta bancaria?"
-        description={`¿Estás seguro que deseas eliminar la cuenta bancaria "${selectDeleteBank?.bank} - ${selectDeleteBank?.account_number}"? Esta acción no se puede deshacer.`}
+        title={t("deleteTitle")}
+        description={t("deleteDescription", { bank: selectDeleteBank?.bank ?? "", account: selectDeleteBank?.account_number ?? "" })}
         isOpen={isDeleteDialogOpen}
         setIsOpen={setIsDeleteDialogOpen}
-        cancelButtonText="Cancelar"
-        confirmButtonText="Sí, eliminar"
+        cancelButtonText={tCommon("cancel")}
+        confirmButtonText={tCommon("yesDelete")}
         onConfirm={() => {
           if (session?.token && profile?.client?.id) {
             deleteBankInformation(
@@ -365,7 +369,7 @@ const BanksContent = () => {
 
 const BanksPage = () => {
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={<div></div>}>
       <BanksContent />
     </Suspense>
   );

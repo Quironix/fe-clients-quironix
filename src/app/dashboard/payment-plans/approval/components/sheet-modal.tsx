@@ -1173,7 +1173,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 Ajusta el plan de pago a tus términos. Cuando
                                 termines, simplemente haz clic en{" "}
                                 <span className="font-black">
-                                  “Enviar respuesta”
+                                  "Enviar respuesta"
                                 </span>
                                 .
                               </span>

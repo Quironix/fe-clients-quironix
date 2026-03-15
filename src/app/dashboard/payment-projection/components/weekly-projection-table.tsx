@@ -15,6 +15,7 @@ import { cn, formatNumber } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { getReportsByDebtor } from "../services";
 import { usePaymentProjectionStore } from "../store";
@@ -36,6 +37,7 @@ interface WeeklyProjectionTableProps {
 }
 
 const WeeklyProjectionTable = () => {
+  const t = useTranslations("paymentProjection");
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const { debtorId } = usePaymentProjectionStore();
@@ -160,7 +162,7 @@ const WeeklyProjectionTable = () => {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Proyección detallada</CardTitle>
+          <CardTitle>{t("detailedProjection")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
@@ -186,19 +188,19 @@ const WeeklyProjectionTable = () => {
                   {/* Columna de etiquetas */}
                 </TableHead>
                 <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  Semana 1
+                  {t("week", { number: 1 })}
                 </TableHead>
                 <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  Semana 2
+                  {t("week", { number: 2 })}
                 </TableHead>
                 <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  Semana 3
+                  {t("week", { number: 3 })}
                 </TableHead>
                 <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  Semana 4
+                  {t("week", { number: 4 })}
                 </TableHead>
                 <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  Semana 5
+                  {t("week", { number: 5 })}
                 </TableHead>
               </TableRow>
               <TableRow className="border-b-2">
@@ -221,7 +223,7 @@ const WeeklyProjectionTable = () => {
               {/* Fila N° Facturas */}
               <TableRow>
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
-                  N° Facturas
+                  {t("invoiceCount")}
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
@@ -238,7 +240,7 @@ const WeeklyProjectionTable = () => {
               {/* Fila Proyectado */}
               <TableRow className="bg-gray-50/30">
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
-                  Proyectado
+                  {t("projected")}
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
@@ -255,7 +257,7 @@ const WeeklyProjectionTable = () => {
               {/* Fila Real */}
               <TableRow>
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
-                  Real
+                  {t("real")}
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
@@ -272,7 +274,7 @@ const WeeklyProjectionTable = () => {
               {/* Fila Variación */}
               <TableRow className="bg-gray-50/30">
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
-                  Variación
+                  {t("variation")}
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
@@ -301,7 +303,7 @@ const WeeklyProjectionTable = () => {
               {/* Fila Estado */}
               <TableRow>
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
-                  Estado
+                  {t("status")}
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
@@ -323,7 +325,7 @@ const WeeklyProjectionTable = () => {
                   <span className="text-blue-600 font-bold text-lg">$</span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total proyectado</p>
+                  <p className="text-sm text-gray-600">{t("totalProjected")}</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {formatNumber(data?.data?.total_monthly_estimated)}
                   </p>
@@ -335,7 +337,7 @@ const WeeklyProjectionTable = () => {
                   <TrendingDown className="w-4 h-4 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Variación</p>
+                  <p className="text-sm text-gray-600">{t("variation")}</p>
                   <p
                     className={cn(
                       "text-2xl font-bold",
@@ -369,7 +371,7 @@ const WeeklyProjectionTable = () => {
                   <span className="text-green-600 font-bold text-lg">$</span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total real:</p>
+                  <p className="text-sm text-gray-600">{t("totalReal")}</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {formatNumber(
                       data?.data?.total_monthly_estimated -
@@ -384,7 +386,7 @@ const WeeklyProjectionTable = () => {
                   <TrendingDown className="w-4 h-4 text-orange-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">% de variación</p>
+                  <p className="text-sm text-gray-600">{t("variationPercentage")}</p>
                   {/*
                     Calcula el porcentaje de variación basado en el monto real y la variación.
                     Porcentaje = (variación / monto real) * 100

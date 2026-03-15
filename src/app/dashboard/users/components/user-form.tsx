@@ -13,6 +13,7 @@ import {
   FormItem,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import * as z from "zod";
 import { User, Role } from "../services/types";
 import { getRoles } from "../services";
@@ -28,35 +29,6 @@ import { DialogClose } from "@/components/ui/dialog";
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { E164Number } from "libphonenumber-js/core";
 
-const userFormSchema = z.object({
-  id: z.string().optional(),
-  first_name: z
-    .string()
-    .min(3, "Campo requerido")
-    .max(50, "Máximo 50 caracteres"),
-  last_name: z
-    .string()
-    .min(3, "Campo requerido")
-    .max(50, "Máximo 50 caracteres"),
-  email: z.string().email("Email inválido"),
-  phone_number: z
-    .string()
-    .min(8, "Campo requerido")
-    .max(15, "Máximo 15 caracteres")
-    .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
-      message: "Número de teléfono inválido",
-    }),
-  type: z
-    .string()
-    .min(1, "Campo requerido")
-    .refine((value) => ["ADMIN", "NORMAL"].includes(value), {
-      message: "Debe seleccionar un rol válido",
-    }),
-  roles: z.array(z.string()).min(1, "Debe seleccionar al menos un rol"),
-});
-
-type UserFormValues = z.infer<typeof userFormSchema>;
-
 interface UserFormProps {
   defaultValues?: Partial<User>;
   onSubmit?: (data: User) => Promise<void>;
@@ -64,9 +36,40 @@ interface UserFormProps {
 }
 
 const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
+  const t = useTranslations("users");
+  const tc = useTranslations("common");
   const [roles, setRoles] = useState<Role[]>([]);
   const { profile, session } = useProfileContext();
   const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const userFormSchema = z.object({
+    id: z.string().optional(),
+    first_name: z
+      .string()
+      .min(3, t("form.fieldRequired"))
+      .max(50, t("form.maxChars", { max: 50 })),
+    last_name: z
+      .string()
+      .min(3, t("form.fieldRequired"))
+      .max(50, t("form.maxChars", { max: 50 })),
+    email: z.string().email(t("form.invalidEmail")),
+    phone_number: z
+      .string()
+      .min(8, t("form.fieldRequired"))
+      .max(15, t("form.maxChars", { max: 15 }))
+      .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
+        message: t("form.invalidPhone"),
+      }),
+    type: z
+      .string()
+      .min(1, t("form.fieldRequired"))
+      .refine((value) => ["ADMIN", "NORMAL"].includes(value), {
+        message: t("form.validRole"),
+      }),
+    roles: z.array(z.string()).min(1, t("form.minOneRole")),
+  });
+
+  type UserFormValues = z.infer<typeof userFormSchema>;
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema) as any,
@@ -171,10 +174,10 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Nombre<span className="text-orange-500">*</span>
+                    {t("form.firstName")}<span className="text-orange-500">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Juan" {...field} />
+                    <Input placeholder={t("form.firstNamePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,10 +189,10 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Apellido<span className="text-orange-500">*</span>
+                    {t("form.lastName")}<span className="text-orange-500">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Pérez" {...field} />
+                    <Input placeholder={t("form.lastNamePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -202,12 +205,12 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Email<span className="text-orange-500">*</span>
+                  {t("form.email")}<span className="text-orange-500">*</span>
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="Ej: juan@ejemplo.com"
+                    placeholder={t("form.emailPlaceholder")}
                     {...field}
                   />
                 </FormControl>
@@ -221,11 +224,11 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Teléfono<span className="text-orange-500">*</span>
+                  {t("form.phone")}<span className="text-orange-500">*</span>
                 </FormLabel>
                 <FormControl>
                   <PhoneInput
-                    placeholder="Ej: +56 9 9891 8080"
+                    placeholder={t("form.phonePlaceholder")}
                     defaultCountry="CL"
                     value={field.value as E164Number}
                     onChange={(value: E164Number | undefined) =>
@@ -244,7 +247,7 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Tipo de usuario<span className="text-orange-500">*</span>
+                  {t("form.userType")}<span className="text-orange-500">*</span>
                 </FormLabel>
                 <Select
                   onValueChange={field.onChange}
@@ -253,12 +256,12 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecciona un tipo" />
+                      <SelectValue placeholder={t("form.selectType")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="ADMIN">Administrador</SelectItem>
-                    <SelectItem value="NORMAL">Usuario</SelectItem>
+                    <SelectItem value="ADMIN">{t("form.admin")}</SelectItem>
+                    <SelectItem value="NORMAL">{t("form.normal")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -267,7 +270,7 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
           />
           <div>
             <Label>
-              Roles<span className="text-orange-500">*</span>
+              {t("form.roles")}<span className="text-orange-500">*</span>
             </Label>
             <div className="flex flex-col gap-2 mt-2">
               {roles.map((role) => {
@@ -318,12 +321,12 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
         <div className="flex justify-end gap-2">
           {submitAttempted && Object.keys(form.formState.errors).length > 0 && (
             <div className="text-red-500 text-xs self-center mr-2">
-              Por favor, completa todos los campos requeridos
+              {t("form.requiredFieldsError")}
             </div>
           )}
           <DialogClose asChild>
             <Button type="button" variant="secondary">
-              Cancelar
+              {tc("buttons.cancel")}
             </Button>
           </DialogClose>
           <Button
@@ -331,13 +334,12 @@ const UserForm = ({ defaultValues, onSubmit, setOpen }: UserFormProps) => {
             className="bg-blue-700 text-white"
             disabled={form.formState.isSubmitting}
             onClick={() => {
-              // Esto permite que se muestren los errores al hacer clic en el botón
               if (Object.keys(form.formState.errors).length > 0) {
                 setSubmitAttempted(true);
               }
             }}
           >
-            {form.formState.isSubmitting ? "Guardando..." : "Guardar"}
+            {form.formState.isSubmitting ? t("form.saving") : tc("buttons.save")}
           </Button>
         </div>
       </form>

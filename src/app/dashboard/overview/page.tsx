@@ -2,6 +2,7 @@
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { LayoutGrid, RotateCcw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Suspense, useEffect, useState } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
@@ -19,6 +20,7 @@ import { useKPIData } from "./hooks/useKPIData";
 import { useKPIStore } from "./store";
 
 const KPIContent = () => {
+  const t = useTranslations("overview");
   const { profile, session } = useProfileContext();
   const {
     filteredKpis,
@@ -89,27 +91,27 @@ const KPIContent = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Dashboard"
-          description="Revisa tus indicadores clave de rendimiento"
+          title={t("title")}
+          description={t("description")}
           icon={<LayoutGrid color="white" />}
-          subDescription="KPIs"
+          subDescription={t("subDescription")}
         />
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center gap-4 p-12">
               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500"></div>
               <p className="text-lg font-semibold text-gray-700">
-                Cargando indicadores...
+                {t("loading")}
               </p>
               <p className="text-sm text-gray-500">
-                Los datos se almacenarán en caché por 5 minutos
+                {t("loadingCache")}
               </p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center gap-4 p-12">
               <div className="text-red-500 text-4xl">⚠️</div>
               <p className="text-lg font-semibold text-gray-700">
-                Error al cargar los indicadores
+                {t("errorLoading")}
               </p>
               <p className="text-sm text-gray-500">{error.message}</p>
             </div>
@@ -130,7 +132,7 @@ const KPIContent = () => {
                                 ? "bg-orange-500 text-white"
                                 : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
                             }`}
-                            title={`Todos a ${type.name}`}
+                            title={t("viewAllAs", { type: type.name })}
                           >
                             <Icon size={16} />
                           </button>
@@ -162,7 +164,7 @@ const KPIContent = () => {
                       className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <RotateCcw size={14} />
-                      Limpiar
+                      {t("clear")}
                     </button>
                   </div>
                 </header>
@@ -180,7 +182,7 @@ const KPIContent = () => {
                           : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                       }`}
                     >
-                      {cat === "all" ? "Todos" : cat}
+                      {cat === "all" ? t("allCategories") : cat}
                     </button>
                   ))}
                 </div>
@@ -233,6 +235,7 @@ const KPIContent = () => {
 };
 
 const KPIPageV4 = () => {
+  const t = useTranslations("overview");
   return (
     <Suspense
       fallback={
@@ -240,7 +243,7 @@ const KPIPageV4 = () => {
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500"></div>
             <p className="text-lg font-semibold text-gray-700">
-              Cargando Dashboard KPI...
+              {t("loadingDashboard")}
             </p>
           </div>
         </div>

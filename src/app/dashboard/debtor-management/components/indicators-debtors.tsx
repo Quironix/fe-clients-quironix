@@ -9,6 +9,7 @@ import {
   Target,
   User,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
@@ -19,6 +20,7 @@ import { formatValue, ProgressBarChart } from "./progress-bar-chart";
 dayjs.locale("es");
 
 const IndicatorsDebtor = () => {
+  const t = useTranslations("debtorManagement.indicators");
   const { session, profile } = useProfileContext();
   const { data, isLoading, isError } = useManagementIndicators({
     accessToken: session?.token || "",
@@ -39,7 +41,7 @@ const IndicatorsDebtor = () => {
   if (isLoading) {
     return (
       <div className="bg-white shadow-xl rounded-md p-3 space-y-2">
-        <div className="text-gray-500 text-center py-4">Cargando...</div>
+        <div className="text-gray-500 text-center py-4">{t("loading")}</div>
       </div>
     );
   }
@@ -49,7 +51,7 @@ const IndicatorsDebtor = () => {
     return (
       <div className="bg-white shadow-xl rounded-md p-3 space-y-2">
         <div className="text-red-500 text-center py-4">
-          Error al cargar indicadores
+          {t("errorLoading")}
         </div>
       </div>
     );
@@ -69,7 +71,7 @@ const IndicatorsDebtor = () => {
       <div className="flex gap-3 justify-between items-center">
         <div className="flex gap-1">
           <User className="text-blue-600" />
-          <span>Estado</span>
+          <span>{t("status")}</span>
         </div>
         <div>
           <div
@@ -77,7 +79,7 @@ const IndicatorsDebtor = () => {
             style={{ backgroundColor: statusBgColor }}
           >
             <span className={`w-2 h-2 rounded-full ${statusDotColor}`} />{" "}
-            {isActive ? "Activo" : "Inactivo"}
+            {isActive ? t("active") : t("inactive")}
           </div>
         </div>
       </div>
@@ -94,13 +96,13 @@ const IndicatorsDebtor = () => {
       </div>
 
       <div className="flex gap-3 justify-between items-center">
-        <div className="flex gap-1">Tareas realizadas</div>
+        <div className="flex gap-1">{t("tasksCompleted")}</div>
         <div>
           <span className="text-green-700">{data.tasks.completed}</span>
         </div>
       </div>
       <div className="flex gap-3 justify-between items-center">
-        <div className="flex gap-1">Tareas pendientes</div>
+        <div className="flex gap-1">{t("tasksPending")}</div>
         <div>
           <span className="text-red-700">{data.tasks.pending}</span>
         </div>
@@ -114,35 +116,35 @@ const IndicatorsDebtor = () => {
 
       <IndicatorCard
         icon={<Target className="text-blue-600" />}
-        title="Avance del ejecutivo"
+        title={t("executiveProgress")}
       >
         <div className="flex flex-col">
           <span className="text-3xl text-black font-black">
             {data.tasks.progress_percent}%
           </span>
           <span className="text-sm text-black -mt-1">
-            {data.tasks.completed}/{data.tasks.total} tareas
+            {data.tasks.completed}/{data.tasks.total} {t("tasks")}
           </span>
         </div>
       </IndicatorCard>
 
       <IndicatorCard
         icon={<DollarSign className="text-blue-600" />}
-        title="Meta del día"
+        title={t("dailyGoal")}
       >
         <div className="flex flex-col">
           <span className="text-3xl text-black font-black">
             {formatValue(data.daily_goal.current_amount)}
           </span>
           <span className="text-sm text-black -mt-1">
-            de {formatValue(data.daily_goal.target_amount)}
+            {t("of")} {formatValue(data.daily_goal.target_amount)}
           </span>
         </div>
       </IndicatorCard>
 
       <IndicatorCard
         icon={<ChartLine className="text-blue-600" />}
-        title="Reducción de morosidad"
+        title={t("overdueReduction")}
       >
         <div className="flex flex-col w-full min-w-full">
           <span className="text-3xl text-black font-black">
@@ -162,22 +164,21 @@ const IndicatorsDebtor = () => {
 
       <IndicatorCard
         icon={<DollarSign className="text-blue-600" />}
-        title="Compromisos de pago"
+        title={t("paymentCommitments")}
       >
         <div className="flex flex-col">
           <span className="text-3xl text-black font-black">
             {formatValue(data.payment_commitments.amount)}
           </span>
           <span className="text-sm text-black -mt-1">
-            de {data.payment_commitments.commitments_count} compromisos
-            obtenidos
+            {t("of")} {data.payment_commitments.commitments_count} {t("commitmentsObtained")}
           </span>
         </div>
       </IndicatorCard>
 
       <IndicatorCard
         icon={<FileChartLine className="text-blue-600" />}
-        title="Meta del mes"
+        title={t("monthlyGoal")}
       >
         <div className="flex flex-col w-full">
           <span className="text-3xl text-black font-black">

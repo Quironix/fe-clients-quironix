@@ -3,23 +3,28 @@
 import { Step } from "@/components/Stepper/types";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Loader } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import ContractSignStep from "./components/steps/ConstractSignStep";
 import PersonalInformationStep from "./components/steps/PersonalInformationStep";
 import SuccessOnboarding from "./components/steps/SuccessOnboarding";
 import TermsAndConditionStep from "./components/steps/TermsAndConditionStep";
 import TwoFactorStep from "./components/steps/TwoFactorStep";
-const steps: Step[] = [
-  { id: 1, label: "Datos personales", completed: false },
-  { id: 2, label: "Autenticación", completed: false },
-  { id: 3, label: "Verificación", completed: false },
-  { id: 4, label: "Confirmación", completed: false },
-  { id: 5, label: "Success", completed: false },
-];
 
 // Renombramos el componente original a OnboardingSteps
 const OnboardingSteps = () => {
   const { profile } = useProfileContext();
+  const t = useTranslations("onboarding");
+  const tCommon = useTranslations("common");
+
+  const steps: Step[] = [
+    { id: 1, label: t("steps.personalInfo"), completed: false },
+    { id: 2, label: t("steps.authentication"), completed: false },
+    { id: 3, label: t("steps.verification"), completed: false },
+    { id: 4, label: t("steps.confirmation"), completed: false },
+    { id: 5, label: t("steps.success"), completed: false },
+  ];
+
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
 
@@ -78,7 +83,7 @@ const OnboardingSteps = () => {
           renderStep()
         ) : (
           <div className="text-white flex items-center gap-2">
-            <Loader className="animate-spin" /> Cargando...
+            <Loader className="animate-spin" /> {tCommon("loading.generic")}
           </div>
         )}
       </div>

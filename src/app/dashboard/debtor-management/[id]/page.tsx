@@ -15,6 +15,7 @@ import { SkeletonFormDebtor } from "@/components/ui/skeleton-form-debtor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileContext } from "@/context/ProfileContext";
 import { ArrowLeft, PhoneCall } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { use, useEffect } from "react";
 import Header from "../../components/header";
@@ -34,6 +35,7 @@ interface PageProps {
 const Content = ({ params }: PageProps) => {
   // Unwrap params usando React.use()
   const { id } = use(params);
+  const t = useTranslations("debtorManagement");
 
   const { profile, session } = useProfileContext();
   const {
@@ -68,10 +70,10 @@ const Content = ({ params }: PageProps) => {
         </Header>
         <Main>
           <TitleSection
-            title="Gestión de deudores"
-            description="Cargando información del deudor..."
+            title={t("title")}
+            description={t("detail.loadingDescription")}
             icon={<PhoneCall color="white" />}
-            subDescription="Gestión de deudores"
+            subDescription={t("subDescription")}
           />
           <SkeletonFormDebtor />
         </Main>
@@ -86,10 +88,10 @@ const Content = ({ params }: PageProps) => {
       </Header>
       <Main>
         <TitleSection
-          title="Riesgo/Crédito"
-          description="Visualización de deudores con compromiso no cumplido"
+          title={t("detail.title")}
+          description={t("detail.description")}
           icon={<PhoneCall color="white" />}
-          subDescription="Gestión de deudores"
+          subDescription={t("subDescription")}
         />
         <div className="flex justify-between items-center mb-5">
           <Breadcrumb>
@@ -100,7 +102,7 @@ const Content = ({ params }: PageProps) => {
                     href="/dashboard/debtor-management"
                     className="text-blue-600"
                   >
-                    Gestión de deudores
+                    {t("detail.breadcrumbLink")}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -118,7 +120,7 @@ const Content = ({ params }: PageProps) => {
           <Button variant="ghost" asChild>
             <Link href="/dashboard/debtor-management">
               <div className="flex gap-1 justify-start items-center text-blue-700">
-                <ArrowLeft /> Volver a tareas
+                <ArrowLeft /> {t("detail.backToTasks")}
               </div>
             </Link>
           </Button>
@@ -127,11 +129,11 @@ const Content = ({ params }: PageProps) => {
         {dataDebtor?.contacts && dataDebtor.contacts.length > 0 ? (
           <DebtorContacts
             mainContact={{
-              name: dataDebtor.contacts[0]?.name || "Sin nombre",
-              role: dataDebtor.contacts[0]?.role || "Sin rol",
-              function: dataDebtor.contacts[0]?.function || "Sin función",
-              email: dataDebtor.contacts[0]?.email || "Sin email",
-              phone: dataDebtor.contacts[0]?.phone || "Sin teléfono",
+              name: dataDebtor.contacts[0]?.name || t("contacts.noName"),
+              role: dataDebtor.contacts[0]?.role || t("contacts.noRole"),
+              function: dataDebtor.contacts[0]?.function || t("contacts.noFunction"),
+              email: dataDebtor.contacts[0]?.email || t("contacts.noEmail"),
+              phone: dataDebtor.contacts[0]?.phone || t("contacts.noPhone2"),
               channel:
                 (dataDebtor.contacts[0]?.channel as
                   | "email"
@@ -141,37 +143,37 @@ const Content = ({ params }: PageProps) => {
             additionalContacts={dataDebtor.contacts
               .slice(1)
               .map((contact: any) => ({
-                name: contact.name || "Sin nombre",
-                role: contact.role || "Sin rol",
-                function: contact.function || "Sin función",
-                email: contact.email || "Sin email",
-                phone: contact.phone || "Sin teléfono",
+                name: contact.name || t("contacts.noName"),
+                role: contact.role || t("contacts.noRole"),
+                function: contact.function || t("contacts.noFunction"),
+                email: contact.email || t("contacts.noEmail"),
+                phone: contact.phone || t("contacts.noPhone2"),
                 channel:
                   (contact.channel as "email" | "phone" | "whatsapp") ||
                   "email",
               }))}
-            callSchedule={dataDebtor.attention_days_hours || "No definido"}
+            callSchedule={dataDebtor.attention_days_hours || t("contacts.notDefined")}
           />
         ) : (
           <DebtorContacts
             mainContact={{
-              name: "Sin contacto principal",
-              role: "N/A",
-              function: "N/A",
-              email: "N/A",
-              phone: "N/A",
+              name: t("detail.noContact"),
+              role: t("detail.na"),
+              function: t("detail.na"),
+              email: t("detail.na"),
+              phone: t("detail.na"),
               channel: "email",
             }}
             additionalContacts={[]}
-            callSchedule="No definido"
+            callSchedule={t("contacts.notDefined")}
           />
         )}
 
         <div className="bg-white p-5 rounded-md shadow-xl mt-5 min-h-auto flex flex-col">
           <Tabs defaultValue="key-reasons" className="flex flex-col flex-1">
             <TabsList>
-              <TabsTrigger value="key-reasons">Razones clave</TabsTrigger>
-              <TabsTrigger value="add-management">Agregar gestión</TabsTrigger>
+              <TabsTrigger value="key-reasons">{t("tabs.keyReasons")}</TabsTrigger>
+              <TabsTrigger value="add-management">{t("tabs.addManagement")}</TabsTrigger>
             </TabsList>
             <TabsContent value="key-reasons" className="flex-1">
               <KeyReasonsTab

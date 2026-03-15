@@ -1,7 +1,9 @@
 import { FileX } from "lucide-react";
 import React from "react";
+import { useTranslations } from "next-intl";
 
 const AlertIncomplete = () => {
+  const t = useTranslations("debtors.incomplete");
   return (
     <div className="bg-[#FFDDDD] text-black flex justify-start items-center gap-2 p-2 rounded-md border-2 border-[#D72D0F]">
       <div className="flex justify-center items-center px-1">
@@ -9,11 +11,10 @@ const AlertIncomplete = () => {
       </div>
       <div className="flex flex-col">
         <span className="text-black text-sm font-bold">
-          La carga masiva se ha realizado de manera incompleta
+          {t("alertTitle")}
         </span>
         <span className="text-black text-sm">
-          Revisa el detalle de los errores detectados, corrígelo en la plantilla
-          descargada y vuelve a subirlo
+          {t("alertDescription")}
         </span>
       </div>
     </div>

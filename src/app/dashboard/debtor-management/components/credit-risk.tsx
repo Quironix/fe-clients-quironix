@@ -1,9 +1,11 @@
 import { formatNumber } from "@/lib/utils";
 import { Circle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Badge } from "../../components/badge";
 import { CallReasons } from "../types";
 
 const CreditRisk = ({ data }: { data: CallReasons["credit_risk_summary"] }) => {
+  const t = useTranslations("debtorManagement.creditRisk");
   // Valores por defecto si credit_risk_summary no existe
   const credit_risk_summary = data || {
     current_credit: 0,
@@ -16,29 +18,29 @@ const CreditRisk = ({ data }: { data: CallReasons["credit_risk_summary"] }) => {
   const getRiskDisplay = (category: string) => {
     switch (category) {
       case "LOW":
-        return { color: "green", text: "Bajo" };
+        return { color: "green", text: t("low") };
       case "MEDIUM":
-        return { color: "yellow", text: "Medio" };
+        return { color: "yellow", text: t("medium") };
       case "HIGH":
-        return { color: "red", text: "Alto" };
+        return { color: "red", text: t("high") };
       case "UNKNOWN":
       default:
-        return { color: "gray", text: "Desconocido" };
+        return { color: "gray", text: t("unknown") };
     }
   };
 
   // Determinar estado crediticio basado en línea de crédito y categoría de riesgo
   const getCreditStatus = () => {
     if (!credit_risk_summary.has_credit_line) {
-      return { variant: "warning" as const, text: "Sin línea de crédito" };
+      return { variant: "warning" as const, text: t("noCreditLine") };
     }
     if (credit_risk_summary.risk_category === "HIGH") {
-      return { variant: "error" as const, text: "Retenido" };
+      return { variant: "error" as const, text: t("retained") };
     }
     if (credit_risk_summary.risk_category === "MEDIUM") {
-      return { variant: "warning" as const, text: "En revisión" };
+      return { variant: "warning" as const, text: t("underReview") };
     }
-    return { variant: "success" as const, text: "Activo" };
+    return { variant: "success" as const, text: t("active") };
   };
 
   const riskDisplay = getRiskDisplay(credit_risk_summary.risk_category);
@@ -47,19 +49,19 @@ const CreditRisk = ({ data }: { data: CallReasons["credit_risk_summary"] }) => {
   return (
     <div className="flex flex-col justify-center items-center w-full gap-3 flex-1 py-2">
       <div className="flex justify-between items-center w-full">
-        <span className="text-xs">Crédito actual</span>
+        <span className="text-xs">{t("currentCredit")}</span>
         <span className="text-xs font-bold">
           {formatNumber(credit_risk_summary.current_credit)}
         </span>
       </div>
       <div className="flex justify-between items-center w-full">
-        <span className="text-xs">Crédito disponible</span>
+        <span className="text-xs">{t("availableCredit")}</span>
         <span className="text-xs font-bold">
           {formatNumber(credit_risk_summary.available_credit)}
         </span>
       </div>
       <div className="flex justify-between items-center w-full">
-        <span className="text-xs">Cat. de riesgo</span>
+        <span className="text-xs">{t("riskCategory")}</span>
         <span className="text-xs font-bold flex items-center gap-1">
           <Circle
             color={riskDisplay.color}
@@ -71,7 +73,7 @@ const CreditRisk = ({ data }: { data: CallReasons["credit_risk_summary"] }) => {
       </div>
 
       <div className="flex justify-between items-center w-full">
-        <span className="text-xs">Estado crediticio</span>
+        <span className="text-xs">{t("creditStatus")}</span>
         <Badge variant={creditStatus.variant} text={creditStatus.text} />
       </div>
     </div>

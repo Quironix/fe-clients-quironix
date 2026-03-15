@@ -3,11 +3,13 @@ import { cn, formatNumber } from "@/lib/utils";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { DollarSign, TrendingDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import CardDashboard from "../../components/card-dashboard";
 import { getIndicators } from "../services";
 
 const ReportsCards = () => {
+  const t = useTranslations("paymentProjection");
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const { data, isLoading } = useQuery({
@@ -45,12 +47,12 @@ const ReportsCards = () => {
           <CardDashboard
             icon={<DollarSign className="text-blue-600" />}
             value={formatNumber(data?.data?.data?.total_projection)}
-            title="Proyección total"
+            title={t("totalProjection")}
           />
           <CardDashboard
             icon={<DollarSign className="text-green-600" />}
             value={formatNumber(data?.data?.data?.collected)}
-            title="Recaudado"
+            title={t("collected")}
           />
           <CardDashboard
             icon={<TrendingDown className="text-red-600" />}
@@ -66,7 +68,7 @@ const ReportsCards = () => {
                 {formatNumber(data?.data?.data?.variation)}
               </span>
             }
-            title="Variación"
+            title={t("variation")}
             description={
               <span
                 className={cn(
@@ -83,10 +85,10 @@ const ReportsCards = () => {
           <CardDashboard
             icon={<IconInfoCircle className="text-red-600" />}
             value={formatNumber(data?.data?.data?.critical_cases, false)}
-            title="Casos críticos"
+            title={t("criticalCases")}
             description={
               <span className="text-gray-400 text-xs">
-                {data?.data?.data?.metadata?.period_days} días vencidos totales
+                {t("totalOverdueDays", { days: data?.data?.data?.metadata?.period_days })}
               </span>
             }
           />

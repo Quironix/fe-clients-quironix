@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
 import { AlertTriangle, File, FileText, Scale } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { useCollectorQuadrants } from "../hooks/useCollectorQuadrants";
 import { QuadrantType } from "../services/types";
@@ -17,6 +18,7 @@ export const TaskFilters = ({
   selectedQuadrant,
   onQuadrantChange,
 }: TaskFiltersProps) => {
+  const t = useTranslations("debtorManagement");
   const { session, profile } = useProfileContext();
 
   // Obtener datos sin filtros para calcular totales
@@ -71,7 +73,7 @@ export const TaskFilters = ({
 
   return (
     <div className="mb-3 flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:justify-between">
-      <DebtorSearchAutocomplete placeholder="Buscar deudor por código o nombre" />
+      <DebtorSearchAutocomplete placeholder={t("searchPlaceholder")} />
 
       <div className="flex items-center gap-1 flex-wrap">
         <Button
@@ -87,7 +89,7 @@ export const TaskFilters = ({
           onClick={() => handleQuadrantClick("CRITICAL_DEBTORS")}
         >
           <AlertTriangle className="w-4 h-4" />
-          Críticos {counts.critical_debtors}
+          {t("filters.critical")} {counts.critical_debtors}
         </Button>
         <Button
           size="xs"
@@ -102,7 +104,7 @@ export const TaskFilters = ({
           onClick={() => handleQuadrantClick("CASH_GENERATION")}
         >
           <FileText className="w-4 h-4" />
-          Gen. Caja {counts.cash_generation}
+          {t("filters.cashGeneration")} {counts.cash_generation}
         </Button>
         <Button
           size="xs"
@@ -115,7 +117,7 @@ export const TaskFilters = ({
           onClick={() => handleQuadrantClick("LITIGATION")}
         >
           <Scale className="w-4 h-4" />
-          Litigios {counts.litigation}
+          {t("filters.litigation")} {counts.litigation}
         </Button>
         <Button
           size="xs"
@@ -132,7 +134,7 @@ export const TaskFilters = ({
           onClick={() => handleQuadrantClick("DEFICIENT_TECHNICAL_FILE")}
         >
           <File className="w-4 h-4" />
-          Exp. Técnico {counts.deficient_technical_file}
+          {t("filters.technicalFile")} {counts.deficient_technical_file}
         </Button>
         <Button
           size="xs"
@@ -144,7 +146,7 @@ export const TaskFilters = ({
           }
           onClick={() => onQuadrantChange(null)}
         >
-          Todas {counts.total}
+          {t("filters.all")} {counts.total}
         </Button>
       </div>
     </div>

@@ -1,13 +1,15 @@
 import { Separator } from "@/components/ui/separator";
+import { useTranslations } from "next-intl";
 import { Fragment } from "react";
 
 const ProtestedChecks = ({ data }: { data: any[] }) => {
+  const t = useTranslations("debtorManagement.protestedChecksCard");
   return (
     <div className="space-y-4 px-3">
       {/* Tu contenido aquí */}
       {data.length === 0 && (
         <p className="text-sm text-gray-500 text-center py-3">
-          No hay cheques protestados.
+          {t("noChecks")}
         </p>
       )}
 
@@ -23,7 +25,7 @@ const ProtestedChecks = ({ data }: { data: any[] }) => {
                 {dt.status}
               </span>
               <p className="text-sm text-muted-foreground mt-1">
-                {dt.days} días
+                {dt.days} {t("days")}
               </p>
             </div>
           </div>

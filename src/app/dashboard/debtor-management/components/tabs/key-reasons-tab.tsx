@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   TriangleAlert,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { CollectionProfile } from "../../types";
 import CreditRisk from "../credit-risk";
 import { DebtorChatbot } from "../debtor-chatbot";
@@ -29,6 +30,8 @@ export const KeyReasonsTab = ({
   collectionProfile,
   isFetchingCollectionProfile,
 }: KeyReasonsTabProps) => {
+  const t = useTranslations("debtorManagement.keyReasonsTab");
+  const tDetail = useTranslations("debtorManagement.detail");
   if (isFetchingCollectionProfile) {
     return (
       <div className="flex gap-5 h-full w-full mt-5">
@@ -76,7 +79,7 @@ export const KeyReasonsTab = ({
   if (!collectionProfile) {
     return (
       <div className="bg-white p-6 rounded-md h-full flex items-center justify-center">
-        <span className="text-gray-500">No hay datos disponibles</span>
+        <span className="text-gray-500">{tDetail("noData")}</span>
       </div>
     );
   }
@@ -95,7 +98,7 @@ export const KeyReasonsTab = ({
 
           <CardCollapsible
             icon={<ShieldCheck />}
-            title="Compromiso de pago"
+            title={t("paymentCommitment")}
             defaultOpen={false}
             destacado={true}
           >
@@ -104,7 +107,7 @@ export const KeyReasonsTab = ({
 
           <CardCollapsible
             icon={<TriangleAlert />}
-            title="Riesgo crediticio"
+            title={t("creditRisk")}
             defaultOpen={false}
           >
             <CreditRisk data={collectionProfile.credit_risk_summary} />
@@ -112,7 +115,7 @@ export const KeyReasonsTab = ({
 
           <CardCollapsible
             icon={<FileX2 />}
-            title="Cheques protestos"
+            title={t("protestedChecks")}
             defaultOpen={false}
           >
             <ProtestedChecks data={collectionProfile.protested_checks || []} />
@@ -120,7 +123,7 @@ export const KeyReasonsTab = ({
 
           <CardCollapsible
             icon={<CreditCard />}
-            title="Último pago recibido"
+            title={t("lastPayment")}
             defaultOpen={false}
           >
             <LastPaymentReceived
@@ -130,7 +133,7 @@ export const KeyReasonsTab = ({
 
           <CardCollapsible
             icon={<Scale />}
-            title="Litigios"
+            title={t("litigations")}
             defaultOpen={false}
           >
             <LitigationsCard data={collectionProfile || null} />
@@ -138,7 +141,7 @@ export const KeyReasonsTab = ({
 
           <CardCollapsible
             icon={<History />}
-            title="Últimas gestiones"
+            title={t("lastManagements")}
             defaultOpen={false}
           >
             <LastManagements

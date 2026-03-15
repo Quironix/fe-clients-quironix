@@ -7,6 +7,7 @@ import { updateLitigationTableProfile } from "../services";
 import { Litigation, LitigationItem } from "../types";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 import { Archive, Eye, Trash2 } from "lucide-react";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import { getColumns } from "./columns";
@@ -19,6 +20,7 @@ interface ListLitigationProps {
 }
 
 const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
+  const t = useTranslations("litigation");
   const { session, profile } = useProfileContext();
 
   const {
@@ -63,56 +65,55 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
 
   const columnLabels = useMemo(
     () => ({
-      invoice_number: "N° Factura",
-      debtor_name: "Deudor",
-      dispute_entry: "Ingreso de litigio",
-      client_code: "Días de disputa",
-      dispute_amount: "Monto de litigio",
-      invoice_balance: "Saldo factura",
-      approver: "Aprobador",
-      reason: "Motivo",
-      sub_reason: "Submotivo",
-      actions: "Acción",
+      invoice_number: t("columnLabels.invoiceNumber"),
+      debtor_name: t("columnLabels.debtor"),
+      dispute_entry: t("columnLabels.disputeEntry"),
+      client_code: t("columnLabels.disputeDays"),
+      dispute_amount: t("columnLabels.disputeAmount"),
+      invoice_balance: t("columnLabels.invoiceBalance"),
+      approver: t("columnLabels.approver"),
+      reason: t("columnLabels.reason"),
+      sub_reason: t("columnLabels.subReason"),
+      actions: t("columnLabels.actions"),
     }),
-    []
+    [t]
   );
 
   const bulkActions = useMemo(
     () => [
       {
-        label: "Ver detalles",
+        label: t("actions.viewDetails"),
         onClick: async (selectedRows: Litigation[]) => {
           if (selectedRows.length > 0) {
             // setSelectedLitigation(selectedRows[0]);
             // setShowDetailModal(true);
           } else {
-            toast.warning("Selecciona al menos un litigio para ver detalles.");
+            toast.warning(t("actions.selectAtLeast"));
           }
         },
         variant: "outline" as const,
         icon: <Eye className="h-4 w-4" />,
       },
       {
-        label: "Editar factura",
+        label: t("actions.editInvoice"),
         onClick: async (selectedRows: Litigation[]) => {
           console.log("Editar factura:", selectedRows);
-          toast("Función de edición aún no implementada");
+          toast(t("actions.editNotImplemented"));
         },
         variant: "secondary" as const,
         icon: <Archive className="h-4 w-4" />,
       },
       {
-        label: "Normalizar",
+        label: t("actions.normalize"),
         onClick: async (selectedRows: Litigation[]) => {
           try {
-            // Aquí va endpoint para normalizar
             console.log("Normalizar factura:", selectedRows);
-            toast.success("Litigios normalizados correctamente");
+            toast.success(t("toast.normalizedSuccess"));
             await refetch();
             clearRowSelection();
           } catch (err) {
             console.error("Error normalizando:", err);
-            toast.error("Ocurrió un error al normalizar");
+            toast.error(t("toast.normalizedError"));
           }
         },
         variant: "destructive" as const,
@@ -160,7 +161,7 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
       }
     } catch (error) {
       console.error("Error al actualizar columnas:", error);
-      toast.error("Ocurrió un error al guardar la configuración de columnas.");
+      toast.error(t("toast.columnConfigError"));
     } finally {
       setIsApplyingFilters(false);
     }
@@ -178,14 +179,14 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
           onPaginationChange={handlePaginationChange}
           onSearchChange={handleSearchChange}
           enableGlobalFilter
-          searchPlaceholder="Buscar"
+          searchPlaceholder={t("searchPlaceholder")}
           enableColumnFilter
           columnLabels={columnLabels}
           onRowSelectionChange={handleRowSelectionChange}
           bulkActions={bulkActions}
-          emptyMessage="No se encontraron litigios"
+          emptyMessage={t("emptyMessage")}
           className="rounded-lg"
-          title="Historial de litigios"
+          title={t("historyTitle")}
           handleSuccessButton={handleUpdateColumns}
           filterInputs={
             <FilterInputs

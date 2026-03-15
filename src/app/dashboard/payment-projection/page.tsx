@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Language from "@/components/ui/language";
 import { ChartSpline } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Suspense } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
@@ -13,6 +14,7 @@ import WeeklyProjectionTable from "./components/weekly-projection-table";
 import { usePaymentProjectionStore } from "./store";
 
 const PaymentProjectionContent = () => {
+  const t = useTranslations("paymentProjection");
   const { debtorId } = usePaymentProjectionStore();
   return (
     <>
@@ -21,10 +23,10 @@ const PaymentProjectionContent = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Proyección de pagos"
-          description="Visualización de proyecciones de pago por períodos de 5 semanas"
+          title={t("title")}
+          description={t("description")}
           icon={<ChartSpline color="white" />}
-          subDescription="Proyección de pagos"
+          subDescription={t("subDescription")}
         />
 
         <ReportsCards />
@@ -38,13 +40,12 @@ const PaymentProjectionContent = () => {
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle>Proyección detalle</CardTitle>
+                  <CardTitle>{t("detailTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-center h-full min-h-[540px]">
                     <span className="text-sm text-gray-500">
-                      Para ver la proyección de pagos, seleccione un deudor en
-                      la lista de la izquierda.
+                      {t("selectDebtor")}
                     </span>
                   </div>
                 </CardContent>
@@ -59,7 +60,7 @@ const PaymentProjectionContent = () => {
 
 const PaymentProjectionPage = () => {
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={<div></div>}>
       <PaymentProjectionContent />
     </Suspense>
   );

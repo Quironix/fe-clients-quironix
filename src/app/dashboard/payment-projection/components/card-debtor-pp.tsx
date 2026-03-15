@@ -2,9 +2,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, formatNumber } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { usePaymentProjectionStore } from "../store";
 
 const CardDebtorPP = ({ debtor }: { debtor: any }) => {
+  const t = useTranslations("paymentProjection");
   const { debtorId, setDebtorId } = usePaymentProjectionStore();
   return (
     <Card
@@ -17,7 +19,7 @@ const CardDebtorPP = ({ debtor }: { debtor: any }) => {
       <CardContent className="space-y-3">
         <div className="text-right w-full">
           <Badge className="bg-yellow-400 rounded-full text-gray-600">
-            <TrendingUp /> Alto
+            <TrendingUp /> {t("high")}
           </Badge>
         </div>
         <div className="flex flex-col items-start justify-start">
@@ -30,13 +32,13 @@ const CardDebtorPP = ({ debtor }: { debtor: any }) => {
         </div>
         <div className="flex items-center justify-start bg-blue-100/50 gap-20 p-3 px-2 rounded-md">
           <div className="flex flex-col items-start justify-start gap-0">
-            <span className="text-[10px] text-gray-500">Deuda vencida</span>
+            <span className="text-[10px] text-gray-500">{t("overdueDebt")}</span>
             <span className="text-lg font-semibold text-red-500">
               {formatNumber(debtor?.overdue_debt)}
             </span>
           </div>
           <div className="flex flex-col items-start justify-start gap-0">
-            <span className="text-[10px] text-gray-500">Deuda periodo</span>
+            <span className="text-[10px] text-gray-500">{t("periodDebt")}</span>
             <span className="text-lg font-semibold text-black">
               {formatNumber(debtor?.period_debt)}
             </span>

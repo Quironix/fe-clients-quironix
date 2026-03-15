@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useProfileContext } from "@/context/ProfileContext";
 import { formatNumber } from "@/lib/utils";
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getCollectorQuadrants } from "../services";
@@ -18,30 +19,21 @@ interface QuadrantItemWithHighlight extends QuadrantItem {
   isFirstInQuadrant?: boolean;
 }
 
-const QUADRANT_LABELS: Record<string, { label: string; color: string }> = {
-  BROKEN_COMMITMENTS: {
-    label: "Compromisos Incumplidos",
-    color: "bg-red-100 text-red-700",
-  },
-  CRITICAL_DEBTORS: {
-    label: "Riesgo / crédito",
-    color: "bg-red-100 text-red-700",
-  },
-  CASH_GENERATION: {
-    label: "Gen. Caja",
-    color: "bg-orange-100 text-orange-700",
-  },
-  LITIGATION: { label: "Litigios", color: "bg-yellow-100 text-yellow-700" },
-  DEFICIENT_TECHNICAL_FILE: {
-    label: "Exp. Técnico",
-    color: "bg-purple-100 text-purple-700",
-  },
-  UNCLASSIFIED: { label: "Sin Clasificar", color: "bg-gray-100 text-gray-700" },
+const QUADRANT_COLORS: Record<string, string> = {
+  BROKEN_COMMITMENTS: "bg-red-100 text-red-700",
+  CRITICAL_DEBTORS: "bg-red-100 text-red-700",
+  CASH_GENERATION: "bg-orange-100 text-orange-700",
+  LITIGATION: "bg-yellow-100 text-yellow-700",
+  DEFICIENT_TECHNICAL_FILE: "bg-purple-100 text-purple-700",
+  UNCLASSIFIED: "bg-gray-100 text-gray-700",
 };
 
 export const DebtorSearchAutocomplete = ({
-  placeholder = "Buscar deudor por código o nombre",
+  placeholder,
 }: DebtorSearchAutocompleteProps) => {
+  const t = useTranslations("debtorManagement");
+  const tTask = useTranslations("debtorManagement.taskItem");
+  const defaultPlaceholder = t("searchPlaceholder");
   const [searchValue, setSearchValue] = useState("");
   const [suggestions, setSuggestions] = useState<QuadrantItemWithHighlight[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -153,12 +145,11 @@ export const DebtorSearchAutocomplete = ({
   };
 
   const getQuadrantInfo = (quadrantName: string) => {
-    return (
-      QUADRANT_LABELS[quadrantName] || {
-        label: quadrantName,
-        color: "bg-gray-100 text-gray-700",
-      }
-    );
+    const tQuadrant = t(`quadrantLabels.${quadrantName}` as any);
+    return {
+      label: tQuadrant || quadrantName,
+      color: QUADRANT_COLORS[quadrantName] || "bg-gray-100 text-gray-700",
+    };
   };
 
   return (
@@ -169,7 +160,7 @@ export const DebtorSearchAutocomplete = ({
       <div className="relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
         <Input
-          placeholder={placeholder}
+          placeholder={placeholder || defaultPlaceholder}
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
           className="pl-10 bg-gray-50 border-gray-200"
@@ -181,7 +172,7 @@ export const DebtorSearchAutocomplete = ({
         <div className="absolute z-50 min-w-full w-max max-w-lg mt-1 bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
           {isLoading ? (
             <div className="p-4 text-center text-gray-500 text-sm">
-              Buscando...
+              {t("searching")}
             </div>
           ) : suggestions.length > 0 ? (
             <div className="py-2">
@@ -204,7 +195,7 @@ export const DebtorSearchAutocomplete = ({
                       </div>
                       <div className="flex flex-col gap-1 ml-4 justify-end items-end">
                         <div className="text-right flex items-center gap-2">
-                          <div className="text-xs text-gray-500">Venc.</div>
+                          <div className="text-xs text-gray-500">{t("expired")}</div>
                           <div className="text-sm font-semibold text-gray-900">
                             {formatNumber(item.debtor.due_debt_amount)}
                           </div>
@@ -222,7 +213,7 @@ export const DebtorSearchAutocomplete = ({
             </div>
           ) : (
             <div className="p-4 text-center text-gray-500 text-sm">
-              No se encontraron resultados
+              {t("noResults")}
             </div>
           )}
         </div>
@@ -231,10 +222,10 @@ export const DebtorSearchAutocomplete = ({
       <DialogConfirm
         isOpen={isDialogOpen}
         setIsOpen={setIsDialogOpen}
-        title="Estás tomando una tarea fuera de orden"
-        description="Tu lista tiene un orden definido para ayudarte a avanzar de forma más rápida y organizada. La primera tarea es la prioritaria y siempre debe tomarse primero. ¿Quieres continuar igualmente?"
-        confirmButtonText="Volver"
-        cancelButtonText="Continuar"
+        title={tTask("outOfOrderTitle")}
+        description={tTask("outOfOrderDescription")}
+        confirmButtonText={tTask("backButton")}
+        cancelButtonText={tTask("continueButton")}
         onCancel={handleConfirmNavigation}
         type="warning"
       />

@@ -1,6 +1,7 @@
 "use client";
 
 import TitleSection from "@/app/dashboard/components/title-section";
+import { useTranslations } from "next-intl";
 import { FileStack } from "lucide-react";
 import Header from "@/app/dashboard/components/header";
 import { Main } from "@/app/dashboard/components/main";
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Payments } from "./types";
 
 const PaymentPage = () => {
+  const t = useTranslations("transactions.payments");
   const { session, profile } = useProfileContext();
 
   // Usar el nuevo hook usePayments con paginación del servidor
@@ -44,26 +46,26 @@ const PaymentPage = () => {
         </Header>
         <Main>
           <TitleSection
-            title="Carga de pagos"
-            description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
+            title={t("title")}
+            description={t("description")}
             icon={<FileStack color="white" />}
-            subDescription="Transacciones"
+            subDescription={t("subDescription")}
           />
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                 <p className="text-red-600 font-medium mb-2">
-                  Error al cargar los pagos
+                  {t("errorLoading")}
                 </p>
                 <p className="text-red-500 text-sm mb-4">
-                  {error?.message || "Error desconocido"}
+                  {error?.message || t("unknownError")}
                 </p>
                 <Button
                   onClick={() => refetch()}
                   variant="outline"
                   className="border-red-200 text-red-600 hover:bg-red-50"
                 >
-                  Reintentar
+                  {t("retry")}
                 </Button>
               </div>
             </div>
@@ -80,10 +82,10 @@ const PaymentPage = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Carga de pagos"
-          description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
+          title={t("title")}
+          description={t("description")}
           icon={<FileStack color="white" />}
-          subDescription="Transacciones"
+          subDescription={t("subDescription")}
         />
         <PaymentUploadSection />
         <div className="mt-5 border border-gray-200 rounded-md p-3">
@@ -96,7 +98,7 @@ const PaymentPage = () => {
             isServerSideLoading={isLoading}
             // Configuración de carga
             loadingComponent={<LoaderTable cols={7} />}
-            emptyMessage="No se encontraron pagos"
+            emptyMessage={t("emptyMessage")}
             // Configuración de paginación
             pageSize={currentLimit}
             pageSizeOptions={[15, 20, 25, 30, 40, 50]}

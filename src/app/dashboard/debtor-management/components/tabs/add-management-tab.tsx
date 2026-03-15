@@ -5,6 +5,7 @@ import Stepper from "@/components/Stepper";
 import { Step } from "@/components/Stepper/types";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -64,18 +65,17 @@ export interface SavedManagement {
   createdAt: Date;
 }
 
-// Definir los 3 pasos del stepper
-const steps: Step[] = [
-  { id: 1, label: "Paso 1", completed: false },
-  { id: 2, label: "Paso 2", completed: false },
-  { id: 3, label: "Paso 3", completed: false },
-];
-
 export const AddManagementTab = ({
   dataDebtor,
   session,
   profile,
 }: AddManagementTabProps) => {
+  const t = useTranslations("debtorManagement.management");
+  const steps: Step[] = [
+    { id: 1, label: t("step1"), completed: false },
+    { id: 2, label: t("step2"), completed: false },
+    { id: 3, label: t("step3"), completed: false },
+  ];
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,14 +119,12 @@ export const AddManagementTab = ({
     const { toast } = await import("sonner");
 
     if (currentStep === 0 && !stepValidations.step1) {
-      toast.error("Debe seleccionar al menos una factura para continuar");
+      toast.error(t("selectInvoiceError"));
       return;
     }
 
     if (currentStep === 1 && !stepValidations.step2) {
-      toast.error(
-        "Debe completar todos los campos requeridos en la gestión para continuar"
-      );
+      toast.error(t("requiredFieldsError"));
       return;
     }
 
@@ -186,7 +184,7 @@ export const AddManagementTab = ({
 
   const validateManagementData = () => {
     if (!session?.token || !profile?.client_id || !dataDebtor?.id) {
-      throw new Error("Faltan datos de sesión o perfil");
+      throw new Error(t("missingSessionError"));
     }
 
     if (
@@ -194,15 +192,15 @@ export const AddManagementTab = ({
       !managementFormData.debtorComment ||
       !managementFormData.executiveComment
     ) {
-      throw new Error("Debe completar la selección de gestión");
+      throw new Error(t("completeSelectionError"));
     }
 
     if (!managementFormData.contactType || !managementFormData.contactValue) {
-      throw new Error("Debe seleccionar un contacto");
+      throw new Error(t("selectContactError"));
     }
 
     if (selectedInvoices.length === 0) {
-      throw new Error("Debe seleccionar al menos una factura");
+      throw new Error(t("selectInvoiceRequired"));
     }
   };
 
@@ -280,10 +278,10 @@ export const AddManagementTab = ({
 
           createdIds.push(...ids);
         } else {
-          throw new Error("No se pudo obtener los IDs de los litigios creados");
+          throw new Error(t("litigationIdsError"));
         }
       } else {
-        throw new Error(result.message || "Error al crear litigio");
+        throw new Error(result.message || t("createError"));
       }
     }
 
@@ -299,7 +297,7 @@ export const AddManagementTab = ({
     const litigationIds = normalizationData.litigationIds || [];
 
     if (litigationIds.length === 0) {
-      throw new Error("No hay litigios seleccionados para normalizar");
+      throw new Error(t("noLitigationsSelected"));
     }
 
     const normalizationPayload = {
@@ -320,7 +318,7 @@ export const AddManagementTab = ({
     if (result.success) {
       return litigationIds;
     } else {
-      throw new Error(result.message || "Error al normalizar litigios");
+      throw new Error(result.message || t("createError"));
     }
   };
 
@@ -334,7 +332,7 @@ export const AddManagementTab = ({
     const validInvoices = selectedInvoices.filter(inv => inv && inv.id);
 
     if (validInvoices.length === 0) {
-      throw new Error("No hay facturas válidas seleccionadas para el plan de pago");
+      throw new Error(t("noValidInvoices"));
     }
 
     const totalAmount = validInvoices.reduce((sum, invoice) => {
@@ -346,7 +344,7 @@ export const AddManagementTab = ({
     }, 0);
 
     if (totalAmount === 0) {
-      throw new Error("El monto total de las facturas debe ser mayor a 0");
+      throw new Error(t("totalAmountZero"));
     }
 
     const paymentPlanPayload = {
@@ -371,7 +369,7 @@ export const AddManagementTab = ({
     if (result.success && result.data?.id) {
       return [result.data.id];
     } else {
-      throw new Error(result.message || "Error al crear plan de pago");
+      throw new Error(result.message || t("createError"));
     }
   };
 
@@ -495,23 +493,23 @@ export const AddManagementTab = ({
         managementFormData.executiveComment === "DOCUMENT_IN_LITIGATION" &&
         managementFormData.caseData?.litigationData
       ) {
-        toast.info("Creando litigios...");
+        toast.info(t("creatingLitigations"));
         litigationIds = await createLitigationsAndGetIds();
-        toast.success(`${litigationIds.length} litigio(s) creado(s)`);
+        toast.success(t("litigationsCreated", { count: litigationIds.length }));
       } else if (
         managementFormData.executiveComment === "LITIGATION_NORMALIZATION" &&
         managementFormData.caseData?.litigationData
       ) {
-        toast.info("Normalizando litigios...");
+        toast.info(t("normalizingLitigations"));
         litigationIds = await normalizeLitigationsAndGetIds();
-        toast.success(`${litigationIds.length} litigio(s) normalizado(s)`);
+        toast.success(t("litigationsNormalized", { count: litigationIds.length }));
       } else if (
         managementFormData.executiveComment === "PAYMENT_PLAN_APPROVAL_REQUEST" &&
         managementFormData.caseData?.paymentPlanData
       ) {
-        toast.info("Creando plan de pago...");
+        toast.info(t("creatingPaymentPlan"));
         paymentPlanIds = await createPaymentPlanAndGetId();
-        toast.success("Plan de pago creado");
+        toast.success(t("paymentPlanCreated"));
       }
 
       const payload = buildTrackPayload(litigationIds, paymentPlanIds);
@@ -522,7 +520,7 @@ export const AddManagementTab = ({
         payload
       );
 
-      toast.success("Gestión agregada exitosamente");
+      toast.success(t("managementAdded"));
 
       const newManagement: SavedManagement = {
         id: result.track.id,
@@ -541,7 +539,7 @@ export const AddManagementTab = ({
       setStepsState(steps.map((step) => ({ ...step, completed: false })));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Error al crear gestión"
+        error instanceof Error ? error.message : t("createError")
       );
     } finally {
       setIsSubmitting(false);
@@ -567,23 +565,23 @@ export const AddManagementTab = ({
         managementFormData.executiveComment === "DOCUMENT_IN_LITIGATION" &&
         managementFormData.caseData?.litigationData
       ) {
-        toast.info("Creando litigios...");
+        toast.info(t("creatingLitigations"));
         litigationIds = await createLitigationsAndGetIds();
-        toast.success(`${litigationIds.length} litigio(s) creado(s)`);
+        toast.success(t("litigationsCreated", { count: litigationIds.length }));
       } else if (
         managementFormData.executiveComment === "LITIGATION_NORMALIZATION" &&
         managementFormData.caseData?.litigationData
       ) {
-        toast.info("Normalizando litigios...");
+        toast.info(t("normalizingLitigations"));
         litigationIds = await normalizeLitigationsAndGetIds();
-        toast.success(`${litigationIds.length} litigio(s) normalizado(s)`);
+        toast.success(t("litigationsNormalized", { count: litigationIds.length }));
       } else if (
         managementFormData.executiveComment === "PAYMENT_PLAN_APPROVAL_REQUEST" &&
         managementFormData.caseData?.paymentPlanData
       ) {
-        toast.info("Creando plan de pago...");
+        toast.info(t("creatingPaymentPlan"));
         paymentPlanIds = await createPaymentPlanAndGetId();
-        toast.success("Plan de pago creado");
+        toast.success(t("paymentPlanCreated"));
       }
 
       const payload = buildTrackPayload(litigationIds, paymentPlanIds);
@@ -656,10 +654,10 @@ export const AddManagementTab = ({
                 const emailResult = await sendTrackEmail(emailPayload);
 
                 if (emailResult.success) {
-                  toast.success(`Email enviado a ${group.email}`);
+                  toast.success(t("emailSent", { email: group.email }));
                 } else {
                   toast.warning(
-                    `Email a ${group.email} no pudo enviarse`
+                    t("emailFailed", { email: group.email })
                   );
                 }
               }
@@ -677,24 +675,22 @@ export const AddManagementTab = ({
 
               if (emailResult.success) {
                 toast.success(
-                  `Email de ${group.managements.length} gestiones enviado a ${group.email}`
+                  t("emailMultipleSent", { count: group.managements.length, email: group.email })
                 );
               } else {
                 toast.warning(
-                  `Email a ${group.email} no pudo enviarse`
+                  t("emailFailed", { email: group.email })
                 );
               }
             }
           } catch (error) {
-            toast.warning(`Error al enviar email a ${group.email}`);
+            toast.warning(t("emailSendError", { email: group.email }));
           }
         }
       }
 
       const totalCreated = savedManagements.length + 1;
-      toast.success(
-        `Proceso completado. ${totalCreated} gestión(es) creada(s) exitosamente`
-      );
+      toast.success(t("processComplete", { count: totalCreated }));
 
       setSavedManagements([]);
       resetManagementForm();
@@ -705,7 +701,7 @@ export const AddManagementTab = ({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Error al crear la gestión final"
+          : t("finalError")
       );
     } finally {
       setIsSubmitting(false);
@@ -774,7 +770,7 @@ export const AddManagementTab = ({
         />
         {savedManagements.length > 0 && (
           <h3 className="text-base font-semibold text-blue-600 mb-4">
-            Gestión {savedManagements.length + 1}
+            {t("managementNumber", { number: savedManagements.length + 1 })}
           </h3>
         )}
       </div>
@@ -794,7 +790,7 @@ export const AddManagementTab = ({
                 onClick={handleBack}
                 disabled={isSubmitting}
               >
-                <ArrowLeft className="w-4 h-4 text-primary" /> Volver
+                <ArrowLeft className="w-4 h-4 text-primary" /> {t("back")}
               </Button>
             )}
           </div>
@@ -815,7 +811,7 @@ export const AddManagementTab = ({
                   }
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Agregar gestión
+                  {t("addManagement")}
                 </Button>
                 <Button
                   className="h-11 rounded-sm bg-primary hover:bg-primary/90"
@@ -829,12 +825,12 @@ export const AddManagementTab = ({
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Guardando...
+                      {t("savingManagement")}
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4 text-white mr-2" />
-                      Finalizar gestión
+                      {t("finishManagement")}
                     </>
                   )}
                 </Button>
@@ -850,7 +846,7 @@ export const AddManagementTab = ({
                   (currentStep === 1 && !stepValidations.step2)
                 }
               >
-                Continuar <ArrowRight className="w-4 h-4 text-white ml-2" />
+                {t("continue")} <ArrowRight className="w-4 h-4 text-white ml-2" />
               </Button>
             )}
           </div>

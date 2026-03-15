@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import TitleSection from "@/app/dashboard/components/title-section";
 
@@ -6,8 +8,10 @@ import { FileCog } from "lucide-react";
 import Header from "@/app/dashboard/components/header";
 import { Main } from "@/app/dashboard/components/main";
 import Language from "@/components/ui/language";
+import { useTranslations } from "next-intl";
 
 const CreateDebtorPage = () => {
+  const t = useTranslations("debtors");
   return (
     <>
       <Header fixed>
@@ -15,12 +19,12 @@ const CreateDebtorPage = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Creación de deudores"
-          description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
+          title={t("create.title")}
+          description={t("description")}
           icon={<FileCog color="white" />}
-          subDescription="Configuración de la cartera"
+          subDescription={t("subDescription")}
         />
-        <h1>Crear deudor</h1>
+        <h1>{t("create.createDebtor")}</h1>
       </Main>
     </>
   );

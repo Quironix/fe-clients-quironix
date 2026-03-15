@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -16,6 +17,7 @@ import { usePaymentProjectionStore } from "../store";
 import CardDebtorPP from "./card-debtor-pp";
 
 const DebtorsList = () => {
+  const t = useTranslations("paymentProjection");
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const { searchDebtorCode, setSearchDebtorCode, setDebtorId } =
@@ -81,7 +83,7 @@ const DebtorsList = () => {
       <CardHeader>
         <CardTitle>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">Deudores</h2>
+            <h2 className="text-lg font-bold">{t("debtors")}</h2>
             {/* <Badge
               variant="outline"
               className="bg-red-400 text-white rounded-full"

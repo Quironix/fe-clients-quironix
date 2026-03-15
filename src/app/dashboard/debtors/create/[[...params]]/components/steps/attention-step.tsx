@@ -32,6 +32,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarClock, Check, ChevronsUpDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -94,6 +95,7 @@ const AttentionStep: React.FC<StepProps> = ({
   onStepChange,
   profile,
 }) => {
+  const t = useTranslations("debtors.attentionStep");
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [openStartTimePopovers, setOpenStartTimePopovers] = useState<{
     [key: number]: boolean;
@@ -139,7 +141,7 @@ const AttentionStep: React.FC<StepProps> = ({
         onNext();
       }
     } catch (error) {
-      toast.error("Error al guardar el deudor");
+      toast.error(t("saveError"));
       console.error("Error al guardar el deudor:", error);
     }
   };
@@ -154,7 +156,7 @@ const AttentionStep: React.FC<StepProps> = ({
         />
       </div>
       <div className="space-y-4 border border-gray-200 rounded-md p-5">
-        <TitleStep title="Atención" icon={<CalendarClock size={16} />} />
+        <TitleStep title={t("title")} icon={<CalendarClock size={16} />} />
         <FormProvider {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
@@ -167,21 +169,21 @@ const AttentionStep: React.FC<StepProps> = ({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Día</TableHead>
-                        <TableHead>Hora de inicio</TableHead>
-                        <TableHead>Hora de fin</TableHead>
+                        <TableHead>{t("day")}</TableHead>
+                        <TableHead>{t("startTime")}</TableHead>
+                        <TableHead>{t("endTime")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {[
-                        "Lunes",
-                        "Martes",
-                        "Miércoles",
-                        "Jueves",
-                        "Viernes",
-                        "Sábado",
-                        "Domingo",
-                      ].map((day, index) => (
+                        { value: "Lunes", label: t("days.monday") },
+                        { value: "Martes", label: t("days.tuesday") },
+                        { value: "Miércoles", label: t("days.wednesday") },
+                        { value: "Jueves", label: t("days.thursday") },
+                        { value: "Viernes", label: t("days.friday") },
+                        { value: "Sábado", label: t("days.saturday") },
+                        { value: "Domingo", label: t("days.sunday") },
+                      ].map(({ value: day, label: dayLabel }, index) => (
                         <TableRow key={day} className="align-middle">
                           <TableCell className="py-3">
                             <FormField
@@ -212,7 +214,7 @@ const AttentionStep: React.FC<StepProps> = ({
                                     htmlFor={`day-${index}`}
                                     className="text-base font-semibold"
                                   >
-                                    {day}
+                                    {dayLabel}
                                   </label>
                                 </FormItem>
                               )}
@@ -253,16 +255,16 @@ const AttentionStep: React.FC<StepProps> = ({
                                             ) !== day
                                           }
                                         >
-                                          {field.value || "Hora inicio"}
+                                          {field.value || t("startTimePlaceholder")}
                                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
                                       </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0">
                                       <Command>
-                                        <CommandInput placeholder="Buscar hora..." />
+                                        <CommandInput placeholder={t("searchTime")} />
                                         <CommandEmpty>
-                                          No se encontró la hora.
+                                          {t("noTimeFound")}
                                         </CommandEmpty>
                                         <CommandGroup className="max-h-64 overflow-auto">
                                           {timeOptions.map((time) => (
@@ -336,16 +338,16 @@ const AttentionStep: React.FC<StepProps> = ({
                                             ) !== day
                                           }
                                         >
-                                          {field.value || "Hora fin"}
+                                          {field.value || t("endTimePlaceholder")}
                                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
                                       </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0">
                                       <Command>
-                                        <CommandInput placeholder="Buscar hora..." />
+                                        <CommandInput placeholder={t("searchTime")} />
                                         <CommandEmpty>
-                                          No se encontró la hora.
+                                          {t("noTimeFound")}
                                         </CommandEmpty>
                                         <CommandGroup className="max-h-64 overflow-auto">
                                           {timeOptions.map((time) => (
@@ -397,7 +399,7 @@ const AttentionStep: React.FC<StepProps> = ({
               {submitAttempted &&
                 Object.keys(form.formState.errors).length > 0 && (
                   <div className="text-red-500 text-xs self-center mr-2">
-                    Por favor, completa todos los campos requeridos
+                    {t("requiredFields")}
                   </div>
                 )}
 

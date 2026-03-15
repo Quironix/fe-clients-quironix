@@ -9,8 +9,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AssignExecutiveDialog } from "@/app/dashboard/debtors/components/assign-executive-dialog";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
+  const t = useTranslations("debtors.actions");
+  const tCommon = useTranslations("common.buttons");
   const router = useRouter();
   const { session, profile } = useProfileContext();
   const { deleteDebtor, fetchDebtors } = useDebtorsStore();
@@ -34,10 +37,10 @@ const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
           profile.client.id,
           debtor.id as string
         );
-        toast.success("Deudor eliminado correctamente");
+        toast.success(t("deleteSuccess"));
         fetchDebtors(session.token, profile.client.id);
       } catch (error) {
-        toast.error("Error al eliminar deudor");
+        toast.error(t("deleteError"));
         console.error("Error al eliminar deudor:", error);
       }
     }
@@ -52,8 +55,8 @@ const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
           onClick={() => setIsAssignDialogOpen(true)}
           title={
             row.original.executive_id
-              ? `Reasignar ejecutivo (actualmente: ${row.original.executive?.first_name} ${row.original.executive?.last_name})`
-              : "Asignar ejecutivo"
+              ? t("reassignExecutive", { name: `${row.original.executive?.first_name} ${row.original.executive?.last_name}` })
+              : t("assignExecutive")
           }
           className={
             row.original.executive_id
@@ -67,26 +70,26 @@ const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
         variant="ghost"
         size="icon"
         onClick={() => handleEdit(row.original as Debtor)}
-        title="Editar"
+        title={t("edit")}
         className="hover:bg-amber-500 hover:text-white text-primary"
       >
         <Edit />
       </Button>
       <DialogConfirm
-        title="¿Eliminar deudor?"
-        description={`¿Estás seguro que deseas eliminar el deudor "${row.original?.name || ""}"? Esta acción no se puede deshacer.`}
+        title={t("deleteTitle")}
+        description={t("deleteDescription", { name: row.original?.name || "" })}
         triggerButton={
           <Button
             variant="ghost"
             size="icon"
-            title="Eliminar"
+            title={tCommon("delete")}
             className="hover:bg-red-500 hover:text-white text-primary"
           >
             <Trash2 />
           </Button>
         }
-        cancelButtonText="Cancelar"
-        confirmButtonText="Sí, eliminar"
+        cancelButtonText={tCommon("cancel")}
+        confirmButtonText={tCommon("yesDelete")}
         onConfirm={() => handleDelete(row.original as Debtor)}
         type="danger"
       />

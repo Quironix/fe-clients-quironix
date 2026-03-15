@@ -7,11 +7,13 @@ import {
   AssistantChatTransport,
   useChatRuntime,
 } from "@assistant-ui/react-ai-sdk";
+import { useTranslations } from "next-intl";
 import { KPIThread } from "./kpi-thread";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const KPIAIChat = () => {
+  const t = useTranslations("overview");
   const { profile, session } = useProfileContext();
 
   const runtime = useChatRuntime({
@@ -21,7 +23,7 @@ export const KPIAIChat = () => {
         parts: [
           {
             type: "text",
-            text: "¡Hola! Soy tu asistente de KPIs. Puedo ayudarte a analizar tus indicadores, interpretar tendencias y sugerir mejoras. ¿En qué puedo ayudarte hoy?",
+            text: t("kpiAssistantWelcome"),
           },
         ],
         id: "3WW5iArzjLZEFgtQ",
@@ -39,7 +41,7 @@ export const KPIAIChat = () => {
     <AssistantRuntimeProvider runtime={runtime}>
       <Card className="">
         <CardHeader>
-          <CardTitle>Asistente de KPIs</CardTitle>
+          <CardTitle>{t("kpiAssistant")}</CardTitle>
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col p-0">

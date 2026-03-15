@@ -39,32 +39,30 @@ export const topNav: TopNavItem[] = [
   },
 ];
 
-export const getSidebarData = (profile: any) => {
+export const getSidebarData = (profile: any, t: (key: string) => string) => {
   const isFactoringClient = profile?.client?.type === "FACTORING";
 
   const onboardingItems = [
-    // Solo incluir "Compañías" si el cliente es de tipo FACTORING
-
     {
-      title: "Configuración cliente",
+      title: t("clientSettings"),
       url: "/dashboard/settings",
       scope: "client.onboarding.settings",
     },
     {
       disabled: true,
-      title: "Integraciones",
+      title: t("integrations"),
       url: "/dashboard/integrations",
       scope: "client.onboarding.integrations",
     },
     {
-      title: "Bancos y cuentas",
+      title: t("banksAndAccounts"),
       url: "/dashboard/banks",
       scope: "client.onboarding.banks",
     },
     ...(isFactoringClient
       ? [
           {
-            title: "Compañías",
+            title: t("companies"),
             url: "/dashboard/companies",
             scope: "client.onboarding.companies",
           },
@@ -97,160 +95,154 @@ export const getSidebarData = (profile: any) => {
     ],
     navGroups: [
       {
-        title: "Compañía",
+        title: t("company"),
         items: [
           {
-            title: "Dashboard",
+            title: t("dashboard"),
             url: "/dashboard/overview",
             icon: IconLayoutDashboard,
             scope: "client.dashboard",
             is_parent: true,
           },
           {
-            title: "Onboarding",
+            title: t("onboarding"),
             icon: IconCreditCard,
             scope: "client.onboarding",
             is_parent: true,
             items: onboardingItems,
           },
           {
-            title: "Usuarios",
+            title: t("users"),
             icon: IconUsers,
             scope: "client.users",
             is_parent: true,
             items: [
               {
-                title: "Roles",
+                title: t("roles"),
                 url: "/dashboard/roles",
                 scope: "client.users.roles",
               },
               {
-                title: "Usuarios",
+                title: t("users"),
                 url: "/dashboard/users",
                 scope: "client.users.users",
               },
               {
                 disabled: true,
-                title: "Historial de acciones",
+                title: t("actionsHistory"),
                 url: "/dashboard/actions-history",
                 scope: "client.users.actions_history",
               },
             ],
           },
           {
-            title: "Config. de la cartera",
+            title: t("portfolioConfig"),
             icon: IconHeartHandshake,
             scope: "client.settings_account",
             is_parent: true,
             items: [
               {
-                title: "Deudores",
+                title: t("debtors"),
                 url: "/dashboard/debtors",
                 scope: "client.settings_account.debtors",
               },
               {
                 disabled: true,
-                title: "Periodo mensual y cierre",
+                title: t("monthlyPeriod"),
                 url: "/dashboard/monthly-period",
                 scope: "client.settings_account.monthly_period",
               },
               {
                 disabled: true,
-                title: "Flujo de caja",
+                title: t("cashFlow"),
                 url: "/dashboard/cash-flow",
                 scope: "client.settings_account.cash_flow",
               },
               {
                 disabled: true,
-                title: "Comunicaciones",
+                title: t("communications"),
                 url: "/dashboard/communications",
                 scope: "client.settings_account.communications",
               },
               {
                 disabled: true,
-                title: "Configuración de indicadores",
+                title: t("indicators"),
                 url: "/dashboard/indicators",
                 scope: "client.settings_account.indicators",
               },
               {
                 disabled: true,
-                title: "Collectors",
+                title: t("collectors"),
                 url: "/dashboard/collectors",
                 scope: "client.settings_account.collectors",
               },
             ],
           },
           {
-            title: "Transacciones",
+            title: t("transactions"),
             icon: IconFileInvoice,
             scope: "client.transactions",
             is_parent: true,
             items: [
               {
-                title: "Ingreso DTE",
+                title: t("dteEntry"),
                 url: "/dashboard/transactions/dte",
                 scope: "client.transactions.dte",
               },
               {
-                title: "Ingreso pago",
+                title: t("paymentEntry"),
                 url: "/dashboard/transactions/payments",
                 scope: "client.transactions.payments",
               },
               {
-                title: "Carga de cartolas",
+                title: t("statementsUpload"),
                 url: "/dashboard/transactions/movements",
                 scope: "client.transactions.movements",
               },
             ],
           },
           {
-            title: "Conciliación de pagos",
+            title: t("paymentNetting"),
             url: "/dashboard/payment-netting",
             icon: IconFileCheckFilled,
             scope: "client.payment_netting",
           },
           {
-            title: "Litigios",
+            title: t("litigation"),
             url: "/dashboard/litigation",
             icon: IconInfoTriangle,
             scope: "client.litigation",
           },
           {
-            title: "Planes de pago",
+            title: t("paymentPlans"),
             url: "/dashboard/payment-plans",
             icon: IconInfoTriangle,
             scope: "client.payment_plans",
           },
           {
-            title: "Apr. de planes de pago",
+            title: t("paymentPlanApproval"),
             url: "/dashboard/payment-plans/approval",
             icon: IconInfoTriangle,
             scope: "client.payment_plans.approval",
           },
           {
-            title: "Proyección de pagos",
+            title: t("paymentProjection"),
             url: "/dashboard/payment-projection",
             icon: IconInfoTriangle,
             scope: "client.payment_projection",
           },
           {
-            title: "Config. Proyección de pagos",
+            title: t("paymentProjectionSettings"),
             url: "/dashboard/payment-projection/settings",
             icon: IconInfoTriangle,
             scope: "client.payment_projection.settings",
           },
           {
-            title: "Gestión de deudores",
+            title: t("debtorManagement"),
             url: "/dashboard/debtor-management",
             icon: IconPhoneCall,
             scope: "client.debtor_management",
           },
-          // {
-          //   title: "Seguimiento",
-          //   url: "/dashboard/litigation",
-          //   icon: IconFileCheckFilled,
-          //   scope: "client.litigation",
-          // },
         ],
       },
     ],

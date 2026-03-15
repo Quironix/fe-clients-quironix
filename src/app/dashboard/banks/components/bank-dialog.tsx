@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit, Landmark, Loader2, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -44,6 +45,8 @@ const BankDialog = ({
   defaultValues,
   showButton = false,
 }: BankDialogProps) => {
+  const t = useTranslations("banks");
+  const tCommon = useTranslations("common.buttons");
   const { data: session }: any = useSession();
   const form = useForm<BankFormValues>({
     resolver: zodResolver(bankFormSchema) as any,
@@ -105,11 +108,11 @@ const BankDialog = ({
       <AlertDialogTrigger asChild>
         {!showButton ? null : !defaultValues ? ( // No mostrar trigger
           <Button className="bg-orange-500 text-white hover:bg-orange-400">
-            <Landmark /> Agregar cuenta bancaria
+            <Landmark /> {t("addAccount")}
           </Button>
         ) : (
           <Button className="bg-orange-500 text-white hover:bg-orange-400">
-            <Edit /> Editar cuenta
+            <Edit /> {t("editAccount")}
           </Button>
         )}
       </AlertDialogTrigger>
@@ -128,10 +131,10 @@ const BankDialog = ({
             <div className="flex flex-col justify-center  py-10">
               <AlertDialogHeader className="flex">
                 <AlertDialogTitle className="font-extrabold">
-                  {defaultValues ? "Editar" : "Agregar"} cuenta bancaria
+                  {defaultValues ? t("editAccount") : t("addAccount")}
                 </AlertDialogTitle>
                 <AlertDialogDescription className="text-sm">
-                  Completa los campos obligatorios.
+                  {t("requiredFields")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
             </div>
@@ -150,10 +153,10 @@ const BankDialog = ({
                 >
                   {isCreateDialogLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Guardando...
+                      <Loader2 className="w-4 h-4 animate-spin" /> {t("saving")}
                     </>
                   ) : (
-                    "Guardar"
+                    tCommon("save")
                   )}
                 </Button>
               </div>

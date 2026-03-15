@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 
 import { FileBadge } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import DialogForm from "../../components/dialog-form";
 import { usePaymentNettingStore } from "../../payment-netting/store";
@@ -16,6 +17,7 @@ const CreateLitigation = ({
   onRefetch,
   onlyButton = false,
 }: CreateLitigationProps) => {
+  const t = useTranslations("litigation.create");
   const [open, setOpen] = useState(false);
   const { selectedInvoices, totalInvoices, totalPayments } =
     usePaymentNettingStore();
@@ -36,11 +38,11 @@ const CreateLitigation = ({
               onClick={() => setOpen(true)}
             >
               <FileBadge className="w-4 h-4 text-orange-400" />
-              Ingresar litigio
+              {t("enterLitigation")}
             </Button>
           }
-          title="Ingreso de litigio"
-          description="Completa los campos obligatorios para ingresar un litigio."
+          title={t("entryTitle")}
+          description={t("entryDescription")}
           open={open}
           onOpenChange={setOpen}
         >
@@ -53,12 +55,11 @@ const CreateLitigation = ({
       ) : (
         <div className="w-full h-full min-h-full border border-gray-200 rounded-md p-3 space-y-4">
           <h2 className="text-lg font-bold border-b border-gray-300 pb-2">
-            <span className="text-orange-500">Crear</span> litigio
+            <span className="text-orange-500">{t("createTitle")}</span> {t("sectionTitle")}
           </h2>
           <div className="flex flex-col items-center justify-center w-full">
             <span className="text-sm text-gray-500 mb-5">
-              Utiliza este formulario para registrar un nuevo litigio y
-              gestionar los casos de compensación de pagos pendientes.
+              {t("sectionDescription")}
             </span>
             <DialogForm
               trigger={
@@ -66,11 +67,11 @@ const CreateLitigation = ({
                   className="bg-blue-700 text-white w-64"
                   onClick={() => setOpen(true)}
                 >
-                  Crear
+                  {t("createButton")}
                 </Button>
               }
-              title="Ingreso de litigio"
-              description="Completa los campos obligatorios para ingresar un litigio."
+              title={t("entryTitle")}
+              description={t("entryDescription")}
               open={open}
               onOpenChange={setOpen}
             >

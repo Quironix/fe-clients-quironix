@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { UsersIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import DialogForm from "../components/dialog-form";
@@ -17,6 +18,8 @@ import { User } from "./services/types";
 import { useUserStore } from "./store";
 
 const UsersContent = () => {
+  const t = useTranslations("users");
+  const tc = useTranslations("common");
   const { profile, session, isLoading, error } = useProfileContext();
   const {
     users,
@@ -53,17 +56,16 @@ const UsersContent = () => {
           session?.token,
           profile?.client?.id
         );
-        toast.success("Éxito", {
-          description: "El usuario se ha actualizado correctamente.",
+        toast.success(tc("toast.success"), {
+          description: t("toast.updateSuccess"),
         });
         setIsEditDialogOpen(false);
         setEditingUser(null);
       }
     } catch (error) {
       console.error("Error al actualizar usuario:", error);
-      toast.error("Error", {
-        description:
-          "No se pudo actualizar el usuario. Por favor, intente nuevamente.",
+      toast.error(tc("toast.error"), {
+        description: t("toast.updateError"),
       });
     }
   };
@@ -71,14 +73,13 @@ const UsersContent = () => {
   const handleDelete = async (user: any) => {
     try {
       await deleteUser(user.id, session?.token, profile?.client?.id);
-      toast.success("Éxito", {
-        description: "El usuario se ha eliminado correctamente.",
+      toast.success(tc("toast.success"), {
+        description: t("toast.deleteSuccess"),
       });
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
-      toast.error("Error", {
-        description:
-          "No se pudo eliminar el usuario. Por favor, intente nuevamente.",
+      toast.error(tc("toast.error"), {
+        description: t("toast.deleteError"),
       });
     }
   };
@@ -87,8 +88,8 @@ const UsersContent = () => {
     // Implementar lógica de reinvitación
     console.log("Reinvitar usuario:", user);
     // await reinviteUser(user.email, session?.token, profile?.client?.id);
-    toast.success("Éxito", {
-      description: "El usuario se ha reinvitado correctamente.",
+    toast.success(tc("toast.success"), {
+      description: t("toast.reinviteSuccess"),
     });
   };
 
@@ -98,16 +99,16 @@ const UsersContent = () => {
       await useUserStore
         .getState()
         .addUser(data, session?.token, profile?.client?.id);
-      toast.success("Éxito", {
-        description: "El usuario se ha creado correctamente.",
+      toast.success(tc("toast.success"), {
+        description: t("toast.createSuccess"),
       });
       setIsCreateDialogOpen(false);
     } catch (error: any) {
       console.error("Error al crear usuario:", error);
-      toast.error("Error", {
+      toast.error(tc("toast.error"), {
         description:
           error.message ||
-          "No se pudo crear el usuario. Por favor, intente nuevamente.",
+          t("toast.createError"),
       });
     }
   };
@@ -119,24 +120,24 @@ const UsersContent = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Usuarios"
-          description="Aquí puedes ver un resumen de tus usuarios."
+          title={t("title")}
+          description={t("description")}
           icon={<UsersIcon color="white" />}
-          subDescription="Usuarios"
+          subDescription={t("subDescription")}
         />
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
           <div className="w-full h-full">
             <section className="flex items-center justify-between mb-4">
               <Search />
               <DialogForm
-                title="Crear usuario"
-                description="Completa los campos obligatorios para crear un nuevo usuario."
+                title={t("createTitle")}
+                description={t("createDescription")}
                 trigger={
                   <Button
                     className="bg-orange-500 text-white hover:bg-orange-400 cursor-pointer"
                     onClick={() => setIsCreateDialogOpen(true)}
                   >
-                    <UsersIcon className="mr-2" /> Crear usuario
+                    <UsersIcon className="mr-2" /> {t("createUser")}
                   </Button>
                 }
                 open={isCreateDialogOpen}
@@ -162,8 +163,8 @@ const UsersContent = () => {
 
       {/* Diálogo de edición */}
       <DialogForm
-        title="Editar usuario"
-        description="Modifica los campos que desees actualizar."
+        title={t("editTitle")}
+        description={t("editDescription")}
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         trigger={<span />} // Elemento vacío ya que el diálogo se abre programáticamente
@@ -180,7 +181,7 @@ const UsersContent = () => {
 
 const UsersPage = () => {
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={<div></div>}>
       <UsersContent />
     </Suspense>
   );

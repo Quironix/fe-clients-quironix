@@ -2,6 +2,7 @@
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect } from "react";
 import CreateManual from "../components/create-manual";
@@ -14,6 +15,7 @@ import { columns } from "./components/columns";
 import { useCompaniesStore } from "./store";
 
 const CompaniesPage = () => {
+  const t = useTranslations("companies");
   const { session, profile } = useProfileContext();
   const { companies, getCompanies, loading } = useCompaniesStore();
 
@@ -30,10 +32,10 @@ const CompaniesPage = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Compañías"
-          description="Configura las compañías que deseas gestionar en la plataforma."
+          title={t("title")}
+          description={t("description")}
           icon={<Users color="white" />}
-          subDescription="Onboarding"
+          subDescription={t("subDescription")}
         />
         <div className="flex justify-between items-start gap-5 p-3 border border-gray-200 rounded-md h-[320px] w-full">
           <div className="w-1/3 h-full">
@@ -47,14 +49,9 @@ const CompaniesPage = () => {
           </div>
           <div className="w-2/3  h-full">
             <CreateManual
-              title={
-                <span>
-                  Crear <span className="text-orange-500">compañía</span> de
-                  forma <span className="text-orange-500">manual</span>
-                </span>
-              }
-              description="Completa el formulario con los datos de la compañía que quieres agregar."
-              buttonText="Crear compañía"
+              title={t("createTitle")}
+              description={t("createDescription")}
+              buttonText={t("createButton")}
               buttonLink="/dashboard/companies/create"
             />
           </div>
@@ -66,7 +63,7 @@ const CompaniesPage = () => {
             data={companies}
             isLoading={loading}
             loadingComponent={<LoaderTable cols={6} />}
-            emptyMessage="No se encontraron compañías"
+            emptyMessage={t("emptyMessage")}
             pageSize={15}
             pageSizeOptions={[15, 20, 25, 30, 40, 50]}
           />

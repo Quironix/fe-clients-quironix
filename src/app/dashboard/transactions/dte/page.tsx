@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useProfileContext } from "@/context/ProfileContext";
 import { VisibilityState } from "@tanstack/react-table";
+import { useTranslations } from "next-intl";
 import { FileStack } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ import { updateTableProfile } from "./services/profile";
 import { DTE } from "./types";
 
 const PageDTE = () => {
+  const t = useTranslations("transactions.dte");
   const { session, profile } = useProfileContext();
 
   const [columnConfiguration, setColumnConfiguration] = useState<
@@ -43,14 +45,14 @@ const PageDTE = () => {
 
   const columnLabels = useMemo(
     () => ({
-      number: "Número de Documento",
-      type: "Tipo de Documento",
-      issue_date: "Fecha de Emisión",
-      due_date: "Fecha de Vencimiento",
-      amount: "Monto",
-      actions: "Acciones",
+      number: t("columnLabels.number"),
+      type: t("columnLabels.type"),
+      issue_date: t("columnLabels.issueDate"),
+      due_date: t("columnLabels.dueDate"),
+      amount: t("columnLabels.amount"),
+      actions: t("columnLabels.actions"),
     }),
-    []
+    [t]
   );
 
   useEffect(() => {
@@ -117,7 +119,7 @@ const PageDTE = () => {
       }
     } catch (error) {
       console.error("Error al actualizar configuración de columnas:", error);
-      toast.error("Error al guardar la configuración de columnas");
+      toast.error(t("columnConfigError"));
     }
   };
 
@@ -159,26 +161,26 @@ const PageDTE = () => {
         </Header>
         <Main>
           <TitleSection
-            title="Carga de DTE"
-            description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
+            title={t("title")}
+            description={t("description")}
             icon={<FileStack color="white" />}
-            subDescription="Transacciones"
+            subDescription={t("subDescription")}
           />
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                 <p className="text-red-600 font-medium mb-2">
-                  Error al cargar los DTEs
+                  {t("errorLoading")}
                 </p>
                 <p className="text-red-500 text-sm mb-4">
-                  {error?.message || "Error desconocido"}
+                  {error?.message || t("unknownError")}
                 </p>
                 <Button
                   onClick={() => refetch()}
                   variant="outline"
                   className="border-red-200 text-red-600 hover:bg-red-50"
                 >
-                  Reintentar
+                  {t("retry")}
                 </Button>
               </div>
             </div>
@@ -210,19 +212,19 @@ const PageDTE = () => {
             onSearchChange={handleSearchChange}
             isServerSideLoading={isLoading}
             loadingComponent={<TableSkeleton />}
-            emptyMessage="No se encontraron DTEs"
+            emptyMessage={t("emptyMessage")}
             pageSize={currentLimit}
             pageSizeOptions={[15, 20, 25, 30, 40, 50]}
             enableGlobalFilter={true}
-            searchPlaceholder="Buscar por N° de Documento"
+            searchPlaceholder={t("searchPlaceholder")}
             showPagination={true}
             enableColumnFilter={true}
             initialColumnVisibility={columnVisibility}
             columnLabels={columnLabels}
             handleSuccessButton={handleUpdateColumns}
             initialColumnConfiguration={columnConfiguration}
-            title="DTEs"
-            description="Selecciona las columnas que deseas mostrar en la tabla."
+            title={t("tableTitle")}
+            description={t("tableDescription")}
             rowClassName={(dte: DTE) =>
               dte.type === "CREDIT_NOTE" ? "bg-red-50" : ""
             }

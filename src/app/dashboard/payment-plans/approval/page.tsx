@@ -5,6 +5,7 @@ import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { VisibilityState } from "@tanstack/react-table";
 import { Coins, Eye } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -18,6 +19,8 @@ import { columns } from "./components/columns";
 import FilterInputs, { FilterInputsRef } from "./components/filter";
 
 const PageApproval = () => {
+  const t = useTranslations("paymentPlans");
+  const tCommon = useTranslations("common.buttons");
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const [quickFilters, setQuickFilters] = useState<string>("PENDING");
@@ -70,26 +73,26 @@ const PageApproval = () => {
 
   const columnLabels = useMemo(
     () => ({
-      id: "ID",
-      debtor_id: "Deudor",
-      status: "Estado",
-      total_debt: "Deuda Total",
-      number_of_installments: "Cuotas",
-      installment_amount: "Monto Cuota",
-      payment_frequency: "Frecuencia",
-      plan_start_date: "Fecha Inicio",
-      payment_end_date: "Fecha Fin",
-      annual_interest_rate: "Tasa Interés",
-      created_at: "Fecha Creación",
-      actions: "Acciones",
+      id: t("columnLabels.id"),
+      debtor_id: t("columnLabels.debtor"),
+      status: t("columnLabels.status"),
+      total_debt: t("columnLabels.totalDebt"),
+      number_of_installments: t("columnLabels.installments"),
+      installment_amount: t("columnLabels.installmentAmount"),
+      payment_frequency: t("columnLabels.frequency"),
+      plan_start_date: t("columnLabels.startDate"),
+      payment_end_date: t("columnLabels.endDate"),
+      annual_interest_rate: t("columnLabels.interestRate"),
+      created_at: t("columnLabels.createdAt"),
+      actions: t("columnLabels.actions"),
     }),
-    []
+    [t]
   );
 
   const bulkActions = useMemo(
     () => [
       {
-        label: "Ver detalles",
+        label: tCommon("viewDetails"),
         onClick: (selectedRows: PaymentPlan[]) => {
           console.log("Ver detalles de planes seleccionados:", selectedRows);
         },
@@ -114,10 +117,10 @@ const PageApproval = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Autorización de planes de pago"
-          description="En esta sección podrás crear y gestionar planes de pago para tus deudores."
+          title={t("approval.title")}
+          description={t("description")}
           icon={<Coins color="white" />}
-          subDescription="Planes de pago"
+          subDescription={t("subDescription")}
         />
         <div className="flex items-start justify-start gap-5 p-3 border border-gray-200 rounded-md h-full w-full overflow-hidden">
           <div
@@ -150,7 +153,7 @@ const PageApproval = () => {
                 onPaginationChange={handlePaginationChange}
                 onSearchChange={handleSearchChange}
                 enableGlobalFilter={true}
-                searchPlaceholder="Buscar planes de pago..."
+                searchPlaceholder={t("searchPlaceholder")}
                 enableColumnFilter={true}
                 initialColumnVisibility={columnVisibility}
                 initialColumnConfiguration={columnConfiguration}
@@ -159,9 +162,9 @@ const PageApproval = () => {
                 initialRowSelection={isHydrated ? rowSelection : {}}
                 onRowSelectionChange={handleRowSelectionChange}
                 bulkActions={bulkActions}
-                emptyMessage="No se encontraron planes de pago"
+                emptyMessage={t("emptyMessage")}
                 className="rounded-lg w-full"
-                title="Solicitudes"
+                title={t("approval.requests")}
                 handleSuccessButton={() => {}}
                 ctaNode={
                   <div className="flex items-center gap-2">
@@ -174,7 +177,7 @@ const PageApproval = () => {
                         handleFilterChange({ ...filters, status: "PENDING" });
                       }}
                     >
-                      Pendientes
+                      {t("approval.pending")}
                     </Button>
                     <Button
                       variant={
@@ -188,7 +191,7 @@ const PageApproval = () => {
                         });
                       }}
                     >
-                      Revisadas
+                      {t("approval.reviewed")}
                     </Button>
                   </div>
                 }

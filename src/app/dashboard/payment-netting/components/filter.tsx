@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,6 +32,7 @@ const FilterInputs = React.forwardRef<
     initialFilters?: PaymentNettingFilters;
   }
 >(({ onFilterChange, initialFilters }, ref) => {
+  const t = useTranslations("paymentNetting.filters");
   const filterSchema = z.object({
     search: z.string().optional(),
     status: z.string().optional(),
@@ -84,7 +86,7 @@ const FilterInputs = React.forwardRef<
   return (
     <>
       <div className="w-full border-b border-gray-200 mb-4 pb-1">
-        <span className="text-sm font-bold text-gray-500">Filtros</span>
+        <span className="text-sm font-bold text-gray-500">{t("title")}</span>
       </div>
       <FormProvider {...form}>
         <form className="w-full space-y-3" autoComplete="off">
@@ -93,7 +95,7 @@ const FilterInputs = React.forwardRef<
               control={form.control}
               name="dateFrom"
               render={({ field }) => (
-                <DatePickerFormItem field={field} title="Desde" required />
+                <DatePickerFormItem field={field} title={t("from")} required />
               )}
             />
 
@@ -101,7 +103,7 @@ const FilterInputs = React.forwardRef<
               control={form.control}
               name="dateTo"
               render={({ field }) => (
-                <DatePickerFormItem field={field} title="Hasta" required />
+                <DatePickerFormItem field={field} title={t("to")} required />
               )}
             />
           </div>
@@ -110,7 +112,7 @@ const FilterInputs = React.forwardRef<
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Estado</FormLabel>
+                <FormLabel>{t("status")}</FormLabel>
 
                 <FormControl>
                   <Select
@@ -118,7 +120,7 @@ const FilterInputs = React.forwardRef<
                     value={field.value || ""}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecciona un estado" />
+                      <SelectValue placeholder={t("selectStatus")} />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(BankMovementStatusEnum).map(

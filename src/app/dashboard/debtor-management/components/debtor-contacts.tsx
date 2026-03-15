@@ -17,6 +17,7 @@ import {
   Plus,
   User,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import CreateContactForm from "../../components/create-contact-from";
@@ -35,6 +36,7 @@ export const DebtorContacts = ({
   additionalContacts = [],
   callSchedule,
 }: DebtorContactsProps) => {
+  const t = useTranslations("debtorManagement.contacts");
   const [openAdd, setOpenAdd] = useState<boolean>(false);
   const [callDuration, setCallDuration] = useState(0);
   const { dataDebtor } = useDebtorsStore();
@@ -95,7 +97,7 @@ export const DebtorContacts = ({
 
   const handleCall = () => {
     if (!isRegistered) {
-      toast.error("No estás conectado a la central telefónica");
+      toast.error(t("notConnected"));
       return;
     }
 
@@ -112,7 +114,7 @@ export const DebtorContacts = ({
       if (phoneNumber) {
         makeCall(phoneNumber);
       } else {
-        toast.error("El contacto no tiene número de teléfono");
+        toast.error(t("noPhone"));
       }
     }
   };
@@ -124,7 +126,7 @@ export const DebtorContacts = ({
 
   return (
     <div className="bg-[#EFF5FF] rounded-lg px-6 py-4 flex flex-col">
-      <h3 className="text-lg font-semibold text-gray-900">Contactos</h3>
+      <h3 className="text-lg font-semibold text-gray-900">{t("title")}</h3>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           {/* Título */}
@@ -194,7 +196,7 @@ export const DebtorContacts = ({
           ))}
           <DialogForm
             open={openAdd}
-            title="Agregar nuevo contacto"
+            title={t("addNew")}
             onOpenChange={setOpenAdd}
             trigger={
               <Button
@@ -222,12 +224,12 @@ export const DebtorContacts = ({
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-gray-700">
                 <MailIcon className="w-4 h-4" />
-                <span className="text-sm font-medium">Llamada</span>
+                <span className="text-sm font-medium">{t("call")}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Clock className="w-4 h-4" />
                 <span className="text-sm">
-                  {callSchedule.length > 0 ? callSchedule : "08:00 - 18:00"}
+                  {callSchedule.length > 0 ? callSchedule : t("defaultSchedule")}
                 </span>
               </div>
             </div>
@@ -244,7 +246,7 @@ export const DebtorContacts = ({
                 disabled
               >
                 <Phone className="w-4 h-4 mr-2 font-bold" strokeWidth={3} />
-                En llamada {formatCallDuration(callDuration)}
+                {t("inCall")} {formatCallDuration(callDuration)}
               </Button>
               <Button
                 size="lg"
@@ -264,7 +266,7 @@ export const DebtorContacts = ({
               className="font-bold"
             >
               <Phone className="w-4 h-4 mr-2 font-bold" strokeWidth={3} />
-              {isRegistered ? "Llamar" : "Conectando..."}
+              {isRegistered ? t("callButton") : t("connecting")}
             </Button>
           )}
         </div>

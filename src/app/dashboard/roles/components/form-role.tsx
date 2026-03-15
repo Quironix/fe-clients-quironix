@@ -24,32 +24,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Role } from "../services/types";
-
-const roleFormSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(3, "Campo requerido").max(50, "Máximo 50 caracteres"),
-  description: z
-    .string()
-    .min(3, "Campo requerido")
-    .max(50, "Máximo 50 caracteres"),
-  permissions: z
-    .array(
-      z.object({
-        resource_id: z.string(),
-        can_view: z.boolean().optional(),
-        can_edit: z.boolean().optional(),
-        can_delete: z.boolean().optional(),
-      })
-    )
-    .min(1, "Debe seleccionar al menos un permiso"),
-});
-
-type RoleFormValue = z.infer<typeof roleFormSchema>;
 
 interface RoleFormProps {
   defaultValues?: Partial<Role>;
@@ -58,6 +38,29 @@ interface RoleFormProps {
 }
 
 const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
+  const t = useTranslations("roles");
+  const tc = useTranslations("common");
+
+  const roleFormSchema = z.object({
+    id: z.string().optional(),
+    name: z.string().min(3, t("form.fieldRequired")).max(50, t("form.maxChars", { max: 50 })),
+    description: z
+      .string()
+      .min(3, t("form.fieldRequired"))
+      .max(50, t("form.maxChars", { max: 50 })),
+    permissions: z
+      .array(
+        z.object({
+          resource_id: z.string(),
+          can_view: z.boolean().optional(),
+          can_edit: z.boolean().optional(),
+          can_delete: z.boolean().optional(),
+        })
+      )
+      .min(1, t("form.minOnePermission")),
+  });
+
+  type RoleFormValue = z.infer<typeof roleFormSchema>;
   const [resources, setResources] = useState<any[]>([]);
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
@@ -214,10 +217,10 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Nombre<span className="text-orange-500">*</span>
+                    {t("form.name")}<span className="text-orange-500">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Juan" {...field} />
+                    <Input placeholder={t("form.namePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -230,11 +233,11 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Descripción<span className="text-orange-500">*</span>
+                  {t("form.description")}<span className="text-orange-500">*</span>
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Ej: Administrador de recursos"
+                    placeholder={t("form.descriptionPlaceholder")}
                     {...field}
                   />
                 </FormControl>
@@ -245,22 +248,22 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
 
           <div>
             <Label>
-              Secciones<span className="text-orange-500">*</span>
+              {t("form.sections")}<span className="text-orange-500">*</span>
             </Label>
             <p className="text-sm text-gray-500 mb-2">
-              Selecciona qué tipo de permiso tendrá el rol en cada sección
+              {t("form.sectionsDescription")}
             </p>
 
             <div className="border rounded-lg overflow-hidden mt-2">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-1/3">Secciones</TableHead>
+                    <TableHead className="w-1/3">{t("form.sectionsHeader")}</TableHead>
                     <TableHead className="text-center">
-                      Crear/Actualizar
+                      {t("form.createUpdate")}
                     </TableHead>
-                    <TableHead className="text-center">Lectura</TableHead>
-                    <TableHead className="text-center">Eliminar</TableHead>
+                    <TableHead className="text-center">{t("form.read")}</TableHead>
+                    <TableHead className="text-center">{t("form.delete")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -316,7 +319,7 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
 
             {form.formState.errors.permissions && (
               <span className="text-red-500 text-xs mt-1">
-                Debe asignar al menos un permiso
+                {t("form.permissionsRequired")}
               </span>
             )}
           </div>
@@ -324,7 +327,7 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
         <div className="flex justify-end gap-2">
           <DialogClose asChild>
             <Button type="button" variant="secondary">
-              Cancelar
+              {tc("buttons.cancel")}
             </Button>
           </DialogClose>
           <Button
@@ -334,10 +337,10 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
           >
             {form.formState.isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Guardando
+                <Loader2 className="w-4 h-4 animate-spin" /> {t("form.saving")}
               </>
             ) : (
-              "Guardar"
+              tc("buttons.save")
             )}
           </Button>
         </div>

@@ -29,6 +29,7 @@ import { assignDebtorToExecutive, getExecutives } from "../services";
 import { toast } from "sonner";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface AssignExecutiveDialogProps {
   isOpen: boolean;
@@ -47,6 +48,8 @@ export const AssignExecutiveDialog = ({
   currentExecutiveId,
   onSuccess,
 }: AssignExecutiveDialogProps) => {
+  const t = useTranslations("debtors.assignExecutiveDialog");
+  const tCommon = useTranslations("common.buttons");
   const { session, profile } = useProfileContext();
   const [executives, setExecutives] = useState<Executive[]>([]);
   const [selectedExecutiveId, setSelectedExecutiveId] = useState<string>("");
@@ -72,7 +75,7 @@ export const AssignExecutiveDialog = ({
       setExecutives(data);
     } catch (error) {
       console.error("Error al cargar ejecutivos:", error);
-      toast.error("Error al cargar la lista de ejecutivos");
+      toast.error(t("errorLoading"));
     } finally {
       setLoadingExecutives(false);
     }
@@ -80,12 +83,12 @@ export const AssignExecutiveDialog = ({
 
   const handleAssign = async () => {
     if (!selectedExecutiveId) {
-      toast.error("Por favor selecciona un ejecutivo");
+      toast.error(t("selectRequired"));
       return;
     }
 
     if (!session?.token || !profile?.client?.id) {
-      toast.error("Sesión no válida");
+      toast.error(t("invalidSession"));
       return;
     }
 
@@ -97,12 +100,12 @@ export const AssignExecutiveDialog = ({
         debtorId,
         selectedExecutiveId
       );
-      toast.success("Ejecutivo asignado correctamente");
+      toast.success(t("assignSuccess"));
       onSuccess?.();
       handleClose();
     } catch (error: any) {
       console.error("Error al asignar ejecutivo:", error);
-      toast.error(error.message || "Error al asignar ejecutivo");
+      toast.error(error.message || t("assignError"));
     } finally {
       setAssigning(false);
     }
@@ -122,16 +125,16 @@ export const AssignExecutiveDialog = ({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Asignar Ejecutivo</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Selecciona un ejecutivo para asignar al deudor{" "}
+            {t("description")}{" "}
             <span className="font-semibold text-gray-900">{debtorName}</span>
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4">
           <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Seleccionar Ejecutivo
+            {t("selectLabel")}
           </label>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -145,23 +148,23 @@ export const AssignExecutiveDialog = ({
                 {loadingExecutives ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Cargando ejecutivos...
+                    {t("loadingExecutives")}
                   </span>
                 ) : selectedExecutive ? (
                   <span>
                     {selectedExecutive.first_name} {selectedExecutive.last_name}
                   </span>
                 ) : (
-                  "Seleccionar ejecutivo..."
+                  t("selectPlaceholder")
                 )}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[450px] p-0">
               <Command>
-                <CommandInput placeholder="Buscar ejecutivo..." />
+                <CommandInput placeholder={t("searchPlaceholder")} />
                 <CommandList>
-                  <CommandEmpty>No se encontraron ejecutivos.</CommandEmpty>
+                  <CommandEmpty>{t("noExecutives")}</CommandEmpty>
                   <CommandGroup>
                     {executives.map((executive) => (
                       <CommandItem
@@ -203,7 +206,7 @@ export const AssignExecutiveDialog = ({
             onClick={handleClose}
             disabled={assigning}
           >
-            Cancelar
+            {tCommon("cancel")}
           </Button>
           <Button
             onClick={handleAssign}
@@ -212,10 +215,10 @@ export const AssignExecutiveDialog = ({
             {assigning ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Asignando...
+                {t("assigning")}
               </>
             ) : (
-              "Asignar"
+              t("title")
             )}
           </Button>
         </DialogFooter>

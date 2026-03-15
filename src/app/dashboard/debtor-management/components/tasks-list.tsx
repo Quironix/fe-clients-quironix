@@ -8,6 +8,7 @@ import {
   FileText,
   Scale,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useCollectorQuadrants } from "../hooks/useCollectorQuadrants";
 import { QuadrantType } from "../services/types";
@@ -20,6 +21,7 @@ interface TasksListProps {
 }
 
 export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
+  const t = useTranslations("debtorManagement");
   const { session, profile } = useProfileContext();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageLimit] = useState(20); // Límite de items por página
@@ -48,7 +50,7 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-10">
-        <div className="text-gray-500">Cargando tareas...</div>
+        <div className="text-gray-500">{t("loadingTasks")}</div>
       </div>
     );
   }
@@ -56,7 +58,7 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
   if (isError || !data) {
     return (
       <div className="flex justify-center items-center py-10">
-        <div className="text-red-500">Error al cargar las tareas</div>
+        <div className="text-red-500">{t("errorLoadingTasks")}</div>
       </div>
     );
   }
@@ -80,7 +82,7 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
   if (!hasAnyTasks && unclassifiedTasks.length === 0) {
     return (
       <div className="flex justify-center items-center py-10">
-        <div className="text-gray-500">No hay tareas asignadas</div>
+        <div className="text-gray-500">{t("noTasks")}</div>
       </div>
     );
   }
@@ -90,7 +92,7 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
       {/* Deudores Críticos */}
       {riskTasks.length > 0 && (
         <TaskIsland
-          title="Deudores Críticos"
+          title={t("quadrants.criticalDebtors")}
           icon={<AlertTriangle className="w-4 h-4" />}
           bgColor="bg-red-100"
           textColor="text-red-700"
@@ -104,9 +106,9 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
                 code={task.debtor.debtor_code}
                 name={task.debtor.name}
                 incidents={task.debtor.broken_commitments_count}
-                incidentsLabel="Incumplimientos"
+                incidentsLabel={t("taskItem.incidents")}
                 debt={task.debtor.due_debt_amount}
-                debtLabel="Deuda vencida"
+                debtLabel={t("taskItem.overdueDebt")}
                 status={`${task.debtor.broken_commitments_percentage}%`}
                 statusBgColor="bg-red-100"
                 statusTextColor="text-red-700"
@@ -120,7 +122,7 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
       {/* Compromisos Incumplidos */}
       {brokenCommitmentsTasks.length > 0 && (
         <TaskIsland
-          title="Compromisos Incumplidos"
+          title={t("quadrants.brokenCommitments")}
           icon={<AlertTriangle className="w-4 h-4" />}
           bgColor="bg-red-100"
           textColor="text-red-700"
@@ -132,9 +134,9 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               code={task.debtor.debtor_code}
               name={task.debtor.name}
               incidents={task.debtor.broken_commitments_count}
-              incidentsLabel="Incumplimientos"
+              incidentsLabel={t("taskItem.incidents")}
               debt={task.debtor.due_debt_amount}
-              debtLabel="Deuda vencida"
+              debtLabel={t("taskItem.overdueDebt")}
               status={`${task.debtor.broken_commitments_percentage}%`}
               statusBgColor="bg-red-100"
               statusTextColor="text-red-700"
@@ -148,7 +150,7 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
       {/* Generación de Caja */}
       {cashGenerationTasks.length > 0 && (
         <TaskIsland
-          title="Generación de Caja"
+          title={t("quadrants.cashGeneration")}
           icon={<FileText className="w-4 h-4" />}
           bgColor="bg-orange-100"
           textColor="text-orange-700"
@@ -160,9 +162,9 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               code={task.debtor.debtor_code}
               name={task.debtor.name}
               incidents={task.debtor.broken_commitments_count}
-              incidentsLabel="Incumplimientos"
+              incidentsLabel={t("taskItem.incidents")}
               debt={task.debtor.due_debt_amount}
-              debtLabel="Deuda vencida"
+              debtLabel={t("taskItem.overdueDebt")}
               status={`${task.debtor.broken_commitments_percentage}%`}
               statusBgColor="bg-orange-100"
               statusTextColor="text-orange-700"
@@ -176,7 +178,7 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
       {/* Workflow de Litigios */}
       {litigationTasks.length > 0 && (
         <TaskIsland
-          title="Workflow de Litigios"
+          title={t("quadrants.litigationWorkflow")}
           icon={<Scale className="w-4 h-4" />}
           bgColor="bg-yellow-100"
           textColor="text-yellow-700"
@@ -188,9 +190,9 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               code={task.debtor.debtor_code}
               name={task.debtor.name}
               incidents={task.debtor.broken_commitments_count}
-              incidentsLabel="Incumplimientos"
+              incidentsLabel={t("taskItem.incidents")}
               debt={task.debtor.due_debt_amount}
-              debtLabel="Deuda vencida"
+              debtLabel={t("taskItem.overdueDebt")}
               status={`${task.debtor.broken_commitments_percentage}%`}
               statusBgColor="bg-yellow-100"
               statusTextColor="text-yellow-700"
@@ -204,7 +206,7 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
       {/* Expediente Técnico Deficiente */}
       {deficientTechnicalFileTasks.length > 0 && (
         <TaskIsland
-          title="Expediente Técnico Deficiente"
+          title={t("quadrants.deficientTechnicalFile")}
           icon={<File className="w-4 h-4" />}
           bgColor="bg-purple-100"
           textColor="text-purple-700"
@@ -216,9 +218,9 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               code={task.debtor.debtor_code}
               name={task.debtor.name}
               incidents={task.debtor.broken_commitments_count}
-              incidentsLabel="Incumplimientos"
+              incidentsLabel={t("taskItem.incidents")}
               debt={task.debtor.due_debt_amount}
-              debtLabel="Deuda vencida"
+              debtLabel={t("taskItem.overdueDebt")}
               status={`${task.debtor.broken_commitments_percentage}%`}
               statusBgColor="bg-purple-100"
               statusTextColor="text-purple-700"
@@ -232,7 +234,7 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
       {/* Sin Clasificar - Solo mostrar si hay datos */}
       {unclassifiedTasks.length > 0 && (
         <TaskIsland
-          title="Sin Clasificar"
+          title={t("quadrants.unclassified")}
           icon={<CircleCheckBig className="w-4 h-4" />}
           bgColor="bg-gray-100"
           textColor="text-gray-700"
@@ -244,10 +246,10 @@ export const TasksList = ({ selectedQuadrant }: TasksListProps) => {
               code={task.debtor.debtor_code}
               name={task.debtor.name}
               incidents={task.debtor.broken_commitments_count}
-              incidentsLabel="Incumplimientos"
+              incidentsLabel={t("taskItem.incidents")}
               debt={task.debtor.due_debt_amount}
-              debtLabel="Deuda vencida"
-              status="SIN CLASIFICAR"
+              debtLabel={t("taskItem.overdueDebt")}
+              status={t("taskItem.unclassifiedStatus")}
               statusBgColor="bg-gray-100"
               statusTextColor="text-gray-700"
               highlighted={index === 0}

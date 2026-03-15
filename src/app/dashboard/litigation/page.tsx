@@ -14,6 +14,7 @@ import Image from "next/image";
 import CreateLitigation from "./components/create-litigation";
 import ListLitigation from "./components/list-litigation";
 
+import { useTranslations } from "next-intl";
 import { FileCog } from "lucide-react";
 import NormalizeLitigation from "./components/normalize-litigation";
 import { useLitigation } from "./hooks/useLitigation";
@@ -23,6 +24,7 @@ const Litigation = () => {
   const { profile } = useProfileContext();
   const [openCreateForm, setOpenCreateForm] = useState(false);
   const [openNormalizeForm, setOpenNormalizeForm] = useState(false);
+  const t = useTranslations("litigation");
   const litigationHook = useLitigation(session?.token, profile?.client_id);
   return (
     <>
@@ -32,9 +34,9 @@ const Litigation = () => {
 
       <Main>
         <TitleSection
-          title="Compensación de pagos"
+          title={t("title")}
           icon={<FileCog color="white" />}
-          subDescription="Compensación de pagos"
+          subDescription={t("subDescription")}
         />
 
         <div className="flex justify-between items-start gap-5 p-3 border border-gray-200 rounded-md h-[320px]">

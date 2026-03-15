@@ -11,8 +11,10 @@ import CreateManualDebtor from "./components/create-manual-debtor";
 import BulkDebtors from "./components/bulk-debtors";
 import ListDebtors from "./components/list-debtors";
 import Language from "@/components/ui/language";
+import { useTranslations } from "next-intl";
 
 const DebtorsPage = () => {
+  const t = useTranslations("debtors");
   return (
     <>
       <Header fixed>
@@ -20,10 +22,10 @@ const DebtorsPage = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Deudores"
-          description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
+          title={t("title")}
+          description={t("description")}
           icon={<FileCog color="white" />}
-          subDescription="Configuración de la cartera"
+          subDescription={t("subDescription")}
         />
         <div className="flex justify-between items-start gap-5 p-3 border border-gray-200 rounded-md h-[320px]">
           <div className="w-[25%] h-full">

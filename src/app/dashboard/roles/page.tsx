@@ -30,8 +30,10 @@ import DialogConfirm from "../components/dialog-confirm";
 import { useSearchParams } from "next/navigation";
 import { useProfileContext } from "@/context/ProfileContext";
 import Language from "@/components/ui/language";
+import { useTranslations } from "next-intl";
 
 const RolesContent = () => {
+  const t = useTranslations("roles");
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const searchParams = useSearchParams();
@@ -89,10 +91,10 @@ const RolesContent = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Roles"
-          description="Aquí puedes ver un resumen de tus roles."
+          title={t("title")}
+          description={t("description")}
           icon={<UsersIcon color="white" />}
-          subDescription="Usuarios"
+          subDescription={t("subDescription")}
         />
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
           <div className="w-full h-full">
@@ -109,16 +111,16 @@ const RolesContent = () => {
                 </div>
                 <div className="w-2/3">
                   <div className="flex justify-between items-center">
-                    <Search placeholder="Buscar por nombre de rol" />
+                    <Search placeholder={t("searchPlaceholder")} />
                     <DialogForm
-                      title="Crear rol"
+                      title={t("createRole")}
                       trigger={
                         <Button
                           className="bg-orange-500 text-white hover:bg-orange-400"
                           onClick={() => setIsCreateDialogOpen(true)}
                         >
                           <div className="flex items-center gap-2">
-                            <Puzzle /> Crear rol
+                            <Puzzle /> {t("createRole")}
                           </div>
                         </Button>
                       }
@@ -142,9 +144,9 @@ const RolesContent = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-primary">Nombre</TableHead>
+                          <TableHead className="text-primary">{t("table.name")}</TableHead>
                           <TableHead className="text-primary text-right">
-                            Acciones
+                            {t("table.actions")}
                           </TableHead>
                         </TableRow>
                       </TableHeader>
@@ -152,7 +154,7 @@ const RolesContent = () => {
                         {filteredRoles.length === 0 && (
                           <TableRow>
                             <TableCell colSpan={2} className="text-center">
-                              No se encontraron roles
+                              {t("noRolesFound")}
                             </TableCell>
                           </TableRow>
                         )}
@@ -164,7 +166,7 @@ const RolesContent = () => {
                               <TableCell>{role.name}</TableCell>
                               <TableCell className="flex justify-end gap-2">
                                 <DialogForm
-                                  title="Editar rol"
+                                  title={t("editRole")}
                                   trigger={
                                     <Button
                                       variant="ghost"
@@ -192,8 +194,8 @@ const RolesContent = () => {
                                   </div>
                                 </DialogForm>
                                 <DialogConfirm
-                                  title="¿Estas seguro que deseas eliminar este rol?"
-                                  description="Esta acción no se puede deshacer."
+                                  title={t("deleteConfirm")}
+                                  description={t("deleteConfirmDescription")}
                                   triggerButton={
                                     <Button
                                       variant="ghost"
@@ -230,7 +232,7 @@ const RolesContent = () => {
 
 const RolesPage = () => {
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={<div></div>}>
       <RolesContent />
     </Suspense>
   );

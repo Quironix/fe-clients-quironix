@@ -19,6 +19,7 @@ import { CheckCircleIcon, Loader } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { verifyCode } from "../../services";
 import useOnboardingStore from "../../store";
@@ -26,14 +27,14 @@ import { OnboardingStepProps } from "../../types";
 import StepLayout from "../StepLayout";
 import { ContinueAndBackButtons } from "./ContinueAndBackButtons";
 
-const COUNTDOWN_TIME = 120; // 2 minutos en segundos
+const COUNTDOWN_TIME = 120;
 
-// Definir el schema y tipo del formulario
-const twoFactorSchema = z.object({
-  code: z.string().min(6, "El código debe tener al menos 6 caracteres"),
-});
+const createTwoFactorSchema = (t: ReturnType<typeof useTranslations<"onboarding">>) =>
+  z.object({
+    code: z.string().min(6, t("twoFactor.validation.codeMin")),
+  });
 
-type TwoFactorFormData = z.infer<typeof twoFactorSchema>;
+type TwoFactorFormData = z.infer<ReturnType<typeof createTwoFactorSchema>>;
 
 const TwoFactorStep: React.FC<OnboardingStepProps> = ({
   onNext,
@@ -46,7 +47,10 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
   profile,
 }) => {
   const { session } = useProfileContext();
+  const t = useTranslations("onboarding");
+  const tCommon = useTranslations("common");
   const { sendCode, error, loading } = useOnboardingStore();
+  const twoFactorSchema = createTwoFactorSchema(t);
   const [countdown, setCountdown] = useState(COUNTDOWN_TIME);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
   const [isCodeValid, setIsCodeValid] = useState(false);
@@ -68,11 +72,11 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
       );
       if (!success.error) {
         setIsCodeValid(true);
-        toast.success("Código verificado correctamente");
+        toast.success(t("twoFactor.codeVerified"));
         onNext();
       } else {
         setIsCodeValid(false);
-        toast.error(error || "Error al verificar el código");
+        toast.error(error || t("twoFactor.codeError"));
       }
       setIsValidatingCode(false);
     }
@@ -112,23 +116,23 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
         );
 
         if (!success.error) {
-          toast.success("Código reenviado correctamente");
+          toast.success(t("twoFactor.resendSuccess"));
           setCountdown(COUNTDOWN_TIME);
           setIsResendDisabled(true);
         } else {
-          toast.error(error || "Error al reenviar el código");
+          toast.error(error || t("twoFactor.resendError"));
         }
       } catch (error) {
         console.error("Error:", error);
-        toast.error("Error al reenviar el código");
+        toast.error(t("twoFactor.resendError"));
       }
     }
   };
 
   return (
     <StepLayout
-      title="Autentificación de dos factores"
-      description="Por tu seguridad, es necesario completar la autenticación en dos pasos."
+      title={t("twoFactor.title")}
+      description={t("twoFactor.description")}
     >
       <section className="h-full">
         <FormProvider {...form}>
@@ -149,8 +153,8 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
                 <div className="space-y-8 min-h-2/3 max-h-2/3">
                   <div>
                     <p className="mb-4 text-sm">
-                      Ingresa el código que ha sido enviado{" "}
-                      <span className="font-bold">a tu email:</span>
+                      {t("twoFactor.codePrompt")}{" "}
+                      <span className="font-bold">{t("twoFactor.toYourEmail")}</span>
                     </p>
                     <div className="flex justify-center flex-col items-center border border-gray-300 rounded-lg px-4 pt-10 pb-6">
                       <FormField
@@ -188,7 +192,7 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
 
                       <div className="text-center">
                         <p className="text-sm text-gray-600 inline-flex items-center gap-2">
-                          ¿No has recibido el código?{" "}
+                          {t("twoFactor.notReceived")}{" "}
                           <Button
                             onClick={handleResendCode}
                             disabled={isResendDisabled || loading}
@@ -197,12 +201,12 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
                             {loading ? (
                               <span className="flex items-center gap-2">
                                 <Loader className="w-4 h-4 animate-spin" />
-                                Enviando...
+                                {tCommon("loading.sending")}
                               </span>
                             ) : isResendDisabled ? (
-                              `Reenviar en ${formatTime(countdown)}`
+                              t("twoFactor.resendIn", { time: formatTime(countdown) })
                             ) : (
-                              "Reenviar código"
+                              t("twoFactor.resend")
                             )}
                           </Button>
                         </p>
@@ -212,24 +216,23 @@ const TwoFactorStep: React.FC<OnboardingStepProps> = ({
 
                   <div className="space-y-4 text-sm">
                     <p className="">
-                      Al continuar,{" "}
+                      {t("twoFactor.acceptTermsIntro")}{" "}
                       <span className="font-bold">
-                        estás aceptando lo siguiente:
+                        {t("twoFactor.acceptTermsBody")}
                       </span>
                     </p>
                     <ul className="space-y-3">
                       <li className="flex items-center gap-2 text-gray-600">
                         <CheckCircleIcon className="w-5 h-5 text-primary" />
-                        Que creemos una cuenta para ti (a menos que ya esté
-                        creada)
+                        {t("twoFactor.acceptAccount")}
                       </li>
                       <li className="flex items-center gap-2 text-gray-600">
                         <CheckCircleIcon className="w-5 h-5 text-primary" />
-                        Nuestros "Términos y condiciones"
+                        {t("twoFactor.acceptTerms")}
                       </li>
                       <li className="flex items-center gap-2 text-gray-600">
                         <CheckCircleIcon className="w-5 h-5 text-primary" />
-                        Nuestras "Políticas de privacidad"
+                        {t("twoFactor.acceptPrivacy")}
                       </li>
                     </ul>
                   </div>

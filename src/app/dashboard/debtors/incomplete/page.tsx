@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Language from "@/components/ui/language";
 import {
   Table,
@@ -20,6 +21,7 @@ import BulkDebtors from "../components/bulk-debtors";
 import { useDebtorsStore } from "../store";
 
 const IncompletePage = () => {
+  const t = useTranslations("debtors.incomplete");
   const { bulkUploadErrors, clearBulkUploadErrors } = useDebtorsStore();
   const { getErrorMessage } = useGetErrorMessage();
   const router = useRouter();
@@ -66,7 +68,7 @@ const IncompletePage = () => {
 
           <div className="bg-white shadow-md rounded-md p-4">
             <span className="text-lg font-semibold text-black mb-2">
-              Carga masiva defectuosa
+              {t("title")}
             </span>
 
             {/* Resumen estadístico */}
@@ -75,19 +77,19 @@ const IncompletePage = () => {
                 <div className="text-2xl font-bold text-green-600">
                   {bulkUploadErrors.validCount}
                 </div>
-                <div className="text-sm text-gray-600">Válidos</div>
+                <div className="text-sm text-gray-600">{t("valid")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">
                   {bulkUploadErrors.invalidCount}
                 </div>
-                <div className="text-sm text-gray-600">Con errores</div>
+                <div className="text-sm text-gray-600">{t("withErrors")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-600">
                   {bulkUploadErrors.totalCount}
                 </div>
-                <div className="text-sm text-gray-600">Total</div>
+                <div className="text-sm text-gray-600">{t("total")}</div>
               </div>
             </div>
 
@@ -95,10 +97,10 @@ const IncompletePage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Fila</TableHead>
-                    <TableHead>Columna</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Error</TableHead>
+                    <TableHead>{t("row")}</TableHead>
+                    <TableHead>{t("column")}</TableHead>
+                    <TableHead>{t("value")}</TableHead>
+                    <TableHead>{t("error")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -110,7 +112,7 @@ const IncompletePage = () => {
                       </TableCell>
                       <TableCell>
                         <span className="text-gray-500 italic">
-                          {error.value || "Vacío"}
+                          {error.value || t("empty")}
                         </span>
                       </TableCell>
                       <TableCell>{getErrorMessage(error.message)}</TableCell>

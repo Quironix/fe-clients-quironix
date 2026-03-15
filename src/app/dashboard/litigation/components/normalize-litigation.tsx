@@ -1,18 +1,20 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import DialogForm from "../../components/dialog-form";
 import NormalizeForm from "./normalize-form";
 
 const NormalizeLitigation = ({ onOpenForm }: { onOpenForm: () => void }) => {
+  const t = useTranslations("litigation.normalize");
   const [openForm, setOpenForm] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
   return (
     <div className="w-full h-full min-h-full border border-gray-200 rounded-md p-3 space-y-4">
       <h2 className="text-lg font-bold border-b border-gray-300 pb-2">
-        <span className="text-orange-500">Normalizar</span> litigio
+        <span className="text-orange-500">{t("normalizeTitle")}</span> {t("sectionTitle")}
       </h2>
       <div className="flex flex-col items-center justify-center w-full">
         <span className="text-sm text-gray-500 mb-5">
@@ -30,10 +32,10 @@ const NormalizeLitigation = ({ onOpenForm }: { onOpenForm: () => void }) => {
 
         <DialogForm
           trigger={
-            <Button className="bg-blue-700 text-white w-64">Normalizar</Button>
+            <Button className="bg-blue-700 text-white w-64">{t("normalizeButton")}</Button>
           }
-          title="Normalizar litigio"
-          description="Completa los campos obligatorios para normalizar un litigio."
+          title={t("dialogTitle")}
+          description={t("dialogDescription")}
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
         >

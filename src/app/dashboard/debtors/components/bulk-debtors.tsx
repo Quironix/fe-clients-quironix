@@ -6,11 +6,13 @@ import { FileDown, FileUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { bulkDebtors } from "../services";
 import { useDebtorsStore } from "../store";
 import { BulkUploadResponse } from "../types";
 
 const BulkDebtors = () => {
+  const t = useTranslations("debtors.bulkUpload");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<BulkUploadResponse | null>(
@@ -32,12 +34,12 @@ const BulkDebtors = () => {
       !file.name.toLowerCase().endsWith(".csv") &&
       !file.name.toLowerCase().endsWith(".xlsx")
     ) {
-      toast.error("Por favor selecciona un archivo CSV o XLSX válido");
+      toast.error(t("invalidFile"));
       return;
     }
 
     if (!session?.token || !profile?.client?.id) {
-      toast.error("Error de autenticación. Por favor inicia sesión nuevamente");
+      toast.error(t("authError"));
       return;
     }
 
@@ -56,7 +58,7 @@ const BulkDebtors = () => {
 
       if (response.invalidCount === 0) {
         toast.success(
-          `Archivo cargado exitosamente. ${response.validCount} deudores procesados correctamente.`
+          t("successMessage", { count: response.validCount })
         );
         // Refrescar la lista de deudores
         await fetchDebtors(session.token, profile.client.id);
@@ -64,7 +66,7 @@ const BulkDebtors = () => {
         // Almacenar errores en el store
         setBulkUploadErrors(response);
         toast.warning(
-          `Carga completada con errores. ${response.validCount} válidos, ${response.invalidCount} con errores.`
+          t("partialSuccess", { valid: response.validCount, invalid: response.invalidCount })
         );
 
         // Redirigir a la página de errores incompletos
@@ -74,7 +76,7 @@ const BulkDebtors = () => {
       console.error("Error al cargar archivo:", error);
       toast.error(
         JSON.parse(error.message).message ||
-          "Error al cargar el archivo. Por favor intenta nuevamente."
+          t("uploadError")
       );
     } finally {
       setIsUploading(false);
@@ -92,14 +94,14 @@ const BulkDebtors = () => {
   return (
     <div className="w-full h-full min-h-full border border-gray-200 rounded-md p-3 space-y-4">
       <h2 className="text-lg font-bold border-b border-gray-300 pb-2">
-        Subir <span className="text-orange-500">varios deudores</span> por carga
-        masiva
+        {t.rich("title", {
+          debtors: (chunks) => <span className="text-orange-500">{t("debtors")}</span>,
+        })}
       </h2>
 
       <div className="flex flex-col items-center justify-center w-full space-y-4">
         <span className="text-sm text-gray-500 text-left">
-          Descarga la estructura del archivo para completarlo con los datos de
-          los deudores que quieres cargar.
+          {t("downloadDescription")}
         </span>
         <Button
           className="border-2 border-orange-500 bg-white text-orange-500 hover:bg-orange-500 hover:text-white"
@@ -110,12 +112,11 @@ const BulkDebtors = () => {
             );
           }}
         >
-          <FileDown /> Descargar estructura
+          <FileDown /> {t("downloadButton")}
         </Button>
 
         <span className="text-sm text-gray-500">
-          Una vez que hayas completado el documento, selecciona "Subir archivo"
-          para importarlo al sistema.
+          {t("uploadDescription")}
         </span>
 
         <input
@@ -131,7 +132,7 @@ const BulkDebtors = () => {
           onClick={handleUploadClick}
           disabled={isUploading}
         >
-          <FileUp /> {isUploading ? "Subiendo archivo..." : "Subir archivo"}
+          <FileUp /> {isUploading ? t("uploading") : t("uploadButton")}
         </Button>
       </div>
     </div>

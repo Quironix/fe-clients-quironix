@@ -3,6 +3,7 @@ import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { FileText } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Suspense } from "react";
 import { DataTable } from "../../components/data-table";
@@ -17,6 +18,7 @@ import { useMovements } from "./hooks/useMovements";
 import { Button } from "@/components/ui/button";
 
 const MovementsContent = () => {
+  const t = useTranslations("transactions.movements");
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
 
@@ -49,26 +51,26 @@ const MovementsContent = () => {
         </Header>
         <Main>
           <TitleSection
-            title="Carga de cartolas"
-            description="Carga la cartola de tu empresa para que la plataforma pueda procesar los datos."
+            title={t("title")}
+            description={t("description")}
             icon={<FileText color="white" />}
-            subDescription="Transacciones"
+            subDescription={t("subDescription")}
           />
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                 <p className="text-red-600 font-medium mb-2">
-                  Error al cargar los movimientos
+                  {t("errorLoading")}
                 </p>
                 <p className="text-red-500 text-sm mb-4">
-                  {error?.message || "Error desconocido"}
+                  {error?.message || t("unknownError")}
                 </p>
                 <Button
                   onClick={() => refetch()}
                   variant="outline"
                   className="border-red-200 text-red-600 hover:bg-red-50"
                 >
-                  Reintentar
+                  {t("retry")}
                 </Button>
               </div>
             </div>
@@ -114,7 +116,7 @@ const MovementsContent = () => {
             isServerSideLoading={isLoading}
             // Configuración de carga
             loadingComponent={<LoaderTable cols={7} />}
-            emptyMessage="No se encontraron movimientos"
+            emptyMessage={t("emptyMessage")}
             // Configuración de paginación
             pageSize={currentLimit}
             pageSizeOptions={[15, 20, 25, 30, 40, 50]}
@@ -127,7 +129,7 @@ const MovementsContent = () => {
 
 const MovementsPage = () => {
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={<div></div>}>
       <MovementsContent />
     </Suspense>
   );

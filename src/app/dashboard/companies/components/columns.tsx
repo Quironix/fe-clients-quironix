@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { Edit, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useCompaniesStore } from "../store";
@@ -12,7 +13,7 @@ import { Company } from "../types";
 
 const AcctionsCellComponent = ({ row }: { row: Row<Company> }) => {
   const router = useRouter();
-
+  const t = useTranslations("companies");
   const { session, profile } = useProfileContext();
   const { deleteCompany } = useCompaniesStore();
 
@@ -24,19 +25,19 @@ const AcctionsCellComponent = ({ row }: { row: Row<Company> }) => {
         onClick={() =>
           router.push(`/dashboard/companies/create?id=${row.original.id}`)
         }
-        title="Editar"
+        title={t("columnLabels.actions")}
         className="hover:bg-amber-500 hover:text-white text-primary"
       >
         <Edit />
       </Button>
       <DialogConfirm
-        title="¿Eliminar compañía?"
-        description={`¿Estás seguro que deseas eliminar la compañía "${row.original.name}"? Esta acción no se puede deshacer.`}
+        title={t("deleteTitle")}
+        description={t("deleteDescription", { name: row.original.name })}
         triggerButton={
           <Button
             variant="ghost"
             size="icon"
-            title="Eliminar"
+            title={t("columnLabels.actions")}
             className="hover:bg-red-500 hover:text-white text-primary"
           >
             <Trash2 />
@@ -47,7 +48,7 @@ const AcctionsCellComponent = ({ row }: { row: Row<Company> }) => {
         onConfirm={() => {
           if (session?.token && profile?.client?.id) {
             deleteCompany(session.token, profile.client.id, row.original.id!);
-            toast.success("Compañía eliminada correctamente");
+            toast.success(t("deleteSuccess"));
           }
         }}
         type="danger"

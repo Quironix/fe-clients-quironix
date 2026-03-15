@@ -12,6 +12,7 @@ import {
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Edit, Share2, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import DialogConfirm from "../../components/dialog-confirm";
 import LoaderTable from "../../components/loader-table";
@@ -30,6 +31,7 @@ const UsersTable = ({
   onDelete,
   onReinvite,
 }: UsersTableProps) => {
+  const t = useTranslations("users");
   const { loading } = useUserStore();
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("search")?.toLowerCase() || "";
@@ -50,13 +52,13 @@ const UsersTable = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="text-primary">Nombre</TableHead>
-          <TableHead className="text-primary">Apellido</TableHead>
-          <TableHead className="text-primary">Email</TableHead>
-          <TableHead className="text-primary">Teléfono</TableHead>
-          <TableHead className="text-primary">Creado</TableHead>
-          <TableHead className="text-primary">Actualizado</TableHead>
-          <TableHead className="text-primary text-center">Acciones</TableHead>
+          <TableHead className="text-primary">{t("table.firstName")}</TableHead>
+          <TableHead className="text-primary">{t("table.lastName")}</TableHead>
+          <TableHead className="text-primary">{t("table.email")}</TableHead>
+          <TableHead className="text-primary">{t("table.phone")}</TableHead>
+          <TableHead className="text-primary">{t("table.created")}</TableHead>
+          <TableHead className="text-primary">{t("table.updated")}</TableHead>
+          <TableHead className="text-primary text-center">{t("table.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -87,19 +89,19 @@ const UsersTable = ({
                     variant="ghost"
                     size="icon"
                     onClick={() => onEdit(user)}
-                    title="Editar"
+                    title={t("table.editAction")}
                     className="hover:bg-amber-500 hover:text-white text-primary"
                   >
                     <Edit />
                   </Button>
                   <DialogConfirm
-                    title="¿Está seguro que desea eliminar el usuario?"
-                    description="Al eliminar el usuario, perderá toda la información asociada a este usuario."
+                    title={t("table.deleteConfirmTitle")}
+                    description={t("table.deleteConfirmDescription")}
                     triggerButton={
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="Eliminar"
+                        title={t("table.deleteAction")}
                         className="hover:bg-red-500 hover:text-white text-primary"
                       >
                         <Trash2 />
@@ -109,14 +111,14 @@ const UsersTable = ({
                   />
                   <DialogConfirm
                     type="warning"
-                    confirmButtonText="Reinvitar"
-                    title="¿Está seguro que desea reinvitar el usuario?"
-                    description="Al reinvitar el usuario, se enviará un nuevo correo de invitación."
+                    confirmButtonText={t("table.reinviteButton")}
+                    title={t("table.reinviteConfirmTitle")}
+                    description={t("table.reinviteConfirmDescription")}
                     triggerButton={
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="Reinvitar"
+                        title={t("table.reinviteAction")}
                         className="hover:bg-green-500 hover:text-white text-primary"
                       >
                         <Share2 />

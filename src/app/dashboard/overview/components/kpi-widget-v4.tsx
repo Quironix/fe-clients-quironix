@@ -1,4 +1,5 @@
 import { GripVertical, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { VIEW_TYPES, ViewType } from "../constants/kpi-constants";
 import { useKPIMetrics } from "../hooks/useKPIMetrics";
@@ -24,6 +25,7 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
   onDrop,
   isDragging,
 }) => {
+  const t = useTranslations("overview");
   const [showSettings, setShowSettings] = useState(false);
   const { status, trend, categoryBadge } = useKPIMetrics(kpi);
 
@@ -78,7 +80,7 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
 
       {showSettings && (
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
-          <p className="text-xs font-medium text-gray-500 mb-2">Tipo de visualización</p>
+          <p className="text-xs font-medium text-gray-500 mb-2">{t("visualizationType")}</p>
           <div className="flex items-center gap-1">
             {VIEW_TYPES.map((type) => {
               const Icon = type.icon;

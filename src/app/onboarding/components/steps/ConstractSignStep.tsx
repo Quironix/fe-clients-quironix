@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useProfileContext } from "@/context/ProfileContext";
 import { FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import React, { useState } from "react";
 import { toast } from "sonner";
@@ -23,6 +24,7 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
   onStepChange,
   profile,
 }) => {
+  const t = useTranslations("onboarding");
   const [hasReadContract, setHasReadContract] = useState<boolean>(false);
   const [contractSigned, setContractSigned] = useState<boolean>(false);
   const [isSigningContract, setIsSigningContract] = useState<boolean>(false);
@@ -57,8 +59,8 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
 
   return (
     <StepLayout
-      title="Firma tu contrato"
-      description="Este es el contrato para comenzar a usar la plataforma. Por favor, léelo con calma y fírmalo para continuar."
+      title={t("contract.title")}
+      description={t("contract.description")}
     >
       <section className="h-full">
         <div className="h-1/6 ">
@@ -87,8 +89,7 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
                     className="border-2 border-orange-300 text-gray-500 bg-white"
                     onClick={handleOpenContract}
                   >
-                    <FileText className="w-4 h-4 mr-2 text-orange-300" /> Leer
-                    contrato
+                    <FileText className="w-4 h-4 mr-2 text-orange-300" /> {t("contract.readButton")}
                   </Button>
                 </div>
               </div>
@@ -106,7 +107,7 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
                     !hasReadContract ? "text-gray-400" : ""
                   }`}
                 >
-                  Firmar contrato
+                  {t("contract.sign")}
                 </label>
               </div>
             </div>

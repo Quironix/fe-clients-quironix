@@ -13,6 +13,7 @@ import useForgotPassword from "@/hooks/useForgotPassword";
 import { cn } from "@/lib/utils";
 import { useAuthLayout } from "@/stores/authLayout";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { HTMLAttributes } from "react";
 import AuthLayout from "../AuthLayout";
@@ -26,6 +27,7 @@ export default function ForgotPassword({
   const { forgotPasswordForm, onSubmitForgotPassword, isLoading } =
     useForgotPassword();
   const { isLoading: isLoadingAuthLayout } = useAuthLayout();
+  const t = useTranslations("auth");
 
   const renderRequestForm = () => (
     <Form {...forgotPasswordForm}>
@@ -36,7 +38,7 @@ export default function ForgotPassword({
             name="email"
             render={({ field }) => (
               <FormItem className="space-y-1">
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("forgotPassword.email")}</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="email@quironix.com"
@@ -55,7 +57,7 @@ export default function ForgotPassword({
               className="text-sm text-primary font-medium text-center flex items-center justify-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver al inicio de sesión
+              {t("forgotPassword.backToLogin")}
             </Link>
           </div>
 
@@ -66,10 +68,10 @@ export default function ForgotPassword({
             {isLoadingAuthLayout || isLoading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="animate-spin h-4 w-4" />
-                Recuperando contraseña...
+                {t("forgotPassword.submitting")}
               </span>
             ) : (
-              "Recuperar contraseña"
+              t("forgotPassword.submit")
             )}
           </Button>
         </div>
@@ -82,10 +84,10 @@ export default function ForgotPassword({
       <div className={cn("grid gap-3 space-y-1", className)} {...props}>
         <div className="flex flex-col space-y-2 text-left">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Recuperar contraseña
+            {t("forgotPassword.title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Ingresa tu email para recibir un enlace de recuperación
+            {t("forgotPassword.subtitle")}
           </p>
         </div>
 

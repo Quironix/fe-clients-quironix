@@ -58,6 +58,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, FileText, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -167,6 +168,8 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     updateDebtor,
     error: errorDebtor,
   } = useDebtorsStore();
+  const t = useTranslations("debtors.debtorData");
+  const tValidation = useTranslations("debtors.validation");
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -461,7 +464,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     // Validar el formulario primero
     const isValid = await form.trigger();
     if (!isValid) {
-      toast.error("Por favor, completa todos los campos requeridos");
+      toast.error(t("requiredFields"));
       return;
     }
 
@@ -478,7 +481,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     // Validar que no haya errores del formulario antes de continuar
     if (Object.keys(form.formState.errors).length > 0) {
       setIsSubmitting(false);
-      toast.error("Por favor, completa todos los campos requeridos");
+      toast.error(t("requiredFields"));
       return;
     }
 
@@ -609,7 +612,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       console.error("Error data:", error?.response?.data);
 
       // Manejo de errores más específico
-      let errorMessage = "Error al guardar el deudor";
+      let errorMessage = t("saveError");
 
       // Verificar la estructura específica del error que mencionas
       if (error?.response?.data?.message) {
@@ -650,7 +653,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         />
       </div>
       <div className="space-y-4 border border-gray-200 rounded-md p-5">
-        <TitleStep title="Ingreso deudores" icon={<FileText size={16} />} />
+        <TitleStep title={t("title")} icon={<FileText size={16} />} />
         <FormProvider {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
@@ -664,7 +667,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                     control={form.control}
                     name="companies"
                     render={({ field }) => (
-                      <SelectClient field={field} title="Compañía" required />
+                      <SelectClient field={field} title={t("company")} required />
                     )}
                   />
                 )}
@@ -675,7 +678,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Razón social <Required />
+                        {t("businessName")} <Required />
                       </FormLabel>
                       <FormControl>
                         <Input {...field} />
@@ -690,7 +693,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Tipo de documento <Required />
+                        {t("documentType")} <Required />
                       </FormLabel>
                       <FormControl>
                         <Select
@@ -698,7 +701,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           value={field.value || "RUT"}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un tipo de documento" />
+                            <SelectValue placeholder={t("selectDocumentType")} />
                           </SelectTrigger>
                           <SelectContent>
                             {typeDocuments.map((type) => (
@@ -719,7 +722,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Número de documento <Required />
+                        {t("documentNumber")} <Required />
                       </FormLabel>
                       <FormControl>
                         <Input {...field} />
@@ -734,7 +737,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Código deudor <Required />
+                        {t("debtorCode")} <Required />
                       </FormLabel>
                       <FormControl>
                         <Input {...field} />
@@ -748,7 +751,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="addresses.0.street"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Dirección</FormLabel>
+                      <FormLabel>{t("address")}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -767,7 +770,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="addresses.0.state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Comuna/Municipio</FormLabel>
+                      <FormLabel>{t("municipality")}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -786,7 +789,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="addresses.0.city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ciudad</FormLabel>
+                      <FormLabel>{t("city")}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -804,7 +807,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   control={form.control}
                   name="addresses.0.country"
                   render={({ field }) => (
-                    <CountriesSelectFormItem field={field} title="País" />
+                    <CountriesSelectFormItem field={field} title={t("country")} />
                   )}
                 />
                 <FormField
@@ -812,7 +815,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="addresses.0.postal_code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Código postal</FormLabel>
+                      <FormLabel>{t("postalCode")}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -832,13 +835,13 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rubro</FormLabel>
+                      <FormLabel>{t("category")}</FormLabel>
                       <FormControl>
                         <Popover open={open} onOpenChange={setOpen}>
                           <div className="relative space-x-2">
                             <Input
                               {...field}
-                              placeholder="Escribe o selecciona un rubro"
+                              placeholder={t("categoryPlaceholder")}
                               autoComplete="off"
                               className="pr-12"
                             />
@@ -859,12 +862,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           <PopoverContent className="w-80 p-0" align="start">
                             <Command>
                               <CommandInput
-                                placeholder="Buscar rubro..."
+                                placeholder={t("searchCategory")}
                                 className="h-9"
                               />
                               <CommandList>
                                 <CommandEmpty>
-                                  No se encontró el rubro
+                                  {t("categoryNotFound")}
                                 </CommandEmpty>
                                 <CommandGroup>
                                   {categories.map((category: any) => (
@@ -910,7 +913,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="economic_activities"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Actividades económicas</FormLabel>
+                      <FormLabel>{t("economicActivities")}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -930,7 +933,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => {
                     return (
                       <FormItem>
-                        <FormLabel>Canal</FormLabel>
+                        <FormLabel>{t("channel")}</FormLabel>
                         <FormControl>
                           <Select
                             onValueChange={(value) =>
@@ -946,12 +949,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                             key={field.value}
                           >
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona un canal" />
+                              <SelectValue placeholder={t("selectChannel")} />
                             </SelectTrigger>
 
                             <SelectContent>
                               <SelectItem value="__none__">
-                                -- Selecciona un canal --
+                                {t("selectChannelDefault")}
                               </SelectItem>
                               {PREFERRED_CHANNELS.map((channel: any) => (
                                 <SelectItem
@@ -975,7 +978,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="channel_communication"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Canal de comunicación</FormLabel>
+                      <FormLabel>{t("communicationChannel")}</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={(value) =>
@@ -989,12 +992,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           key={field.value}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un canal" />
+                            <SelectValue placeholder={t("selectChannel")} />
                           </SelectTrigger>
 
                           <SelectContent>
                             <SelectItem value="__none__">
-                              -- Selecciona un canal --
+                              {t("selectChannelDefault")}
                             </SelectItem>
                             {COMMUNICATION_CHANNEL.map((channel: any) => (
                               <SelectItem
@@ -1018,7 +1021,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => {
                     return (
                       <FormItem>
-                        <FormLabel>DBT</FormLabel>
+                        <FormLabel>{t("dbt")}</FormLabel>
                         <FormControl>
                           <InputNumberCart
                             value={safeNumber(field.value, 0)}
@@ -1039,7 +1042,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.1.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Clasificación de riesgo</FormLabel>
+                      <FormLabel>{t("riskClassification")}</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
@@ -1047,7 +1050,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           defaultValue={field.value || null}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un estado" />
+                            <SelectValue placeholder={t("selectStatus")} />
                           </SelectTrigger>
                           <SelectContent>
                             {RISK_CLASSIFICATION.map((status: any) => (
@@ -1068,7 +1071,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Línea de crédito <Required />
+                        {t("creditLine")} <Required />
                       </FormLabel>
                       <FormControl>
                         <Select
@@ -1077,11 +1080,11 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           defaultValue={field.value || ""}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona una línea de crédito" />
+                            <SelectValue placeholder={t("selectCreditLine")} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="true">Si</SelectItem>
-                            <SelectItem value="false">No</SelectItem>
+                            <SelectItem value="true">{t("creditLineYes")}</SelectItem>
+                            <SelectItem value="false">{t("creditLineNo")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -1094,7 +1097,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.3.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Monto línea de crédito</FormLabel>
+                      <FormLabel>{t("creditLineAmount")}</FormLabel>
                       <FormControl>
                         <InputNumberCart
                           value={safeNumber(field.value, 0)}
@@ -1113,7 +1116,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.4.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tolerancia línea de crédito</FormLabel>
+                      <FormLabel>{t("creditLineTolerance")}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -1132,7 +1135,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.5.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Estado crediticio</FormLabel>
+                      <FormLabel>{t("creditStatus")}</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
@@ -1140,7 +1143,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           defaultValue={field.value || "ACTIVE"}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un estado" />
+                            <SelectValue placeholder={t("selectStatus")} />
                           </SelectTrigger>
                           <SelectContent>
                             {CREDIT_STATUS.map((status: any) => (
@@ -1161,7 +1164,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="metadata.6.value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Condiciones de pago</FormLabel>
+                      <FormLabel>{t("paymentTerms")}</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={(value) => {
@@ -1173,7 +1176,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           key={field.value}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un estado" />
+                            <SelectValue placeholder={t("selectStatus")} />
                           </SelectTrigger>
                           <SelectContent>
                             {PAYMENT_TERMS.map((term: any) => (
@@ -1195,7 +1198,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   render={({ field }) => (
                     <PaymentMethodSelectFormItem
                       field={field}
-                      title="Método de pago"
+                      title={t("paymentMethod")}
                     />
                   )}
                 />
@@ -1205,7 +1208,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   name="sales_person"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vendedor</FormLabel>
+                      <FormLabel>{t("salesPerson")}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -1220,7 +1223,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
               {submitAttempted &&
                 Object.keys(form.formState.errors).length > 0 && (
                   <div className="text-red-500 text-xs self-center mr-2">
-                    Por favor, completa todos los campos requeridos
+                    {t("requiredFields")}
                   </div>
                 )}
 

@@ -29,6 +29,7 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import type { E164Number } from "libphonenumber-js/core";
 import { Mail, Plus, Trash } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useDebtorsStore } from "../../../../store";
@@ -77,6 +78,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
   onStepChange,
   profile,
 }) => {
+  const t = useTranslations("debtors.contactStep");
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState("item-0");
   const [countries, setCountries] = useState<
@@ -153,7 +155,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
     if (fields.length > 1) {
       remove(index);
     } else {
-      toast.error("Debe mantener al menos un contacto");
+      toast.error(t("minOneContact"));
     }
   };
   // Cargar países cuando el componente se monta
@@ -189,11 +191,11 @@ const ContactInfoStep: React.FC<StepProps> = ({
         dataDebtor.contacts = normalizedContacts;
         await updateDebtor(session?.token, profile?.client?.id, dataDebtor);
       }
-      toast.success("Deudor guardado correctamente");
+      toast.success(t("saveSuccess"));
       router.push("/dashboard/debtors");
       router.refresh();
     } catch (error) {
-      toast.error("Error al guardar el deudor");
+      toast.error(t("saveError"));
     }
   };
 
@@ -209,7 +211,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
       <div className="space-y-4 border border-gray-200 rounded-md p-5">
         <div className="flex justify-between items-center">
           <TitleStep
-            title="Información de contacto"
+            title={t("title")}
             icon={<Mail size={16} />}
           />
           <Button
@@ -220,7 +222,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
             className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white"
           >
             <Plus className="w-4 h-4 text-orange-500" />
-            Agregar contacto
+            {t("addContact")}
           </Button>
         </div>
 
@@ -245,7 +247,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                 >
                   <div className="grid grid-cols-[96%_4%] items-center gap-2 min-h-[48px]">
                     <AccordionTrigger className="flex items-center justify-between h-full">
-                      <span>Contacto {index + 1}</span>
+                      <span>{t("contactNumber", { number: index + 1 })}</span>
                     </AccordionTrigger>
                     <Button
                       type="button"
@@ -269,7 +271,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                           name={`contact_info.${index}.name`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Nombre </FormLabel>
+                              <FormLabel>{t("name")} </FormLabel>
                               <FormControl>
                                 <Input {...field} />
                               </FormControl>
@@ -282,7 +284,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                           name={`contact_info.${index}.role`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Rol</FormLabel>
+                              <FormLabel>{t("role")}</FormLabel>
                               <FormControl>
                                 <Input {...field} />
                               </FormControl>
@@ -295,14 +297,14 @@ const ContactInfoStep: React.FC<StepProps> = ({
                           name={`contact_info.${index}.function`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Función</FormLabel>
+                              <FormLabel>{t("function")}</FormLabel>
                               <FormControl>
                                 <Select
                                   onValueChange={field.onChange}
                                   value={field.value}
                                 >
                                   <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecciona una función" />
+                                    <SelectValue placeholder={t("selectFunction")} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {functionsContact.map((func) => (
@@ -326,7 +328,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                Canal preferente de comunicación
+                                {t("channel")}
                               </FormLabel>
                               <FormControl>
                                 <Select
@@ -334,15 +336,15 @@ const ContactInfoStep: React.FC<StepProps> = ({
                                   value={field.value}
                                 >
                                   <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecciona un canal" />
+                                    <SelectValue placeholder={t("selectChannel")} />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="email">Email</SelectItem>
+                                    <SelectItem value="email">{t("channelEmail")}</SelectItem>
                                     <SelectItem value="phone">
-                                      Teléfono
+                                      {t("channelPhone")}
                                     </SelectItem>
                                     <SelectItem value="whatsapp">
-                                      Whatsapp
+                                      {t("channelWhatsapp")}
                                     </SelectItem>
                                   </SelectContent>
                                 </Select>
@@ -356,7 +358,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                           name={`contact_info.${index}.email`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Email</FormLabel>
+                              <FormLabel>{t("email")}</FormLabel>
                               <FormControl>
                                 <Input {...field} />
                               </FormControl>
@@ -369,10 +371,10 @@ const ContactInfoStep: React.FC<StepProps> = ({
                           name={`contact_info.${index}.phone`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Teléfono</FormLabel>
+                              <FormLabel>{t("phone")}</FormLabel>
                               <FormControl>
                                 <PhoneInput
-                                  placeholder="Ej: +56 9 9891 8080"
+                                  placeholder={t("phonePlaceholder")}
                                   defaultCountry="CL"
                                   value={field.value as E164Number}
                                   onChange={(value: E164Number | undefined) =>
@@ -399,7 +401,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
               {submitAttempted &&
                 Object.keys(form.formState.errors).length > 0 && (
                   <div className="text-red-500 text-xs self-center mr-2">
-                    Por favor, completa todos los campos requeridos
+                    {t("requiredFields")}
                   </div>
                 )}
               <NextBackButtons

@@ -1,15 +1,17 @@
 import { getDocumentTypeDisplayData } from "@/app/dashboard/payment-netting/components/document-type-badge";
 import { formatNumber } from "@/lib/utils";
 import { FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const LitigationsCard = ({ data }: { data: any }) => {
+  const t = useTranslations("debtorManagement.litigationsCard");
   const litigations = data?.litigations;
 
   if (!litigations) {
     return (
       <div className="flex flex-col justify-center items-center gap-3">
         <span className="text-sm text-muted-foreground">
-          No hay datos de litigios disponibles
+          {t("noData")}
         </span>
       </div>
     );
@@ -26,7 +28,7 @@ const LitigationsCard = ({ data }: { data: any }) => {
   return (
     <div className="flex flex-col justify-center items-center gap-3">
       <div className="flex flex-col items-center">
-        <span>Deuda en litigios</span>
+        <span>{t("debtInLitigation")}</span>
         <span className="font-bold">{formatNumber(totalDebt)}</span>
       </div>
 
@@ -52,7 +54,7 @@ const LitigationsCard = ({ data }: { data: any }) => {
         })
       ) : (
         <span className="text-sm text-muted-foreground">
-          No hay documentos en litigio
+          {t("noDocuments")}
         </span>
       )}
     </div>

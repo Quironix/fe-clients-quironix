@@ -12,15 +12,17 @@ import StepEntity from "./components/steps/step-entity";
 import StepDebtors from "./components/steps/step-debtors";
 import StepContacts from "./components/steps/step-contacts";
 import Language from "@/components/ui/language";
-
-const steps: Step[] = [
-  { id: 1, label: "Configuración de la entidad", completed: false },
-  { id: 2, label: "Configuración de deudores", completed: false },
-  { id: 3, label: "Configuración de contactos", completed: false },
-];
+import { useTranslations } from "next-intl";
 
 const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
+  const t = useTranslations("settings");
   const { profile } = useProfileContext();
+
+  const steps: Step[] = [
+    { id: 1, label: t("steps.entity"), completed: false },
+    { id: 2, label: t("steps.debtors"), completed: false },
+    { id: 3, label: t("steps.contacts"), completed: false },
+  ];
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
 
@@ -75,10 +77,10 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
       </Header>
       <Main>
         <TitleSection
-          title="Configuración cliente"
-          description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
+          title={t("layoutTitle")}
+          description={t("layoutDescription")}
           icon={<UsersIcon color="white" />}
-          subDescription="Onboarding"
+          subDescription={t("layoutSubDescription")}
         />
         <div className="h-auto bg-white rounded-md p-4 px-8 border border-gray-200">
           {renderStep()}

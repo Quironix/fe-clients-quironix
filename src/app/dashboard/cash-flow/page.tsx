@@ -18,6 +18,7 @@ import Required from "@/components/ui/required";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileCog, FilePlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -44,6 +45,7 @@ const formSchema = z.object({
 });
 
 export default function CashFlowPage() {
+  const t = useTranslations("cashFlow");
   const { profile, session } = useProfileContext();
   const [cashFlowConfiguration, setCashFlowConfiguration] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,7 +90,7 @@ export default function CashFlowPage() {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     if (!profile?.client?.id || !session?.token) {
-      toast.error("No se pudo obtener la información del cliente");
+      toast.error(t("toast.clientInfoError"));
       return;
     }
 
@@ -104,10 +106,10 @@ export default function CashFlowPage() {
       );
 
       setCashFlowConfiguration(updatedConfig);
-      toast.success("Configuración actualizada exitosamente");
+      toast.success(t("toast.updateSuccess"));
     } catch (error: any) {
       console.error("Error updating configuration:", error);
-      toast.error(error.message || "Error al actualizar la configuración");
+      toast.error(error.message || t("toast.updateError"));
     } finally {
       setIsLoading(false);
     }
@@ -120,10 +122,10 @@ export default function CashFlowPage() {
       </Header>
       <Main>
         <TitleSection
-          title="Flujo de caja"
-          description="Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma."
+          title={t("title")}
+          description={t("description")}
           icon={<FileCog color="white" />}
-          subDescription="Configuración de la cartera"
+          subDescription={t("subDescription")}
         />
 
         <Form {...form}>
@@ -136,7 +138,7 @@ export default function CashFlowPage() {
                     <FilePlus className="text-primary w-8 h-8" />
                   </div>
                   <span className="text-sm font-bold">
-                    Configuración de parámetro{" "}
+                    {t("parameterConfig")}
                   </span>
                 </div>
                 {/* Primera fila */}
@@ -144,11 +146,11 @@ export default function CashFlowPage() {
                   <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-[500]">
-                        Considera litigios <Required />
+                        {t("considerLitigation")} <Required />
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="Define si las facturas que se encuentran en estado de litigio serán consideradas dentro del cálculo de estimación de caja."
+                        tooltipContent={t("tooltips.considerLitigation")}
                       />
                     </div>
                     <FormField
@@ -170,7 +172,7 @@ export default function CashFlowPage() {
                                   id="consider-litigation-yes"
                                 />
                                 <Label htmlFor="consider-litigation-yes">
-                                  Si
+                                  {t("yes")}
                                 </Label>
                               </div>
                               <div className="flex items-center space-x-2">
@@ -179,7 +181,7 @@ export default function CashFlowPage() {
                                   id="consider-litigation-no"
                                 />
                                 <Label htmlFor="consider-litigation-no">
-                                  No
+                                  {t("no")}
                                 </Label>
                               </div>
                             </RadioGroup>
@@ -192,11 +194,11 @@ export default function CashFlowPage() {
                   <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-[500]">
-                        Litigios <Required />
+                        {t("litigationLabel")} <Required />
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="Permite definir el porcentaje de recuperación estimado para documentos en litigio."
+                        tooltipContent={t("tooltips.litigation")}
                       />
                     </div>
                     <FormField
@@ -220,12 +222,12 @@ export default function CashFlowPage() {
                   <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-[500]">
-                        ¿Considera facturas de acuerdos comerciales?{" "}
+                        {t("considerCommercialInvoices")}{" "}
                         <Required />
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="Define si las facturas asociadas a acuerdos comerciales especiales serán consideradas en la estimación."
+                        tooltipContent={t("tooltips.considerCommercialInvoices")}
                       />
                     </div>
                     <FormField
@@ -247,7 +249,7 @@ export default function CashFlowPage() {
                                   id="commercial-invoices-yes"
                                 />
                                 <Label htmlFor="commercial-invoices-yes">
-                                  Si
+                                  {t("yes")}
                                 </Label>
                               </div>
                               <div className="flex items-center space-x-2">
@@ -256,7 +258,7 @@ export default function CashFlowPage() {
                                   id="commercial-invoices-no"
                                 />
                                 <Label htmlFor="commercial-invoices-no">
-                                  No
+                                  {t("no")}
                                 </Label>
                               </div>
                             </RadioGroup>
@@ -272,11 +274,11 @@ export default function CashFlowPage() {
                   <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-[500]">
-                        Días de corte NC <Required />
+                        {t("ncCutoffDays")} <Required />
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="Define el número de días dentro del cual una Nota de Crédito será considerada para ajustar la estimación de caja."
+                        tooltipContent={t("tooltips.ncCutoffDays")}
                       />
                     </div>
                     <FormField
@@ -300,11 +302,11 @@ export default function CashFlowPage() {
                   <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-[500]">
-                        % de rango superior <Required />
+                        {t("upperRangePercentage")} <Required />
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="Define qué porcentaje del monto de las notas de crédito que exceden los días de corte será incorporado en la estimación, permitiendo controlar su impacto en la proyección de ingresos."
+                        tooltipContent={t("tooltips.upperRangePercentage")}
                       />
                     </div>
                     <FormField
@@ -329,11 +331,11 @@ export default function CashFlowPage() {
                   <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-[500]">
-                        % de rango inferior <Required />
+                        {t("lowerRangePercentage")} <Required />
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="Establece qué porcentaje de las notas de crédito que no superan los días de corte impactará en la proyección de flujo de caja."
+                        tooltipContent={t("tooltips.lowerRangePercentage")}
                       />
                     </div>
                     <FormField
@@ -361,26 +363,16 @@ export default function CashFlowPage() {
                   <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-[500]">
-                        ¿Considera promedio N meses? <Required />
+                        {t("considerAverageMonths")} <Required />
                       </span>
                       <InfoIcon
                         color="#FF8113"
                         tooltipContent={
                           <div>
-                            <p>
-                              Determina si el cálculo se basará en un promedio
-                              histórico de comportamiento de pago de tus
-                              clientes.
-                            </p>
+                            <p>{t("tooltips.considerAverageMonths")}</p>
                             <ul className="list-disc pl-4 mt-1">
-                              <li>
-                                A mayor cantidad de meses, mayor estabilidad en
-                                la estimación.
-                              </li>
-                              <li>
-                                A menor cantidad, mayor sensibilidad a cambios
-                                recientes.
-                              </li>
+                              <li>{t("tooltips.considerAverageMonthsMore")}</li>
+                              <li>{t("tooltips.considerAverageMonthsLess")}</li>
                             </ul>
                           </div>
                         }
@@ -404,14 +396,14 @@ export default function CashFlowPage() {
                                   value="true"
                                   id="average-months-yes"
                                 />
-                                <Label htmlFor="average-months-yes">Si</Label>
+                                <Label htmlFor="average-months-yes">{t("yes")}</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem
                                   value="false"
                                   id="average-months-no"
                                 />
-                                <Label htmlFor="average-months-no">No</Label>
+                                <Label htmlFor="average-months-no">{t("no")}</Label>
                               </div>
                             </RadioGroup>
                           </FormControl>
@@ -423,11 +415,11 @@ export default function CashFlowPage() {
                   <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-[500]">
-                        Meses <Required />
+                        {t("months")} <Required />
                       </span>
                       <InfoIcon
                         color="#FF8113"
-                        tooltipContent="Define la cantidad de meses históricos que serán considerados para calcular el promedio."
+                        tooltipContent={t("tooltips.months")}
                       />
                     </div>
                     <FormField
@@ -452,21 +444,16 @@ export default function CashFlowPage() {
                   <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-[500]">
-                        Factor <Required />
+                        {t("factor")} <Required />
                       </span>
                       <InfoIcon
                         color="#FF8113"
                         tooltipContent={
                           <div>
-                            <p>
-                              Permite aplicar un coeficiente de ajuste manual
-                              sobre el resultado final de la estimación.
-                            </p>
+                            <p>{t("tooltips.factor")}</p>
                             <ul className="list-disc pl-4 mt-1">
-                              <li>
-                                Un factor mayor a 1 aumenta la proyección.
-                              </li>
-                              <li>Un factor menor a 1 la reduce.</li>
+                              <li>{t("tooltips.factorMore")}</li>
+                              <li>{t("tooltips.factorLess")}</li>
                             </ul>
                           </div>
                         }
@@ -502,7 +489,7 @@ export default function CashFlowPage() {
                   {isLoading ? (
                     <Loader size={20} className="text-white" />
                   ) : (
-                    "Guardar"
+                    t("save")
                   )}
                 </Button>
               </div>

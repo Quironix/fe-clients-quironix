@@ -46,6 +46,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface DataTableDynamicColumnsProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -107,13 +108,13 @@ export function DataTableDynamicColumns<TData, TValue>({
   data,
   isLoading = false,
   loadingComponent,
-  emptyMessage = "No se encontraron datos",
+  emptyMessage,
   pageSize = 15,
   pageSizeOptions = [15, 20, 25, 30, 40, 50],
   showPagination = true,
   className = "",
   enableGlobalFilter = false,
-  searchPlaceholder = "Buscar...",
+  searchPlaceholder,
   debounceMs = 300,
   initialSearchValue = "",
   pagination,
@@ -128,8 +129,8 @@ export function DataTableDynamicColumns<TData, TValue>({
   initialRowSelection,
   onRowSelectionChange,
   bulkActions = [],
-  title = "Filtros",
-  description = "Selecciona las columnas que deseas mostrar en la tabla.",
+  title,
+  description,
   handleSuccessButton,
   filterInputs,
   initialColumnConfiguration,
@@ -137,6 +138,14 @@ export function DataTableDynamicColumns<TData, TValue>({
   onResetFilters,
   rowClassName,
 }: DataTableDynamicColumnsProps<TData, TValue>) {
+  const tTable = useTranslations("common.table");
+  const tPagination = useTranslations("common.pagination");
+  const tLoading = useTranslations("common.loading");
+  const tButtons = useTranslations("common.buttons");
+  const resolvedEmptyMessage = emptyMessage ?? tTable("empty");
+  const resolvedSearchPlaceholder = searchPlaceholder ?? tLoading("searching");
+  const resolvedTitle = title ?? tTable("filters");
+  const resolvedDescription = description ?? tTable("filtersDescription");
   const [searchValue, setSearchValue] = useState(initialSearchValue);
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
@@ -194,14 +203,14 @@ export function DataTableDynamicColumns<TData, TValue>({
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Seleccionar todo"
+          aria-label={tTable("selectAll")}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Seleccionar fila"
+          aria-label={tTable("selectRow")}
         />
       ),
       enableSorting: false,
@@ -339,12 +348,12 @@ export function DataTableDynamicColumns<TData, TValue>({
       <div className="space-y-4 mb-4">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center justify-between gap-2 flex-1">
-            {title && <div className="font-bold text-black">{title}</div>}
+            {resolvedTitle && <div className="font-bold text-black">{resolvedTitle}</div>}
             {enableGlobalFilter && (
               <div className="relative flex-1 max-w-sm bg-white">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder={searchPlaceholder}
+                  placeholder={resolvedSearchPlaceholder}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   className="pl-9 pr-9"
@@ -383,18 +392,18 @@ export function DataTableDynamicColumns<TData, TValue>({
                 <SheetTrigger asChild>
                   <Button variant="outline">
                     <Columns className="h-4 w-4 mr-2 text-orange-400" />
-                    Editar tabla
+                    {tTable("editTable")}
                   </Button>
                 </SheetTrigger>
                 <SheetContent className="min-w-[30vw]">
                   <SheetHeader>
-                    <SheetTitle>{title}</SheetTitle>
-                    <SheetDescription>{description}</SheetDescription>
+                    <SheetTitle>{resolvedTitle}</SheetTitle>
+                    <SheetDescription>{resolvedDescription}</SheetDescription>
                   </SheetHeader>
                   <div className="space-y-4 px-4 max-w-full overflow-x-hidden overflow-y-auto max-h-[calc(100vh-200px)]">
                     <div className="w-full border-b border-gray-200 mb-2 pb-1">
                       <span className="text-sm font-bold text-gray-500">
-                        Columnas
+                        {tTable("columns")}
                       </span>
                     </div>
                     <div className="space-y-1">
@@ -498,7 +507,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                         onClick={resetColumnConfig}
                         className="flex-1"
                       >
-                        Limpiar
+                        {tButtons("clear")}
                       </Button>
                       <Button
                         onClick={handleApplyConfiguration}
@@ -508,10 +517,10 @@ export function DataTableDynamicColumns<TData, TValue>({
                         {isApplyingFilters ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Aplicando...
+                            {tLoading("applying")}
                           </>
                         ) : (
-                          "Aplicar"
+                          tButtons("apply")
                         )}
                       </Button>
                     </div>
@@ -563,7 +572,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                       colSpan={columns.length}
                       className="text-center py-8"
                     >
-                      Cargando...
+                      {tLoading("generic")}
                     </TableCell>
                   </TableRow>
                 )
@@ -593,8 +602,8 @@ export function DataTableDynamicColumns<TData, TValue>({
                         className="text-center py-8"
                       >
                         {searchValue
-                          ? "No se encontraron resultados para tu búsqueda"
-                          : emptyMessage}
+                          ? tTable("noResults")
+                          : resolvedEmptyMessage}
                       </TableCell>
                     </TableRow>
                   )}
@@ -607,15 +616,14 @@ export function DataTableDynamicColumns<TData, TValue>({
         {showPagination && (
           <div className="flex items-center justify-between px-2 py-1">
             <div className="text-sm text-muted-foreground">
-              Mostrando {paginationInfo.showingFrom} a{" "}
-              {paginationInfo.showingTo} de {paginationInfo.total} registros
+              {tPagination("showing", { from: paginationInfo.showingFrom, to: paginationInfo.showingTo, total: paginationInfo.total })}
               {searchValue && (
-                <span className="text-muted-foreground"> (filtrado)</span>
+                <span className="text-muted-foreground"> {tPagination("filtered")}</span>
               )}
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
               <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium">Filas por página</p>
+                <p className="text-sm font-medium">{tPagination("rowsPerPage")}</p>
                 <Select
                   value={`${paginationInfo.pageSize}`}
                   onValueChange={(value) => {
@@ -638,8 +646,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                 </Select>
               </div>
               <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Página {paginationInfo.currentPage} de{" "}
-                {paginationInfo.totalPages}
+                {tPagination("page", { current: paginationInfo.currentPage, total: paginationInfo.totalPages })}
               </div>
               <div className="flex items-center space-x-2">
                 <Button
@@ -651,7 +658,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                   }}
                   disabled={!paginationInfo.hasPrevious}
                 >
-                  <span className="sr-only">Ir a la primera página</span>
+                  <span className="sr-only">{tPagination("goToFirst")}</span>
                   <ChevronsLeft className="h-4 w-4" />
                 </Button>
                 <Button
@@ -666,7 +673,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                   }}
                   disabled={!paginationInfo.hasPrevious}
                 >
-                  <span className="sr-only">Ir a la página anterior</span>
+                  <span className="sr-only">{tPagination("goToPrevious")}</span>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <Button
@@ -681,7 +688,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                   }}
                   disabled={!paginationInfo.hasNext}
                 >
-                  <span className="sr-only">Ir a la página siguiente</span>
+                  <span className="sr-only">{tPagination("goToNext")}</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button
@@ -696,7 +703,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                   }}
                   disabled={!paginationInfo.hasNext}
                 >
-                  <span className="sr-only">Ir a la última página</span>
+                  <span className="sr-only">{tPagination("goToLast")}</span>
                   <ChevronsRight className="h-4 w-4" />
                 </Button>
               </div>

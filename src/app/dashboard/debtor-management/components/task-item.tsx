@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn, formatNumber } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import DialogConfirm from "../../components/dialog-confirm";
@@ -39,6 +40,7 @@ export const TaskItem = ({
   highlighted = false,
   borderColor = "border-gray-200",
 }: TaskItemProps) => {
+  const t = useTranslations("debtorManagement.taskItem");
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -133,10 +135,10 @@ export const TaskItem = ({
       <DialogConfirm
         isOpen={isDialogOpen}
         setIsOpen={setIsDialogOpen}
-        title="Estás tomando una tarea fuera de orden"
-        description="Tu lista tiene un orden definido para ayudarte a avanzar de forma más rápida y organizada.  La primera tarea es la prioritaria y siempre debe tomarse primero. ¿Quieres continuar igualmente?"
-        confirmButtonText="Volver"
-        cancelButtonText="Continuar"
+        title={t("outOfOrderTitle")}
+        description={t("outOfOrderDescription")}
+        confirmButtonText={t("backButton")}
+        cancelButtonText={t("continueButton")}
         onCancel={handleCancel}
         type="warning"
       />
