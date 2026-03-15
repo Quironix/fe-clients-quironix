@@ -2328,7 +2328,8 @@
     "selectOption": "Selecciona una opción",
     "notFound": "No se encontró el elemento",
     "searchPlaceholder": "Buscar...",
-    "searching": "Buscando..."
+    "searching": "Buscando...",
+    "emptyMessage": "No se encontraron resultados"
   },
   "assistant": {
     "welcome": "¿Cómo puedo ayudarte hoy?",
