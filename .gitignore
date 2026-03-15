@@ -38,3 +38,9 @@ package-lock.json
 yarn.lock
 .env
 package-lock.json
+
+# Test coverage
+coverage/
+.gga
+.documents/*
+skill-registry.md

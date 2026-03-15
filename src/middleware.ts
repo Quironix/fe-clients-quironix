@@ -76,13 +76,31 @@ const profileCache = new Map<
 >();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
+export function clearProfileCache(token?: string) {
+  if (token) {
+    profileCache.delete(token);
+  } else {
+    profileCache.clear();
+  }
+}
+
 export default auth(async (req) => {
-  // return undefined;
   const session = req.auth;
   const currentPath = req.nextUrl.pathname;
 
-  // Si está en sign-in, permitir acceso sin validaciones
+  if (currentPath === "/") {
+    if (session?.token) {
+      return NextResponse.redirect(
+        new URL("/dashboard/overview", req.nextUrl.origin)
+      );
+    }
+    return NextResponse.redirect(new URL("/sign-in", req.nextUrl.origin));
+  }
+
   if (currentPath === "/sign-in") {
+    if (session?.token) {
+      profileCache.delete(session.token);
+    }
     return NextResponse.next();
   }
 
@@ -106,31 +124,31 @@ export default auth(async (req) => {
 
     let profile: UserProfile;
 
-    if (cachedProfile && now - cachedProfile.timestamp < CACHE_DURATION) {
+    const isCacheValid =
+      cachedProfile &&
+      now - cachedProfile.timestamp < CACHE_DURATION &&
+      cachedProfile.profile?.client?.status !== "INVITED";
+
+    if (isCacheValid && !currentPath.startsWith("/onboarding")) {
       profile = cachedProfile.profile;
-      if (currentPath.startsWith("/onboarding")) {
-        const response = await fetchProfile(session?.token);
-        profile = await response.json();
-        // Guardar en caché
-        profileCache.set(session?.token, { profile, timestamp: now });
-      }
     } else {
       const response = await fetchProfile(session?.token);
 
       if (!response.ok) {
-        // Si el token es inválido, limpiar la caché y redirigir a sign-in
         profileCache.delete(session?.token);
         return NextResponse.redirect(new URL("/sign-in", req.nextUrl.origin));
       }
 
       profile = await response.json();
-      // Guardar en caché
-      profileCache.set(session?.token, { profile, timestamp: now });
+
+      if (profile?.client?.status !== "INVITED") {
+        profileCache.set(session?.token, { profile, timestamp: now });
+      } else {
+        profileCache.delete(session?.token);
+      }
     }
 
     const clientStatus = profile?.client?.status;
-
-    console.log("CLIENT STATUSSSS", clientStatus);
 
     // Si el estado es INVITED
     if (clientStatus === "INVITED") {
@@ -185,7 +203,7 @@ export default auth(async (req) => {
 
         // Obtener todos los scopes del usuario desde sus roles
         const userScopes =
-          profile?.roles?.flatMap((role: any) => role.scopes || []) || [];
+          profile?.roles?.flatMap((role: { scopes?: string[] }) => role.scopes || []) || [];
 
         // Verificar si el usuario tiene acceso a la ruta actual
         if (!hasAccessToRoute(currentPath, userScopes)) {
@@ -222,5 +240,5 @@ export default auth(async (req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/onboarding/:path*"],
+  matcher: ["/", "/dashboard/:path*", "/onboarding/:path*"],
 };

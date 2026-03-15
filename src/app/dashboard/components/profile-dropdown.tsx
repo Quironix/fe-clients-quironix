@@ -11,8 +11,8 @@ import {
 import { useSidebar } from "@/components/ui/sidebar";
 import { useProfileContext } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
+import { logout } from "@/lib/logout";
 import { Briefcase, ChevronsUpDown, User } from "lucide-react";
-import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 export const ProfileDropdown = () => {
@@ -74,7 +74,7 @@ export const ProfileDropdown = () => {
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => signOut()}>
+          <DropdownMenuItem onClick={() => logout()}>
             Cerrar sesión
           </DropdownMenuItem>
         </DropdownMenuContent>

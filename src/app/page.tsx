@@ -1,13 +1,12 @@
-import Image from "next/image";
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 
-export default function Home() {
-  return (
-    <div className="h-screen w-screen flex flex-col justify-center items-center gap-4">
-      <h1 className="text-2xl font-bold">Bienvenido a Quironix</h1>
-      <Link href="/onboarding" className="bg-primary text-white px-4 py-2 rounded-md">
-        Ir al onboarding
-      </Link>
-    </div>
-  );
+export default async function Home() {
+  const session = await auth();
+
+  if (session?.token) {
+    redirect("/dashboard/overview");
+  }
+
+  redirect("/sign-in");
 }
