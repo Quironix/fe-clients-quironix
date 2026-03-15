@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { ArrowDownIcon, ArrowUpIcon, InfoIcon, MinusIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { KPI } from "../services/types";
 
 interface KPICardProps {
@@ -14,6 +15,8 @@ interface KPICardProps {
 }
 
 export const KPICard = ({ kpi }: KPICardProps) => {
+  const t = useTranslations("kpi.status");
+  const tl = useTranslations("kpi.labels");
   const getStatusColor = () => {
     switch (kpi.status) {
       case "success":
@@ -43,11 +46,11 @@ export const KPICard = ({ kpi }: KPICardProps) => {
   const getStatusLabel = () => {
     switch (kpi.status) {
       case "success":
-        return "En Meta";
+        return t("onTarget");
       case "warning":
-        return "Atención";
+        return t("attention");
       case "error":
-        return "Crítico";
+        return t("critical");
       default:
         return "N/A";
     }
@@ -99,11 +102,11 @@ export const KPICard = ({ kpi }: KPICardProps) => {
                   )}
                   {kpi.criterio && (
                     <p className="text-xs">
-                      <span className="font-semibold">Criterio de Aceptación:</span> {kpi.criterio}
+                      <span className="font-semibold">{tl("acceptanceCriteria")}:</span> {kpi.criterio}
                     </p>
                   )}
                   <p className="text-xs mt-2">
-                    <span className="font-semibold">Rango:</span> {kpi.thresholds.low} - {kpi.thresholds.high}{kpi.unit}
+                    <span className="font-semibold">{tl("range")}:</span> {kpi.thresholds.low} - {kpi.thresholds.high}{kpi.unit}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -122,10 +125,10 @@ export const KPICard = ({ kpi }: KPICardProps) => {
             {getTrendIcon()}
           </div>
           <div className="text-sm text-gray-600 mt-2">
-            <span className="font-medium">Meta:</span> {kpi.target}{kpi.unit}
+            <span className="font-medium">{tl("target")}:</span> {kpi.target}{kpi.unit}
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            Rango: {kpi.thresholds.low} - {kpi.thresholds.high}{kpi.unit}
+            {tl("range")}: {kpi.thresholds.low} - {kpi.thresholds.high}{kpi.unit}
           </div>
         </div>
 

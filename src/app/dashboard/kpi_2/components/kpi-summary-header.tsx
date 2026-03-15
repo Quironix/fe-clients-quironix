@@ -1,4 +1,5 @@
 import { Activity, TrendingDown, TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { KPI } from "../services/types";
 
 interface KPISummaryHeaderProps {
@@ -21,6 +22,7 @@ const getStatus = (kpi: KPI): string => {
 };
 
 export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({ kpis }) => {
+  const t = useTranslations("kpi.summary");
   const stats = kpis.reduce(
     (acc, k) => {
       const s = getStatus(k);
@@ -37,7 +39,7 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({ kpis }) => {
       <div className="bg-white border border-gray-200 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-400">Health Score</p>
+            <p className="text-xs font-medium text-gray-400">{t("healthScore")}</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">{health}%</p>
           </div>
           <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
@@ -49,7 +51,7 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({ kpis }) => {
       <div className="bg-white border border-gray-200 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-400">Óptimos</p>
+            <p className="text-xs font-medium text-gray-400">{t("optimal")}</p>
             <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.optimal || 0}</p>
           </div>
           <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
@@ -61,7 +63,7 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({ kpis }) => {
       <div className="bg-white border border-gray-200 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-400">En Alerta</p>
+            <p className="text-xs font-medium text-gray-400">{t("alert")}</p>
             <p className="text-2xl font-bold text-amber-600 mt-1">{stats.warning || 0}</p>
           </div>
           <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
@@ -73,7 +75,7 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({ kpis }) => {
       <div className="bg-white border border-gray-200 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-400">Críticos</p>
+            <p className="text-xs font-medium text-gray-400">{t("critical")}</p>
             <p className="text-2xl font-bold text-red-600 mt-1">{stats.critical || 0}</p>
           </div>
           <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">

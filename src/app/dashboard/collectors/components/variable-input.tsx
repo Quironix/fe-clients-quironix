@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 interface Variable {
@@ -23,19 +24,27 @@ interface VariableInputProps {
   className?: string;
 }
 
-const availableVariables: Variable[] = [
-  { key: "num_factura", label: "N° de factura" },
-  { key: "fecha", label: "Fecha" },
-  { key: "empresa", label: "Nombre de la empresa" },
-  { key: "monto_total", label: "Monto total" },
-];
+const variableKeys = ["num_factura", "fecha", "empresa", "monto_total"] as const;
+
+const variableLabelKeys: Record<string, string> = {
+  num_factura: "invoiceNumber",
+  fecha: "date",
+  empresa: "companyName",
+  monto_total: "totalAmount",
+};
 
 export function VariableInput({
   value = "",
   onChange,
-  placeholder = "Escribe aquí...",
+  placeholder,
   className,
 }: VariableInputProps) {
+  const t = useTranslations("collectors.variableInput");
+  const defaultPlaceholder = placeholder || t("placeholder");
+  const availableVariables: Variable[] = variableKeys.map((key) => ({
+    key,
+    label: t(variableLabelKeys[key]),
+  }));
   const [isEditing, setIsEditing] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -132,7 +141,7 @@ export function VariableInput({
             value={value}
             onChange={handleInputChange}
             onBlur={handleBlur}
-            placeholder={placeholder}
+            placeholder={defaultPlaceholder}
             className="w-full outline-none bg-transparent"
           />
         ) : (
@@ -140,7 +149,7 @@ export function VariableInput({
             {value ? (
               parseContent(value)
             ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+              <span className="text-muted-foreground">{defaultPlaceholder}</span>
             )}
           </div>
         )}
@@ -155,12 +164,12 @@ export function VariableInput({
             className="whitespace-nowrap"
           >
             <Plus className="h-4 w-4 mr-1" />
-            Variable
+            {t("addVariable")}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-4" align="end">
           <div className="space-y-3">
-            <h4 className="font-semibold text-sm">Variables disponibles</h4>
+            <h4 className="font-semibold text-sm">{t("availableVariables")}</h4>
             <div className="space-y-2">
               {availableVariables.map((variable) => (
                 <button

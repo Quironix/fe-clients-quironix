@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { ControllerRenderProps } from "react-hook-form";
 
@@ -65,6 +66,7 @@ export const TimePopover = ({
 }: TimePopoverProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const timeOptions = generateTimeOptions(startHour, endHour, interval);
+  const tCommon = useTranslations("common");
 
   return (
     <FormItem className="flex flex-col">
@@ -91,8 +93,8 @@ export const TimePopover = ({
         </PopoverTrigger>
         <PopoverContent className="w-full p-0">
           <Command>
-            <CommandInput placeholder="Buscar hora..." />
-            <CommandEmpty>No se encontró la hora.</CommandEmpty>
+            <CommandInput placeholder={tCommon("placeholders.searchTime")} />
+            <CommandEmpty>{tCommon("placeholders.timeNotFound")}</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
               {timeOptions.map((time) => (
                 <CommandItem

@@ -37,6 +37,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { getAll as getUsersService } from "../../../users/services";
 import { User } from "../../../users/services/types";
@@ -62,6 +63,8 @@ const StepContacts: React.FC<StepProps> = ({
   const { session, refreshProfile } = useProfileContext();
   const [approvingUsers, setApprovingUsers] = useState<string[]>([]);
   const router = useRouter();
+  const t = useTranslations("settings.contacts");
+  const tCommon = useTranslations("common");
 
   // Cargar usuarios cuando el componente se monta
   useEffect(() => {
@@ -77,7 +80,7 @@ const StepContacts: React.FC<StepProps> = ({
         setUsers(usersData || []);
       } catch (error) {
         console.error("Error al cargar usuarios:", error);
-        toast.error("Error al cargar usuarios");
+        toast.error(t("toast.loadUsersError"));
       } finally {
         setLoadingUsers(false);
       }
@@ -89,27 +92,27 @@ const StepContacts: React.FC<StepProps> = ({
   const items = [
     {
       id: "1",
-      label: "Comunicación uno",
+      label: t("communicationOne"),
     },
     {
       id: "2",
-      label: "Comunicación dos",
+      label: t("communicationTwo"),
     },
     {
       id: "3",
-      label: "Comunicación tres",
+      label: t("communicationThree"),
     },
     {
       id: "4",
-      label: "Comunicación cuatro",
+      label: t("communicationFour"),
     },
     {
       id: "5",
-      label: "Comunicación cinco",
+      label: t("communicationFive"),
     },
     {
       id: "6",
-      label: "Comunicación seis",
+      label: t("communicationSix"),
     },
   ] as const;
 
@@ -120,28 +123,28 @@ const StepContacts: React.FC<StepProps> = ({
         z.object({
           first_name: z
             .string()
-            .min(1, "El nombre es requerido")
-            .max(50, "El nombre no puede exceder 50 caracteres"),
+            .min(1, t("validation.nameRequired"))
+            .max(50, t("validation.nameMax")),
           last_name: z
             .string()
-            .min(1, "El apellido es requerido")
-            .max(50, "El apellido no puede exceder 50 caracteres"),
-          email: z.string().email("Email inválido"),
-          position: z.string().min(1, "El cargo es requerido"),
+            .min(1, t("validation.lastNameRequired"))
+            .max(50, t("validation.lastNameMax")),
+          email: z.string().email(tCommon("validation.invalidEmail")),
+          position: z.string().min(1, t("validation.positionRequired")),
           phone: z
             .string()
-            .min(8, "Campo requerido")
-            .max(15, "Máximo 15 caracteres")
+            .min(8, tCommon("validation.fieldRequired"))
+            .max(15, tCommon("validation.maxLength", { max: "15" }))
             .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
-              message: "Número de teléfono inválido",
+              message: tCommon("validation.invalidPhone"),
             }),
           type_contact: z
             .array(z.string())
-            .min(1, "Debe seleccionar al menos un tipo de contacto"),
+            .min(1, t("validation.selectContactType")),
           is_default: z.boolean(),
         }),
       )
-      .min(1, "Debe agregar al menos un contacto"),
+      .min(1, t("validation.addAtLeastOneContact")),
     operational: z.object({
       extension_request_period: z.number().min(0, "Campo requerido"),
       annual_extensions_per_debtor: z.number().min(0, "Campo requerido"),
@@ -279,7 +282,7 @@ const StepContacts: React.FC<StepProps> = ({
     if (fields.length > 1) {
       remove(index);
     } else {
-      toast.error("Debe mantener al menos un contacto");
+      toast.error(t("validation.keepAtLeastOneContact"));
     }
   };
 
@@ -290,14 +293,14 @@ const StepContacts: React.FC<StepProps> = ({
       !data.operational.approving_users ||
       data.operational.approving_users.length === 0
     ) {
-      toast.error("Debe seleccionar al menos un aprobador");
+      toast.error(t("validation.selectApprover"));
       return;
     }
 
     setLoading(true);
     try {
       if (!session?.token || !profile?.client?.id) {
-        toast.error("Error de sesión");
+        toast.error(t("toast.sessionError"));
         return;
       }
       // delete data.operational.country_id;
@@ -319,7 +322,7 @@ const StepContacts: React.FC<StepProps> = ({
 
       await updateDataClient(updateData, profile.client.id, session?.token);
       await refreshProfile();
-      toast.success("Información de contacto actualizada correctamente");
+      toast.success(t("toast.updateSuccess"));
 
       // Regresar al step 1
       onStepChange(0);
@@ -333,7 +336,7 @@ const StepContacts: React.FC<StepProps> = ({
       }
     } catch (error) {
       console.error("Error al actualizar contactos:", error);
-      toast.error("Error al actualizar la información de contacto");
+      toast.error(t("toast.updateError"));
     } finally {
       setLoading(false);
     }
@@ -366,7 +369,7 @@ const StepContacts: React.FC<StepProps> = ({
                 <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                   <div className="flex justify-between items-center">
                     <TitleStep
-                      title="Contactos cliente"
+                      title={t("title")}
                       icon={<Mail className="w-5 h-5" />}
                     />
                     <Button
@@ -377,7 +380,7 @@ const StepContacts: React.FC<StepProps> = ({
                       className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white"
                     >
                       <Plus className="w-4 h-4 text-orange-500" />
-                      Agregar contacto
+                      {tCommon("addContact")}
                     </Button>
                   </div>
                   <Accordion
@@ -395,7 +398,7 @@ const StepContacts: React.FC<StepProps> = ({
                       >
                         <div className="grid grid-cols-[96%_4%] items-center gap-2 min-h-[48px]">
                           <AccordionTrigger className="flex items-center justify-between h-full">
-                            <span>Contacto {index + 1}</span>
+                            <span>{tCommon("contactN", { n: index + 1 })}</span>
                           </AccordionTrigger>
                           <Button
                             type="button"
@@ -419,11 +422,11 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.first_name`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Nombre</FormLabel>
+                                    <FormLabel>{tCommon("labels.name")}</FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
-                                        placeholder="Nombre"
+                                        placeholder={tCommon("labels.name")}
                                         {...field}
                                         value={field.value || ""}
                                         onChange={(e) =>
@@ -440,11 +443,11 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.last_name`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Apellido</FormLabel>
+                                    <FormLabel>{tCommon("labels.lastName")}</FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
-                                        placeholder="Apellido"
+                                        placeholder={tCommon("labels.lastName")}
                                         {...field}
                                         value={field.value || ""}
                                         onChange={(e) =>
@@ -461,7 +464,7 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.email`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Correo electrónico</FormLabel>
+                                    <FormLabel>{tCommon("labels.email")}</FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
@@ -482,7 +485,7 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.phone`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Teléfono</FormLabel>
+                                    <FormLabel>{tCommon("labels.phone")}</FormLabel>
                                     <FormControl>
                                       <PhoneInput
                                         placeholder="Ej: +56 9 9891 8080"
@@ -507,7 +510,7 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.position`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Cargo</FormLabel>
+                                    <FormLabel>{tCommon("labels.position")}</FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
@@ -526,7 +529,7 @@ const StepContacts: React.FC<StepProps> = ({
                             </div>
                             <div className="w-1/4">
                               <span className="text-sm font-bold">
-                                Comunicaciones a enviar
+                                {tCommon("labels.communicationsToSend")}
                               </span>
                               {items.map((item) => (
                                 <FormField
@@ -577,7 +580,7 @@ const StepContacts: React.FC<StepProps> = ({
 
                 <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                   <TitleStep
-                    title="Criterios para prorroga de cheques"
+                    title={t("checkExtensionTitle")}
                     icon={<Banknote className="w-5 h-5" />}
                   />
                   <p className="text-sm">
@@ -598,7 +601,7 @@ const StepContacts: React.FC<StepProps> = ({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Plazo Para solicitud de prórroga
+                              {t("extensionRequestPeriod")}
                               <InfoIcon
                                 color="#FF8113"
                                 tooltipContent={
@@ -630,7 +633,7 @@ const StepContacts: React.FC<StepProps> = ({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Nro. Prórrogas anuales por deudor
+                              {t("annualExtensions")}
                               <InfoIcon
                                 color="#FF8113"
                                 tooltipContent={
@@ -663,7 +666,7 @@ const StepContacts: React.FC<StepProps> = ({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Plazo Máximo de prorroga
+                              {t("maxExtensionPeriod")}
                               <InfoIcon
                                 color="#FF8113"
                                 tooltipContent={
@@ -696,7 +699,7 @@ const StepContacts: React.FC<StepProps> = ({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Aprobadores{" "}
+                              {t("approvers")}{" "}
                               <InfoIcon
                                 color="#FF8113"
                                 tooltipContent={
@@ -713,7 +716,7 @@ const StepContacts: React.FC<StepProps> = ({
                               <div className="space-y-2">
                                 {loadingUsers ? (
                                   <div className="text-sm text-gray-500">
-                                    Cargando usuarios...
+                                    {tCommon("loading.loadingUsers")}
                                   </div>
                                 ) : (
                                   users.map((user) => (
@@ -753,7 +756,7 @@ const StepContacts: React.FC<StepProps> = ({
                             {field.value && field.value.length > 0 && (
                               <div className="mt-2">
                                 <span className="text-sm text-gray-600">
-                                  Usuarios seleccionados:
+                                  {tCommon("selectedUsers")}
                                 </span>
                                 <div className="mt-1 flex flex-wrap gap-1">
                                   {field.value.map((userId) => {
@@ -793,7 +796,7 @@ const StepContacts: React.FC<StepProps> = ({
                             <FormMessage />
                             {(!field.value || field.value.length === 0) && (
                               <p className="text-sm text-red-600">
-                                Debe seleccionar al menos un aprobador
+                                {t("validation.selectApprover")}
                               </p>
                             )}
                           </FormItem>
@@ -810,13 +813,13 @@ const StepContacts: React.FC<StepProps> = ({
 
                 <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                   <TitleStep
-                    title="Impuestos"
+                    title={t("taxesTitle")}
                     icon={<ChartLine className="w-5 h-5" />}
                   />
                   <div className="space-y-2 flex justify-between items-start w-full gap-4">
                     <div className="grid grid-cols-3 gap-5 w-full">
                       <FormItem>
-                        <FormLabel>País</FormLabel>
+                        <FormLabel>{tCommon("labels.country")}</FormLabel>
                         <FormControl>
                           <Input
                             type="text"
@@ -829,7 +832,7 @@ const StepContacts: React.FC<StepProps> = ({
                         <FormMessage />
                       </FormItem>
                       <FormItem>
-                        <FormLabel>Moneda</FormLabel>
+                        <FormLabel>{tCommon("labels.currency")}</FormLabel>
                         <FormControl>
                           <Input
                             type="text"
@@ -842,7 +845,7 @@ const StepContacts: React.FC<StepProps> = ({
                         <FormMessage />
                       </FormItem>
                       <FormItem>
-                        <FormLabel>Impuesto</FormLabel>
+                        <FormLabel>{tCommon("labels.tax")}</FormLabel>
                         <FormControl>
                           <Input
                             type="text"
@@ -870,18 +873,18 @@ const StepContacts: React.FC<StepProps> = ({
                   variant="outline"
                   className="px-6 py-2"
                 >
-                  <ArrowLeftIcon className="w-4 h-4" /> Volver
+                  <ArrowLeftIcon className="w-4 h-4" /> {tCommon("buttons.back")}
                 </Button>
               )}
               <div className={isFirstStep ? "ml-auto" : ""}>
                 <Button type="submit" className="px-6 py-2" disabled={loading}>
                   {loading ? (
                     <div className="flex items-center gap-2">
-                      <Loader className="w-4 h-4 animate-spin" /> Cargando
+                      <Loader className="w-4 h-4 animate-spin" /> {tCommon("loading.submitting")}
                     </div>
                   ) : (
                     <>
-                      Finalizar <Save className="w-4 h-4" />
+                      {tCommon("finish")} <Save className="w-4 h-4" />
                     </>
                   )}
                 </Button>

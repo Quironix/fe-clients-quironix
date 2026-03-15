@@ -29,6 +29,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown, User, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { UseFormReturn } from "react-hook-form";
 import TitleStep from "../../settings/components/title-step";
 
@@ -50,6 +51,7 @@ interface GeneralInformationSectionProps {
 export function GeneralInformationSection({
   form,
 }: GeneralInformationSectionProps) {
+  const t = useTranslations("collectors.generalInfo");
   return (
     <AccordionItem
       key="general-information"
@@ -59,7 +61,7 @@ export function GeneralInformationSection({
       <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
         <AccordionTrigger className="flex items-center justify-between h-full">
           <TitleStep
-            title="Información general"
+            title={t("title")}
             icon={<User className="w-5 h-5" />}
           />
         </AccordionTrigger>
@@ -72,10 +74,10 @@ export function GeneralInformationSection({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Nombre del collector <span className="text-red-500">*</span>
+                  {t("collectorName")} <span className="text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="Completa" {...field} />
+                  <Input placeholder={t("completePlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -87,7 +89,7 @@ export function GeneralInformationSection({
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>
-                  Fases de la deuda <span className="text-red-500">*</span>
+                  {t("debtPhases")} <span className="text-red-500">*</span>
                 </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -101,20 +103,20 @@ export function GeneralInformationSection({
                         )}
                       >
                         {field.value?.length > 0
-                          ? `${field.value.length} fase${
-                              field.value.length > 1 ? "s" : ""
-                            } seleccionada${field.value.length > 1 ? "s" : ""}`
-                          : "Selecciona fases"}
+                          ? field.value.length > 1
+                            ? t("phasesSelectedPlural", { count: field.value.length })
+                            : t("phasesSelected", { count: field.value.length })
+                          : t("selectPhases")}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0">
                     <Command>
-                      <CommandInput placeholder="Buscar fase..." />
+                      <CommandInput placeholder={t("searchPhase")} />
                       <CommandList>
                         <CommandEmpty>
-                          No se encontró ninguna fase.
+                          {t("noPhaseFound")}
                         </CommandEmpty>
                         <CommandGroup>
                           {debtPhaseOptions.map((phase) => (
@@ -192,10 +194,10 @@ export function GeneralInformationSection({
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                Descripción general <span className="text-red-500">*</span>
+                {t("generalDescription")} <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
-                <Textarea placeholder="Descripción del collector" {...field} />
+                <Textarea placeholder={t("descriptionPlaceholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

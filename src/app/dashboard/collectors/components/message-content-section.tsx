@@ -14,6 +14,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { UseFormReturn } from "react-hook-form";
 import TitleStep from "../../settings/components/title-step";
 import { VariableInput } from "./variable-input";
@@ -23,6 +24,7 @@ interface MessageContentSectionProps {
 }
 
 export function MessageContentSection({ form }: MessageContentSectionProps) {
+  const t = useTranslations("collectors.messageContent");
   return (
     <AccordionItem
       key="message-content"
@@ -32,7 +34,7 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
       <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
         <AccordionTrigger className="flex items-center justify-between h-full">
           <TitleStep
-            title="Contenido del mensaje y adjuntos"
+            title={t("title")}
             icon={<FileText className="w-5 h-5" />}
           />
         </AccordionTrigger>
@@ -44,7 +46,7 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
           render={({ field }) => (
             <FormItem className="space-y-3">
               <FormLabel>
-                Canal de comunicación <span className="text-red-500">*</span>
+                {t("channel")} <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
                 <RadioGroup
@@ -55,7 +57,7 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="EMAIL" id="email" />
                     <label htmlFor="email" className="cursor-pointer">
-                      Correo electrónico
+                      {t("email")}
                     </label>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -67,7 +69,7 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="SMS" id="sms" />
                     <label htmlFor="sms" className="cursor-pointer">
-                      Mensaje de texto
+                      {t("sms")}
                     </label>
                   </div>
                 </RadioGroup>
@@ -83,13 +85,13 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                Asunto <span className="text-red-500">*</span>
+                {t("subject")} <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
                 <VariableInput
                   value={field.value}
                   onChange={field.onChange}
-                  placeholder="Ej: Tu factura de..."
+                  placeholder={t("subjectPlaceholder")}
                 />
               </FormControl>
               <FormMessage />
@@ -103,10 +105,10 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                Cuerpo del mensaje <span className="text-red-500">*</span>
+                {t("bodyMessage")} <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
-                <Textarea placeholder="Completa" rows={5} {...field} />
+                <Textarea placeholder={t("bodyPlaceholder")} rows={5} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -118,7 +120,7 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
           name="send_associate_invoices"
           render={({ field }) => (
             <FormItem className="flex flex-col items-start space-x-3 space-y-0">
-              <FormLabel>Adjuntar factura</FormLabel>
+              <FormLabel>{t("attachInvoice")}</FormLabel>
               <FormControl>
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -126,7 +128,7 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
                     onCheckedChange={field.onChange}
                   />
                   <span className="text-sm text-muted-foreground">
-                    Enviar facturas asociadas
+                    {t("sendAssociatedInvoices")}
                   </span>
                 </div>
               </FormControl>

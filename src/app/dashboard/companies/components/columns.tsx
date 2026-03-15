@@ -14,6 +14,7 @@ import { Company } from "../types";
 const AcctionsCellComponent = ({ row }: { row: Row<Company> }) => {
   const router = useRouter();
   const t = useTranslations("companies");
+  const tCommon = useTranslations("common.buttons");
   const { session, profile } = useProfileContext();
   const { deleteCompany } = useCompaniesStore();
 
@@ -43,8 +44,8 @@ const AcctionsCellComponent = ({ row }: { row: Row<Company> }) => {
             <Trash2 />
           </Button>
         }
-        cancelButtonText="Cancelar"
-        confirmButtonText="Sí, eliminar"
+        cancelButtonText={tCommon("cancel")}
+        confirmButtonText={tCommon("yesDelete")}
         onConfirm={() => {
           if (session?.token && profile?.client?.id) {
             deleteCompany(session.token, profile.client.id, row.original.id!);

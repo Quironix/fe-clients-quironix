@@ -38,6 +38,7 @@ import {
   Upload,
   User2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useMemo, useState, useEffect } from "react";
 import { disputes } from "@/app/dashboard/data";
@@ -55,11 +56,11 @@ export const StepThree = ({
   onFormChange,
   selectedInvoices,
 }: StepThreeProps) => {
+  const t = useTranslations("debtorManagement.stepThree");
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const [isDragging, setIsDragging] = useState(false);
 
-  // Obtener configuración del tipo de gestión
   const selectedConfig = useMemo(() => {
     if (
       formData.managementType &&
@@ -82,7 +83,6 @@ export const StepThree = ({
     formData.executiveComment,
   ]);
 
-  // Obtener label del tipo de contacto
   const contactTypeLabel = useMemo(() => {
     const type = CONTACT_TYPE_OPTIONS.find(
       (t) => t.value === formData.contactType
@@ -177,7 +177,6 @@ export const StepThree = ({
     </div>
   );
 
-  // Función para obtener el label del motivo y submotivo
   const getDisputeLabels = (reasonCode: string, subreasonCode: string) => {
     const reason = disputes.find((d) => d.code === reasonCode);
     const reasonLabel = reason?.label || reasonCode;
@@ -185,9 +184,6 @@ export const StepThree = ({
     return { reasonLabel, subreasonLabel };
   };
 
-  /**
-   * Renderiza dinámicamente los campos de case_data
-   */
   const renderCaseDataFields = () => {
     if (!selectedConfig || !formData.caseData) return null;
 
@@ -198,7 +194,6 @@ export const StepThree = ({
     console.log("Executive Comment:", selectedConfig.executive_comment);
     console.log("Case Data:", formData.caseData);
 
-    // Caso especial: Litigios
     if (selectedConfig.executive_comment === "DOCUMENT_IN_LITIGATION" &&
         formData.caseData?.litigationData?.litigations) {
       return (
@@ -206,7 +201,7 @@ export const StepThree = ({
           <div className="flex items-center gap-2 mb-3">
             <BookUser className="w-4 h-4 text-gray-700" />
             <h3 className="font-semibold text-sm text-gray-700">
-              Litigios ({formData.caseData.litigationData.litigations.length})
+              {t("litigationsTitle")} ({formData.caseData.litigationData.litigations.length})
             </h3>
           </div>
           <div className="space-y-3">
@@ -223,29 +218,29 @@ export const StepThree = ({
                     className="border border-gray-200 rounded p-3"
                   >
                     <p className="font-semibold text-sm mb-2">
-                      Litigio {index + 1}
+                      {t("litigationItem", { index: index + 1 })}
                     </p>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
-                        <span className="text-gray-500">Facturas:</span>{" "}
+                        <span className="text-gray-500">{t("invoicesLabel")}</span>{" "}
                         <span className="font-medium">
                           {litigation.selectedInvoiceIds?.length || 0}
                         </span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Monto:</span>{" "}
+                        <span className="text-gray-500">{t("amountLabel")}</span>{" "}
                         <span className="font-medium">
                           {formatCurrency(litigation.litigationAmount || 0)}
                         </span>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-gray-500">Motivo:</span>{" "}
+                        <span className="text-gray-500">{t("reasonLabel")}</span>{" "}
                         <span className="font-medium">
                           {reasonLabel}
                         </span>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-gray-500">Submotivo:</span>{" "}
+                        <span className="text-gray-500">{t("subreasonLabel")}</span>{" "}
                         <span className="font-medium">
                           {subreasonLabel}
                         </span>
@@ -260,7 +255,6 @@ export const StepThree = ({
       );
     }
 
-    // Caso especial: Plan de Pago
     if (selectedConfig.executive_comment === "PAYMENT_PLAN_APPROVAL_REQUEST") {
       console.log("ENTRANDO AL CASO DE PAYMENT PLAN");
       console.log("Case Data:", formData.caseData);
@@ -270,7 +264,7 @@ export const StepThree = ({
         return (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-sm text-red-800">
-              No se encontraron datos del plan de pago. Por favor, complete el formulario en el paso anterior.
+              {t("noPaymentPlanData")}
             </p>
           </div>
         );
@@ -294,7 +288,6 @@ export const StepThree = ({
       const frequencyLabel = PAYMENT_FREQUENCY.find((f: any) => f.code === planData.paymentFrequency)?.label || planData.paymentFrequency;
       const methodLabel = DEBTOR_PAYMENT_METHODS.find((m: any) => m.value === planData.paymentMethod)?.label || planData.paymentMethod;
 
-      // Calcular cuota (copiar lógica del componente)
       const getFrequencyFactor = (frequency: string) => {
         switch (frequency) {
           case "FREQ_7_DAYS": return 52;
@@ -328,86 +321,84 @@ export const StepThree = ({
           <div className="flex items-center gap-2 mb-4">
             <DollarSign className="w-5 h-5 text-blue-600" />
             <h3 className="font-semibold text-base text-gray-800">
-              Resumen del Plan de Pago
+              {t("paymentPlanSummary")}
             </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Columna izquierda - Configuración */}
             <div className="space-y-4">
               <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-blue-900 mb-3">Configuración</h4>
+                <h4 className="text-sm font-semibold text-blue-900 mb-3">{t("configuration")}</h4>
                 <div className="space-y-3">
                   <IconDescription
                     icon={<DollarSign className="w-5 h-5 text-blue-600" />}
-                    description="Colocación total"
+                    description={t("totalPlacement")}
                     value={formatCurrency(totalAmount)}
                   />
                   <IconDescription
                     icon={<DollarSign className="w-5 h-5 text-blue-600" />}
-                    description={`Pago contado (${downPaymentPercentage}%)`}
+                    description={t("downPayment", { percentage: downPaymentPercentage })}
                     value={formatCurrency(downPayment)}
                   />
                   <IconDescription
                     icon={<HashIcon className="w-5 h-5 text-blue-600" />}
-                    description="Número de cuotas"
+                    description={t("numberOfInstallments")}
                     value={planData.numberOfInstallments?.toString() || "0"}
                   />
                   <IconDescription
                     icon={<FileText className="w-5 h-5 text-blue-600" />}
-                    description="Tasa de interés anual"
+                    description={t("annualInterestRate")}
                     value={`${planData.annualInterestRate || 0}%`}
                   />
                   <IconDescription
                     icon={<Clock className="w-5 h-5 text-blue-600" />}
-                    description="Frecuencia de pago"
+                    description={t("paymentFrequency")}
                     value={frequencyLabel}
                   />
                   <IconDescription
                     icon={<FileText className="w-5 h-5 text-blue-600" />}
-                    description="Forma de pago"
+                    description={t("paymentMethod")}
                     value={methodLabel}
                   />
                   <IconDescription
                     icon={<Calendar className="w-5 h-5 text-blue-600" />}
-                    description="Fecha de inicio"
+                    description={t("startDate")}
                     value={formatDate(planData.startDate)}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Columna derecha - Resumen Financiero */}
             <div className="space-y-4">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border-2 border-blue-200">
                 <h4 className="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2">
                   <DollarSign className="w-5 h-5" />
-                  Resumen Financiero
+                  {t("financialSummary")}
                 </h4>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center pb-3 border-b border-blue-300">
-                    <span className="text-sm text-gray-700">Monto a financiar:</span>
+                    <span className="text-sm text-gray-700">{t("amountToFinance")}</span>
                     <span className="text-lg font-bold text-gray-900">
                       {formatCurrency(amountToFinance)}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-gray-700">Cuota {frequencyLabel.toLowerCase()}:</span>
+                    <span className="text-sm text-gray-700">{t("installment", { frequency: frequencyLabel.toLowerCase() })}</span>
                     <span className="text-2xl font-bold text-blue-600">
                       {formatCurrency(installment)}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700">Total intereses:</span>
+                    <span className="text-sm text-gray-700">{t("totalInterest")}</span>
                     <span className="text-base font-semibold text-gray-900">
                       {formatCurrency(totalInterest)}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center pt-3 border-t-2 border-blue-400 bg-blue-200/50 -mx-6 px-6 py-3 -mb-6 mt-4 rounded-b-lg">
-                    <span className="text-sm font-bold text-gray-800">Total a pagar:</span>
+                    <span className="text-sm font-bold text-gray-800">{t("totalToPay")}</span>
                     <span className="text-2xl font-bold text-blue-900">
                       {formatCurrency(totalToPay)}
                     </span>
@@ -427,7 +418,6 @@ export const StepThree = ({
         (r: any) => r.code === normalizationData.reason
       );
 
-      // Obtener facturas seleccionadas para mostrar detalles
       const selectedInvoicesForNormalization = selectedInvoices.filter((inv) =>
         normalizationData.selectedInvoiceIds?.includes(inv.id)
       );
@@ -437,33 +427,32 @@ export const StepThree = ({
           <div className="flex items-center gap-2 mb-3">
             <BookUser className="w-4 h-4 text-gray-700" />
             <h3 className="font-semibold text-sm text-gray-700">
-              Normalización de Litigios
+              {t("litigationNormalization")}
             </h3>
           </div>
           <div className="space-y-3">
-            {/* Resumen General */}
             <div className="border border-gray-200 rounded p-3 bg-blue-50">
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-500">Litigios a normalizar:</span>{" "}
+                  <span className="text-gray-500">{t("litigationsToNormalize")}</span>{" "}
                   <span className="font-bold text-blue-700">
                     {normalizationData.litigationIds?.length || 0}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Monto total litigios:</span>{" "}
+                  <span className="text-gray-500">{t("totalLitigationAmount")}</span>{" "}
                   <span className="font-bold text-blue-700">
                     {formatCurrency(normalizationData.totalAmount || 0)}
                   </span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-gray-500">Razón de normalización:</span>{" "}
+                  <span className="text-gray-500">{t("normalizationReason")}</span>{" "}
                   <span className="font-medium">
                     {normalizationReason?.label || normalizationData.reason}
                   </span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-gray-500">Comentario:</span>{" "}
+                  <span className="text-gray-500">{t("commentLabel")}</span>{" "}
                   <span className="font-medium">
                     {normalizationData.comment || "-"}
                   </span>
@@ -471,11 +460,10 @@ export const StepThree = ({
               </div>
             </div>
 
-            {/* Detalle de Facturas */}
             {selectedInvoicesForNormalization.length > 0 && (
               <div className="border border-gray-200 rounded p-3">
                 <p className="font-semibold text-xs mb-2 text-gray-700">
-                  Facturas seleccionadas ({selectedInvoicesForNormalization.length})
+                  {t("selectedInvoices", { count: selectedInvoicesForNormalization.length })}
                 </p>
                 <div className="space-y-2">
                   {selectedInvoicesForNormalization.filter(invoice => invoice).map((invoice) => (
@@ -489,7 +477,7 @@ export const StepThree = ({
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-gray-500">
-                          Saldo: <span className="font-medium text-gray-700">{formatCurrency(invoice.balance || 0)}</span>
+                          {t("balanceLabel")} <span className="font-medium text-gray-700">{formatCurrency(invoice.balance || 0)}</span>
                         </span>
                         <span className="text-xs text-gray-500">
                           {invoice.operation_date
@@ -507,7 +495,6 @@ export const StepThree = ({
       );
     }
 
-    // Campos normales
     let icon = <FileText className="w-6 h-6 text-blue-600" />;
 
     return (
@@ -522,19 +509,16 @@ export const StepThree = ({
           {fields.map((field: any) => {
             const value = (formData.caseData as any)[field.name];
 
-            // Skip campos de tipo component (como litigationData)
             if (field.type === "component") {
               return null;
             }
 
-            // Skip if value is an object (defensive check)
             if (value && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
               return null;
             }
 
             let displayValue = value || "-";
 
-            // Formatear según tipo
             if (field.type === "number" && value) {
               icon = <DollarSign className="w-6 h-6 text-blue-600" />;
               displayValue = formatCurrency(value);
@@ -567,45 +551,43 @@ export const StepThree = ({
 
   return (
     <div className="space-y-4">
-      {/* Título y botón visualizar email */}
       <TitleStep
         icon={<Eye className="w-6 h-6" />}
-        title="Vista previa de la gestión"
+        title={t("preview")}
       />
 
-      {/* Datos del deudor */}
       <div className="bg-blue-50 rounded-lg p-4 flex flex-col gap-5">
         <div>
           <h3 className="font-semibold text-sm text-gray-700 mb-2">
-            Datos del deudor
+            {t("debtorData")}
           </h3>
           <div className="grid grid-cols-4 md:grid-cols-4 gap-4">
             <IconDescription
               icon={<HashIcon className="w-6 h-6 text-blue-600" />}
-              description="Documento"
+              description={t("documentLabel")}
               value={dataDebtor?.debtor_code || "-"}
             />
             <IconDescription
               icon={<FileText className="w-6 h-6 text-blue-600" />}
-              description="Razón social"
+              description={t("businessName")}
               value={dataDebtor?.name || "-"}
             />
             <IconDescription
               icon={<FileText className="w-6 h-6 text-blue-600" />}
-              description="Contacto"
+              description={t("contactLabel")}
               value={formData.selectedContact?.name || "-"}
             />
             {formData.contactType === "EMAIL" && (
               <IconDescription
                 icon={<Mail className="w-6 h-6 text-blue-600" />}
-                description="Email"
+                description={t("emailLabel")}
                 value={formData.contactValue || "-"}
               />
             )}
             {formData.contactType === "PHONE" && (
               <IconDescription
                 icon={<Phone className="w-6 h-6 text-blue-600" />}
-                description="Teléfono"
+                description={t("phoneLabel")}
                 value={formData.contactValue || "-"}
               />
             )}
@@ -613,49 +595,48 @@ export const StepThree = ({
         </div>
         <div>
           <h3 className="font-semibold text-sm text-gray-700 mb-2">
-            Datos de la gestión
+            {t("managementData")}
           </h3>
           <div className="grid grid-cols-4 md:grid-cols-4 gap-4">
             <IconDescription
               icon={<Calendar className="w-6 h-6 text-blue-600" />}
-              description="Fecha"
+              description={t("dateLabel")}
               value={formatDate(new Date().toISOString())}
             />
             <IconDescription
               icon={<Clock1 className="w-6 h-6 text-blue-600" />}
-              description="Hora"
-              value={formatDate(new Date().toLocaleString(), "HH:mm") + " hrs"}
+              description={t("timeLabel")}
+              value={formatDate(new Date().toLocaleString(), "HH:mm") + " " + t("hours")}
             />
             <IconDescription
               icon={<User2 className="w-6 h-6 text-blue-600" />}
-              description="Analista"
-              value={"Nombre analista"}
+              description={t("analyst")}
+              value={t("analystName")}
             />
           </div>
         </div>
       </div>
 
-      {/* Facturas seleccionadas */}
       {selectedInvoices.length > 0 && (
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="w-4 h-4 text-gray-700" />
             <h3 className="font-semibold text-sm text-gray-700">
-              Facturas seleccionadas ({selectedInvoices.length})
+              {t("selectedInvoices", { count: selectedInvoices.length })}
             </h3>
           </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Nº Doc.</TableHead>
-                  <TableHead className="text-xs">Tipo</TableHead>
-                  <TableHead className="text-xs">Emisión</TableHead>
-                  <TableHead className="text-xs">Vto.</TableHead>
-                  <TableHead className="text-xs">Monto</TableHead>
-                  <TableHead className="text-xs">Saldo</TableHead>
-                  <TableHead className="text-xs">Atraso</TableHead>
-                  <TableHead className="text-xs">Fase</TableHead>
+                  <TableHead className="text-xs">{t("docNumber")}</TableHead>
+                  <TableHead className="text-xs">{t("type")}</TableHead>
+                  <TableHead className="text-xs">{t("issueDate")}</TableHead>
+                  <TableHead className="text-xs">{t("dueDate")}</TableHead>
+                  <TableHead className="text-xs">{t("amount")}</TableHead>
+                  <TableHead className="text-xs">{t("balance")}</TableHead>
+                  <TableHead className="text-xs">{t("delay")}</TableHead>
+                  <TableHead className="text-xs">{t("phase")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -680,7 +661,7 @@ export const StepThree = ({
                       {formatCurrency(invoice?.balance || 0)}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {calculateDelay(invoice?.due_date)} días
+                      {calculateDelay(invoice?.due_date)} {t("days")}
                     </TableCell>
                     <TableCell className="text-xs">
                       {Array.isArray(invoice?.phases) &&
@@ -696,31 +677,29 @@ export const StepThree = ({
           </div>
         </div>
       )}
-      {/* <pre>{JSON.stringify(formData, null, 2)}</pre> */}
 
-      {/* Tipo de Gestión */}
       {selectedConfig && (
         <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-col gap-3">
           <div className="flex flex-col gap-5">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <CogIcon className="w-4 h-4 text-gray-700" />
-                <h3 className="font-semibold text-sm text-gray-700">Gestión</h3>
+                <h3 className="font-semibold text-sm text-gray-700">{t("managementLabel")}</h3>
               </div>
               <div className="grid grid-cols-3 gap-5">
                 <IconDescription
                   icon={<FileText className="w-6 h-6 text-blue-600" />}
-                  description="Tipo de gestión"
-                  value={"Llamada saliente"}
+                  description={t("managementType")}
+                  value={t("outboundCall")}
                 />{" "}
                 <IconDescription
                   icon={<FileText className="w-6 h-6 text-blue-600" />}
-                  description="Comentario del deudor"
+                  description={t("debtorCommentLabel")}
                   value={selectedConfig.description}
                 />
                 <IconDescription
                   icon={<FileText className="w-6 h-6 text-blue-600" />}
-                  description="Comentario del ejecutivo"
+                  description={t("executiveCommentLabel")}
                   value={selectedConfig.label}
                 />
               </div>
@@ -728,7 +707,7 @@ export const StepThree = ({
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-4 h-4 text-gray-700" />
                   <h3 className="font-semibold text-sm text-gray-700">
-                    Observación
+                    {t("observation")}
                   </h3>
                 </div>
                 <p className="text-xs italic  text-gray-600">
@@ -737,36 +716,32 @@ export const StepThree = ({
                 </p>
               </div>
             </div>
-            {/* <pre>{JSON.stringify(selectedConfig, null, 2)}</pre> */}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <History className="w-4 h-4 text-gray-700" />
                 <h3 className="font-semibold text-sm text-gray-700">
-                  Próxima gestión
+                  {t("nextManagement")}
                 </h3>
               </div>
               <div className="grid grid-cols-3 gap-5">
                 <IconDescription
                   icon={<Calendar className="w-6 h-6 text-blue-600" />}
-                  description="Fecha"
+                  description={t("dateLabel")}
                   value={formatDate(formData.nextManagementDate as any)}
                 />{" "}
                 <IconDescription
                   icon={<Clock1 className="w-6 h-6 text-blue-600" />}
-                  description="Hora"
-                  value={formatTime(formData.nextManagementTime) + " hrs"}
+                  description={t("timeLabel")}
+                  value={formatTime(formData.nextManagementTime) + " " + t("hours")}
                 />
               </div>
             </div>
-            {/* <pre>{JSON.stringify(selectedConfig, null, 2)}</pre> */}
           </div>
         </div>
       )}
 
-      {/* Datos del Caso (Dinámico) */}
       {renderCaseDataFields()}
 
-      {/* Subir archivo */}
       <div className="bg-white rounded-lg p-4 border border-gray-200">
         <div
           className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
@@ -780,8 +755,7 @@ export const StepThree = ({
         >
           <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
           <p className="text-sm text-gray-600 mb-1">
-            Selecciona el archivo desde tu ordenador en JPG, PNG o GIF (Máximo
-            5mb).
+            {t("uploadDescription")}
           </p>
           <label className="inline-block">
             <input
@@ -797,32 +771,30 @@ export const StepThree = ({
             />
             <span className="px-4 py-2 bg-white border-2 border-orange-400 text-orange-600 rounded-md cursor-pointer hover:bg-orange-50 transition-colors inline-flex items-center gap-2">
               <Upload className="w-4 h-4" />
-              Subir archivo
+              {t("uploadFile")}
             </span>
           </label>
           {formData.file && (
             <p className="text-sm text-green-600 mt-2">
-              Archivo seleccionado: {formData.file.name}
+              {t("fileSelected", { name: formData.file.name })}
             </p>
           )}
         </div>
       </div>
 
-      {/* Comentario */}
       <div className="bg-white rounded-lg p-4 border border-gray-200">
         <Label htmlFor="comment" className="text-sm font-semibold mb-2 block">
-          Comentario adicional
+          {t("additionalComment")}
         </Label>
         <Textarea
           id="comment"
-          placeholder="Escribe algún comentario adicional sobre esta gestión..."
+          placeholder={t("commentPlaceholder")}
           value={formData.comment || ""}
           onChange={(e) => onFormChange({ comment: e.target.value })}
           className="min-h-[120px] resize-none"
         />
       </div>
 
-      {/* Checkbox enviar email */}
       <div className="flex items-center space-x-2 bg-blue-50 p-3 rounded-lg">
         <Checkbox
           id="sendEmail"
@@ -836,7 +808,7 @@ export const StepThree = ({
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
         >
           <Mail className="w-4 h-4 inline mr-1" />
-          Enviar resumen por email después de guardar.
+          {t("sendEmailLabel")}
         </label>
       </div>
     </div>

@@ -14,6 +14,7 @@ import InputNumberCart from "@/components/ui/input-number-cart";
 import { Switch } from "@/components/ui/switch";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -44,6 +45,8 @@ const StepDebtors: React.FC<StepProps> = ({
   const [loading, setLoading] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const { session, refreshProfile } = useProfileContext();
+  const t = useTranslations("settings.debtors");
+  const tCommon = useTranslations("common");
 
   const debtorsSchema = z.object({
     operational: z
@@ -229,7 +232,7 @@ const StepDebtors: React.FC<StepProps> = ({
 
   useEffect(() => {
     if (!profile || !session) {
-      toast.error("No se pudo cargar la información del perfil");
+      toast.error(t("toast.profileLoadError"));
       return;
     }
     setIsLoadingProfile(false);
@@ -238,7 +241,7 @@ const StepDebtors: React.FC<StepProps> = ({
   const handleSubmit = async (data: z.infer<typeof debtorsSchema>) => {
     try {
       if (!profile?.client_id || !session?.token) {
-        toast.error("No se encontró la información necesaria para actualizar");
+        toast.error(t("toast.missingInfoError"));
         return;
       }
 
@@ -263,17 +266,17 @@ const StepDebtors: React.FC<StepProps> = ({
 
       if (!response.error) {
         await refreshProfile();
-        toast.success("Datos actualizados correctamente");
+        toast.success(t("toast.updateSuccess"));
         onNext();
       } else {
-        toast.error(response.message || "Error al actualizar los datos");
+        toast.error(response.message || t("toast.updateError"));
       }
     } catch (error) {
       console.error("Error al enviar el formulario:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Error al actualizar los datos",
+          : t("toast.updateError"),
       );
     } finally {
       setLoading(false);
@@ -293,7 +296,7 @@ const StepDebtors: React.FC<StepProps> = ({
         <div className="flex items-center justify-center h-full">
           <div className="flex items-center gap-2">
             <Loader className="w-4 h-4 animate-spin" />
-            <span>Cargando información...</span>
+            <span>{tCommon("loading.loadingInfo")}</span>
           </div>
         </div>
       </StepLayout>
@@ -320,7 +323,7 @@ const StepDebtors: React.FC<StepProps> = ({
             <div className="h-4/6 overflow-y-auto space-y-4">
               <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                 <TitleStep
-                  title="Políticas de segmentación de deudores"
+                  title={t("segmentationTitle")}
                   icon={<Calculator size={16} />}
                 />
                 <p className="text-sm">
@@ -543,7 +546,7 @@ const StepDebtors: React.FC<StepProps> = ({
               </div>
               <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                 <TitleStep
-                  title="Políticas para ajustes automáticos"
+                  title={t("autoAdjustTitle")}
                   icon={<Settings2 size={16} />}
                 />
                 <p className="text-sm">
@@ -562,7 +565,7 @@ const StepDebtors: React.FC<StepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Proceso automático Netting
+                            {t("autoNetting")}
                             <span className="text-orange-500">*</span>{" "}
                             <InfoIcon
                               color="#FF8113"
@@ -594,7 +597,7 @@ const StepDebtors: React.FC<StepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Monto desde
+                            {t("amountFrom")}
                             <span className="text-orange-500">*</span>
                             <InfoIcon
                               color="#FF8113"
@@ -629,7 +632,7 @@ const StepDebtors: React.FC<StepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Monto hasta
+                            {t("amountTo")}
                             <span className="text-orange-500">*</span>
                           </FormLabel>
                           <FormControl>
@@ -651,7 +654,7 @@ const StepDebtors: React.FC<StepProps> = ({
 
               <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
                 <TitleStep
-                  title="Políticas de incumplimiento"
+                  title={t("defaultPoliciesTitle")}
                   icon={<ShieldAlert size={16} />}
                 />
                 <p className="text-sm">
@@ -670,7 +673,7 @@ const StepDebtors: React.FC<StepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Tolerancia monto comprometido (%)
+                            {t("committedAmountTolerance")}
                             <span className="text-orange-500">*</span>{" "}
                             <InfoIcon
                               color="#FF8113"
@@ -710,7 +713,7 @@ const StepDebtors: React.FC<StepProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Tolerancia en días
+                            {t("daysTolerance")}
                             <span className="text-orange-500">*</span>
                             <InfoIcon
                               color="#FF8113"
@@ -783,7 +786,7 @@ const StepDebtors: React.FC<StepProps> = ({
                   variant="outline"
                   className="px-6 py-2"
                 >
-                  <ArrowLeftIcon className="w-4 h-4" /> Volver
+                  <ArrowLeftIcon className="w-4 h-4" /> {tCommon("buttons.back")}
                 </Button>
               )}
 
@@ -796,11 +799,11 @@ const StepDebtors: React.FC<StepProps> = ({
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
-                    <Loader className="w-4 h-4 animate-spin" /> Cargando
+                    <Loader className="w-4 h-4 animate-spin" /> {tCommon("loading.submitting")}
                   </div>
                 ) : (
                   <>
-                    Continuar <ArrowRightIcon className="w-4 h-4" />
+                    {tCommon("buttons.continue")} <ArrowRightIcon className="w-4 h-4" />
                   </>
                 )}
               </Button>

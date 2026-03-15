@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { InfoIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { KPI } from "../services/types";
 
@@ -15,6 +16,8 @@ interface KPIGaugeProps {
 }
 
 export const KPIGauge = ({ kpi, size = "md" }: KPIGaugeProps) => {
+  const t = useTranslations("kpi.status");
+  const tl = useTranslations("kpi.labels");
   const percentage = kpi.target > 0 ? (kpi.value / kpi.target) * 100 : 0;
   const normalizedPercentage = Math.min(Math.max(percentage, 0), 100);
 
@@ -25,9 +28,9 @@ export const KPIGauge = ({ kpi, size = "md" }: KPIGaugeProps) => {
   };
 
   const getStatusBadge = () => {
-    if (kpi.status === "success") return "En Meta";
-    if (kpi.status === "warning") return "Atención";
-    return "Crítico";
+    if (kpi.status === "success") return t("onTarget");
+    if (kpi.status === "warning") return t("attention");
+    return t("critical");
   };
 
   const getStatusBadgeColor = () => {
@@ -76,7 +79,7 @@ export const KPIGauge = ({ kpi, size = "md" }: KPIGaugeProps) => {
                 )}
                 {kpi.criterio && (
                   <p className="text-xs">
-                    <span className="font-semibold">Criterio:</span> {kpi.criterio}
+                    <span className="font-semibold">{tl("criteria")}:</span> {kpi.criterio}
                   </p>
                 )}
               </TooltipContent>
@@ -111,7 +114,7 @@ export const KPIGauge = ({ kpi, size = "md" }: KPIGaugeProps) => {
                 <span className="text-sm ml-0.5">{kpi.unit}</span>
               </div>
               <div className="text-xs text-gray-500 mt-0.5">
-                Meta: {kpi.target}
+                {tl("target")}: {kpi.target}
                 {kpi.unit}
               </div>
             </div>
@@ -125,7 +128,7 @@ export const KPIGauge = ({ kpi, size = "md" }: KPIGaugeProps) => {
           </div>
           <div className="text-center">
             <div className="text-xs text-gray-600">
-              Rango: {kpi.thresholds.low} - {kpi.thresholds.high}{kpi.unit}
+              {tl("range")}: {kpi.thresholds.low} - {kpi.thresholds.high}{kpi.unit}
             </div>
           </div>
         </div>

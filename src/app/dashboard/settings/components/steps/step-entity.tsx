@@ -20,6 +20,7 @@ import Required from "@/components/ui/required";
 import { SearchInput } from "@/components/ui/search-input";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -54,6 +55,8 @@ const StepEntity: React.FC<StepProps> = ({
   const [countries, setCountries] = useState([]);
   const { previewUrl, clearImage, setBase64String } = useSettingsImageStore();
   const [loading, setLoading] = useState(false);
+  const t = useTranslations("settings.entity");
+  const tCommon = useTranslations("common");
 
   useEffect(() => {
     if (profile?.client?.operational?.logo_url) {
@@ -66,18 +69,18 @@ const StepEntity: React.FC<StepProps> = ({
   }, [profile?.client?.operational?.logo_url]);
 
   const formSchema = z.object({
-    first_name: z.string().min(1, "El nombre es requerido"),
-    dni_type: z.string().min(1, "El tipo de documento es requerido"),
-    dni_number: z.string().min(1, "El número de documento es requerido"),
+    first_name: z.string().min(1, t("validation.nameRequired")),
+    dni_type: z.string().min(1, t("validation.documentTypeRequired")),
+    dni_number: z.string().min(1, t("validation.documentNumberRequired")),
     operational: z.object({
       logo_url: z.string().optional(),
-      decimals: z.number().min(0, "Los decimales son requeridos"),
-      erp_code: z.string().min(1, "El código ERP es requerido"),
+      decimals: z.number().min(0, t("validation.decimalsRequired")),
+      erp_code: z.string().min(1, t("validation.erpCodeRequired")),
     }),
-    language: z.string().min(1, "El idioma es requerido"),
-    category: z.string().min(1, "El rubro es requerido"),
-    currency: z.string().min(1, "La moneda es requerida"),
-    country_id: z.string().min(1, "El país es requerido"),
+    language: z.string().min(1, t("validation.languageRequired")),
+    category: z.string().min(1, t("validation.categoryRequired")),
+    currency: z.string().min(1, t("validation.currencyRequired")),
+    country_id: z.string().min(1, t("validation.countryRequired")),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -170,7 +173,7 @@ const StepEntity: React.FC<StepProps> = ({
       }
     } catch (error) {
       console.error("Error al enviar el formulario:", error);
-      toast.error("Error al actualizar los datos");
+      toast.error(t("toast.updateError"));
     } finally {
       setLoading(false);
     }
@@ -209,7 +212,7 @@ const StepEntity: React.FC<StepProps> = ({
           </div>
           <div className="h-4/6 max-h-4/6 overflow-y-auto space-y-4 border border-gray-200 rounded-md p-5">
             <TitleStep
-              title="Configuración de entidad"
+              title={t("title")}
               icon={<Cog size={16} />}
             />
             <div className="grid grid-cols-3 gap-4">
@@ -219,7 +222,7 @@ const StepEntity: React.FC<StepProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Razón social <Required />
+                      {t("businessName")} <Required />
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="Ej: Juan López" {...field} />
@@ -234,7 +237,7 @@ const StepEntity: React.FC<StepProps> = ({
                 name="dni_type"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Tipo de documento</FormLabel>
+                    <FormLabel>{tCommon("labels.documentType")}</FormLabel>
                     <FormControl>
                       <SearchInput
                         value={field.value}
@@ -245,7 +248,7 @@ const StepEntity: React.FC<StepProps> = ({
                           value: type,
                           label: type,
                         }))}
-                        placeholder="Selecciona un tipo de documento"
+                        placeholder={tCommon("placeholders.selectDocumentType")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -258,7 +261,7 @@ const StepEntity: React.FC<StepProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Número de documento
+                      {tCommon("labels.documentNumber")}
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -276,7 +279,7 @@ const StepEntity: React.FC<StepProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      País
+                      {tCommon("labels.country")}
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -289,7 +292,7 @@ const StepEntity: React.FC<StepProps> = ({
                           value: country.id.toString(),
                           label: country.name,
                         }))}
-                        placeholder="Selecciona un país"
+                        placeholder={tCommon("placeholders.selectCountry")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -302,7 +305,7 @@ const StepEntity: React.FC<StepProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Idioma
+                      {tCommon("labels.language")}
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -315,7 +318,7 @@ const StepEntity: React.FC<StepProps> = ({
                           value: language.code,
                           label: language.name,
                         }))}
-                        placeholder="Selecciona un idioma"
+                        placeholder={tCommon("placeholders.selectLanguage")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -328,7 +331,7 @@ const StepEntity: React.FC<StepProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Rubro
+                      {tCommon("labels.category")}
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -341,7 +344,7 @@ const StepEntity: React.FC<StepProps> = ({
                           value: category,
                           label: category,
                         }))}
-                        placeholder="Selecciona un rubro"
+                        placeholder={tCommon("placeholders.selectCategory")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -356,7 +359,7 @@ const StepEntity: React.FC<StepProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Moneda
+                      {tCommon("labels.currency")}
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -369,7 +372,7 @@ const StepEntity: React.FC<StepProps> = ({
                           value: currency.code,
                           label: `${currency.name} (${currency.symbol})`,
                         }))}
-                        placeholder="Selecciona una moneda"
+                        placeholder={tCommon("placeholders.selectCurrency")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -382,7 +385,7 @@ const StepEntity: React.FC<StepProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Decimales
+                      {tCommon("labels.decimals")}
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -405,7 +408,7 @@ const StepEntity: React.FC<StepProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Código ERP
+                      {t("erpCode")}
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -419,7 +422,7 @@ const StepEntity: React.FC<StepProps> = ({
             <div className="flex justify-start items-center gap-4 mb-10">
               {!previewUrl ? (
                 <div className="bg-[#F1F5F9] rounded-lg flex justify-center items-center h-40 w-40 min-w-40 text-gray-400 gap-2">
-                  <ImagePlus className="w-10 h-10 " /> Logo
+                  <ImagePlus className="w-10 h-10 " /> {t("logo")}
                 </div>
               ) : (
                 <>
@@ -456,7 +459,7 @@ const StepEntity: React.FC<StepProps> = ({
                 variant="outline"
                 className="px-6 py-2"
               >
-                <ArrowLeftIcon className="w-4 h-4" /> Volver
+                <ArrowLeftIcon className="w-4 h-4" /> {tCommon("buttons.back")}
               </Button>
             )}
             <Button
@@ -466,11 +469,11 @@ const StepEntity: React.FC<StepProps> = ({
             >
               {loading ? (
                 <div className="flex items-center gap-2">
-                  <Loader className="w-4 h-4 animate-spin" /> Cargando
+                  <Loader className="w-4 h-4 animate-spin" /> {tCommon("loading.submitting")}
                 </div>
               ) : (
                 <>
-                  Continuar <ArrowRightIcon className="w-4 h-4" />
+                  {tCommon("buttons.continue")} <ArrowRightIcon className="w-4 h-4" />
                 </>
               )}
             </Button>

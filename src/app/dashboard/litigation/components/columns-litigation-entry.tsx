@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { Edit, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -15,7 +16,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const AcctionsCellComponent = ({ row }: { row: Row<Litigation> }) => {
   const router = useRouter();
-
+  const t = useTranslations("litigation.entryColumns");
+  const tCommon = useTranslations("common.buttons");
+  const tToast = useTranslations("litigation.toast");
   const { session, profile } = useProfileContext();
   const [litigios, setLitigios] = useState([]);
 
@@ -48,30 +51,30 @@ const AcctionsCellComponent = ({ row }: { row: Row<Litigation> }) => {
             `/dashboard/companies/create?id=${row.original.debtor_id}`
           )
         }
-        title="Editar"
+        title={tCommon("edit")}
         className="hover:bg-amber-500 hover:text-white text-primary"
       >
         <Edit />
       </Button>
       <DialogConfirm
-        title="¿Eliminar compañía?"
-        description={`¿Estás seguro que deseas eliminar número factura "${row.original.invoice_number}"? Esta acción no se puede deshacer.`}
+        title={t("deleteTitle")}
+        description={t("deleteDescription", { number: row.original.invoice_number })}
         triggerButton={
           <Button
             variant="ghost"
             size="icon"
-            title="Eliminar"
+            title={tCommon("delete")}
             className="hover:bg-red-500 hover:text-white text-primary"
           >
             <Trash2 />
           </Button>
         }
-        cancelButtonText="Cancelar"
-        confirmButtonText="Sí, eliminar"
+        cancelButtonText={tCommon("cancel")}
+        confirmButtonText={tCommon("yesDelete")}
         onConfirm={() => {
           if (session?.token && profile?.client?.id) {
             // deleteCompany(session.token, profile.client.id, row.original.debtor_id!);
-            toast.success("Compañía eliminada correctamente");
+            toast.success(tToast("companyDeleteSuccess"));
           }
         }}
         type="danger"

@@ -2,6 +2,7 @@
 
 import { useProfileContext } from "@/context/ProfileContext";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -19,6 +20,8 @@ const PaymentUploadSection = () => {
   const { session, profile } = useProfileContext();
   const { setBulkUploadErrors } = usePaymentStore();
   const router = useRouter();
+  const tUpload = useTranslations("transactions.payments.upload");
+  const tCommon = useTranslations("common.upload");
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -31,12 +34,12 @@ const PaymentUploadSection = () => {
       !file.name.toLowerCase().endsWith(".csv") &&
       !file.name.toLowerCase().endsWith(".xlsx")
     ) {
-      toast.error("Por favor selecciona un archivo CSV o XLSX válido");
+      toast.error(tCommon("selectValidFile"));
       return;
     }
 
     if (!session?.token || !profile?.client?.id) {
-      toast.error("Error de autenticación. Por favor inicia sesión nuevamente");
+      toast.error(tCommon("authError"));
       return;
     }
 
@@ -53,17 +56,13 @@ const PaymentUploadSection = () => {
       setUploadResult(response);
 
       if (response.invalidCount === 0) {
-        toast.success(
-          `Archivo cargado exitosamente. ${response.validCount} pagos procesados correctamente.`
-        );
+        toast.success(tUpload("successBulk", { count: response.validCount }));
         // Refrescar la lista de pagos
         await fetch;
       } else {
         // Almacenar errores en el store
         setBulkUploadErrors(response);
-        toast.warning(
-          `Carga completada con errores. ${response.validCount} válidos, ${response.invalidCount} con errores.`
-        );
+        toast.warning(tUpload("warningBulk", { valid: response.validCount, invalid: response.invalidCount }));
 
         // Redirigir a la página de errores incompletos
         router.push("/dashboard/transactions/payments/incomplete");
@@ -72,7 +71,7 @@ const PaymentUploadSection = () => {
       console.error("Error al cargar archivo:", error);
       toast.error(
         JSON.parse(error.message).message ||
-          "Error al cargar el archivo. Por favor intenta nuevamente."
+          tUpload("errorBulk")
       );
     } finally {
       setIsUploading(false);

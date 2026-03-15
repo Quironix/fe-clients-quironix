@@ -1,6 +1,7 @@
 "use client";
 
 import { useWebRTCContext } from "@/context/WebRTCContext";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -17,6 +18,7 @@ export const useWebRTCPhone = () => {
     setCallStatus,
     setCurrentNumber,
   } = useWebRTCContext();
+  const t = useTranslations("webrtc");
 
   const uaRef = useRef<any>(null);
   const currentSessionRef = useRef<any>(null);
@@ -41,7 +43,7 @@ export const useWebRTCPhone = () => {
         video: false,
       });
     } catch (err) {
-      toast.error("Debes permitir acceso al micrófono");
+      toast.error(t("microphoneAccess"));
       throw err;
     }
   }, []);
@@ -49,7 +51,7 @@ export const useWebRTCPhone = () => {
   // Registrar el User Agent
   const register = useCallback(async () => {
     if (!config) {
-      toast.error("Configuración de WebRTC no disponible");
+      toast.error(t("configNotAvailable"));
       return;
     }
 
@@ -69,7 +71,7 @@ export const useWebRTCPhone = () => {
       }
 
       if (!JsSIP) {
-        toast.error("No se pudo cargar la librería JsSIP");
+        toast.error(t("jssipLoadError"));
         return;
       }
 
@@ -102,14 +104,14 @@ export const useWebRTCPhone = () => {
       uaRef.current.on("registered", () => {
         setIsRegistered(true);
         setCallStatus("registered");
-        toast.success("Conectado a la central telefónica");
+        toast.success(t("connected"));
       });
 
       // Event: Fallo en el registro
       uaRef.current.on("registrationFailed", (e: any) => {
         setIsRegistered(false);
         setCallStatus("failed");
-        toast.error("Error al conectar con la central telefónica");
+        toast.error(t("connectionError"));
       });
 
       // Event: Nueva sesión RTC (llamada entrante)
@@ -120,7 +122,7 @@ export const useWebRTCPhone = () => {
       uaRef.current.start();
     } catch (error) {
       setCallStatus("failed");
-      toast.error("Error al inicializar el softphone");
+      toast.error(t("initError"));
     }
   }, [config, setIsRegistered, setCallStatus]);
 
@@ -128,17 +130,17 @@ export const useWebRTCPhone = () => {
   const makeCall = useCallback(
     async (phoneNumber: string) => {
       if (!uaRef.current) {
-        toast.error("Primero debes conectarte a la central telefónica");
+        toast.error(t("connectFirst"));
         return;
       }
 
       if (!isRegistered) {
-        toast.error("No estás registrado en la central");
+        toast.error(t("notRegistered"));
         return;
       }
 
       if (!phoneNumber || phoneNumber.trim() === "") {
-        toast.error("Ingresa un número válido");
+        toast.error(t("invalidNumber"));
         return;
       }
 
@@ -155,11 +157,11 @@ export const useWebRTCPhone = () => {
           eventHandlers: {
             progress: () => {
               setCallStatus("ringing");
-              toast.info(`Llamando a ${numberToCall}...`);
+              toast.info(t("calling", { number: numberToCall }));
             },
             failed: (e: any) => {
               setCallStatus("failed");
-              toast.error("Llamada fallida");
+              toast.error(t("callFailed"));
               if (localStreamRef.current) {
                 localStreamRef.current
                   .getTracks()
@@ -170,7 +172,7 @@ export const useWebRTCPhone = () => {
             },
             ended: () => {
               setCallStatus("ended");
-              toast.info("Llamada finalizada");
+              toast.info(t("callEnded"));
               if (localStreamRef.current) {
                 localStreamRef.current
                   .getTracks()
@@ -182,7 +184,7 @@ export const useWebRTCPhone = () => {
             },
             confirmed: () => {
               setCallStatus("in-call");
-              toast.success("Llamada conectada");
+              toast.success(t("callConnected"));
             },
           },
         };
@@ -210,7 +212,7 @@ export const useWebRTCPhone = () => {
         );
       } catch (error) {
         setCallStatus("failed");
-        toast.error("Error al realizar la llamada");
+        toast.error(t("callError"));
       }
     },
     [config, isRegistered, initMedia, setCallStatus, setCurrentNumber],
@@ -222,9 +224,9 @@ export const useWebRTCPhone = () => {
       currentSessionRef.current.terminate();
       setCallStatus("ended");
       setCurrentNumber("");
-      toast.info("Llamada finalizada");
+      toast.info(t("callEnded"));
     }
-  }, [setCallStatus, setCurrentNumber]);
+  }, [setCallStatus, setCurrentNumber, t]);
 
   // Poner en espera / Reanudar
   const toggleHold = useCallback(() => {
@@ -233,11 +235,11 @@ export const useWebRTCPhone = () => {
     if (callStatus === "on-hold") {
       currentSessionRef.current.unhold();
       setCallStatus("in-call");
-      toast.info("Llamada reanudada");
+      toast.info(t("callResumed"));
     } else if (callStatus === "in-call") {
       currentSessionRef.current.hold();
       setCallStatus("on-hold");
-      toast.info("Llamada en espera");
+      toast.info(t("callOnHold"));
     }
   }, [callStatus, setCallStatus]);
 
@@ -248,7 +250,7 @@ export const useWebRTCPhone = () => {
       uaRef.current = null;
       setIsRegistered(false);
       setCallStatus("idle");
-      toast.info("Desconectado de la central telefónica");
+      toast.info(t("disconnected"));
     }
 
     if (localStreamRef.current) {

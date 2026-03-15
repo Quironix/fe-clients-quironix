@@ -1,6 +1,7 @@
 import { useProfileContext } from "@/context/ProfileContext";
 import { useWebRTCContext } from "@/context/WebRTCContext";
 import { createDirectWebRTCConfig } from "@/services/webrtc";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -35,6 +36,7 @@ export const useWebRTCAutoConnect = (
   options?: WebRTCAutoConnectOptions
 ): WebRTCAutoConnectReturn => {
   const hookConfig = { ...defaultOptions, ...options };
+  const t = useTranslations("webrtc");
   const { config, setConfig, isRegistered } = useWebRTCContext();
   const { profile } = useProfileContext();
   const [retryCount, setRetryCount] = useState(0);
@@ -71,7 +73,7 @@ export const useWebRTCAutoConnect = (
           1000 * (retryCount + 1)
         );
       } else {
-        toast.error("No se pudo conectar a la central telefónica");
+        toast.error(t("autoConnectError"));
         setRetryCount(0);
         isConnecting.current = false;
       }
@@ -90,7 +92,7 @@ export const useWebRTCAutoConnect = (
   const disconnect = () => {
     setUserDisconnected(true);
     setConfig(null);
-    toast.info("Desconectado de la central telefónica");
+    toast.info(t("disconnected"));
   };
 
   useEffect(() => {

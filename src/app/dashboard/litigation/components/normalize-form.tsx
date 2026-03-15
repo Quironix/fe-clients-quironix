@@ -30,6 +30,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import DebtorContactSelectFormItem from "../../components/debtor-contact-select-form-item";
@@ -70,6 +71,8 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
   const { profile } = useProfileContext();
   const { setField } = useDisputeStore();
   const { litigiosIngresados, addLitigio } = useLitigationStore();
+  const tNorm = useTranslations("litigation.normalizeForm");
+  const tCommon = useTranslations("common.buttons");
   const isFactoring = profile?.client?.type === "FACTORING";
 
   const [currentLitigation, setCurrentLitigation] = useState<LitigationItem[]>(
@@ -151,7 +154,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
         } catch (err) {
           console.error("Error al obtener litigios:", err);
           setCurrentLitigation([]);
-          toast.error("Error al obtener litigios");
+          toast.error(tNorm("fetchError"));
         }
       };
       findLitigationDebtor();
@@ -196,7 +199,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Error al guardar litigio");
+      toast.error(tNorm("saveError"));
     }
   };
 
@@ -215,7 +218,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
                 control={control}
                 name="client_id"
                 render={({ field }) => (
-                  <SelectClient field={field} title="Cliente" singleClient />
+                  <SelectClient field={field} title={tNorm("client")} singleClient />
                 )}
               />
             )}
@@ -224,7 +227,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
               control={control}
               name="debtorId"
               render={({ field }) => (
-                <DebtorsSelectFormItem field={field} title="Deudor" modal />
+                <DebtorsSelectFormItem field={field} title={tNorm("debtor")} modal />
               )}
             />
           </div>
@@ -234,11 +237,10 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
           ) : (
             <div className="border bg-[#F1F5F9] p-4 rounded mt-4">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-semibold">Litigios abiertos</h3>
+                <h3 className="text-sm font-semibold">{tNorm("openLitigations")}</h3>
                 {selectedLitigationIds.length > 0 && (
                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    {selectedLitigationIds.length} seleccionado
-                    {selectedLitigationIds.length !== 1 ? "s" : ""}
+                    {selectedLitigationIds.length !== 1 ? tNorm("selectedPlural", { count: selectedLitigationIds.length }) : tNorm("selected", { count: selectedLitigationIds.length })}
                   </span>
                 )}
               </div>
@@ -256,11 +258,11 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
                           onChange={(e) => handleSelectAll(e.target.checked)}
                         />
                       </TableHead>
-                      <TableHead className="text-primary text-center">Número</TableHead>
-                      <TableHead className="text-primary text-center">Documento</TableHead>
-                      <TableHead className="text-primary text-center">Monto Litigio</TableHead>
-                      <TableHead className="text-primary text-center">Motivo</TableHead>
-                      <TableHead className="text-primary text-center">Submotivo</TableHead>
+                      <TableHead className="text-primary text-center">{tNorm("number")}</TableHead>
+                      <TableHead className="text-primary text-center">{tNorm("document")}</TableHead>
+                      <TableHead className="text-primary text-center">{tNorm("litigationAmount")}</TableHead>
+                      <TableHead className="text-primary text-center">{tNorm("reason")}</TableHead>
+                      <TableHead className="text-primary text-center">{tNorm("subReason")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -315,7 +317,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
               name="normalization_reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Razón de Normalización</FormLabel>
+                  <FormLabel>{tNorm("normalizationReason")}</FormLabel>
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
@@ -325,7 +327,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
                     <FormControl>
                       <SelectTrigger className="truncate w-full">
                         <SelectValue
-                          placeholder="Selecciona motivo"
+                          placeholder={tNorm("selectReason")}
                           className="truncate"
                         />
                       </SelectTrigger>
@@ -357,9 +359,9 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
           </div>
           {/* Comentario */}
           <div>
-            <label className="font-semibold">Comentario</label>
+            <label className="font-semibold">{tNorm("comment")}</label>
             <Textarea
-              placeholder="Comentario"
+              placeholder={tNorm("comment")}
               {...register("comment")}
               className="min-h-[40px]"
             />
@@ -370,7 +372,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
             <div className="col-span-2 bg-[#F1F5F9] px-5 py-2 rounded w-full">
               <div className="flex items-center">
                 <div>
-                  <span className="text-sm text-gray-500">Monto Factura</span>
+                  <span className="text-sm text-gray-500">{tNorm("invoiceAmount")}</span>
                   <p className="text-[#2F6EFF] font-bold text-3xl">
                     $
                     {new Intl.NumberFormat("es-ES").format(
@@ -398,10 +400,10 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Guardando
+                    <Loader2 className="w-4 h-4 animate-spin" /> {tNorm("saving")}
                   </>
                 ) : (
-                  "Normalizar"
+                  tNorm("normalize")
                 )}
               </Button>
             </div>

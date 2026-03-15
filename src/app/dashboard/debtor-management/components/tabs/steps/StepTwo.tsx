@@ -46,21 +46,13 @@ import {
   MessageSquare,
   Phone,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { Invoice } from "@/app/dashboard/payment-plans/store";
-
-export enum ManagementType {
-  CALL_OUT = "Llamada saliente",
-  CALL_IN = "Llamada entrante",
-  MAIL_OUT = "Correo saliente",
-  MAIL_IN = "Correo entrante",
-  SUPPLIER_PORTAL = "Portal de proveedores",
-  WHATSAPP = "Whatsapp",
-}
 
 interface StepTwoProps {
   dataDebtor: any;
@@ -70,42 +62,38 @@ interface StepTwoProps {
   onValidationChange?: (isValid: boolean) => void;
 }
 
-/**
- * Genera esquema de validación dinámico
- */
 const createFormSchema = (
   hasCompleteSelection: boolean,
-  selectedCombination: any
+  selectedCombination: any,
+  t: (key: string, values?: Record<string, string>) => string
 ) => {
   const baseSchema: any = {
-    managementType: z.string().min(1, "Debe seleccionar un tipo de gestión"),
+    managementType: z.string().min(1, t("validationManagementType")),
     debtorComment: z
       .string()
-      .min(1, "Debe seleccionar un comentario del deudor"),
+      .min(1, t("validationDebtorComment")),
     executiveComment: z
       .string()
-      .min(1, "Debe seleccionar un comentario del ejecutivo"),
+      .min(1, t("validationExecutiveComment")),
   };
 
-  // Solo validar otros campos si la selección está completa
   if (hasCompleteSelection) {
     baseSchema.contactType = z
       .string()
-      .min(1, "Debe seleccionar un tipo de contacto");
+      .min(1, t("validationContactType"));
     baseSchema.contactValue = z
       .string()
-      .min(1, "Debe ingresar el valor de contacto");
+      .min(1, t("validationContactValue"));
     baseSchema.observation = z.string().optional();
     baseSchema.nextManagementDate = z
       .union([z.string(), z.date()])
       .refine((val) => val !== "" && val !== null, {
-        message: "Debe seleccionar una fecha",
+        message: t("validationDate"),
       });
     baseSchema.nextManagementTime = z
       .string()
-      .min(1, "Debe seleccionar una hora");
+      .min(1, t("validationTime"));
 
-    // Validar caseData para componentes de tipo litigio
     if (selectedCombination?.executive_comment === "DOCUMENT_IN_LITIGATION") {
       baseSchema.caseData = z.object({
         litigationData: z
@@ -115,17 +103,17 @@ const createFormSchema = (
                 z.object({
                   selectedInvoiceIds: z
                     .array(z.string())
-                    .min(1, "Debe seleccionar al menos una factura"),
+                    .min(1, t("validationInvoice")),
                   litigationAmount: z.string().optional(),
-                  reason: z.string().min(1, "El motivo es requerido"),
-                  subreason: z.string().min(1, "El submotivo es requerido"),
+                  reason: z.string().min(1, t("validationReason")),
+                  subreason: z.string().min(1, t("validationSubreason")),
                 })
               )
-              .min(1, "Debe crear al menos un litigio"),
+              .min(1, t("validationLitigation")),
             _isValid: z.boolean().optional(),
           })
           .refine((data) => data._isValid !== false, {
-            message: "Debe completar todos los campos requeridos del litigio",
+            message: t("validationLitigationFields"),
           }),
       });
     } else if (
@@ -136,16 +124,15 @@ const createFormSchema = (
           .object({
             selectedInvoiceIds: z
               .array(z.string())
-              .min(1, "Debe seleccionar al menos una factura"),
+              .min(1, t("validationInvoice")),
             litigationIds: z.array(z.string()).optional(),
-            reason: z.string().min(1, "La razón de normalización es requerida"),
-            comment: z.string().min(1, "El comentario es requerido"),
+            reason: z.string().min(1, t("validationNormalizationReason")),
+            comment: z.string().min(1, t("validationNormalizationComment")),
             totalAmount: z.number().optional(),
             _isValid: z.boolean().optional(),
           })
           .refine((data) => data._isValid !== false, {
-            message:
-              "Debe completar todos los campos requeridos de la normalización",
+            message: t("validationNormalizationFields"),
           }),
       });
     } else if (
@@ -154,24 +141,23 @@ const createFormSchema = (
       baseSchema.caseData = z.object({
         paymentPlanData: z
           .object({
-            downPayment: z.number().min(0, "Debe ser mayor o igual a 0"),
-            numberOfInstallments: z.number().min(1, "Debe ser al menos 1"),
-            annualInterestRate: z.number().min(0, "Debe ser mayor o igual a 0"),
-            paymentMethod: z.string().min(1, "La forma de pago es requerida"),
-            paymentFrequency: z.string().min(1, "La frecuencia es requerida"),
-            startDate: z.date({ message: "La fecha es requerida" }),
+            downPayment: z.number().min(0, t("validationDownPayment")),
+            numberOfInstallments: z.number().min(1, t("validationInstallments")),
+            annualInterestRate: z.number().min(0, t("validationDownPayment")),
+            paymentMethod: z.string().min(1, t("validationPaymentMethod")),
+            paymentFrequency: z.string().min(1, t("validationPaymentFrequency")),
+            startDate: z.date({ message: t("validationPaymentDate") }),
             comments: z.string().optional(),
             _isValid: z.boolean().optional(),
           })
           .refine((data) => data._isValid !== false, {
-            message: "Debe completar todos los campos del plan de pago",
+            message: t("validationPaymentPlanFields"),
           }),
       });
     } else if (
       selectedCombination?.fields &&
       selectedCombination.fields.length > 0
     ) {
-      // Validar campos dinámicos según su configuración
       const caseDataSchema: any = {};
 
       selectedCombination.fields.forEach((field: FieldConfig) => {
@@ -179,21 +165,21 @@ const createFormSchema = (
           if (field.type === "number") {
             caseDataSchema[field.name] = z.coerce
               .number()
-              .min(1, `${field.label} es requerido`);
+              .min(1, t("validationRequired", { field: field.label }));
           } else if (field.type === "date") {
             caseDataSchema[field.name] = z
               .union([z.string(), z.date()])
               .refine((val) => val !== "" && val !== null, {
-                message: `${field.label} es requerido`,
+                message: t("validationRequired", { field: field.label }),
               });
           } else if (field.type === "time") {
             caseDataSchema[field.name] = z
               .string()
-              .min(1, `${field.label} es requerido`);
+              .min(1, t("validationRequired", { field: field.label }));
           } else {
             caseDataSchema[field.name] = z
               .string()
-              .min(1, `${field.label} es requerido`);
+              .min(1, t("validationRequired", { field: field.label }));
           }
         } else {
           caseDataSchema[field.name] = z.any().optional();
@@ -216,9 +202,6 @@ const createFormSchema = (
   return z.object(baseSchema);
 };
 
-/**
- * Renderiza un campo dinámicamente según su configuración
- */
 const DynamicField = ({
   field,
   control,
@@ -226,6 +209,7 @@ const DynamicField = ({
   selectedInvoices,
   litigations,
   totalizeSelectedInvoices,
+  t,
 }: {
   field: FieldConfig;
   control: any;
@@ -233,6 +217,7 @@ const DynamicField = ({
   selectedInvoices?: Invoice[];
   litigations?: any[];
   totalizeSelectedInvoices?: number;
+  t: (key: string) => string;
 }) => {
   const fieldName = `caseData.${field.name}` as any;
   const { data: session } = useSession();
@@ -318,7 +303,7 @@ const DynamicField = ({
                   value={formField.value || ""}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecciona una opción" />
+                    <SelectValue placeholder={t("selectOptionPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {field.options?.map((option) => (
@@ -342,7 +327,6 @@ const DynamicField = ({
                   value={fieldValue}
                   onChange={formField.onChange}
                   className="w-full"
-                  // disabled={isAutoFillField}
                 />
               )}
             </FormControl>
@@ -361,6 +345,17 @@ export const StepTwo = ({
   selectedInvoices = [],
   onValidationChange,
 }: StepTwoProps) => {
+  const t = useTranslations("debtorManagement.stepTwo");
+
+  const managementTypeLabels: Record<string, string> = {
+    CALL_OUT: t("callOut"),
+    CALL_IN: t("callIn"),
+    MAIL_OUT: t("mailOut"),
+    MAIL_IN: t("mailIn"),
+    SUPPLIER_PORTAL: t("supplierPortal"),
+    WHATSAPP: t("whatsapp"),
+  };
+
   const totalizeSelectedInvoices = useMemo(() => {
     const invoices = selectedInvoices || [];
     return invoices.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
@@ -372,7 +367,6 @@ export const StepTwo = ({
   const [debtorLitigations, setDebtorLitigations] = useState<any[]>([]);
   const [loadingLitigations, setLoadingLitigations] = useState(false);
 
-  // Usar refs para callbacks para evitar re-renders infinitos
   const onValidationChangeRef = useRef(onValidationChange);
   const onFormChangeRef = useRef(onFormChange);
   const previousIsValidRef = useRef<boolean | undefined>(undefined);
@@ -385,13 +379,11 @@ export const StepTwo = ({
     onFormChangeRef.current = onFormChange;
   }, [onFormChange]);
 
-  // Opciones filtradas para cascada
   const executiveCommentOptions = useMemo(
     () => getExecutiveCommentOptions(formData.debtorComment),
     [formData.debtorComment]
   );
 
-  // Obtener combinación completa si las 3 selecciones están hechas
   const selectedCombination = useMemo(() => {
     if (
       formData.managementType &&
@@ -453,20 +445,18 @@ export const StepTwo = ({
     profile?.client_id,
   ]);
 
-  // Crear esquema dinámico
   const formSchema = useMemo(
-    () => createFormSchema(hasCompleteSelection, selectedCombination),
-    [hasCompleteSelection, selectedCombination]
+    () => createFormSchema(hasCompleteSelection, selectedCombination, t),
+    [hasCompleteSelection, selectedCombination, t]
   );
 
-  // Obtener contactos del deudor para selector (solo con email)
   const debtorContacts = useMemo<DebtorContact[]>(() => {
     if (!dataDebtor?.contacts) return [];
 
-    console.log("🔍 Raw contacts from dataDebtor:", dataDebtor.contacts);
+    console.log("Raw contacts from dataDebtor:", dataDebtor.contacts);
 
     const mappedContacts = dataDebtor.contacts
-      .filter((contact: any) => contact.email) // Solo contactos con email
+      .filter((contact: any) => contact.email)
       .map(
         (contact: any, idx: number): DebtorContact => ({
           id: contact.id || `contact-${idx}`,
@@ -477,7 +467,7 @@ export const StepTwo = ({
         })
       );
 
-    console.log("🔍 Mapped debtorContacts (only with email):", mappedContacts);
+    console.log("Mapped debtorContacts (only with email):", mappedContacts);
 
     return mappedContacts;
   }, [dataDebtor]);
@@ -500,7 +490,6 @@ export const StepTwo = ({
     },
   });
 
-  // Sincronizar valores cuando cambie formData desde el padre
   useEffect(() => {
     const currentValues = form.getValues();
     const hasChanges =
@@ -539,17 +528,6 @@ export const StepTwo = ({
     }
   }, [formData, form]);
 
-  // Revalidar cuando cambie el esquema o la selección
-  // useEffect(() => {
-  //   if (hasCompleteSelection) {
-  //     const timeoutId = setTimeout(() => {
-  //       form.trigger();
-  //     }, 100);
-  //     return () => clearTimeout(timeoutId);
-  //   }
-  // }, [hasCompleteSelection, form.trigger]);
-
-  // Sincronizar cambios del formulario con el componente padre
   useEffect(() => {
     const subscription = form.watch((value) => {
       onFormChangeRef.current({
@@ -603,11 +581,9 @@ export const StepTwo = ({
     form,
   ]);
 
-  // Notificar estado de validación solo cuando cambie
   useEffect(() => {
     const isValid = form.formState.isValid;
 
-    // Solo notificar si el valor cambió
     if (previousIsValidRef.current !== isValid) {
       previousIsValidRef.current = isValid;
       onValidationChangeRef.current?.(isValid);
@@ -627,7 +603,6 @@ export const StepTwo = ({
             ]}
             className="w-full space-y-5"
           >
-            {/* ISLA 1: Selección de Gestión (3 selectores en cascada) */}
             <AccordionItem
               key="seleccion-gestion"
               value="seleccion-gestion"
@@ -636,25 +611,23 @@ export const StepTwo = ({
               <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
                 <AccordionTrigger className="flex items-center justify-between h-full">
                   <TitleStep
-                    title="Selección de Gestión"
+                    title={t("managementSelection")}
                     icon={<ClipboardList className="w-5 h-5" />}
                   />
                 </AccordionTrigger>
               </div>
               <AccordionContent className="grid grid-cols-3 gap-4 text-balance px-1 py-4">
-                {/* Nivel 1: Management Type */}
                 <FormField
                   control={form.control}
                   name="managementType"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Tipo de gestión <span className="text-red-500">*</span>
+                        {t("managementType")} <span className="text-red-500">*</span>
                       </FormLabel>
                       <Select
                         onValueChange={(value) => {
                           field.onChange(value);
-                          // Limpiar selecciones posteriores
                           form.setValue("debtorComment", "");
                           form.setValue("executiveComment", "");
                           form.setValue("caseData", {});
@@ -663,11 +636,11 @@ export const StepTwo = ({
                       >
                         <FormControl>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un tipo de gestión" />
+                            <SelectValue placeholder={t("selectManagementType")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Object.entries(ManagementType).map(
+                          {Object.entries(managementTypeLabels).map(
                             ([key, value]) => (
                               <SelectItem key={key} value={key}>
                                 {value}
@@ -681,21 +654,18 @@ export const StepTwo = ({
                   )}
                 />
 
-                {/* Nivel 2: Debtor Comment */}
-
                 <FormField
                   control={form.control}
                   name="debtorComment"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Comentario del deudor{" "}
+                        {t("debtorComment")}{" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       <Select
                         onValueChange={(value) => {
                           field.onChange(value);
-                          // Limpiar selección posterior
                           form.setValue("executiveComment", "");
                           form.setValue("caseData", {});
                         }}
@@ -703,7 +673,7 @@ export const StepTwo = ({
                       >
                         <FormControl>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona comentario del deudor" />
+                            <SelectValue placeholder={t("selectDebtorComment")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -719,14 +689,13 @@ export const StepTwo = ({
                   )}
                 />
 
-                {/* Nivel 3: Executive Comment */}
                 <FormField
                   control={form.control}
                   name="executiveComment"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Comentario del ejecutivo{" "}
+                        {t("executiveComment")}{" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       <Select
@@ -736,15 +705,10 @@ export const StepTwo = ({
                       >
                         <FormControl>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona comentario del ejecutivo" />
+                            <SelectValue placeholder={t("selectExecutiveComment")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {/* {debtorCommentOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))} */}
                           {executiveCommentOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
@@ -759,7 +723,6 @@ export const StepTwo = ({
               </AccordionContent>
             </AccordionItem>
 
-            {/* ISLA 2: Datos de la Gestión (campos comunes a TODOS los casos) */}
             {hasCompleteSelection && (
               <AccordionItem
                 key="datos-gestion"
@@ -769,16 +732,15 @@ export const StepTwo = ({
                 <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
                   <AccordionTrigger className="flex items-center justify-between h-full">
                     <TitleStep
-                      title="Datos de la gestión"
+                      title={t("managementData")}
                       icon={<Phone className="w-5 h-5" />}
                     />
                   </AccordionTrigger>
                 </div>
                 <AccordionContent className="flex flex-col gap-6 text-balance px-1 py-4">
-                  {/* Contacto */}
                   <div className="space-y-4">
                     <h4 className="text-sm font-semibold text-gray-700">
-                      Contacto
+                      {t("contact")}
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full items-start">
                       <FormField
@@ -787,7 +749,7 @@ export const StepTwo = ({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Tipo de Contacto{" "}
+                              {t("contactType")}{" "}
                               <span className="text-red-500">*</span>
                             </FormLabel>
                             <Select
@@ -796,7 +758,7 @@ export const StepTwo = ({
                             >
                               <FormControl>
                                 <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Selecciona" />
+                                  <SelectValue placeholder={t("selectOption")} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -821,7 +783,7 @@ export const StepTwo = ({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Contacto <span className="text-red-500">*</span>
+                              {t("contactLabel")} <span className="text-red-500">*</span>
                             </FormLabel>
                             {debtorContacts.length > 0 ? (
                               <Select
@@ -846,7 +808,7 @@ export const StepTwo = ({
                               >
                                 <FormControl>
                                   <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecciona un contacto" />
+                                    <SelectValue placeholder={t("selectContact")} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -863,7 +825,7 @@ export const StepTwo = ({
                             ) : (
                               <FormControl>
                                 <Input
-                                  placeholder="+56912345678 o email@example.com"
+                                  placeholder={t("contactPlaceholder")}
                                   {...field}
                                   className="w-full"
                                 />
@@ -876,10 +838,9 @@ export const StepTwo = ({
                     </div>
                   </div>
 
-                  {/* Observación */}
                   <div className="space-y-4">
                     <h4 className="text-sm font-semibold text-gray-700">
-                      Observación
+                      {t("observation")}
                     </h4>
                     <FormField
                       control={form.control}
@@ -887,10 +848,10 @@ export const StepTwo = ({
                       disabled
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Descripción de la interacción</FormLabel>
+                          <FormLabel>{t("interactionDescription")}</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Texto será generado por IA según la interacción"
+                              placeholder={t("aiGeneratedText")}
                               {...field}
                               className="min-h-[120px] resize-none"
                             />
@@ -901,18 +862,17 @@ export const StepTwo = ({
                     />
                   </div>
 
-                  {/* Próxima Gestión */}
                   <div className="space-y-4">
                     <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <CalendarClock className="w-4 h-4" />
-                      Próxima Gestión
+                      {t("nextManagement")}
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full items-start">
                       <FormField
                         control={form.control}
                         name="nextManagementDate"
                         render={({ field }) => (
-                          <DatePopover field={field} label="Fecha" required />
+                          <DatePopover field={field} label={t("dateLabel")} required />
                         )}
                       />
 
@@ -922,7 +882,7 @@ export const StepTwo = ({
                         render={({ field }) => (
                           <TimePopover
                             field={field}
-                            label="Hora de la gestión"
+                            label={t("managementTime")}
                             required
                           />
                         )}
@@ -933,7 +893,6 @@ export const StepTwo = ({
               </AccordionItem>
             )}
 
-            {/* ISLA 3: Detalles Específicos (solo si hay campos en case_data) */}
             {hasCompleteSelection && selectedCombination.fields.length > 0 && (
               <AccordionItem
                 key="detalles-especificos"
@@ -959,6 +918,7 @@ export const StepTwo = ({
                         selectedInvoices={selectedInvoices}
                         litigations={debtorLitigations}
                         totalizeSelectedInvoices={totalizeSelectedInvoices}
+                        t={t}
                       />
                     ))}
                   </div>

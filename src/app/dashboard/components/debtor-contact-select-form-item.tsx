@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslations } from "next-intl";
 
 interface DebtorContactSelectFormItemProps {
   field: any;
@@ -23,9 +24,10 @@ export default function DebtorContactSelectFormItem({
   selectedDebtor,
   isFetchingDebtor,
 }: DebtorContactSelectFormItemProps) {
+  const tCommon = useTranslations("common");
   return (
     <FormItem>
-      <FormLabel>Contacto</FormLabel>
+      <FormLabel>{tCommon("labels.contact")}</FormLabel>
       <Select
         onValueChange={(value) => {
           field.onChange(value);
@@ -38,12 +40,12 @@ export default function DebtorContactSelectFormItem({
             <SelectValue
               placeholder={
                 isFetchingDebtor
-                  ? "Cargando contactos..."
+                  ? tCommon("loading.loadingContacts")
                   : !selectedDebtor
-                    ? "Selecciona un deudor primero"
+                    ? tCommon("placeholders.selectDebtorFirst")
                     : selectedDebtor.contacts?.length === 0
-                      ? "Sin contactos disponibles"
-                      : "Selecciona contacto"
+                      ? tCommon("placeholders.noContactsAvailable")
+                      : tCommon("placeholders.selectContact")
               }
               className="truncate"
             />
@@ -67,7 +69,7 @@ export default function DebtorContactSelectFormItem({
             })
           ) : (
             <div className="py-2 px-3 text-sm text-gray-500">
-              No hay contactos disponibles
+              {tCommon("placeholders.noContactsAvailableMsg")}
             </div>
           )}
         </SelectContent>

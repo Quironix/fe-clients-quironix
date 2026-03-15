@@ -8,6 +8,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import DataTableNormal from "../../components/data-table-normal";
 import LoaderTable from "../../components/loader-table";
@@ -15,19 +16,18 @@ import DocumentTypeBadge from "../../payment-netting/components/document-type-ba
 import { getInvoices } from "../../payment-netting/services";
 import { Invoice as StoreInvoice, usePaymentPlansStore } from "../store";
 
-// Usar la interfaz del store
 type Invoice = StoreInvoice;
 interface DebtorInvoicesTableProps {
   debtorId?: string;
   onInvoicesSelected?: (invoices: Invoice[]) => void;
 }
 
-// Crear las columnas dentro del componente para tener acceso a las funciones
 const createColumns = (
   selectedInvoices: Invoice[],
   handleInvoiceSelect: (invoice: Invoice, isSelected: boolean) => void,
   allInvoices: Invoice[],
-  handleSelectAll: (checked: boolean) => void
+  handleSelectAll: (checked: boolean) => void,
+  t: (key: string) => string
 ): ColumnDef<Invoice>[] => [
   {
     id: "select",
@@ -49,7 +49,7 @@ const createColumns = (
             }
           }}
           onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
-          aria-label="Seleccionar todas las facturas"
+          aria-label={t("debtorInvoices.selectAllInvoices")}
         />
       );
     },
@@ -61,7 +61,7 @@ const createColumns = (
           onCheckedChange={(checked) =>
             handleInvoiceSelect(invoice, checked as boolean)
           }
-          aria-label="Seleccionar factura"
+          aria-label={t("debtorInvoices.selectInvoice")}
         />
       );
     },
@@ -71,7 +71,7 @@ const createColumns = (
   },
   {
     accessorKey: "number",
-    header: "N° documento",
+    header: t("columnHeaders.documentNumber"),
     cell: ({ row }) => {
       const number = row.getValue("number") as string;
       return (
@@ -81,7 +81,7 @@ const createColumns = (
   },
   {
     accessorKey: "document_type",
-    header: "Tipo de documento",
+    header: t("columnHeaders.documentType"),
     cell: ({ row }) => {
       const type = row.original.type;
       return <DocumentTypeBadge type={type} />;
@@ -89,12 +89,11 @@ const createColumns = (
   },
   {
     accessorKey: "amount",
-    header: "Monto",
+    header: t("columnHeaders.amount"),
     cell: ({ row }) => {
       const amount = row.getValue("amount") ?? row.original.amount;
       if (amount == null) return <div>-</div>;
 
-      // Convertir string a número si es necesario
       const numericAmount =
         typeof amount === "string" ? parseFloat(amount) : (amount as number);
 
@@ -113,7 +112,7 @@ const createColumns = (
   },
   {
     accessorKey: "due_date",
-    header: "Vencimiento",
+    header: t("columnHeaders.dueDate"),
     cell: ({ row }) => {
       const dueDate =
         (row.getValue("due_date") as string) || row.original.due_date;
@@ -127,7 +126,7 @@ const createColumns = (
   },
   {
     accessorKey: "phases",
-    header: "Fase",
+    header: t("columnHeaders.phase"),
     cell: ({ row }) => {
       const phasesArray = row.original.phases;
       const lastPhase =
@@ -137,7 +136,6 @@ const createColumns = (
       if (!lastPhase) {
         return <div>-</div>;
       }
-      // lastPhase es un objeto Phase
       return <div>{(lastPhase as any).phase ?? 0}</div>;
     },
   },
@@ -150,8 +148,8 @@ export default function DebtorInvoicesTable({
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const [isExpanded, setIsExpanded] = useState(true);
+  const t = useTranslations("paymentPlans");
 
-  // Usar el store para manejar las facturas seleccionadas
   const {
     selectedInvoices,
     setSelectedInvoices,
@@ -161,10 +159,8 @@ export default function DebtorInvoicesTable({
   } = usePaymentPlansStore();
 
   const handleInvoiceSelect = (invoice: Invoice, isSelected: boolean) => {
-    // Usar la función del store para alternar la selección
     toggleInvoiceSelection(invoice);
 
-    // Obtener las facturas actualizadas y notificar al componente padre
     const updatedSelected = isSelected
       ? [...selectedInvoices, invoice]
       : selectedInvoices.filter((inv) => inv.id !== invoice.id);
@@ -193,23 +189,21 @@ export default function DebtorInvoicesTable({
     const allInvoices = invoices?.data?.data || [];
 
     if (checked) {
-      // Seleccionar todas las facturas usando el store
       selectAllInvoices(allInvoices);
       onInvoicesSelected?.(allInvoices);
     } else {
-      // Deseleccionar todas las facturas usando el store
       clearSelectedInvoices();
       onInvoicesSelected?.([]);
     }
   };
 
-  // Crear las columnas con el estado actual
   const allInvoices = invoices?.data?.data || [];
   const columns = createColumns(
     selectedInvoices,
     handleInvoiceSelect,
     allInvoices,
-    handleSelectAll
+    handleSelectAll,
+    t
   );
 
   if (!debtorId) {
@@ -224,12 +218,11 @@ export default function DebtorInvoicesTable({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <CardTitle className="text-lg">Facturas del deudor</CardTitle>
+            <CardTitle className="text-lg">{t("debtorInvoices.title")}</CardTitle>
             {selectedInvoices.length > 0 && (
               <div className="flex items-center gap-2">
                 <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                  {selectedInvoices.length} seleccionada
-                  {selectedInvoices.length !== 1 ? "s" : ""}
+                  {t("debtorInvoices.selected", { count: selectedInvoices.length })}
                 </span>
                 <button
                   onClick={(e) => {
@@ -239,7 +232,7 @@ export default function DebtorInvoicesTable({
                   }}
                   className="text-xs text-gray-500 hover:text-gray-700 underline"
                 >
-                  Limpiar selección
+                  {t("debtorInvoices.clearSelection")}
                 </button>
               </div>
             )}
@@ -251,7 +244,7 @@ export default function DebtorInvoicesTable({
           )}
         </div>
         <p className="text-sm text-gray-600">
-          Selecciona las facturas que deseas considerar para el plan de pago
+          {t("debtorInvoices.selectInvoicesDescription")}
         </p>
       </CardHeader>
 
@@ -262,7 +255,7 @@ export default function DebtorInvoicesTable({
               columns={columns}
               data={invoices?.data?.data || []}
               loadingComponent={<LoaderTable cols={6} />}
-              emptyMessage="No se encontraron facturas"
+              emptyMessage={t("debtorInvoices.noInvoicesFound")}
               pageSize={5}
               pageSizeOptions={[5, 10, 15, 20, 25, 30, 40, 50]}
             />

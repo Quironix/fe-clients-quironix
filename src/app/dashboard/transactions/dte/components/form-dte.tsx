@@ -31,6 +31,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useTranslations } from "next-intl";
 import { createDTE, updateDTE } from "../services";
 import { useInvalidateDTEs } from "../hooks/useDTEs";
 import { useDTEStore } from "../store";
@@ -76,6 +77,9 @@ const formSchema = z.object({
 
 const FormDTE = () => {
   const { profile, session } = useProfileContext();
+  const t = useTranslations("transactions.dte");
+  const tForm = useTranslations("transactions.dte.form");
+  const tCommon = useTranslations("common");
   const { dte, fetchDTEById, loading, clearDTE } = useDTEStore();
   const invalidateDTEs = useInvalidateDTEs();
   const router = useRouter();
@@ -180,7 +184,7 @@ const FormDTE = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!profile?.client?.id) {
-      toast.error("No se encontró el cliente");
+      toast.error(t("clientNotFound"));
       return;
     }
     values.client_code = profile?.client?.id;
@@ -213,13 +217,11 @@ const FormDTE = () => {
           values
         );
         if (response) {
-          toast.success("DTE actualizado correctamente");
+          toast.success(t("updateSuccess"));
           invalidateDTEs(profile?.client?.id);
           router.push("/dashboard/transactions/dte");
         } else {
-          toast.error(
-            "Error al actualizar el DTE, revisa la información ingresada"
-          );
+          toast.error(tForm("updateError"));
         }
         setLoadingForm(false);
       } else {
@@ -228,11 +230,11 @@ const FormDTE = () => {
         setLoadingForm(true);
         response = await createDTE(session?.token, profile?.client?.id, values);
         if (response) {
-          toast.success("DTE creado correctamente");
+          toast.success(t("createSuccess"));
           invalidateDTEs(profile?.client?.id);
           router.push("/dashboard/transactions/dte");
         } else {
-          toast.error("Error al crear el DTE, revisa la información ingresada");
+          toast.error(t("createError"));
         }
         setLoadingForm(false);
       }
@@ -242,7 +244,7 @@ const FormDTE = () => {
       }
     } catch (error) {
       setLoadingForm(false);
-      toast.error(id ? "Error al actualizar el DTE" : "Error al crear el DTE");
+      toast.error(id ? tForm("updateErrorGeneric") : tForm("createErrorGeneric"));
     } finally {
       form.reset();
     }
@@ -265,7 +267,7 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <DebtorsSelectFormItem
                     field={field}
-                    title="Código deudor"
+                    title={tForm("debtorCode")}
                     required
                     initialDebtor={dte?.debtor}
                   />
@@ -278,7 +280,7 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tipo de documento <Required />
+                      {tForm("documentType")} <Required />
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -286,7 +288,7 @@ const FormDTE = () => {
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecciona una opción" />
+                          <SelectValue placeholder={tForm("selectOption")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -315,7 +317,7 @@ const FormDTE = () => {
                       Folio <Required />
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Completa" {...field} />
+                      <Input placeholder={tForm("fillPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -328,10 +330,10 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      N° de documento <Required />
+                      {tForm("documentNumber")} <Required />
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Completa" {...field} />
+                      <Input placeholder={tForm("fillPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -344,10 +346,10 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      N° documento sistema externo <Required />
+                      {tForm("externalNumber")} <Required />
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Completa" {...field} />
+                      <Input placeholder={tForm("fillPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -360,7 +362,7 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Monto <Required />
+                      {tForm("amount")} <Required />
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -380,9 +382,9 @@ const FormDTE = () => {
                 name="order_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Orden de compra</FormLabel>
+                    <FormLabel>{tForm("purchaseOrder")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Completa" {...field} />
+                      <Input placeholder={tForm("fillPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -398,7 +400,7 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <DatePickerFormItem
                     field={field}
-                    title="Fecha de recepción"
+                    title={tForm("receptionDate")}
                     required
                   />
                 )}
@@ -410,7 +412,7 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <DatePickerFormItem
                     field={field}
-                    title="Fecha de emisión"
+                    title={tForm("issueDate")}
                     required
                   />
                 )}
@@ -422,7 +424,7 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <DatePickerFormItem
                     field={field}
-                    title="Fecha de vencimiento"
+                    title={tForm("dueDate")}
                     required
                   />
                 )}
@@ -434,7 +436,7 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Documento interno <Required />
+                      {tForm("internalDocument")} <Required />
                     </FormLabel>
                     <FormControl>
                       <RadioGroup
@@ -446,11 +448,11 @@ const FormDTE = () => {
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="true" id="si" />
-                          <label htmlFor="si">Sí</label>
+                          <label htmlFor="si">{tForm("yes")}</label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="false" id="no" />
-                          <label htmlFor="no">No</label>
+                          <label htmlFor="no">{tForm("no")}</label>
                         </div>
                       </RadioGroup>
                     </FormControl>
@@ -467,10 +469,10 @@ const FormDTE = () => {
                 name="order_code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>N° pedido</FormLabel>
+                    <FormLabel>{tForm("orderCode")}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Completa"
+                        placeholder={tForm("fillPlaceholder")}
                         {...field}
                         value={field.value || ""}
                       />
@@ -486,7 +488,7 @@ const FormDTE = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      N° de cuota <Required />
+                      {tForm("installmentNumber")} <Required />
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -506,10 +508,10 @@ const FormDTE = () => {
                 name="reference"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Referencia</FormLabel>
+                    <FormLabel>{tForm("reference")}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Completa"
+                        placeholder={tForm("fillPlaceholder")}
                         {...field}
                         value={field.value || ""}
                       />
@@ -526,10 +528,10 @@ const FormDTE = () => {
                 name="observations"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Observación</FormLabel>
+                    <FormLabel>{tForm("observation")}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Completa"
+                        placeholder={tForm("fillPlaceholder")}
                         {...field}
                         value={field.value || ""}
                       />
@@ -542,7 +544,7 @@ const FormDTE = () => {
 
             {/* Sección de Referencias */}
             <div className="space-y-4 p-5 border border-gray-200 rounded-md">
-              <TitleStep title="Referencias" icon={<ListOrdered size={16} />} />
+              <TitleStep title={tForm("references")} icon={<ListOrdered size={16} />} />
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <FormField
@@ -550,10 +552,10 @@ const FormDTE = () => {
                   name="ref_1"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Referencia 1</FormLabel>
+                      <FormLabel>{tForm("reference1")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Completa"
+                          placeholder={tForm("fillPlaceholder")}
                           {...field}
                           value={field.value || ""}
                         />
@@ -568,10 +570,10 @@ const FormDTE = () => {
                   name="ref_2"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Referencia 2</FormLabel>
+                      <FormLabel>{tForm("reference2")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Completa"
+                          placeholder={tForm("fillPlaceholder")}
                           {...field}
                           value={field.value || ""}
                         />
@@ -586,10 +588,10 @@ const FormDTE = () => {
                   name="ref_3"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Referencia 3</FormLabel>
+                      <FormLabel>{tForm("reference3")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Completa"
+                          placeholder={tForm("fillPlaceholder")}
                           {...field}
                           value={field.value || ""}
                         />
@@ -604,10 +606,10 @@ const FormDTE = () => {
                   name="ref_4"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Referencia 4</FormLabel>
+                      <FormLabel>{tForm("reference4")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Completa"
+                          placeholder={tForm("fillPlaceholder")}
                           {...field}
                           value={field.value || ""}
                         />
@@ -626,10 +628,10 @@ const FormDTE = () => {
                     {loadingForm ? (
                       <>
                         <Loader2 className="animate-spin" />
-                        Actualizando
+                        {tForm("updating")}
                       </>
                     ) : (
-                      "Actualizar"
+                      tForm("update")
                     )}
                   </>
                 ) : (
@@ -637,10 +639,10 @@ const FormDTE = () => {
                     {loadingForm ? (
                       <>
                         <Loader2 className="animate-spin" />
-                        Guardando
+                        {tForm("saving")}
                       </>
                     ) : (
-                      "Guardar"
+                      tForm("save")
                     )}
                   </>
                 )}

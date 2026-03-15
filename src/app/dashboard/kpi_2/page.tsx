@@ -13,6 +13,7 @@ import {
   PieChart,
   RotateCcw,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Suspense, useEffect, useState } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
@@ -22,22 +23,19 @@ import { KPIWidget, ViewType } from "./components/kpi-widget-v4";
 import { useKPIData } from "./hooks/useKPIData";
 import { useKPIStore } from "./store";
 
-const viewTypes: Array<{
-  id: ViewType;
-  name: string;
-  icon: React.ElementType;
-}> = [
-  { id: "card", name: "Card", icon: LayoutGrid },
-  { id: "gauge", name: "Gauge", icon: Gauge },
-  { id: "sparkline", name: "Sparkline", icon: LineChart },
-  { id: "ring", name: "Ring", icon: PieChart },
-  { id: "compact", name: "Compacto", icon: List },
-  { id: "detailed", name: "Detallado", icon: Maximize },
-];
+const viewTypeIcons: Record<ViewType, React.ElementType> = {
+  card: LayoutGrid,
+  gauge: Gauge,
+  sparkline: LineChart,
+  ring: PieChart,
+  compact: List,
+  detailed: Maximize,
+};
 
 const categories = ["all", "Calidad producida", "Eficiencia", "Impecabilidad"];
 
 const KPIContent = () => {
+  const t = useTranslations("kpi.page");
   const { profile, session } = useProfileContext();
   const {
     filteredKpis,
@@ -103,27 +101,27 @@ const KPIContent = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Dashboard"
-          description="Revisa tus indicadores clave de rendimiento"
+          title={t("title")}
+          description={t("description")}
           icon={<LayoutGrid color="white" />}
-          subDescription="KPIs"
+          subDescription={t("subDescription")}
         />
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center gap-4 p-12">
               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500"></div>
               <p className="text-lg font-semibold text-gray-700">
-                Cargando indicadores...
+                {t("loading")}
               </p>
               <p className="text-sm text-gray-500">
-                Los datos se almacenarán en caché por 5 minutos
+                {t("loadingCache")}
               </p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center gap-4 p-12">
               <div className="text-red-500 text-4xl">⚠️</div>
               <p className="text-lg font-semibold text-gray-700">
-                Error al cargar los indicadores
+                {t("loadError")}
               </p>
               <p className="text-sm text-gray-500">{error.message}</p>
             </div>
@@ -132,18 +130,19 @@ const KPIContent = () => {
                 <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
-                      {viewTypes.map((type) => {
-                        const Icon = type.icon;
+                      {(Object.keys(viewTypeIcons) as ViewType[]).map((id) => {
+                        const Icon = viewTypeIcons[id];
+                        const nameKey = `view${id.charAt(0).toUpperCase() + id.slice(1)}` as any;
                         return (
                           <button
-                            key={type.id}
-                            onClick={() => setAllViews(type.id)}
+                            key={id}
+                            onClick={() => setAllViews(id)}
                             className={`p-2 rounded-md transition-colors ${
-                              preferences.viewMode === type.id
+                              preferences.viewMode === id
                                 ? "bg-orange-500 text-white"
                                 : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
                             }`}
-                            title={`Todos a ${type.name}`}
+                            title={t(nameKey)}
                           >
                             <Icon size={16} />
                           </button>
@@ -174,7 +173,7 @@ const KPIContent = () => {
                       className="flex items-center gap-2 px-3 py-3 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <RotateCcw size={14} />
-                      Limpiar
+                      {t("clean")}
                     </button>
                   </div>
                 </header>
@@ -193,14 +192,12 @@ const KPIContent = () => {
                       />
                       <span>
                         {isFetching
-                          ? "Actualizando datos..."
-                          : `Última actualización: ${new Date(
-                              dataUpdatedAt
-                            ).toLocaleTimeString("es-CL")}`}
+                          ? t("updating")
+                          : t("lastUpdate", { time: new Date(dataUpdatedAt).toLocaleTimeString("es-CL") })}
                       </span>
                     </div>
                     <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium">
-                      Caché: 5 min
+                      {t("cacheLabel")}
                     </span>
                   </div>
                 )}
@@ -216,7 +213,7 @@ const KPIContent = () => {
                           : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                       }`}
                     >
-                      {cat === "all" ? "Todos" : cat}
+                      {cat === "all" ? t("allCategory") : cat}
                     </button>
                   ))}
                 </div>
@@ -269,6 +266,7 @@ const KPIContent = () => {
 };
 
 const KPIPageV4 = () => {
+  const tPage = useTranslations("kpi.page");
   return (
     <Suspense
       fallback={
@@ -276,7 +274,7 @@ const KPIPageV4 = () => {
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500"></div>
             <p className="text-lg font-semibold text-gray-700">
-              Cargando Dashboard KPI...
+              {tPage("loadingDashboard")}
             </p>
           </div>
         </div>

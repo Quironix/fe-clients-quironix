@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FolderTree, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { UseFieldArrayReturn, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { TimePopover } from "../../components/time-popover";
@@ -36,12 +37,12 @@ const daysOfWeek = [
   { value: "D", label: "D" },
 ];
 
-const exclusionOptions = [
-  { id: "cash_documents", label: "Documentos al contado" },
-  { id: "protested_checks", label: "Cheques protestados" },
-  { id: "promissory_notes", label: "Pagarés" },
-  { id: "credit_notes", label: "Notas de crédito" },
-];
+const exclusionOptionIds = [
+  "cash_documents",
+  "protested_checks",
+  "promissory_notes",
+  "credit_notes",
+] as const;
 
 interface SegmentationSectionProps {
   form: UseFormReturn<any>;
@@ -56,6 +57,7 @@ export function SegmentationSection({
   activeSegment,
   setActiveSegment,
 }: SegmentationSectionProps) {
+  const t = useTranslations("collectors.segmentation");
   const { fields, append, remove } = fieldArray;
 
   const addSegment = () => {
@@ -74,9 +76,9 @@ export function SegmentationSection({
   const removeSegment = (index: number) => {
     if (fields.length > 1) {
       remove(index);
-      toast.success("Segmento eliminado");
+      toast.success(t("segmentRemoved"));
     } else {
-      toast.error("Debe haber al menos un segmento");
+      toast.error(t("segmentMinError"));
     }
   };
 
@@ -89,7 +91,7 @@ export function SegmentationSection({
       <div className="grid grid-cols-[99%_4%] items-center gap-2 min-h-[50px] py-3">
         <AccordionTrigger className="flex items-center justify-between h-full">
           <TitleStep
-            title="Segmentación y lógica de envíos"
+            title={t("title")}
             icon={<FolderTree className="w-5 h-5" />}
           />
         </AccordionTrigger>
@@ -107,7 +109,7 @@ export function SegmentationSection({
             <AccordionItem value={`segment-${index}`} className="border-none">
               <div className="flex items-center gap-2 px-4">
                 <AccordionTrigger className="flex-1 py-4 hover:no-underline">
-                  <span className="font-semibold">Segmento {index + 1}</span>
+                  <span className="font-semibold">{t("segment")} {index + 1}</span>
                 </AccordionTrigger>
                 {fields.length > 1 && (
                   <button
@@ -130,7 +132,7 @@ export function SegmentationSection({
                     render={({ field }) => (
                       <FormItem className="w-full">
                         <FormLabel>
-                          Segmento aplicable{" "}
+                          {t("applicableSegment")}{" "}
                           <span className="text-red-500">*</span>
                         </FormLabel>
                         <Select
@@ -139,25 +141,25 @@ export function SegmentationSection({
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Completa" />
+                              <SelectValue placeholder={t("completePlaceholder")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="all">Todas</SelectItem>
+                            <SelectItem value="all">{t("segmentAll")}</SelectItem>
                             <SelectItem value="SEGMENTATION_LOW">
-                              Facturación baja
+                              {t("segmentLowBilling")}
                             </SelectItem>
                             <SelectItem value="SEGMENTATION_MEDIUM">
-                              Facturación media
+                              {t("segmentMedBilling")}
                             </SelectItem>
                             <SelectItem value="SEGMENTATION_HIGH">
-                              Facturación alta
+                              {t("segmentHighBilling")}
                             </SelectItem>
-                            <SelectItem value="DBT_LOW">DBT bajo</SelectItem>
+                            <SelectItem value="DBT_LOW">{t("segmentLowDBT")}</SelectItem>
                             <SelectItem value="DBT_MEDIUM">
-                              DBT medio
+                              {t("segmentMedDBT")}
                             </SelectItem>
-                            <SelectItem value="DBT_HIGH">DBT alto</SelectItem>
+                            <SelectItem value="DBT_HIGH">{t("segmentHighDBT")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -171,7 +173,7 @@ export function SegmentationSection({
                     render={({ field }) => (
                       <FormItem className="w-full">
                         <FormLabel>
-                          Días de atraso mínimo{" "}
+                          {t("minDelayDays")}{" "}
                           <span className="text-red-500">*</span>
                         </FormLabel>
                         <Select
@@ -180,15 +182,15 @@ export function SegmentationSection({
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona" />
+                              <SelectValue placeholder={t("selectPlaceholder")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="0">0 días</SelectItem>
-                            <SelectItem value="15">15 días</SelectItem>
-                            <SelectItem value="30">30 días</SelectItem>
-                            <SelectItem value="60">60 días</SelectItem>
-                            <SelectItem value="90">90 días</SelectItem>
+                            <SelectItem value="0">{t("days0")}</SelectItem>
+                            <SelectItem value="15">{t("days15")}</SelectItem>
+                            <SelectItem value="30">{t("days30")}</SelectItem>
+                            <SelectItem value="60">{t("days60")}</SelectItem>
+                            <SelectItem value="90">{t("days90")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -201,47 +203,54 @@ export function SegmentationSection({
                     name={`segmentations.${index}.exclusions`}
                     render={() => (
                       <FormItem>
-                        <FormLabel>Exclusiones</FormLabel>
+                        <FormLabel>{t("exclusions")}</FormLabel>
                         <div className="space-y-2">
-                          {exclusionOptions.map((option) => (
+                          {exclusionOptionIds.map((optionId) => {
+                            const labelMap: Record<string, string> = {
+                              cash_documents: t("cashDocuments"),
+                              protested_checks: t("protestedChecks"),
+                              promissory_notes: t("promissoryNotes"),
+                              credit_notes: t("creditNotes"),
+                            };
+                            return (
                             <FormField
-                              key={option.id}
+                              key={optionId}
                               control={form.control}
                               name={`segmentations.${index}.exclusions`}
                               render={({ field }) => {
                                 return (
                                   <FormItem
-                                    key={option.id}
+                                    key={optionId}
                                     className="flex flex-row items-start space-x-1 space-y-0"
                                   >
                                     <FormControl>
                                       <Checkbox
                                         checked={field.value?.includes(
-                                          option.id
+                                          optionId
                                         )}
                                         onCheckedChange={(checked) => {
                                           return checked
                                             ? field.onChange([
                                                 ...(field.value || []),
-                                                option.id,
+                                                optionId,
                                               ])
                                             : field.onChange(
                                                 field.value?.filter(
                                                   (value: string) =>
-                                                    value !== option.id
+                                                    value !== optionId
                                                 )
                                               );
                                         }}
                                       />
                                     </FormControl>
                                     <FormLabel className="font-normal">
-                                      {option.label}
+                                      {labelMap[optionId]}
                                     </FormLabel>
                                   </FormItem>
                                 );
                               }}
                             />
-                          ))}
+                          );})}
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -254,7 +263,7 @@ export function SegmentationSection({
                     render={({ field }) => (
                       <FormItem className="w-full">
                         <FormLabel>
-                          Frecuencia <span className="text-red-500">*</span>
+                          {t("frequency")} <span className="text-red-500">*</span>
                         </FormLabel>
                         <Select
                           onValueChange={(value) => {
@@ -268,14 +277,14 @@ export function SegmentationSection({
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona" />
+                              <SelectValue placeholder={t("selectPlaceholder")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="DAILY">Diaria</SelectItem>
-                            <SelectItem value="SEVEN_DAYS">Semanal</SelectItem>
-                            <SelectItem value="BIWEEKLY">Quincenal</SelectItem>
-                            <SelectItem value="MONTHLY">Mensual</SelectItem>
+                            <SelectItem value="DAILY">{t("daily")}</SelectItem>
+                            <SelectItem value="SEVEN_DAYS">{t("weekly")}</SelectItem>
+                            <SelectItem value="BIWEEKLY">{t("biweekly")}</SelectItem>
+                            <SelectItem value="MONTHLY">{t("monthly")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -289,8 +298,8 @@ export function SegmentationSection({
                     render={({ field }) => (
                       <TimePopover
                         field={field}
-                        label="Horario"
-                        placeholder="Selecciona"
+                        label={t("schedule")}
+                        placeholder={t("selectPlaceholder")}
                         required={true}
                         startHour={8}
                         endHour={22}
@@ -309,10 +318,10 @@ export function SegmentationSection({
                     return (
                       <FormItem>
                         <FormLabel>
-                          Días de envío <span className="text-red-500">*</span>
+                          {t("sendingDays")} <span className="text-red-500">*</span>
                           {!isDaily && (
                             <span className="text-xs text-gray-500 ml-2">
-                              (Solo se puede seleccionar un día)
+                              {t("singleDayNote")}
                             </span>
                           )}
                         </FormLabel>
@@ -387,7 +396,7 @@ export function SegmentationSection({
             className="bg-white border-3 border-orange-300 hover:bg-orange-50 text-orange-300"
           >
             <Plus className="h-4 w-4 mr-2" />
-            <span className="text-black">Agregar segmento</span>
+            <span className="text-black">{t("addSegment")}</span>
           </Button>
         </div>
       </AccordionContent>

@@ -4,6 +4,7 @@ import Loader from "@/components/Loader";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Cog } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ import type { CollectorResponse } from "../../services/types";
 const PageEditCollector = () => {
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
+  const t = useTranslations("collectors.editPage");
   const params = useParams();
   const collectorId = params.id as string;
 
@@ -35,7 +37,7 @@ const PageEditCollector = () => {
         setCollector(data);
       } catch (error) {
         console.error("Error fetching collector:", error);
-        toast.error("Error al cargar el collector");
+        toast.error(t("loadError"));
       } finally {
         setIsLoading(false);
       }
@@ -67,7 +69,7 @@ const PageEditCollector = () => {
         </Header>
         <Main>
           <div className="flex justify-center items-center h-96">
-            <p className="text-gray-500">No se encontró el collector</p>
+            <p className="text-gray-500">{t("notFound")}</p>
           </div>
         </Main>
       </>
@@ -81,10 +83,10 @@ const PageEditCollector = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Editar collector"
-          description="Aquí puedes editar el collector."
+          title={t("title")}
+          description={t("description")}
           icon={<Cog color="white" />}
-          subDescription="Collectors"
+          subDescription={t("subDescription")}
         />
         <CollectorForm
           mode="edit"

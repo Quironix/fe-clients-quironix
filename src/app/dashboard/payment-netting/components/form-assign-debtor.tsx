@@ -21,6 +21,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 import DebtorsSelectInline from "../../components/debtors-select-inline";
@@ -37,6 +38,8 @@ const FormAssignDebtor = ({
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const router = useRouter();
+  const tAssign = useTranslations("paymentNetting.assignForm");
+  const tToast = useTranslations("paymentNetting.toast");
   const formSchema = z.object({
     debtor_id: z.string().min(1, "El código deudor es requerido"),
   });
@@ -83,11 +86,11 @@ const FormAssignDebtor = ({
 
         router.push(`/dashboard/payment-netting/generate-payment?debtorId=${data.debtor_id}&movements=${movementIds}`);
       } else {
-        toast.error(response.message || "Error al asignar el deudor");
+        toast.error(response.message || tToast("assignError"));
       }
     } catch (error) {
       console.error("Error al asignar el deudor:", error);
-      toast.error("Error al asignar el deudor");
+      toast.error(tToast("assignError"));
     } finally {
       setIsLoading(false);
     }
@@ -124,10 +127,10 @@ const FormAssignDebtor = ({
         <div className="space-y-4">
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm font-medium text-blue-800">
-              Movimientos seleccionados: {selectedMovements.length}
+              {tAssign("movementsSelected", { count: selectedMovements.length })}
             </p>
             <p className="text-sm text-blue-600">
-              Total: $ {new Intl.NumberFormat("es-ES").format(totalAmount)}
+              {tAssign("total")}: $ {new Intl.NumberFormat("es-ES").format(totalAmount)}
             </p>
           </div>
 
@@ -136,12 +139,12 @@ const FormAssignDebtor = ({
               <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Importe</TableHead>
-                  <TableHead>Banco</TableHead>
-                  <TableHead>Nº de cuenta</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Descripción</TableHead>
+                  <TableHead>{tAssign("status")}</TableHead>
+                  <TableHead>{tAssign("amount")}</TableHead>
+                  <TableHead>{tAssign("bank")}</TableHead>
+                  <TableHead>{tAssign("accountNumber")}</TableHead>
+                  <TableHead>{tAssign("date")}</TableHead>
+                  <TableHead>{tAssign("description")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -183,7 +186,7 @@ const FormAssignDebtor = ({
                           <Eye className="h-4 w-4 text-blue-700" />
                         </PopoverTrigger>
                         <PopoverContent className="text-xs max-w-[400px] max-h-[300px] overflow-y-auto">
-                          {movement.description || "Sin descripción"}
+                          {movement.description || tAssign("noDescription")}
                         </PopoverContent>
                       </Popover>
                     </TableCell>
@@ -199,7 +202,7 @@ const FormAssignDebtor = ({
           control={form.control}
           name="debtor_id"
           render={({ field }) => (
-            <DebtorsSelectInline field={field} title="Deudor" required initialDebtor={existingDebtor} />
+            <DebtorsSelectInline field={field} title={tAssign("debtor")} required initialDebtor={existingDebtor} />
           )}
         />
         <div className="flex items-center justify-center border-t border-orange-500 pt-4 w-full">
@@ -211,10 +214,10 @@ const FormAssignDebtor = ({
             {isLoading ? (
               <>
                 <Loader2 className="animate-spin" />
-                <span className="text-white">Guardando...</span>
+                <span className="text-white">{tAssign("saving")}</span>
               </>
             ) : (
-              <span className="text-white">Guardar</span>
+              <span className="text-white">{tAssign("save")}</span>
             )}
           </Button>
         </div>

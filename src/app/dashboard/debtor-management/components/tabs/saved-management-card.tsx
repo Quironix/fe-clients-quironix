@@ -39,6 +39,7 @@ import {
   ThermometerSnowflake,
   Trash2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
 interface SavedManagementCardProps {
@@ -52,6 +53,8 @@ export const SavedManagementCard = ({
   index,
   onDelete,
 }: SavedManagementCardProps) => {
+  const t = useTranslations("debtorManagement.savedCard");
+
   const selectedConfig = useMemo(() => {
     if (
       management.formData.managementType &&
@@ -133,7 +136,6 @@ export const SavedManagementCard = ({
     const fields = selectedConfig.fields;
     if (fields.length === 0) return null;
 
-    // Caso especial: Litigios
     if (
       selectedConfig.executive_comment === "DOCUMENT_IN_LITIGATION" &&
       management.formData.caseData?.litigationData?.litigations
@@ -143,7 +145,7 @@ export const SavedManagementCard = ({
           <div className="flex items-center gap-2 mb-3">
             <BookUser className="w-4 h-4 text-gray-700" />
             <h3 className="font-semibold text-sm text-gray-700">
-              Litigios (
+              {t("litigationsTitle")} (
               {management.formData.caseData.litigationData.litigations.length})
             </h3>
           </div>
@@ -161,27 +163,27 @@ export const SavedManagementCard = ({
                     className="border border-gray-200 rounded p-3"
                   >
                     <p className="font-semibold text-sm mb-2">
-                      Litigio {index + 1}
+                      {t("litigationItem", { index: index + 1 })}
                     </p>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
-                        <span className="text-gray-500">Facturas:</span>{" "}
+                        <span className="text-gray-500">{t("invoicesLabel")}</span>{" "}
                         <span className="font-medium">
                           {litigation.selectedInvoiceIds?.length || 0}
                         </span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Monto:</span>{" "}
+                        <span className="text-gray-500">{t("amountLabel")}</span>{" "}
                         <span className="font-medium">
                           {formatCurrency(litigation.litigationAmount || 0)}
                         </span>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-gray-500">Motivo:</span>{" "}
+                        <span className="text-gray-500">{t("reasonLabel")}</span>{" "}
                         <span className="font-medium">{reasonLabel}</span>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-gray-500">Submotivo:</span>{" "}
+                        <span className="text-gray-500">{t("subreasonLabel")}</span>{" "}
                         <span className="font-medium">{subreasonLabel}</span>
                       </div>
                     </div>
@@ -194,7 +196,6 @@ export const SavedManagementCard = ({
       );
     }
 
-    // Caso especial: Plan de Pago
     if (
       selectedConfig.executive_comment === "PAYMENT_PLAN_APPROVAL_REQUEST" &&
       management.formData.caseData?.paymentPlanData
@@ -270,7 +271,7 @@ export const SavedManagementCard = ({
           <div className="flex items-center gap-2 mb-4">
             <DollarSign className="w-5 h-5 text-blue-600" />
             <h3 className="font-semibold text-base text-gray-800">
-              Resumen del Plan de Pago
+              {t("paymentPlanSummary")}
             </h3>
           </div>
 
@@ -278,42 +279,42 @@ export const SavedManagementCard = ({
             <div className="space-y-4">
               <div className="bg-blue-50 rounded-lg p-4">
                 <h4 className="text-sm font-semibold text-blue-900 mb-3">
-                  Configuración
+                  {t("configuration")}
                 </h4>
                 <div className="space-y-3">
                   <IconDescription
                     icon={<DollarSign className="w-5 h-5 text-blue-600" />}
-                    description="Colocación total"
+                    description={t("totalPlacement")}
                     value={formatCurrency(totalAmount)}
                   />
                   <IconDescription
                     icon={<DollarSign className="w-5 h-5 text-blue-600" />}
-                    description={`Pago contado (${downPaymentPercentage}%)`}
+                    description={t("downPayment", { percentage: downPaymentPercentage })}
                     value={formatCurrency(downPayment)}
                   />
                   <IconDescription
                     icon={<FileText className="w-5 h-5 text-blue-600" />}
-                    description="Número de cuotas"
+                    description={t("numberOfInstallments")}
                     value={planData.numberOfInstallments?.toString() || "0"}
                   />
                   <IconDescription
                     icon={<FileText className="w-5 h-5 text-blue-600" />}
-                    description="Tasa de interés anual"
+                    description={t("annualInterestRate")}
                     value={`${planData.annualInterestRate || 0}%`}
                   />
                   <IconDescription
                     icon={<Clock className="w-5 h-5 text-blue-600" />}
-                    description="Frecuencia de pago"
+                    description={t("paymentFrequency")}
                     value={frequencyLabel}
                   />
                   <IconDescription
                     icon={<FileText className="w-5 h-5 text-blue-600" />}
-                    description="Forma de pago"
+                    description={t("paymentMethod")}
                     value={methodLabel}
                   />
                   <IconDescription
                     icon={<Calendar className="w-5 h-5 text-blue-600" />}
-                    description="Fecha de inicio"
+                    description={t("startDate")}
                     value={formatDate(planData.startDate)}
                   />
                 </div>
@@ -324,12 +325,12 @@ export const SavedManagementCard = ({
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border-2 border-blue-200">
                 <h4 className="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2">
                   <DollarSign className="w-5 h-5" />
-                  Resumen Financiero
+                  {t("financialSummary")}
                 </h4>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center pb-3 border-b border-blue-300">
                     <span className="text-sm text-gray-700">
-                      Monto a financiar:
+                      {t("amountToFinance")}
                     </span>
                     <span className="text-lg font-bold text-gray-900">
                       {formatCurrency(amountToFinance)}
@@ -338,7 +339,7 @@ export const SavedManagementCard = ({
 
                   <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-gray-700">
-                      Cuota {frequencyLabel.toLowerCase()}:
+                      {t("installment", { frequency: frequencyLabel.toLowerCase() })}
                     </span>
                     <span className="text-2xl font-bold text-blue-600">
                       {formatCurrency(installment)}
@@ -347,7 +348,7 @@ export const SavedManagementCard = ({
 
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-700">
-                      Total intereses:
+                      {t("totalInterest")}
                     </span>
                     <span className="text-base font-semibold text-gray-900">
                       {formatCurrency(totalInterest)}
@@ -356,7 +357,7 @@ export const SavedManagementCard = ({
 
                   <div className="flex justify-between items-center pt-3 border-t-2 border-blue-400 bg-blue-200/50 -mx-6 px-6 py-3 -mb-6 mt-4 rounded-b-lg">
                     <span className="text-sm font-bold text-gray-800">
-                      Total a pagar:
+                      {t("totalToPay")}
                     </span>
                     <span className="text-2xl font-bold text-blue-900">
                       {formatCurrency(totalToPay)}
@@ -370,7 +371,6 @@ export const SavedManagementCard = ({
       );
     }
 
-    // Caso especial: Normalización de Litigios
     if (
       selectedConfig.executive_comment === "LITIGATION_NORMALIZATION" &&
       management.formData.caseData?.litigationData
@@ -381,7 +381,6 @@ export const SavedManagementCard = ({
         (r: any) => r.code === normalizationData.reason
       );
 
-      // Obtener facturas seleccionadas para mostrar detalles
       const selectedInvoicesForNormalization =
         management.selectedInvoices.filter((inv) =>
           normalizationData.selectedInvoiceIds?.includes(inv.id)
@@ -392,33 +391,32 @@ export const SavedManagementCard = ({
           <div className="flex items-center gap-2 mb-3">
             <BookUser className="w-4 h-4 text-gray-700" />
             <h3 className="font-semibold text-sm text-gray-700">
-              Normalización de Litigios
+              {t("litigationNormalization")}
             </h3>
           </div>
           <div className="space-y-3">
-            {/* Resumen General */}
             <div className="border border-gray-200 rounded p-3 bg-blue-50">
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-500">Litigios normalizados:</span>{" "}
+                  <span className="text-gray-500">{t("normalizedLitigations")}</span>{" "}
                   <span className="font-bold text-blue-700">
                     {normalizationData.litigationIds?.length || 0}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Monto total litigios:</span>{" "}
+                  <span className="text-gray-500">{t("totalLitigationAmount")}</span>{" "}
                   <span className="font-bold text-blue-700">
                     {formatCurrency(normalizationData.totalAmount || 0)}
                   </span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-gray-500">Razón de normalización:</span>{" "}
+                  <span className="text-gray-500">{t("normalizationReason")}</span>{" "}
                   <span className="font-medium">
                     {normalizationReason?.label || normalizationData.reason}
                   </span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-gray-500">Comentario:</span>{" "}
+                  <span className="text-gray-500">{t("commentLabel")}</span>{" "}
                   <span className="font-medium">
                     {normalizationData.comment || "-"}
                   </span>
@@ -426,28 +424,26 @@ export const SavedManagementCard = ({
               </div>
             </div>
 
-            {/* Detalle de Facturas - Usar misma tabla completa */}
             {selectedInvoicesForNormalization.length > 0 && (
               <div className="border border-gray-200 rounded p-3">
                 <div className="flex items-center gap-2 mb-3">
                   <FileText className="w-4 h-4 text-gray-700" />
                   <h3 className="font-semibold text-sm text-gray-700">
-                    Facturas seleccionadas (
-                    {selectedInvoicesForNormalization.length})
+                    {t("selectedInvoices", { count: selectedInvoicesForNormalization.length })}
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-xs">Nº Doc.</TableHead>
-                        <TableHead className="text-xs">Tipo</TableHead>
-                        <TableHead className="text-xs">Emisión</TableHead>
-                        <TableHead className="text-xs">Vto.</TableHead>
-                        <TableHead className="text-xs">Monto</TableHead>
-                        <TableHead className="text-xs">Saldo</TableHead>
-                        <TableHead className="text-xs">Atraso</TableHead>
-                        <TableHead className="text-xs">Fase</TableHead>
+                        <TableHead className="text-xs">{t("docNumber")}</TableHead>
+                        <TableHead className="text-xs">{t("type")}</TableHead>
+                        <TableHead className="text-xs">{t("issueDate")}</TableHead>
+                        <TableHead className="text-xs">{t("dueDate")}</TableHead>
+                        <TableHead className="text-xs">{t("amount")}</TableHead>
+                        <TableHead className="text-xs">{t("balance")}</TableHead>
+                        <TableHead className="text-xs">{t("delay")}</TableHead>
+                        <TableHead className="text-xs">{t("phase")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -472,7 +468,7 @@ export const SavedManagementCard = ({
                             {formatCurrency(invoice.balance)}
                           </TableCell>
                           <TableCell className="text-xs">
-                            {calculateDelay(invoice.due_date)} días
+                            {calculateDelay(invoice.due_date)} {t("days")}
                           </TableCell>
                           <TableCell className="text-xs">
                             {Array.isArray(invoice.phases) &&
@@ -496,7 +492,6 @@ export const SavedManagementCard = ({
       );
     }
 
-    // Campos normales
     return (
       <div className="bg-white rounded-lg p-4 border border-gray-200">
         <div className="flex items-center gap-2 mb-3">
@@ -509,12 +504,10 @@ export const SavedManagementCard = ({
           {fields.map((field: any) => {
             const value = (management.formData.caseData as any)[field.name];
 
-            // Skip campos de tipo component (como litigationData)
             if (field.type === "component") {
               return null;
             }
 
-            // Skip if value is an object (defensive check)
             if (
               value &&
               typeof value === "object" &&
@@ -568,17 +561,11 @@ export const SavedManagementCard = ({
           <AccordionTrigger className="flex-1 hover:no-underline px-4">
             <div className="flex items-center gap-3">
               <h3 className="text-base font-semibold text-blue-600">
-                Gestión -{" "}
+                {t("managementLabel")} -{" "}
                 {getDebtorCommentLabel(management.formData.debtorComment)}
                 {" / "}
                 {getExecutiveCommentLabel(management.formData.executiveComment)}
               </h3>
-
-              {/* {management.id && (
-                <span className="text-xs text-gray-500 font-mono">
-                  ID: {management.id.slice(0, 8)}...
-                </span>
-              )} */}
             </div>
           </AccordionTrigger>
           <Button
@@ -589,7 +576,7 @@ export const SavedManagementCard = ({
               e.stopPropagation();
               onDelete(management.id);
             }}
-            title="Eliminar gestión de la lista"
+            title={t("deleteTitle")}
           >
             <Trash2 className="h-4 w-4 text-white" />
           </Button>
@@ -597,7 +584,6 @@ export const SavedManagementCard = ({
 
         <AccordionContent className="px-4 pb-4">
           <div className="space-y-4">
-            {/* Facturas seleccionadas - Ocultar para normalización de litigios */}
             {management.selectedInvoices.length > 0 &&
               selectedConfig?.executive_comment !==
                 "LITIGATION_NORMALIZATION" && (
@@ -605,22 +591,21 @@ export const SavedManagementCard = ({
                   <div className="flex items-center gap-2 mb-3">
                     <FileText className="w-4 h-4 text-gray-700" />
                     <h3 className="font-semibold text-sm text-gray-700">
-                      Facturas seleccionadas (
-                      {management.selectedInvoices.length})
+                      {t("selectedInvoices", { count: management.selectedInvoices.length })}
                     </h3>
                   </div>
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-xs">Nº Doc.</TableHead>
-                          <TableHead className="text-xs">Tipo</TableHead>
-                          <TableHead className="text-xs">Emisión</TableHead>
-                          <TableHead className="text-xs">Vto.</TableHead>
-                          <TableHead className="text-xs">Monto</TableHead>
-                          <TableHead className="text-xs">Saldo</TableHead>
-                          <TableHead className="text-xs">Atraso</TableHead>
-                          <TableHead className="text-xs">Fase</TableHead>
+                          <TableHead className="text-xs">{t("docNumber")}</TableHead>
+                          <TableHead className="text-xs">{t("type")}</TableHead>
+                          <TableHead className="text-xs">{t("issueDate")}</TableHead>
+                          <TableHead className="text-xs">{t("dueDate")}</TableHead>
+                          <TableHead className="text-xs">{t("amount")}</TableHead>
+                          <TableHead className="text-xs">{t("balance")}</TableHead>
+                          <TableHead className="text-xs">{t("delay")}</TableHead>
+                          <TableHead className="text-xs">{t("phase")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -645,7 +630,7 @@ export const SavedManagementCard = ({
                               {formatCurrency(invoice.balance)}
                             </TableCell>
                             <TableCell className="text-xs">
-                              {calculateDelay(invoice.due_date)} días
+                              {calculateDelay(invoice.due_date)} {t("days")}
                             </TableCell>
                             <TableCell className="text-xs">
                               {Array.isArray(invoice.phases) &&
@@ -665,7 +650,6 @@ export const SavedManagementCard = ({
                 </div>
               )}
 
-            {/* Tipo de Gestión */}
             {selectedConfig && (
               <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-col gap-3">
                 <div className="flex flex-col gap-5">
@@ -673,23 +657,23 @@ export const SavedManagementCard = ({
                     <div className="flex items-center gap-2 mb-3">
                       <CogIcon className="w-4 h-4 text-gray-700" />
                       <h3 className="font-semibold text-sm text-gray-700">
-                        Gestión
+                        {t("managementLabel")}
                       </h3>
                     </div>
                     <div className="grid grid-cols-3 gap-5">
                       <IconDescription
                         icon={<FileText className="w-6 h-6 text-blue-600" />}
-                        description="Tipo de gestión"
-                        value="Llamada saliente"
+                        description={t("managementType")}
+                        value={t("outboundCall")}
                       />
                       <IconDescription
                         icon={<FileText className="w-6 h-6 text-blue-600" />}
-                        description="Comentario del deudor"
+                        description={t("debtorCommentLabel")}
                         value={selectedConfig.description}
                       />
                       <IconDescription
                         icon={<FileText className="w-6 h-6 text-blue-600" />}
-                        description="Comentario del ejecutivo"
+                        description={t("executiveCommentLabel")}
                         value={selectedConfig.label}
                       />
                     </div>
@@ -697,7 +681,7 @@ export const SavedManagementCard = ({
                       <div className="flex items-center gap-2">
                         <MessageCircle className="w-4 h-4 text-gray-700" />
                         <h3 className="font-semibold text-sm text-gray-700">
-                          Observación
+                          {t("observation")}
                         </h3>
                       </div>
                       <p className="text-xs italic text-gray-600">
@@ -714,23 +698,23 @@ export const SavedManagementCard = ({
                     <div className="flex items-center gap-2 mb-3">
                       <History className="w-4 h-4 text-gray-700" />
                       <h3 className="font-semibold text-sm text-gray-700">
-                        Próxima gestión
+                        {t("nextManagement")}
                       </h3>
                     </div>
                     <div className="grid grid-cols-3 gap-5">
                       <IconDescription
                         icon={<Calendar className="w-6 h-6 text-blue-600" />}
-                        description="Fecha"
+                        description={t("dateLabel")}
                         value={formatDate(
                           management.formData.nextManagementDate
                         )}
                       />
                       <IconDescription
                         icon={<Clock1 className="w-6 h-6 text-blue-600" />}
-                        description="Hora"
+                        description={t("timeLabel")}
                         value={
                           formatTime(management.formData.nextManagementTime) +
-                          " hrs"
+                          " " + t("hours")
                         }
                       />
                     </div>
@@ -739,16 +723,14 @@ export const SavedManagementCard = ({
               </div>
             )}
 
-            {/* Datos del Caso (Dinámico) */}
             {renderCaseDataFields()}
 
-            {/* Comentario adicional */}
             {management.formData.comment && (
               <div className="bg-white rounded-lg p-4 border border-gray-200">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageCircle className="w-4 h-4 text-gray-700" />
                   <h4 className="text-sm font-semibold text-gray-700">
-                    Comentario adicional
+                    {t("additionalComment")}
                   </h4>
                 </div>
                 <p className="text-sm text-gray-900">

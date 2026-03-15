@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { useProfileContext } from "@/context/ProfileContext";
 import { DollarSign, Send } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createPaymentPlan } from "../services";
@@ -35,41 +36,39 @@ export default function FinancialSummary({
   const router = useRouter();
   const { data: session } = useSession();
   const { profile } = useProfileContext();
-  // Función para obtener el factor de frecuencia (períodos por año)
+  const t = useTranslations("paymentPlans.financialSummary");
+
   const getFrequencyFactor = (frequency: string) => {
     switch (frequency) {
       case "weekly":
-        return 52; // 52 semanas por año
+        return 52;
       case "monthly":
-        return 12; // 12 meses por año
+        return 12;
       case "quarterly":
-        return 4; // 4 trimestres por año
+        return 4;
       case "semiannual":
-        return 2; // 2 semestres por año
+        return 2;
       default:
-        return 12; // Por defecto mensual
+        return 12;
     }
   };
 
-  // Función para obtener el nombre de la frecuencia
   const getFrequencyName = (frequency: string) => {
     switch (frequency) {
       case "weekly":
-        return "semanal";
+        return t("frequencyWeekly");
       case "monthly":
-        return "mensual";
+        return t("frequencyMonthly");
       case "quarterly":
-        return "trimestral";
+        return t("frequencyQuarterly");
       case "semiannual":
-        return "semestral";
+        return t("frequencySemiannual");
       default:
-        return "mensual";
+        return t("frequencyMonthly");
     }
   };
 
-  // Cálculos financieros profesionales
   const calculateFinancialMetrics = () => {
-    // Validación de datos básicos
     if (!paymentConfig) {
       return {
         totalInvoices: 0,
@@ -82,51 +81,40 @@ export default function FinancialSummary({
         ctc: 0,
         effectiveRate: 0,
         paymentFrequency: "monthly",
-        frequencyName: "mensual",
+        frequencyName: t("frequencyMonthly"),
       };
     }
 
-    // 1. Valores base del financiamiento
     const totalInvoices = selectedInvoices.reduce(
       (sum, invoice) => sum + invoice.amount,
       0
     );
     const downPayment = paymentConfig.downPayment || 0;
-    const principalAmount = totalInvoices - downPayment; // Capital a financiar
-
-    // 2. Parámetros del préstamo
+    const principalAmount = totalInvoices - downPayment;
     const numberOfInstallments = paymentConfig.numberOfInstallments || 1;
     const annualInterestRate = paymentConfig.annualInterestRate || 0;
     const paymentFrequency = paymentConfig.paymentFrequency || "monthly";
     const frequencyName = getFrequencyName(paymentFrequency);
-
-    // 3. Cálculo de tasas
     const frequencyFactor = getFrequencyFactor(paymentFrequency);
-    const nominalPeriodRate = annualInterestRate / 100 / frequencyFactor; // Tasa nominal por período
+    const nominalPeriodRate = annualInterestRate / 100 / frequencyFactor;
 
-    // 4. Cálculo de cuota usando fórmula PMT (Payment)
     let installmentAmount = 0;
 
     if (principalAmount <= 0) {
-      // No hay nada que financiar
       installmentAmount = 0;
     } else if (nominalPeriodRate === 0) {
-      // Sin intereses (tasa 0%)
       installmentAmount = principalAmount / numberOfInstallments;
     } else {
-      // Con intereses - Fórmula PMT estándar bancaria
       const ratePower = Math.pow(1 + nominalPeriodRate, numberOfInstallments);
       installmentAmount =
         (principalAmount * (nominalPeriodRate * ratePower)) / (ratePower - 1);
     }
 
-    // 5. Cálculos derivados
     const totalInstallments = installmentAmount * numberOfInstallments;
-    const totalToPay = totalInstallments; // Solo las cuotas, el pie ya está pagado
-    const totalInterest = totalInstallments - principalAmount; // Intereses totales pagados
-    const ctc = totalInterest; // Costo Total del Crédito = solo los intereses
+    const totalToPay = totalInstallments;
+    const totalInterest = totalInstallments - principalAmount;
+    const ctc = totalInterest;
 
-    // 6. Tasa efectiva anual (TEA)
     let effectiveRate = 0;
     if (nominalPeriodRate > 0) {
       effectiveRate =
@@ -145,11 +133,10 @@ export default function FinancialSummary({
       effectiveRate,
       paymentFrequency,
       frequencyName,
-      // Métricas adicionales
       loanToValue:
-        totalInvoices > 0 ? (principalAmount / totalInvoices) * 100 : 0, // LTV%
+        totalInvoices > 0 ? (principalAmount / totalInvoices) * 100 : 0,
       downPaymentRatio:
-        totalInvoices > 0 ? (downPayment / totalInvoices) * 100 : 0, // % pie
+        totalInvoices > 0 ? (downPayment / totalInvoices) * 100 : 0,
     };
   };
 
@@ -167,7 +154,6 @@ export default function FinancialSummary({
     return `${value.toFixed(decimals)}%`;
   };
 
-  // Función para calcular fecha de fin de pagos
   const calculatePaymentEndDate = (
     startDate: Date,
     numberOfInstallments: number,
@@ -195,22 +181,17 @@ export default function FinancialSummary({
     return endDate;
   };
 
-  // Función para manejar el envío del plan de pago
   const handleSubmit = async () => {
-    // Validar que tenemos todos los datos necesarios
     if (!selectedDebtor?.id || !paymentConfig?.startDate) {
-      console.error("Faltan datos requeridos para crear el plan de pago");
       return;
     }
 
-    // Calcular fecha de fin de pagos
     const paymentEndDate = calculatePaymentEndDate(
       paymentConfig.startDate,
       metrics.numberOfInstallments,
       metrics.paymentFrequency
     );
 
-    // Preparar el payload según la estructura del API
     const planData: CreatePaymentPlanRequest = {
       debtor_id: selectedDebtor.id,
       total_debt: Math.round(metrics.totalInvoices),
@@ -219,7 +200,7 @@ export default function FinancialSummary({
       payment_end_date: paymentEndDate.toISOString(),
       invoice_ids: selectedInvoices.map((invoice) => invoice.id),
       debt_concept:
-        paymentConfig.comments || "Plan de pago para facturas seleccionadas",
+        paymentConfig.comments || t("defaultConcept"),
       total_plan_amount: Math.round(metrics.totalToPay),
       initial_payment: Math.round(metrics.downPayment),
       number_of_installments: metrics.numberOfInstallments,
@@ -236,16 +217,15 @@ export default function FinancialSummary({
         planData
       );
       if (response.success) {
-        toast.success("Plan de pago creado correctamente");
-        // Llamar a la función de reset para limpiar las métricas
+        toast.success(t("createSuccess"));
         if (onReset) {
           onReset();
         }
       } else {
-        toast.error("Error al crear el plan de pago");
+        toast.error(t("createError"));
       }
     } catch (error) {
-      console.error("Error al crear el plan de pago:", error);
+      console.error("Error creating payment plan:", error);
     } finally {
       router.push("/dashboard/payment-plans");
     }
@@ -258,13 +238,13 @@ export default function FinancialSummary({
           <CardHeader>
             <div className="flex items-center gap-3">
               <DollarSign className="h-5 w-5 text-blue-600" />
-              <CardTitle className="text-lg">Resumen financiero</CardTitle>
+              <CardTitle className="text-lg">{t("title")}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8">
               <p className="text-sm text-gray-500">
-                Selecciona un deudor para ver el resumen financiero
+                {t("selectDebtorMessage")}
               </p>
             </div>
           </CardContent>
@@ -274,7 +254,7 @@ export default function FinancialSummary({
           className="w-full bg-gray-400 hover:bg-gray-500 text-white"
           disabled
         >
-          Enviar plan de pago
+          {t("submitPlan")}
         </Button>
       </div>
     );
@@ -286,15 +266,14 @@ export default function FinancialSummary({
         <CardHeader>
           <div className="flex items-center gap-3">
             <DollarSign className="h-5 w-5 text-blue-600" />
-            <CardTitle className="text-lg">Resumen financiero</CardTitle>
+            <CardTitle className="text-lg">{t("title")}</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Cálculos Financieros */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-600 pl-5">
-                Colocación total:
+                {t("totalPlacement")}
               </span>
               <span className="text-sm font-semibold pr-5">
                 {formatCurrency(metrics.totalInvoices)}
@@ -303,7 +282,7 @@ export default function FinancialSummary({
 
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-600 pl-5">
-                Pago contado ({formatPercentage(metrics.downPaymentRatio, 1)}):
+                {t("cashPayment", { percentage: formatPercentage(metrics.downPaymentRatio, 1) })}
               </span>
               <span className="text-sm font-semibold pr-5">
                 {formatCurrency(metrics.downPayment)}
@@ -312,7 +291,7 @@ export default function FinancialSummary({
 
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-600 pl-5">
-                Monto a financiar:
+                {t("financingAmount")}
               </span>
               <span className="text-sm font-semibold pr-5">
                 {formatCurrency(metrics.principalAmount)}
@@ -323,7 +302,7 @@ export default function FinancialSummary({
 
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-600 pl-5">
-                Cuota {metrics.frequencyName}:
+                {t("installment", { frequency: metrics.frequencyName })}
               </span>
               <span className="text-lg font-bold pr-5">
                 {formatCurrency(metrics.installmentAmount)}
@@ -332,7 +311,7 @@ export default function FinancialSummary({
 
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-600 pl-5">
-                Total intereses:
+                {t("totalInterest")}
               </span>
               <span className="text-sm font-semibold pr-5">
                 {formatCurrency(metrics.totalInterest)}
@@ -341,7 +320,7 @@ export default function FinancialSummary({
 
             <div className="flex justify-between items-center bg-blue-100 py-2 px-5 rounded-md">
               <span className="text-sm font-medium text-gray-600">
-                Total a pagar:
+                {t("totalToPay")}
               </span>
               <span className="text-lg font-bold">
                 {formatCurrency(metrics.totalToPay)}
@@ -362,7 +341,7 @@ export default function FinancialSummary({
         onClick={handleSubmit}
       >
         <Send className="h-5 w-5" />
-        Generar plan de pago
+        {t("generatePlan")}
       </Button>
     </div>
   );

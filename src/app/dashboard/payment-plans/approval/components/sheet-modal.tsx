@@ -68,6 +68,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -96,7 +97,7 @@ const paymentPlanSchema = z
     // Facturas seleccionadas
     selectedInvoices: z.array(z.string()).optional(),
 
-    // Configuración del plan de pago
+    // {tPending("paymentPlanConfig")}
     totalAmount: z.number().optional(),
     initialPayment: z
       .number()
@@ -144,6 +145,9 @@ type PaymentPlanForm = z.infer<typeof paymentPlanSchema>;
 const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
+  const t = useTranslations("paymentPlans.sheetModal");
+  const tPending = useTranslations("paymentPlans.pendingModal");
+  const tForm = useTranslations("paymentPlans.approvalForm.formModify");
   const [debtorExpanded, setDebtorExpanded] = useState(false);
   const [paymentPlanExpanded, setPaymentPlanExpanded] = useState(true);
   const [objectedExpanded, setObjectedExpanded] = useState(
@@ -295,9 +299,9 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
           );
 
           if (responseApprove.success) {
-            toast.success("Plan de pago aprobado correctamente");
+            toast.success(t("approveSuccess"));
           } else {
-            toast.error("Error al aprobar el plan de pago");
+            toast.error(t("approveError"));
           }
         }
         if (data.type === "reject") {
@@ -311,9 +315,9 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
           );
 
           if (responseReject.success) {
-            toast.success("Plan de pago rechazado correctamente");
+            toast.success(t("rejectSuccess"));
           } else {
-            toast.error("Error al rechazar el plan de pago");
+            toast.error(t("rejectError"));
           }
         }
 
@@ -334,15 +338,15 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
   const getFrequencyName = (frequency: string) => {
     switch (frequency) {
       case "weekly":
-        return "semanal";
+        return t("frequencyWeekly");
       case "monthly":
-        return "mensual";
+        return t("frequencyMonthly");
       case "quarterly":
-        return "trimestral";
+        return t("frequencyQuarterly");
       case "semiannual":
-        return "semestral";
+        return t("frequencySemiannual");
       default:
-        return "mensual";
+        return t("frequencyMonthly");
     }
   };
 
@@ -461,40 +465,40 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
       </SheetTrigger>
       <SheetContent className="min-w-[90%] rounded-l-xl p-0 m-0">
         <SheetHeader className="sr-only">
-          <SheetTitle>Detalles del plan de pago</SheetTitle>
+          <SheetTitle>{t("detailTitle")}</SheetTitle>
 
           <SheetDescription>
-            <span>Solicitud Nº{detail?.requestId}</span>
+            <span>{t("requestNumber", { id: detail?.requestId })}</span>
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <div className="flex items-center justify-between h-full">
             <div className="bg-white w-3/4 p-5 h-full rounded-l-xl flex flex-col">
-              <span className="font-bold">Detalle del plan de pago</span>
+              <span className="font-bold">{t("detailLabel")}</span>
 
               <div className="flex items-center gap-2 justify-between w-full mb-4">
                 <span className="text-sm font-semibold">
-                  Solicitud Nº {detail?.requestId}
+                  {t("requestNumberLabel", { id: detail?.requestId })}
                 </span>
 
                 {detail?.status === "APPROVED" && (
                   <span className="text-xs font-semibold border border-green-600 px-4 py-1 text-green-600 rounded-full bg-green-50">
-                    Aprobado
+                    {t("approved")}
                   </span>
                 )}
                 {detail?.status === "PENDING" && (
                   <span className="text-xs font-semibold border border-blue-600 px-4 py-1 text-blue-600 rounded-full bg-blue-50">
-                    En revisión
+                    {t("inReview")}
                   </span>
                 )}
                 {detail?.status === "REJECTED" && (
                   <span className="text-xs font-semibold border border-red-600 px-4 py-1 text-red-600 rounded-full bg-red-50">
-                    Denegado
+                    {t("denied")}
                   </span>
                 )}
                 {detail?.status === "OBJECTED" && (
                   <span className="text-xs font-semibold border border-purple-600 px-4 py-1 text-purple-600 rounded-full bg-purple-50">
-                    Con observaciones
+                    {t("withObservations")}
                   </span>
                 )}
               </div>
@@ -517,7 +521,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                           <Calculator className="h-5 w-5 text-blue-600" />
                         </div>
                         <CardTitle className="text-lg">
-                          Configuración del plan de pago
+                          {tPending("paymentPlanConfig")}
                         </CardTitle>
                       </div>
                       {paymentPlanExpanded ? (
@@ -541,12 +545,12 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      Colocación total{" "}
+                                      {tForm("totalAmountLabel")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormControl>
                                       <Input
-                                        placeholder="Calculado automáticamente"
+                                        placeholder={tForm("calculatedAutomatically")}
                                         disabled={true}
                                         value={
                                           field.value
@@ -568,10 +572,10 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 name="initialPayment"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Pago contado ($)</FormLabel>
+                                    <FormLabel>{tForm("downPaymentLabel")}</FormLabel>
                                     <FormControl>
                                       <Input
-                                        placeholder="Ingresa un monto"
+                                        placeholder={tForm("enterAmount")}
                                         value={
                                           field.value
                                             ? formatNumberWithThousands(
@@ -601,7 +605,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      N° de cuotas{" "}
+                                      {tForm("installmentsLabel")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormControl>
@@ -609,7 +613,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                         type="number"
                                         min="1"
                                         max="36"
-                                        placeholder="Ingresa el número de cuotas"
+                                        placeholder={tForm("installmentsLabel")}
                                         value={field.value || ""}
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -636,7 +640,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      Tasa de interés anual (%){" "}
+                                      {tForm("interestRateLabel")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormControl>
@@ -645,7 +649,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                         step="0.01"
                                         min="0"
                                         max="100"
-                                        placeholder="Ej: 12.5"
+                                        placeholder={tForm("interestRatePlaceholder")}
                                         value={field.value || ""}
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -673,7 +677,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      Forma de pago{" "}
+                                      {tForm("paymentMethodLabel")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <Select
@@ -682,7 +686,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                     >
                                       <FormControl>
                                         <SelectTrigger className="w-full">
-                                          <SelectValue placeholder="Selecciona" />
+                                          <SelectValue placeholder={tForm("selectPlaceholder")} />
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
@@ -708,7 +712,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      Frecuencia de pago{" "}
+                                      {tForm("paymentFrequencyLabel")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <Select
@@ -717,7 +721,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                     >
                                       <FormControl>
                                         <SelectTrigger className="w-full">
-                                          <SelectValue placeholder="Selecciona" />
+                                          <SelectValue placeholder={tForm("selectPlaceholder")} />
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
@@ -742,7 +746,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      Inicio de pago{" "}
+                                      {tForm("startDateLabel")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <Popover>
@@ -761,7 +765,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                                     locale: es,
                                                   }
                                                 )
-                                              : "DD-MM-AAAA"}
+                                              : tForm("datePlaceholder")}
                                           </Button>
                                         </FormControl>
                                       </PopoverTrigger>
@@ -791,10 +795,10 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                   name="comments"
                                   render={({ field }) => (
                                     <FormItem>
-                                      <FormLabel>Comentario</FormLabel>
+                                      <FormLabel>{tForm("commentLabel")}</FormLabel>
                                       <FormControl>
                                         <Textarea
-                                          placeholder="Completa"
+                                          placeholder={tForm("commentPlaceholder")}
                                           {...field}
                                           rows={4}
                                         />
@@ -810,7 +814,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 <div className="flex items-center gap-3">
                                   <DollarSign className="h-5 w-5 text-blue-600" />
                                   <CardTitle className="text-lg">
-                                    Resumen financiero
+                                    {t("financialSummary")}
                                   </CardTitle>
                                 </div>
                               </CardHeader>
@@ -886,7 +890,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                             <div className="bg-blue-100/30 p-4 rounded-lg grid grid-cols-3 items-center">
                               <div className="flex flex-col gap-0">
                                 <span className="text-sm text-black">
-                                  Colocación total
+                                  {tPending("totalPlacement")}
                                 </span>
                                 <span className=" text-blue-700 text-2xl font-bold">
                                   {formatNumber(
@@ -896,7 +900,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                               </div>
                               <div className="flex flex-col gap-0">
                                 <span className="text-sm text-black">
-                                  Pago contado
+                                  {tPending("cashPayment")}
                                 </span>
                                 <span className=" text-blue-700 text-2xl font-bold">
                                   {formatNumber(
@@ -906,7 +910,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                               </div>
                               <div className="flex flex-col gap-0">
                                 <span className="text-xs text-black font-bold">
-                                  Próximos vencimientos
+                                  {tPending("upcomingDueDates")}
                                 </span>
                                 <div className="text-sm text-black space-y-1">
                                   {pendingInstallments
@@ -920,14 +924,13 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                     <Dialog>
                                       <DialogTrigger asChild>
                                         <div className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">
-                                          +{pendingInstallments.length - 4}{" "}
-                                          cuotas más...
+                                          {tPending("moreInstallments", { count: pendingInstallments.length - 4 })}
                                         </div>
                                       </DialogTrigger>
                                       <DialogContent className="max-w-md">
                                         <DialogHeader>
                                           <DialogTitle>
-                                            Todas las cuotas pendientes
+                                            {tPending("allPendingInstallments")}
                                           </DialogTitle>
                                         </DialogHeader>
                                         <div className="max-h-[350px] overflow-y-auto space-y-2">
@@ -947,7 +950,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                   )}
                                   {pendingInstallments.length === 0 && (
                                     <div className="text-xs text-green-600">
-                                      No hay cuotas pendientes
+                                      {tPending("noPendingInstallments")}
                                     </div>
                                   )}
                                 </div>
@@ -958,7 +961,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 icon={
                                   <Coins className="w-6 h-6 text-gray-400" />
                                 }
-                                description="Nº de cuotas"
+                                description={tPending("installmentCount")}
                                 value={
                                   detail.numberOfInstallments as unknown as string
                                 }
@@ -967,7 +970,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 icon={
                                   <Coins className="w-6 h-6 text-gray-400" />
                                 }
-                                description="Valor por cuotas"
+                                description={tPending("installmentValue")}
                                 value={formatNumber(
                                   Math.round(
                                     detail.installmentAmount as unknown as number
@@ -978,7 +981,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 icon={
                                   <ChartBar className="w-6 h-6 text-gray-400" />
                                 }
-                                description="Tasa de interés anual (%)"
+                                description={tPending("annualInterestRate")}
                                 value={
                                   detail.annualInterestRate as unknown as string
                                 }
@@ -987,7 +990,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 icon={
                                   <DollarSign className="w-6 h-6 text-gray-400" />
                                 }
-                                description="Forma de pago"
+                                description={tPending("paymentMethod")}
                                 value={
                                   DEBTOR_PAYMENT_METHODS.find(
                                     (x) => x.value === detail.paymentMethod
@@ -999,7 +1002,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 icon={
                                   <CalendarIcon className="w-6 h-6 text-gray-400" />
                                 }
-                                description="Inicio de pago"
+                                description={tPending("paymentStart")}
                                 value={
                                   detail.planStartDate
                                     ? format(
@@ -1016,7 +1019,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 icon={
                                   <CalendarCheck className="w-6 h-6 text-gray-400" />
                                 }
-                                description="Término de pago"
+                                description={tPending("paymentEnd")}
                                 value={
                                   detail.paymentEndDate
                                     ? format(
@@ -1033,7 +1036,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 icon={
                                   <CalendarClock className="w-6 h-6 text-gray-400" />
                                 }
-                                description="Frecuencia de pago"
+                                description={tPending("paymentFrequency")}
                                 value={
                                   PAYMENT_FREQUENCY.find(
                                     (x) => x.code === detail.paymentFrequency
@@ -1046,7 +1049,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                 <MessageSquare className="w-6 h-6 text-amber-300 shrink-0" />
                                 <span className="text-sm text-gray-500 flex flex-col gap-0">
                                   <span className="text-black text-xs">
-                                    Comentario
+                                    {tPending("commentLabel")}
                                   </span>
                                   <span className="text-md text-gray-500">
                                     {detail.debtConcept}
@@ -1063,7 +1066,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
               </ScrollArea>
             </div>
             <div className="bg-blue-100/10 w-1/4 p-5 h-screen">
-              <h3 className="text-md font-medium">Autorización plan de pago</h3>
+              <h3 className="text-md font-medium">{t("paymentPlanAuthorization")}</h3>
               <Image
                 src={
                   detail.status === "PENDING"
@@ -1081,7 +1084,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                   <Info className="w-4 h-4 text-green-600 shrink-0" />{" "}
                   <div className="flex flex-col gap-0">
                     <span className="text-sm text-black font-bold">
-                      Plan de pago aprobado
+                      {t("planApproved")}
                     </span>
                     <span className="text-xs text-gray-500 capitalize">
                       {detail?.approvalComment && detail?.approvalComment}
@@ -1095,7 +1098,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                   <Info className="w-4 h-4 text-red-600 shrink-0" />{" "}
                   <div className="flex flex-col gap-0">
                     <span className="text-sm text-black font-bold">
-                      Plan de pago denegado
+                      {t("planDenied")}
                     </span>
                     <span className="text-xs text-gray-500 capitalize">
                       {detail?.rejectionComment && detail?.rejectionComment}
@@ -1114,7 +1117,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                         render={({ field }) => (
                           <FormItem className="space-y-3">
                             <FormLabel>
-                              Selecciona una opción <Required />
+                              {t("selectOption")} <Required />
                             </FormLabel>
                             <FormControl>
                               <RadioGroup
@@ -1130,7 +1133,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                     />
                                   </FormControl>
                                   <FormLabel className="font-normal">
-                                    Aprobar
+                                    {t("optionApprove")}
                                   </FormLabel>
                                 </FormItem>
                                 <FormItem className="flex items-center gap-2">
@@ -1141,7 +1144,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                     />
                                   </FormControl>
                                   <FormLabel className="font-normal">
-                                    Denegar
+                                    {t("optionDeny")}
                                   </FormLabel>
                                 </FormItem>
                                 <FormItem className="flex items-center gap-2">
@@ -1152,7 +1155,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                     />
                                   </FormControl>
                                   <FormLabel className="font-normal">
-                                    Modificar condiciones
+                                    {t("optionModify")}
                                   </FormLabel>
                                 </FormItem>
                               </RadioGroup>
@@ -1167,15 +1170,10 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                             <Info className="w-4 h-4 text-blue-600 shrink-0" />
                             <div className="flex flex-col gap-0">
                               <span className="text-sm text-black font-bold">
-                                ¿Necesitas hacer cambios?
+                                {t("needChanges")}
                               </span>
                               <span className="text-xs text-gray-500">
-                                Ajusta el plan de pago a tus términos. Cuando
-                                termines, simplemente haz clic en{" "}
-                                <span className="font-black">
-                                  "Enviar respuesta"
-                                </span>
-                                .
+                                {t("needChangesDescription")}
                               </span>
                             </div>
                           </div>
@@ -1186,11 +1184,11 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                         name="reason"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Comentario</FormLabel>
+                            <FormLabel>{t("commentLabel")}</FormLabel>
                             <FormControl className="w-full">
                               <Textarea
                                 {...field}
-                                placeholder="Escribe un comentario..."
+                                placeholder={t("commentPlaceholder")}
                                 className="w-full bg-white"
                               />
                             </FormControl>
@@ -1202,7 +1200,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                         type="submit"
                         onClick={form.handleSubmit(onSubmit)}
                       >
-                        Enviar respuesta
+                        {t("sendResponseButton")}
                       </Button>
                     </div>
                   </div>

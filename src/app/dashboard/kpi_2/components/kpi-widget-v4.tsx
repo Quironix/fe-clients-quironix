@@ -1,4 +1,5 @@
 import { Gauge, GripVertical, LayoutGrid, LineChart, List, Maximize, PieChart, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { KPI } from "../services/types";
 import { CardView, CompactView, DetailedView, GaugeView, RingView, SparklineView } from "./kpi-view-types";
@@ -15,14 +16,14 @@ interface KPIWidgetProps {
   isDragging: boolean;
 }
 
-const viewTypes: Array<{ id: ViewType; name: string; icon: React.ElementType }> = [
-  { id: "card", name: "Card", icon: LayoutGrid },
-  { id: "gauge", name: "Gauge", icon: Gauge },
-  { id: "sparkline", name: "Sparkline", icon: LineChart },
-  { id: "ring", name: "Ring", icon: PieChart },
-  { id: "compact", name: "Compacto", icon: List },
-  { id: "detailed", name: "Detallado", icon: Maximize },
-];
+const viewTypeIcons: Record<ViewType, React.ElementType> = {
+  card: LayoutGrid,
+  gauge: Gauge,
+  sparkline: LineChart,
+  ring: PieChart,
+  compact: List,
+  detailed: Maximize,
+};
 
 const getStatus = (kpi: KPI): { status: string; color: string } => {
   const { low, high, direction } = kpi.thresholds;
@@ -94,6 +95,8 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
   onDrop,
   isDragging,
 }) => {
+  const t = useTranslations("kpi.widget");
+  const tPage = useTranslations("kpi.page");
   const [showSettings, setShowSettings] = useState(false);
   const status = getStatus(kpi);
   const trend = getTrend(kpi);
@@ -150,23 +153,24 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
 
       {showSettings && (
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
-          <p className="text-xs font-medium text-gray-500 mb-2">Tipo de visualización</p>
+          <p className="text-xs font-medium text-gray-500 mb-2">{t("viewType")}</p>
           <div className="flex items-center gap-1">
-            {viewTypes.map((type) => {
-              const Icon = type.icon;
+            {(Object.keys(viewTypeIcons) as ViewType[]).map((id) => {
+              const Icon = viewTypeIcons[id];
+              const nameKey = `view${id.charAt(0).toUpperCase() + id.slice(1)}` as any;
               return (
                 <button
-                  key={type.id}
+                  key={id}
                   onClick={() => {
-                    onViewChange(type.id);
+                    onViewChange(id);
                     setShowSettings(false);
                   }}
                   className={`p-2 rounded-md transition-colors ${
-                    viewType === type.id
+                    viewType === id
                       ? "bg-gray-900 text-white"
                       : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                   }`}
-                  title={type.name}
+                  title={tPage(nameKey)}
                 >
                   <Icon size={14} />
                 </button>

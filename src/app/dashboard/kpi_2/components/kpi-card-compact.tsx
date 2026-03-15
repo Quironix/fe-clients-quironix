@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { GripVerticalIcon, InfoIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { KPI } from "../services/types";
 
 interface KPICardCompactProps {
@@ -17,6 +18,8 @@ interface KPICardCompactProps {
 }
 
 export const KPICardCompact = ({ kpi, isDragging }: KPICardCompactProps) => {
+  const t = useTranslations("kpi.status");
+  const tl = useTranslations("kpi.labels");
   const getStatusConfig = () => {
     switch (kpi.status) {
       case "success":
@@ -126,16 +129,16 @@ export const KPICardCompact = ({ kpi, isDragging }: KPICardCompactProps) => {
                 className={cn("text-xs font-medium px-2 py-0.5 border", statusConfig.badge)}
               >
                 {kpi.status === "success"
-                  ? "En Meta"
+                  ? t("onTarget")
                   : kpi.status === "warning"
-                  ? "Atención"
-                  : "Crítico"}
+                  ? t("attention")
+                  : t("critical")}
               </Badge>
             </div>
 
             <div className="space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500">Meta: {kpi.target}{kpi.unit}</span>
+                <span className="text-gray-500">{tl("target")}: {kpi.target}{kpi.unit}</span>
                 <span className="font-semibold text-gray-700">
                   {progressPercentage.toFixed(0)}%
                 </span>

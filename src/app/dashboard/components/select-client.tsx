@@ -11,6 +11,7 @@ import Required from "@/components/ui/required";
 import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useCompaniesStore } from "../companies/store";
 
@@ -32,6 +33,7 @@ const SelectClient = ({
 }) => {
   const { companies, getCompanies } = useCompaniesStore();
   const { session, profile } = useProfileContext();
+  const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -167,7 +169,7 @@ const SelectClient = ({
                       })}
                       {selectedValues.length > 2 && (
                         <Badge variant="outline" className="text-xs">
-                          +{selectedValues.length - 2} más
+                          {tCommon("more", { count: selectedValues.length - 2 })}
                         </Badge>
                       )}
                     </>
@@ -176,8 +178,8 @@ const SelectClient = ({
               ) : (
                 <span className="text-muted-foreground">
                   {singleClient
-                    ? "Selecciona una compañía"
-                    : "Selecciona una o más compañías"}
+                    ? tCommon("placeholders.selectCompany")
+                    : tCommon("placeholders.selectCompanies")}
                 </span>
               )}
             </div>
@@ -188,7 +190,7 @@ const SelectClient = ({
           <div className="flex items-center border-b px-3 py-2">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <Input
-              placeholder="Buscar compañías..."
+              placeholder={tCommon("placeholders.searchCompanies")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="border-0 px-0 py-1 h-8 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -216,7 +218,7 @@ const SelectClient = ({
                     <div className="font-medium">{company.name}</div>
                     {company.client_code && (
                       <div className="text-xs text-muted-foreground">
-                        Código: {company.client_code}
+                        {tCommon("labels.code")}: {company.client_code}
                       </div>
                     )}
                   </div>
@@ -225,10 +227,10 @@ const SelectClient = ({
             ) : (
               <div className="px-2 py-1.5 text-sm text-muted-foreground">
                 {companies.length === 0
-                  ? "Cargando compañías..."
+                  ? tCommon("loading.loadingCompanies")
                   : searchQuery
-                    ? "No se encontraron compañías que coincidan con la búsqueda"
-                    : "No hay compañías disponibles"}
+                    ? tCommon("placeholders.noCompaniesMatch")
+                    : tCommon("placeholders.noCompaniesAvailable")}
               </div>
             )}
           </div>

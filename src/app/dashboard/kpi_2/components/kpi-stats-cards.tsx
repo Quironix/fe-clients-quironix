@@ -5,6 +5,7 @@ import {
   CheckCircle2Icon,
   XCircleIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { KPI } from "../services/types";
 
 interface KPIStatsCardsProps {
@@ -12,6 +13,7 @@ interface KPIStatsCardsProps {
 }
 
 export const KPIStatsCards = ({ kpis }: KPIStatsCardsProps) => {
+  const t = useTranslations("kpi.stats");
   const totalKPIs = kpis.length;
   const successKPIs = kpis.filter((k) => k.status === "success").length;
   const warningKPIs = kpis.filter((k) => k.status === "warning").length;
@@ -20,36 +22,36 @@ export const KPIStatsCards = ({ kpis }: KPIStatsCardsProps) => {
 
   const stats = [
     {
-      title: "Total Indicadores",
+      title: t("totalIndicators"),
       value: totalKPIs,
-      subtitle: "Monitoreados activamente",
+      subtitle: t("activelyMonitored"),
       icon: ActivityIcon,
       iconBg: "bg-blue-500",
       cardBg: "bg-blue-50",
       iconColor: "text-white",
     },
     {
-      title: "En Meta",
+      title: t("onTarget"),
       value: successKPIs,
-      subtitle: `${successRate.toFixed(0)}% del total`,
+      subtitle: t("ofTotal", { percent: successRate.toFixed(0) }),
       icon: CheckCircle2Icon,
       iconBg: "bg-emerald-500",
       cardBg: "bg-emerald-50",
       iconColor: "text-white",
     },
     {
-      title: "Requieren Atención",
+      title: t("needAttention"),
       value: warningKPIs,
-      subtitle: "Revisar y mejorar",
+      subtitle: t("reviewAndImprove"),
       icon: AlertTriangleIcon,
       iconBg: "bg-amber-500",
       cardBg: "bg-amber-50",
       iconColor: "text-white",
     },
     {
-      title: "Críticos",
+      title: t("critical"),
       value: errorKPIs,
-      subtitle: "Acción inmediata",
+      subtitle: t("immediateAction"),
       icon: XCircleIcon,
       iconBg: "bg-rose-500",
       cardBg: "bg-rose-50",

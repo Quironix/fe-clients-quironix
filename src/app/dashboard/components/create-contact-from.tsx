@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { functionsContact } from "../data";
 import { useProfileContext } from "@/context/ProfileContext";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -36,25 +37,26 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
   const { session, profile } = useProfileContext();
   const { dataDebtor, updateDebtor, setDataDebtor } = useDebtorsStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const tCommon = useTranslations("common");
   // Schema para un solo contacto
   const contactFormSchema = z.object({
-    name: z.string().min(1, "Nombre es requerido"),
-    role: z.string().min(1, "Rol es requerido"),
-    function: z.string().min(1, "Función es requerida"),
-    email: z.string().email("Email inválido"),
+    name: z.string().min(1, tCommon("validation.required")),
+    role: z.string().min(1, tCommon("validation.required")),
+    function: z.string().min(1, tCommon("validation.required")),
+    email: z.string().email(tCommon("validation.invalidEmail")),
     phone: z
       .string()
-      .min(8, "Campo requerido")
-      .max(15, "Máximo 15 caracteres")
+      .min(8, tCommon("validation.fieldRequired"))
+      .max(15, tCommon("validation.maxLength", { max: "15" }))
       .transform((value) => {
         // Normalizar el número agregando + si no lo tiene
         if (!value) return value;
         return value.startsWith("+") ? value : `+${value}`;
       })
       .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
-        message: "Número de teléfono inválido",
+        message: tCommon("validation.invalidPhone"),
       }),
-    channel: z.string().min(1, "Canal de comunicación es requerido"),
+    channel: z.string().min(1, tCommon("validation.required")),
   });
 
   type ContactFormValues = z.infer<typeof contactFormSchema>;
@@ -87,7 +89,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
 
   const handleSubmit = async (data: ContactFormValues): Promise<void> => {
     if (!dataDebtor?.id || !session?.token || !profile?.client?.id) {
-      toast.error("Error: No se encontró información del deudor");
+      toast.error(tCommon("toast.error"));
       return;
     }
 
@@ -118,7 +120,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
       // Luego hacer el update en el backend
       await updateDebtor(session.token, profile.client.id, updatedDebtor);
 
-      toast.success("Contacto agregado correctamente");
+      toast.success(tCommon("toast.success"));
       form.reset();
 
       // Llamar al callback de éxito si existe
@@ -127,7 +129,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
       }
     } catch (error) {
       console.error("Error al agregar contacto:", error);
-      toast.error("Error al agregar el contacto");
+      toast.error(tCommon("toast.error"));
 
       // Revertir el cambio optimista en caso de error
       // Recargar el deudor original
@@ -141,7 +143,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
     <div className="border border-gray-200 rounded-md p-5 space-y-3 w-full">
       <div className="flex flex-col items-start gap-5">
         <TitleStep
-          title="Información de contacto"
+          title={tCommon("labels.contactInfo")}
           icon={<Mail className="w-5 h-5" />}
         />
         <FormProvider {...form}>
@@ -157,7 +159,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre </FormLabel>
+                      <FormLabel>{tCommon("labels.name")} </FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -170,7 +172,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rol</FormLabel>
+                      <FormLabel>{tCommon("labels.role")}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -183,14 +185,14 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                   name="function"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Función</FormLabel>
+                      <FormLabel>{tCommon("labels.function")}</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona una función" />
+                            <SelectValue placeholder={tCommon("placeholders.selectFunction")} />
                           </SelectTrigger>
                           <SelectContent>
                             {functionsContact.map((func) => (
@@ -210,14 +212,14 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                   name="channel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Canal preferente de comunicación</FormLabel>
+                      <FormLabel>{tCommon("labels.channelPreferred")}</FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un canal" />
+                            <SelectValue placeholder={tCommon("placeholders.selectChannel")} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="email">Email</SelectItem>
@@ -248,7 +250,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Teléfono</FormLabel>
+                      <FormLabel>{tCommon("labels.phone")}</FormLabel>
                       <FormControl>
                         <PhoneInput
                           placeholder="Ej: +56 9 9891 8080"
@@ -268,7 +270,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
             </div>
             <div className="flex justify-end w-full">
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Guardando..." : "Guardar contacto"}
+                {isSubmitting ? tCommon("loading.saving") : tCommon("saveContact")}
               </Button>
             </div>
           </form>

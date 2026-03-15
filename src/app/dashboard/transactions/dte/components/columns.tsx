@@ -12,6 +12,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { formatDate } from "@/lib/utils";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { Edit, FileText, History, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useDTEStore } from "../store";
 import { DTE } from "../types";
@@ -73,6 +74,8 @@ const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
   const { deleteDTE } = useDTEStore();
   const { session, profile } = useProfileContext();
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const t = useTranslations("transactions.dte");
+  const tCommon = useTranslations("common.buttons");
 
   return (
     <div className="flex justify-center gap-1">
@@ -80,7 +83,7 @@ const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
         variant="ghost"
         size="icon"
         onClick={() => setIsHistoryModalOpen(true)}
-        title="Ver historial"
+        title={t("viewHistory")}
         className="hover:bg-blue-500 hover:text-white text-primary"
       >
         <History />
@@ -93,26 +96,26 @@ const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
             `/dashboard/transactions/dte/create?id=${row.original.id}`
           )
         }
-        title="Editar"
+        title={t("columnLabels.actions")}
         className="hover:bg-amber-500 hover:text-white text-primary"
       >
         <Edit />
       </Button>
       <DialogConfirm
-        title="¿Eliminar deudor?"
-        description={`¿Estás seguro que deseas eliminar el DTE "${row.original.number}"? Esta acción no se puede deshacer.`}
+        title={t("deleteTitle")}
+        description={t("deleteDescription", { number: row.original.number })}
         triggerButton={
           <Button
             variant="ghost"
             size="icon"
-            title="Eliminar"
+            title={t("columnLabels.actions")}
             className="hover:bg-red-500 hover:text-white text-primary"
           >
             <Trash2 />
           </Button>
         }
-        cancelButtonText="Cancelar"
-        confirmButtonText="Sí, eliminar"
+        cancelButtonText={tCommon("cancel")}
+        confirmButtonText={tCommon("yesDelete")}
         onConfirm={() => {
           if (session?.token && profile?.client?.id) {
             deleteDTE(session.token, profile.client.id, row.original.id!);

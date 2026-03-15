@@ -32,6 +32,7 @@ import { FileText } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 import { usePaymentStore } from "../store";
@@ -65,6 +66,8 @@ const paymentFormSchema = (isFactoring: boolean) => {
 
 const FormPayments = () => {
   const { profile, session } = useProfileContext();
+  const t = useTranslations("transactions.payments");
+  const tForm = useTranslations("transactions.payments.form");
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
 
   const {
@@ -167,7 +170,7 @@ const FormPayments = () => {
   const onSubmit = async (values: PaymentFormValues) => {
     setIsFormLoading(true);
     if (!profile?.client?.id) {
-      toast.error("No se encontró el cliente");
+      toast.error(t("clientNotFound"));
       return;
     }
 
@@ -204,12 +207,10 @@ const FormPayments = () => {
         );
 
         if (responseSuccess) {
-          toast.success("Pago actualizado correctamente");
+          toast.success(t("updateSuccess"));
           router.push("/dashboard/transactions/payments");
         } else {
-          toast.error(
-            "Error al actualizar el pago, revisa la información ingresada"
-          );
+          toast.error(tForm("updateError"));
         }
       } else {
         const paymentData = {
@@ -236,12 +237,10 @@ const FormPayments = () => {
 
         await createPayment(session?.token, profile?.client?.id, paymentData);
         if (responseSuccess) {
-          toast.success("Pago creado correctamente");
+          toast.success(t("createSuccess"));
           router.push("/dashboard/transactions/payments");
         } else {
-          toast.error(
-            "Error al crear el pago, revisa la información ingresada"
-          );
+          toast.error(tForm("createError"));
         }
       }
 
@@ -250,7 +249,7 @@ const FormPayments = () => {
       }
     } catch (error) {
       toast.error(
-        id ? "Error al actualizar el pago" : "Error al crear el pago"
+        id ? tForm("updateErrorGeneric") : tForm("createErrorGeneric")
       );
       console.error("Error en onSubmit:", error);
     } finally {
@@ -313,7 +312,7 @@ const FormPayments = () => {
             <div className="p-5 border border-gray-200 rounded-md">
               <div className="w-full mb-5">
                 <TitleStep
-                  title="Información del documento"
+                  title={tForm("documentInfo")}
                   icon={<FileText size={16} />}
                 />
               </div>
@@ -325,7 +324,7 @@ const FormPayments = () => {
                     render={({ field }) => (
                       <SelectClient
                         field={field}
-                        title="Compañía"
+                        title={tForm("company")}
                         required
                         singleClient
                       />
@@ -338,7 +337,7 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <DebtorsSelectFormItem
                       field={field}
-                      title="Deudor"
+                      title={tForm("debtor")}
                       required
                     />
                   )}
@@ -349,7 +348,7 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Tipo de documento <Required />
+                        {tForm("documentType")} <Required />
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
@@ -357,7 +356,7 @@ const FormPayments = () => {
                       >
                         <FormControl>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona una opción" />
+                            <SelectValue placeholder={tForm("selectOption")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -378,10 +377,10 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Número de documento <Required />
+                        {tForm("documentNumber")} <Required />
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Ingresa el número" {...field} />
+                        <Input placeholder={tForm("enterNumber")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -393,7 +392,7 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <BankListSelectFormItem
                       field={field}
-                      title="Banco de origen"
+                      title={tForm("originBank")}
                     />
                   )}
                 />
@@ -402,10 +401,10 @@ const FormPayments = () => {
                   name="sender_account"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cuenta corriente de origen</FormLabel>
+                      <FormLabel>{tForm("originAccount")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Ingresa la cuenta corriente de origen"
+                          placeholder={tForm("originAccountPlaceholder")}
                           {...field}
                           value={field.value || ""}
                         />
@@ -420,10 +419,10 @@ const FormPayments = () => {
                   name="square"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Plaza</FormLabel>
+                      <FormLabel>{tForm("square")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Ingresa la plaza"
+                          placeholder={tForm("squarePlaceholder")}
                           {...field}
                           value={field.value || ""}
                         />
@@ -438,7 +437,7 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <DatePickerFormItem
                       field={field}
-                      title="Fecha de pago"
+                      title={tForm("paymentDate")}
                       required
                     />
                   )}
@@ -450,7 +449,7 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <DatePickerFormItem
                       field={field}
-                      title="Fecha de contabilización"
+                      title={tForm("accountingDate")}
                       required
                     />
                   )}
@@ -462,7 +461,7 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Monto <Required />
+                        {tForm("amount")} <Required />
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -485,7 +484,7 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <BankInformationSelectFormItem
                       field={field}
-                      title="Banco receptor"
+                      title={tForm("receivingBank")}
                     />
                   )}
                 />
@@ -495,7 +494,7 @@ const FormPayments = () => {
                   render={({ field }) => (
                     <DatePickerFormItem
                       field={field}
-                      title="Fecha de depósito"
+                      title={tForm("depositDate")}
                     />
                   )}
                 />
@@ -508,11 +507,11 @@ const FormPayments = () => {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notas</FormLabel>
+                    <FormLabel>{tForm("notes")}</FormLabel>
                     <FormControl>
                       <Textarea
                         className="h-32"
-                        placeholder="Observaciones adicionales..."
+                        placeholder={tForm("notesPlaceholder")}
                         {...field}
                         value={field.value || ""}
                       />
@@ -530,11 +529,11 @@ const FormPayments = () => {
                 disabled={isFormLoading}
               >
                 {isFormLoading ? (
-                  <Loader text="Guardando..." />
+                  <Loader text={tForm("saving")} />
                 ) : id ? (
-                  "Actualizar"
+                  tForm("update")
                 ) : (
-                  "Guardar"
+                  tForm("save")
                 )}
               </Button>
             </div>

@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -18,55 +19,6 @@ import type {
 import { GeneralInformationSection } from "./general-information-section";
 import { MessageContentSection } from "./message-content-section";
 import { SegmentationSection } from "./segmentation-section";
-
-const formSchema = z.object({
-  status: z.boolean().default(true),
-  send_now: z.boolean().default(false).optional(),
-  name: z.string().min(1, "El nombre del collector es requerido"),
-  description: z.string().min(1, "La descripción es requerida"),
-  debt_phases: z
-    .array(z.string())
-    .min(1, "Selecciona al menos una fase de deuda"),
-  channel: z.enum(["EMAIL", "WHATSAPP", "SMS"], {
-    message: "Selecciona un canal de comunicación",
-  }),
-  subject: z.string().min(1, "El asunto es requerido"),
-  body_message: z.string().min(1, "El cuerpo del mensaje es requerido"),
-  send_associate_invoices: z.boolean().default(false),
-  segmentations: z
-    .array(
-      z.object({
-        applicable_segment: z
-          .string()
-          .min(1, "El segmento aplicable es requerido"),
-        min_delay_days: z.string().min(1, "Los días de atraso son requeridos"),
-        exclusions: z.array(z.string()).default([]),
-        frequency: z.enum(["DAILY", "SEVEN_DAYS", "BIWEEKLY", "MONTHLY"], {
-          message: "La frecuencia de envío es requerida",
-          // invalid_type_error: "Selecciona una frecuencia válida",
-        }),
-        schedule: z.object({
-          preferred_time: z.string().min(1, "El horario es requerido"),
-          preferred_days: z
-            .array(z.string())
-            .min(1, "Selecciona al menos un día de envío"),
-        }),
-      })
-    )
-    .min(1, "Debes agregar al menos un segmento")
-    .refine(
-      (segments) => {
-        const applicableSegments = segments.map((s) => s.applicable_segment);
-        return new Set(applicableSegments).size === applicableSegments.length;
-      },
-      {
-        message:
-          "No puedes tener segmentos duplicados con el mismo segmento aplicable",
-      }
-    ),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 interface CollectorFormProps {
   mode: "create" | "edit";
@@ -82,7 +34,55 @@ export const CollectorForm = ({
   clientId,
 }: CollectorFormProps) => {
   const router = useRouter();
+  const t = useTranslations("collectors.form");
   const [activeSegment, setActiveSegment] = useState<string>("segment-0");
+
+  const formSchema = z.object({
+    status: z.boolean().default(true),
+    send_now: z.boolean().default(false).optional(),
+    name: z.string().min(1, t("validation.nameRequired")),
+    description: z.string().min(1, t("validation.descriptionRequired")),
+    debt_phases: z
+      .array(z.string())
+      .min(1, t("validation.debtPhasesMin")),
+    channel: z.enum(["EMAIL", "WHATSAPP", "SMS"], {
+      message: t("validation.channelRequired"),
+    }),
+    subject: z.string().min(1, t("validation.subjectRequired")),
+    body_message: z.string().min(1, t("validation.bodyRequired")),
+    send_associate_invoices: z.boolean().default(false),
+    segmentations: z
+      .array(
+        z.object({
+          applicable_segment: z
+            .string()
+            .min(1, t("validation.segmentRequired")),
+          min_delay_days: z.string().min(1, t("validation.delayDaysRequired")),
+          exclusions: z.array(z.string()).default([]),
+          frequency: z.enum(["DAILY", "SEVEN_DAYS", "BIWEEKLY", "MONTHLY"], {
+            message: t("validation.frequencyRequired"),
+          }),
+          schedule: z.object({
+            preferred_time: z.string().min(1, t("validation.timeRequired")),
+            preferred_days: z
+              .array(z.string())
+              .min(1, t("validation.sendingDaysMin")),
+          }),
+        })
+      )
+      .min(1, t("validation.segmentsMin"))
+      .refine(
+        (segments) => {
+          const applicableSegments = segments.map((s) => s.applicable_segment);
+          return new Set(applicableSegments).size === applicableSegments.length;
+        },
+        {
+          message: t("validation.duplicateSegments"),
+        }
+      ),
+  });
+
+  type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as any,
@@ -217,11 +217,11 @@ export const CollectorForm = ({
 
       if (mode === "create") {
         await create(accessToken, requestPayload, clientId);
-        toast.success("Collector creado exitosamente");
+        toast.success(t("createSuccess"));
         router.push("/dashboard/collectors");
       } else {
         await update(accessToken, initialData!.id, requestPayload, clientId);
-        toast.success("Collector actualizado exitosamente");
+        toast.success(t("updateSuccess"));
         router.push("/dashboard/collectors");
       }
     } catch (error) {
@@ -232,7 +232,7 @@ export const CollectorForm = ({
       toast.error(
         error instanceof Error
           ? error.message
-          : `Error al ${mode === "create" ? "crear" : "actualizar"} el collector`
+          : mode === "create" ? t("createError") : t("updateError")
       );
     }
   };
@@ -254,7 +254,7 @@ export const CollectorForm = ({
         toast.error(firstError.message as string);
       } else {
         toast.error(
-          "Por favor, completa todos los campos requeridos en los segmentos"
+          t("segmentFieldsError")
         );
       }
     }
@@ -270,9 +270,9 @@ export const CollectorForm = ({
       >
         <div className="bg-blue-50 p-5 flex justify-between items-center rounded-md mb-5">
           <div className="flex flex-col gap-0">
-            <span className="font-bold">Estado inicial</span>
+            <span className="font-bold">{t("initialStatus")}</span>
             <span className="-mt-1 text-sm text-gray-600">
-              El collector enviará notificaciones automáticamente
+              {t("initialStatusDescription")}
             </span>
           </div>
           <FormField
@@ -322,11 +322,9 @@ export const CollectorForm = ({
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
                       <div className="flex flex-col gap-0">
-                        <span className="font-bold">Enviar ahora</span>
+                        <span className="font-bold">{t("sendNow")}</span>
                         <span className=" text-sm text-gray-600">
-                          El collector enviará notificaciones a los clientes que
-                          cumplan con los criterios establecidos inmediatamente
-                          después de crear el collector.
+                          {t("sendNowDescription")}
                         </span>
                       </div>
                     </label>
@@ -343,14 +341,14 @@ export const CollectorForm = ({
             variant="outline"
             onClick={() => router.push("/dashboard/collectors")}
           >
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button type="submit">
             {mode === "create"
               ? isSendNow
-                ? "Guardar y enviar"
-                : "Guardar"
-              : "Actualizar collector"}
+                ? t("saveAndSend")
+                : t("save")
+              : t("updateCollector")}
           </Button>
         </div>
       </form>

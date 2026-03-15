@@ -15,6 +15,7 @@ import {
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 
 interface SearchInputProps {
@@ -27,7 +28,7 @@ interface SearchInputProps {
   className?: string;
   onSearchChange?: (searchValue: string) => void;
   isLoading?: boolean;
-  resetTrigger?: boolean; // Nueva prop para resetear el campo de búsqueda
+  resetTrigger?: boolean;
   modal?: boolean;
 }
 
@@ -35,15 +36,19 @@ export function SearchInput({
   value,
   onValueChange,
   options,
-  placeholder = "Selecciona una opción",
-  emptyMessage = "No se encontró el elemento",
-  searchPlaceholder = "Buscar...",
+  placeholder,
+  emptyMessage,
+  searchPlaceholder,
   className,
   onSearchChange,
   isLoading = false,
   resetTrigger = false,
   modal = false,
 }: SearchInputProps) {
+  const t = useTranslations("searchInput");
+  const resolvedPlaceholder = placeholder ?? t("placeholder");
+  const resolvedEmptyMessage = emptyMessage ?? t("emptyMessage");
+  const resolvedSearchPlaceholder = searchPlaceholder ?? t("searchPlaceholder");
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
   const [justSelected, setJustSelected] = React.useState(false);
@@ -111,7 +116,7 @@ export function SearchInput({
           <span className="truncate">
             {value
               ? options.find((option) => option.value === value)?.label
-              : placeholder}
+              : resolvedPlaceholder}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -124,7 +129,7 @@ export function SearchInput({
         >
           <Command filter={() => 1}>
             <CommandInput
-              placeholder={searchPlaceholder}
+              placeholder={resolvedSearchPlaceholder}
               className="h-9"
               value={searchValue}
               onValueChange={(value) => {
@@ -137,12 +142,12 @@ export function SearchInput({
                 <div className="flex items-center justify-center py-6">
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   <span className="text-sm text-muted-foreground">
-                    Buscando...
+                    {t("searching")}
                   </span>
                 </div>
               ) : (
                 <>
-                  <CommandEmpty>{emptyMessage}</CommandEmpty>
+                  <CommandEmpty>{resolvedEmptyMessage}</CommandEmpty>
                   <CommandGroup>
                     {options.map((option) => (
                       <CommandItem
@@ -180,7 +185,7 @@ export function SearchInput({
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 !z-[100]">
           <Command filter={() => 1}>
             <CommandInput
-              placeholder={searchPlaceholder}
+              placeholder={resolvedSearchPlaceholder}
               className="h-9"
               value={searchValue}
               onValueChange={(value) => {
@@ -193,12 +198,12 @@ export function SearchInput({
                 <div className="flex items-center justify-center py-6">
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   <span className="text-sm text-muted-foreground">
-                    Buscando...
+                    {t("searching")}
                   </span>
                 </div>
               ) : (
                 <>
-                  <CommandEmpty>{emptyMessage}</CommandEmpty>
+                  <CommandEmpty>{resolvedEmptyMessage}</CommandEmpty>
                   <CommandGroup>
                     {options.map((option) => (
                       <CommandItem

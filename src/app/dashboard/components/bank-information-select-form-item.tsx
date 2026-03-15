@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProfileContext } from "@/context/ProfileContext";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import { useBankInformationStore } from "../banks/store";
 
@@ -27,6 +28,7 @@ export default function BankInformationSelectFormItem({
   const { banksInformations, getAllBanksInformations } =
     useBankInformationStore();
   const { session, profile } = useProfileContext();
+  const tCommon = useTranslations("common");
 
   useEffect(() => {
     if (
@@ -54,8 +56,8 @@ export default function BankInformationSelectFormItem({
             <SelectValue
               placeholder={
                 banksInformations.length === 0
-                  ? "Cargando bancos..."
-                  : "Selecciona un banco"
+                  ? tCommon("loading.loadingBanks")
+                  : tCommon("placeholders.selectBank")
               }
             />
           </SelectTrigger>
@@ -69,7 +71,7 @@ export default function BankInformationSelectFormItem({
             ))
           ) : (
             <div className="px-2 py-1.5 text-sm text-muted-foreground">
-              No hay bancos disponibles
+              {tCommon("placeholders.noBanksAvailable")}
             </div>
           )}
         </SelectContent>

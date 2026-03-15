@@ -5,6 +5,7 @@ import TitleSection from "@/app/dashboard/components/title-section";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import FormCompanies from "../../components/form-companies";
@@ -14,6 +15,7 @@ import { Company } from "../../types";
 const Page = () => {
   const { session, profile } = useProfileContext();
   const { createCompany, updateCompany, loading, error } = useCompaniesStore();
+  const t = useTranslations("companies");
   const router = useRouter();
   const handleSubmit = async (data: Company) => {
     if (data.id) {
@@ -27,7 +29,7 @@ const Page = () => {
     if (error) {
       toast.error(error);
     } else {
-      toast.success("Empresa guardada correctamente");
+      toast.success(t("toast.saveSuccess"));
       router.push("/dashboard/companies");
     }
   };
@@ -38,8 +40,8 @@ const Page = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Compañías"
-          description="Configura las compañías que deseas gestionar en la plataforma."
+          title={t("title")}
+          description={t("description")}
           icon={<Users color="white" />}
           subDescription="Onboarding"
         />

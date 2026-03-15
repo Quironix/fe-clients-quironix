@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Copy } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -23,17 +24,20 @@ const DTEUploadSection = () => {
   const { session, profile } = useProfileContext();
   const { setBulkUploadErrors } = useDTEStore();
   const router = useRouter();
+  const t = useTranslations("transactions.dte");
+  const tUpload = useTranslations("transactions.dte.upload");
+  const tCommon = useTranslations("common.upload");
 
   const clientId = profile?.client?.id || "";
   const dteEmail = `recepcion_dte+${clientId}@quironix.com`;
 
   const handleCopyDteEmail = () => {
     if (!clientId) {
-      toast.error("No se pudo obtener el ID del cliente");
+      toast.error(t("clientIdError"));
       return;
     }
     navigator.clipboard.writeText(dteEmail);
-    toast.success("Email copiado al portapapeles");
+    toast.success(t("copyEmailSuccess"));
   };
 
   const handleFileUpload = async (
@@ -47,12 +51,12 @@ const DTEUploadSection = () => {
       !file.name.toLowerCase().endsWith(".csv") &&
       !file.name.toLowerCase().endsWith(".xlsx")
     ) {
-      toast.error("Por favor selecciona un archivo CSV o XLSX válido");
+      toast.error(tCommon("selectValidFile"));
       return;
     }
 
     if (!session?.token || !profile?.client?.id) {
-      toast.error("Error de autenticación. Por favor inicia sesión nuevamente");
+      toast.error(tCommon("authError"));
       return;
     }
 
@@ -69,17 +73,13 @@ const DTEUploadSection = () => {
       setUploadResult(response);
 
       if (response.invalidCount === 0) {
-        toast.success(
-          `Archivo cargado exitosamente. ${response.validCount} deudores procesados correctamente.`
-        );
+        toast.success(tUpload("successBulk", { count: response.validCount }));
         // Refrescar la lista de deudores
         await fetch;
       } else {
         // Almacenar errores en el store
         setBulkUploadErrors(response);
-        toast.warning(
-          `Carga completada con errores. ${response.validCount} válidos, ${response.invalidCount} con errores.`
-        );
+        toast.warning(tUpload("warningBulk", { valid: response.validCount, invalid: response.invalidCount }));
 
         // Redirigir a la página de errores incompletos
         router.push("/dashboard/transactions/dte/incomplete");
@@ -88,7 +88,7 @@ const DTEUploadSection = () => {
       console.error("Error al cargar archivo:", error);
       toast.error(
         JSON.parse(error.message).message ||
-          "Error al cargar el archivo. Por favor intenta nuevamente."
+          tUpload("errorBulk")
       );
     } finally {
       setIsUploading(false);
@@ -146,7 +146,7 @@ const DTEUploadSection = () => {
                 variant="outline"
                 size="icon"
                 onClick={handleCopyDteEmail}
-                title="Copiar email"
+                title={tUpload("copyEmail")}
               >
                 <Copy className="h-4 w-4" />
               </Button>

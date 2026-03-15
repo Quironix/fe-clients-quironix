@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 interface PaymentPlanConfigFormProps {
@@ -42,6 +43,7 @@ export default function PaymentPlanConfigForm({
   onConfigChange,
 }: PaymentPlanConfigFormProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const t = useTranslations("paymentPlans.configForm");
   const [config, setConfig] = useState<PaymentPlanConfig>({
     totalAmount: 0,
     downPayment: 0,
@@ -60,7 +62,6 @@ export default function PaymentPlanConfigForm({
   };
 
   const formatCurrency = (value: string) => {
-    // Remover caracteres no numéricos excepto puntos y comas
     const numericValue = value.replace(/[^\d,.-]/g, "");
     return numericValue;
   };
@@ -77,7 +78,7 @@ export default function PaymentPlanConfigForm({
               <div className="h-2 w-2 bg-blue-600 rounded"></div>
             </div>
             <CardTitle className="text-lg">
-              Configuración del plan de pago
+              {t("title")}
             </CardTitle>
           </div>
           {isExpanded ? (
@@ -91,14 +92,13 @@ export default function PaymentPlanConfigForm({
       {isExpanded && (
         <CardContent className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
-            {/* Colocación total */}
             <div className="space-y-2">
               <Label htmlFor="totalAmount" className="text-sm font-medium">
-                Colocación total <span className="text-red-500">*</span>
+                {t("totalAmount")} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="totalAmount"
-                placeholder="Ingresa un monto"
+                placeholder={t("totalAmountPlaceholder")}
                 value={config.totalAmount || ""}
                 onChange={(e) => {
                   const value = formatCurrency(e.target.value);
@@ -107,14 +107,13 @@ export default function PaymentPlanConfigForm({
               />
             </div>
 
-            {/* Pago contado */}
             <div className="space-y-2">
               <Label htmlFor="downPayment" className="text-sm font-medium">
-                Pago contado ($)
+                {t("downPayment")}
               </Label>
               <Input
                 id="downPayment"
-                placeholder="Ingresa un monto"
+                placeholder={t("downPaymentPlaceholder")}
                 value={config.downPayment || ""}
                 onChange={(e) => {
                   const value = formatCurrency(e.target.value);
@@ -123,10 +122,9 @@ export default function PaymentPlanConfigForm({
               />
             </div>
 
-            {/* Número de cuotas */}
             <div className="space-y-2">
               <Label htmlFor="installments" className="text-sm font-medium">
-                N° de cuotas <span className="text-red-500">*</span>
+                {t("installments")} <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={config.numberOfInstallments.toString()}
@@ -135,26 +133,25 @@ export default function PaymentPlanConfigForm({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona" />
+                  <SelectValue placeholder={t("selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: 36 }, (_, i) => i + 1).map((num) => (
                     <SelectItem key={num} value={num.toString()}>
-                      {num} cuota{num > 1 ? "s" : ""}
+                      {t("installmentUnit", { count: num })}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Tasa de interés anual */}
             <div className="space-y-2">
               <Label htmlFor="interestRate" className="text-sm font-medium">
-                Tasa de interés anual <span className="text-red-500">*</span>
+                {t("interestRate")} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="interestRate"
-                placeholder="Ingresa una tasa de interés"
+                placeholder={t("interestRatePlaceholder")}
                 value={config.annualInterestRate || ""}
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^\d.,]/g, "");
@@ -163,33 +160,31 @@ export default function PaymentPlanConfigForm({
               />
             </div>
 
-            {/* Forma de pago */}
             <div className="space-y-2">
               <Label htmlFor="paymentMethod" className="text-sm font-medium">
-                Forma de pago <span className="text-red-500">*</span>
+                {t("paymentMethod")} <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={config.paymentMethod}
                 onValueChange={(value) => updateConfig("paymentMethod", value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona" />
+                  <SelectValue placeholder={t("selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="transfer">
-                    Transferencia bancaria
+                    {t("paymentMethodTransfer")}
                   </SelectItem>
-                  <SelectItem value="check">Cheque</SelectItem>
-                  <SelectItem value="cash">Efectivo</SelectItem>
-                  <SelectItem value="card">Tarjeta</SelectItem>
+                  <SelectItem value="check">{t("paymentMethodCheck")}</SelectItem>
+                  <SelectItem value="cash">{t("paymentMethodCash")}</SelectItem>
+                  <SelectItem value="card">{t("paymentMethodCard")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Frecuencia de pago */}
             <div className="space-y-2">
               <Label htmlFor="paymentFrequency" className="text-sm font-medium">
-                Frecuencia de pago <span className="text-red-500">*</span>
+                {t("paymentFrequency")} <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={config.paymentFrequency}
@@ -198,22 +193,21 @@ export default function PaymentPlanConfigForm({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona" />
+                  <SelectValue placeholder={t("selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="monthly">Mensual</SelectItem>
-                  <SelectItem value="biweekly">Quincenal</SelectItem>
-                  <SelectItem value="weekly">Semanal</SelectItem>
-                  <SelectItem value="quarterly">Trimestral</SelectItem>
+                  <SelectItem value="monthly">{t("frequencyMonthly")}</SelectItem>
+                  <SelectItem value="biweekly">{t("frequencyBiweekly")}</SelectItem>
+                  <SelectItem value="weekly">{t("frequencyWeekly")}</SelectItem>
+                  <SelectItem value="quarterly">{t("frequencyQuarterly")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* Inicio de pago */}
           <div className="space-y-2">
             <Label htmlFor="startDate" className="text-sm font-medium">
-              Inicio de pago <span className="text-red-500">*</span>
+              {t("startDate")} <span className="text-red-500">*</span>
             </Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -224,7 +218,7 @@ export default function PaymentPlanConfigForm({
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {config.startDate
                     ? format(config.startDate, "dd-MM-yyyy", { locale: es })
-                    : "DD-MM-AAAA"}
+                    : t("datePlaceholder")}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -239,14 +233,13 @@ export default function PaymentPlanConfigForm({
             </Popover>
           </div>
 
-          {/* Comentario */}
           <div className="space-y-2">
             <Label htmlFor="comments" className="text-sm font-medium">
-              Comentario
+              {t("comment")}
             </Label>
             <Textarea
               id="comments"
-              placeholder="Completa"
+              placeholder={t("commentPlaceholder")}
               value={config.comments}
               onChange={(e) => updateConfig("comments", e.target.value)}
               rows={4}

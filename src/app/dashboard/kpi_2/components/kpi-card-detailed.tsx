@@ -13,6 +13,7 @@ import {
   TargetIcon,
   TrendingUpIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { KPI } from "../services/types";
 
 interface KPICardDetailedProps {
@@ -21,6 +22,8 @@ interface KPICardDetailedProps {
 }
 
 export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
+  const t = useTranslations("kpi.status");
+  const tl = useTranslations("kpi.labels");
   const getStatusConfig = () => {
     switch (kpi.status) {
       case "success":
@@ -134,10 +137,10 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
               className={cn("text-xs font-semibold px-2.5 py-1 border", statusConfig.badge)}
             >
               {kpi.status === "success"
-                ? "EN META"
+                ? t("onTargetUpper")
                 : kpi.status === "warning"
-                ? "ATENCIÓN"
-                : "CRÍTICO"}
+                ? t("attentionUpper")
+                : t("criticalUpper")}
             </Badge>
           </div>
         </div>
@@ -148,7 +151,7 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-gray-600">
               <TargetIcon className="h-4 w-4" />
-              <span className="font-medium">Meta</span>
+              <span className="font-medium">{tl("target")}</span>
             </div>
             <span className="font-bold text-gray-900">
               {kpi.target}
@@ -158,14 +161,14 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-gray-600">Progreso</span>
+              <span className="font-medium text-gray-600">{tl("progress")}</span>
               <span className="font-bold text-gray-900">{progressPercentage.toFixed(1)}%</span>
             </div>
             <Progress value={progressPercentage} className="h-2.5" />
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 font-medium">Rango</span>
+            <span className="text-gray-600 font-medium">{tl("range")}</span>
             <span className="font-semibold text-gray-900">
               {kpi.thresholds.low} - {kpi.thresholds.high}
               {kpi.unit}
@@ -179,7 +182,7 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <CalendarIcon className="h-3.5 w-3.5" />
               <span>
-                Actualizado:{" "}
+                {tl("updated")}:{" "}
                 {new Date(kpi.lastUpdated).toLocaleDateString("es-CL", {
                   day: "2-digit",
                   month: "short",
@@ -202,7 +205,7 @@ export const KPICardDetailed = ({ kpi, isDragging }: KPICardDetailedProps) => {
               )}
               {kpi.criterio && (
                 <div className="text-xs">
-                  <span className="font-semibold text-gray-700">Criterio:</span>{" "}
+                  <span className="font-semibold text-gray-700">{tl("criteria")}:</span>{" "}
                   <span className="text-gray-600">{kpi.criterio}</span>
                 </div>
               )}

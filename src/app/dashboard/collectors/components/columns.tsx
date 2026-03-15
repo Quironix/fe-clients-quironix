@@ -32,18 +32,21 @@ export const createColumns = (
   onViewDetails?: (collector: CollectorResponse) => void,
   onToggleStatus?: (collector: CollectorResponse) => void,
   onEdit?: (collector: CollectorResponse) => void,
-  onDelete?: (collector: CollectorResponse) => void
-): ColumnDef<CollectorResponse>[] => [
+  onDelete?: (collector: CollectorResponse) => void,
+  t?: (key: string) => string
+): ColumnDef<CollectorResponse>[] => {
+  const tr = t || ((key: string) => key);
+  return [
   {
     accessorKey: "name",
-    header: "Nombre",
+    header: tr("name"),
     cell: ({ row }) => (
       <div className="font-medium text-sm">{row.original.name}</div>
     ),
   },
   {
     accessorKey: "description",
-    header: "Descripción",
+    header: tr("description"),
     cell: ({ row }) => (
       <div className="font-medium text-sm max-w-[300px] truncate">
         {row.original.description}
@@ -52,7 +55,7 @@ export const createColumns = (
   },
   {
     accessorKey: "channel",
-    header: "Canales",
+    header: tr("channels"),
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         {getChannelIcon(row.original.channel)}
@@ -61,14 +64,14 @@ export const createColumns = (
   },
   {
     accessorKey: "frequency",
-    header: "Frecuencia",
+    header: tr("frequency"),
     cell: ({ row }) => (
       <div className="font-medium text-sm">{row.original.frequency}</div>
     ),
   },
   {
     accessorKey: "status",
-    header: "Estado",
+    header: tr("status"),
     cell: ({ row }) => (
       <Switch
         checked={row.original.status}
@@ -78,7 +81,7 @@ export const createColumns = (
   },
   {
     accessorKey: "subject",
-    header: "Asunto",
+    header: tr("subject"),
     cell: ({ row }) => (
       <div className="font-medium text-sm max-w-[200px] truncate">
         {row.original.subject || "N/A"}
@@ -87,7 +90,7 @@ export const createColumns = (
   },
   {
     accessorKey: "createdAt",
-    header: "Fecha Creación",
+    header: tr("createdAt"),
     cell: ({ row }) => (
       <div className="font-medium text-sm">
         {row.original.createdAt ? formatDate(row.original.createdAt) : "N/A"}
@@ -96,7 +99,7 @@ export const createColumns = (
   },
   {
     id: "actions",
-    header: "Acciones",
+    header: tr("actions"),
     cell: ({ row }) => {
       const collector = row.original;
 
@@ -134,5 +137,6 @@ export const createColumns = (
     },
   },
 ];
+};
 
 export const columns = createColumns();

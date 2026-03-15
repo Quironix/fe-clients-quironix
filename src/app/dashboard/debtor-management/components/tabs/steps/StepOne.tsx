@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { differenceInDays, format } from "date-fns";
 import { FileText, Mail } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -29,6 +30,7 @@ interface StepOneProps {
 }
 
 export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected, onValidationChange }: StepOneProps) => {
+  const t = useTranslations("debtorManagement.stepOne");
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,7 +38,6 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
   const [searchTerm, setSearchTerm] = useState("");
   const [previewFile, setPreviewFile] = useState<{ url: string; name: string } | null>(null);
 
-  // Usar refs para evitar recrear handleRowSelectionChange
   const onInvoicesSelectedRef = useRef(onInvoicesSelected);
   const onValidationChangeRef = useRef(onValidationChange);
   const paginatedDataRef = useRef<Invoice[]>([]);
@@ -54,7 +55,6 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
     onValidationChangeRef.current?.(isValid);
   }, [selectedInvoices]);
 
-  // Fetch invoices using TanStack Query
   const { data: invoicesResponse, isLoading } = useQuery({
     queryKey: ["debtor-invoices", dataDebtor?.id, profile?.client_id],
     queryFn: async () =>
@@ -70,7 +70,6 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
 
   const invoices: Invoice[] = invoicesResponse?.data?.data || [];
 
-  // Filtrar facturas por búsqueda
   const filteredInvoices = useMemo(() => {
     if (!searchTerm) return invoices;
 
@@ -85,7 +84,6 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
     });
   }, [invoices, searchTerm]);
 
-  // Calcular días de atraso
   const calculateDelay = (dueDate: string) => {
     if (!dueDate) return 0;
     try {
@@ -98,12 +96,11 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
     }
   };
 
-  // Definir columnas para la tabla
   const columns: ColumnDef<Invoice>[] = useMemo(
     () => [
       {
         accessorKey: "number",
-        header: "Nº Documento",
+        header: t("documentNumber"),
         cell: ({ row }) => {
           const number = row.getValue("number") as string;
           return (
@@ -115,7 +112,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
       },
       {
         accessorKey: "type",
-        header: "Tipo",
+        header: t("type"),
         cell: ({ row }) => {
           const type = row.original.type;
           return <DocumentTypeBadge type={type} />;
@@ -123,7 +120,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
       },
       {
         accessorKey: "issue_date",
-        header: "Emisión",
+        header: t("issueDate"),
         cell: ({ row }) => {
           const issueDate = row.getValue("issue_date") as string;
           if (!issueDate) return <div>-</div>;
@@ -136,7 +133,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
       },
       {
         accessorKey: "due_date",
-        header: "Vencimiento",
+        header: t("dueDate"),
         cell: ({ row }) => {
           const dueDate = row.getValue("due_date") as string;
           if (!dueDate) return <div>-</div>;
@@ -149,7 +146,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
       },
       {
         accessorKey: "amount",
-        header: "Monto",
+        header: t("amount"),
         cell: ({ row }) => {
           const amount = row.getValue("amount");
           if (amount == null) return <div>-</div>;
@@ -174,7 +171,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
       },
       {
         accessorKey: "balance",
-        header: "Saldo",
+        header: t("balance"),
         cell: ({ row }) => {
           const balance = row.getValue("balance");
           if (balance == null) return <div>-</div>;
@@ -199,7 +196,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
       },
       {
         id: "delay",
-        header: "Atraso",
+        header: t("delay"),
         cell: ({ row }) => {
           const dueDate = row.original.due_date;
           const delay = calculateDelay(dueDate);
@@ -207,14 +204,14 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
             <div
               className={`font-medium ${delay > 0 ? "text-red-600" : "text-gray-600"}`}
             >
-              {delay > 0 ? `${delay} días` : "-"}
+              {delay > 0 ? t("delayDays", { days: delay }) : "-"}
             </div>
           );
         },
       },
       {
         accessorKey: "phases",
-        header: "Fase",
+        header: t("phase"),
         cell: ({ row }) => {
           const phasesArray = row.original.phases;
           const lastPhase =
@@ -229,7 +226,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
       },
       {
         id: "document",
-        header: "Documento",
+        header: t("document"),
         cell: ({ row }) => {
           const file = row.original.file;
           const isValidUrl =
@@ -243,7 +240,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
                   onClick={() =>
                     setPreviewFile({
                       url: file,
-                      name: row.original.number || row.original.folio || "Documento",
+                      name: row.original.number || row.original.folio || t("document"),
                     })
                   }
                   className="text-blue-600 hover:text-blue-800 cursor-pointer"
@@ -258,17 +255,15 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
         },
       },
     ],
-    []
+    [t]
   );
 
-  // Calcular paginación manual (lado del cliente)
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     return filteredInvoices.slice(startIndex, endIndex);
   }, [filteredInvoices, currentPage, pageSize]);
 
-  // Calcular initialRowSelection basado en las facturas seleccionadas
   const initialRowSelection = useMemo(() => {
     if (!selectedInvoices || selectedInvoices.length === 0) return {};
 
@@ -286,12 +281,10 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
     return selection;
   }, [selectedInvoices, paginatedData]);
 
-  // Actualizar ref de paginatedData
   useEffect(() => {
     paginatedDataRef.current = paginatedData;
   }, [paginatedData]);
 
-  // Manejar cambios en la selección de filas - Esta función NUNCA cambia
   const handleRowSelectionChange = useCallback(
     (selection: RowSelectionState) => {
       const selectedIndices = Object.keys(selection).filter(
@@ -302,7 +295,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
       );
       onInvoicesSelectedRef.current?.(selectedInvoices);
     },
-    [] // Sin dependencias - la función nunca cambia
+    []
   );
 
   const pagination = useMemo(() => {
@@ -324,7 +317,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
 
   const handleSearchChange = (search: string) => {
     setSearchTerm(search);
-    setCurrentPage(1); // Reset a la primera página cuando busque
+    setCurrentPage(1);
   };
 
   const TableSkeleton = () => (
@@ -373,7 +366,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
         data={paginatedData}
         isLoading={isLoading}
         loadingComponent={<TableSkeleton />}
-        emptyMessage="No se encontraron facturas para este deudor"
+        emptyMessage={t("emptyMessage")}
         pageSize={pageSize}
         pageSizeOptions={[15, 20, 25, 30, 40, 50]}
         showPagination={true}
@@ -383,14 +376,14 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
         pagination={pagination}
         onPaginationChange={handlePaginationChange}
         enableGlobalFilter={true}
-        searchPlaceholder="Buscar facturas..."
+        searchPlaceholder={t("searchPlaceholder")}
         onSearchChange={handleSearchChange}
         initialSearchValue={searchTerm}
         enableColumnFilter={true}
         title={
-          <TitleStep title="Documentos" icon={<Mail className="w-5 h-5" />} />
+          <TitleStep title={t("title")} icon={<Mail className="w-5 h-5" />} />
         }
-        description="Selecciona las columnas que deseas mostrar en la tabla de facturas."
+        description={t("columnFilterDescription")}
       />
 
       <Dialog open={!!previewFile} onOpenChange={(open) => !open && setPreviewFile(null)}>

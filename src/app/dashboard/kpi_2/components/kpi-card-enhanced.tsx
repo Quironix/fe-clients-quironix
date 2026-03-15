@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { KPI } from "../services/types";
 
 interface KPICardEnhancedProps {
@@ -10,30 +11,32 @@ interface KPICardEnhancedProps {
 }
 
 export const KPICardEnhanced = ({ kpi }: KPICardEnhancedProps) => {
+  const t = useTranslations("kpi.status");
+  const tl = useTranslations("kpi.labels");
   const getStatusConfig = () => {
     switch (kpi.status) {
       case "success":
         return {
           badge: "bg-emerald-100 text-emerald-700 border-emerald-200",
-          label: "En Meta",
+          label: t("onTarget"),
           progressColor: "bg-emerald-500",
         };
       case "warning":
         return {
           badge: "bg-amber-100 text-amber-700 border-amber-200",
-          label: "Atención",
+          label: t("attention"),
           progressColor: "bg-amber-500",
         };
       case "error":
         return {
           badge: "bg-rose-100 text-rose-700 border-rose-200",
-          label: "Crítico",
+          label: t("critical"),
           progressColor: "bg-rose-500",
         };
       default:
         return {
           badge: "bg-gray-100 text-gray-700 border-gray-200",
-          label: "Normal",
+          label: t("normal"),
           progressColor: "bg-gray-500",
         };
     }
@@ -60,7 +63,7 @@ export const KPICardEnhanced = ({ kpi }: KPICardEnhancedProps) => {
       case "stable":
         return (
           <div className="flex items-center gap-1 text-gray-600">
-            <span className="text-xs font-semibold">Estable</span>
+            <span className="text-xs font-semibold">{t("stable")}</span>
           </div>
         );
     }
@@ -101,7 +104,7 @@ export const KPICardEnhanced = ({ kpi }: KPICardEnhancedProps) => {
               </span>
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              Meta: {kpi.target}
+              {tl("target")}: {kpi.target}
               {kpi.unit}
             </div>
           </div>
@@ -110,7 +113,7 @@ export const KPICardEnhanced = ({ kpi }: KPICardEnhancedProps) => {
 
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="text-gray-600 font-medium">Progreso</span>
+            <span className="text-gray-600 font-medium">{tl("progress")}</span>
             <span className="font-semibold text-gray-900">
               {progressPercentage.toFixed(0)}%
             </span>

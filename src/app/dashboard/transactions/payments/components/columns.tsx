@@ -5,6 +5,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { formatDate } from "@/lib/utils";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { Edit, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { usePaymentStore } from "../store";
@@ -14,6 +15,8 @@ const AcctionsCellComponent = ({ row }: { row: Row<Payments> }) => {
   const router = useRouter();
   const { session, profile } = useProfileContext();
   const { deletePayment } = usePaymentStore();
+  const t = useTranslations("transactions.payments");
+  const tCommon = useTranslations("common.buttons");
 
   const handleDelete = async (payment: Payments) => {
     try {
@@ -22,10 +25,10 @@ const AcctionsCellComponent = ({ row }: { row: Row<Payments> }) => {
         profile?.client?.id || "",
         payment?.id as string
       );
-      toast.success("Pago eliminado correctamente");
+      toast.success(t("toast.deleteSuccess"));
     } catch (error) {
       console.error(error);
-      toast.error("Error al eliminar el pago");
+      toast.error(t("toast.deleteError"));
     }
   };
 
@@ -39,26 +42,26 @@ const AcctionsCellComponent = ({ row }: { row: Row<Payments> }) => {
             `/dashboard/transactions/payments/create?id=${row.original.id}`
           )
         }
-        title="Editar"
+        title={tCommon("edit")}
         className="hover:bg-amber-500 hover:text-white text-primary"
       >
         <Edit />
       </Button>
       <DialogConfirm
-        title="¿Eliminar pago?"
-        description={`¿Estás seguro que deseas eliminar el pago? Esta acción no se puede deshacer.`}
+        title={t("deleteTitle")}
+        description={t("deleteDescription")}
         triggerButton={
           <Button
             variant="ghost"
             size="icon"
-            title="Eliminar"
+            title={tCommon("delete")}
             className="hover:bg-red-500 hover:text-white text-primary"
           >
             <Trash2 />
           </Button>
         }
-        cancelButtonText="Cancelar"
-        confirmButtonText="Sí, eliminar"
+        cancelButtonText={tCommon("cancel")}
+        confirmButtonText={tCommon("yesDelete")}
         onConfirm={() => handleDelete(row.original)}
         type="danger"
       />
