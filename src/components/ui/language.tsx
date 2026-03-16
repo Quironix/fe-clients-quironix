@@ -2,7 +2,7 @@
 
 import React, { useTransition } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Globe } from "lucide-react";
 
@@ -17,6 +17,7 @@ const localeLabels: Record<Locale, string> = {
 const Language = () => {
   const locale = useLocale();
   const router = useRouter();
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
   const handleLocaleChange = (newLocale: string) => {

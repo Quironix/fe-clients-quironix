@@ -16,7 +16,7 @@ export const useKPIData = ({
   enabled = true,
 }: UseKPIDataParams) => {
   return useQuery<KPIResponse, Error>({
-    queryKey: ["kpis", clientId, filters],
+    queryKey: ["kpis", clientId, accessToken, filters],
     queryFn: () => getAll(accessToken, clientId, filters),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
