@@ -148,27 +148,9 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
               },
               {
                 disabled: true,
-                title: t("monthlyPeriod"),
-                url: "/dashboard/monthly-period",
-                scope: "client.settings_account.monthly_period",
-              },
-              {
-                disabled: true,
                 title: t("cashFlow"),
                 url: "/dashboard/cash-flow",
                 scope: "client.settings_account.cash_flow",
-              },
-              {
-                disabled: true,
-                title: t("communications"),
-                url: "/dashboard/communications",
-                scope: "client.settings_account.communications",
-              },
-              {
-                disabled: true,
-                title: t("indicators"),
-                url: "/dashboard/indicators",
-                scope: "client.settings_account.indicators",
               },
               {
                 disabled: true,
@@ -350,27 +332,9 @@ export const sidebarData: any = {
             },
             {
               disabled: true,
-              title: "Periodo mensual y cierre",
-              url: "/dashboard/monthly-period",
-              scope: "client.settings_account.monthly_period",
-            },
-            {
-              disabled: true,
               title: "Flujo de caja",
               url: "/dashboard/cash-flow",
               scope: "client.settings_account.cash_flow",
-            },
-            {
-              disabled: true,
-              title: "Comunicaciones",
-              url: "/dashboard/communications",
-              scope: "client.settings_account.communications",
-            },
-            {
-              disabled: true,
-              title: "Configuración de indicadores",
-              url: "/dashboard/indicators",
-              scope: "client.settings_account.indicators",
             },
           ],
         },
