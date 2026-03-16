@@ -472,7 +472,7 @@
     "description": "Complete this section to configure your company's operational data and customize your platform experience.",
     "subDescription": "Portfolio configuration",
     "createManual": {
-      "title": "Create {debtor} {manual}",
+      "title": "Create <debtor></debtor> <manual></manual>",
       "debtor": "debtor",
       "manual": "manually",
       "description": "Complete the form with the debtor data you want to add. This option is ideal if you are going to upload a single record and don't have a file to import.",

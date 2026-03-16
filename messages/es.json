@@ -472,7 +472,7 @@
     "description": "Completa esta sección para configurar los datos operativos de tu empresa y personalizar tu experiencia en la plataforma.",
     "subDescription": "Configuración de la cartera",
     "createManual": {
-      "title": "Crear {debtor} de forma {manual}",
+      "title": "Crear <debtor></debtor> de forma <manual></manual>",
       "debtor": "deudor",
       "manual": "manual",
       "description": "Completa el formulario con los datos del deudor que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuestas con un archivo para importar.",
