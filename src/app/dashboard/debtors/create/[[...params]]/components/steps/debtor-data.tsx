@@ -209,7 +209,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         },
       ],
       dni: {
-        type: "",
+        type: "RUT",
         dni: "",
         emit_date: "",
         expiration_date: "",
@@ -288,7 +288,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           },
         ],
         dni: {
-          type: dataDebtor?.dni?.type || "",
+          type: dataDebtor?.dni?.type || "RUT",
           dni: dataDebtor.dni?.dni || "",
           emit_date: dataDebtor.dni?.emit_date || "",
           expiration_date: dataDebtor.dni?.expiration_date || "",
