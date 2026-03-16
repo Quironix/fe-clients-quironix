@@ -68,11 +68,8 @@ export const ProfileDropdown = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem asChild disabled>
-              <Link href="/settings">{t("myProfile")}</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild disabled>
-              <Link href="/settings">{t("settings")}</Link>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/profile">{t("settings")}</Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />

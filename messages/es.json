@@ -2342,5 +2342,33 @@
     "refresh": "Actualizar",
     "previous": "Anterior",
     "next": "Siguiente"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "description": "Administra tu información personal",
+    "subDescription": "Perfil",
+    "changePassword": "Cambiar contraseña",
+    "resetPassword": {
+      "confirmTitle": "¿Cambiar contraseña?",
+      "confirmDescription": "Se enviará un correo electrónico a tu dirección con instrucciones para restablecer tu contraseña."
+    },
+    "form": {
+      "firstName": "Nombre",
+      "firstNamePlaceholder": "Ingresa tu nombre",
+      "lastName": "Apellido",
+      "lastNamePlaceholder": "Ingresa tu apellido",
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "phonePlaceholder": "Ingresa tu teléfono",
+      "roles": "Roles",
+      "fieldRequired": "Este campo es requerido",
+      "maxChars": "Máximo {max} caracteres"
+    },
+    "toast": {
+      "updateSuccess": "Perfil actualizado correctamente",
+      "updateError": "Error al actualizar el perfil",
+      "passwordSent": "Se le envió la clave por email",
+      "passwordError": "Error al solicitar cambio de contraseña"
+    }
   }
 }

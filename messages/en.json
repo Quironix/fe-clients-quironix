@@ -2342,5 +2342,33 @@
     "refresh": "Refresh",
     "previous": "Previous",
     "next": "Next"
+  },
+  "profile": {
+    "title": "My Profile",
+    "description": "Manage your personal information",
+    "subDescription": "Profile",
+    "changePassword": "Change password",
+    "resetPassword": {
+      "confirmTitle": "Change password?",
+      "confirmDescription": "An email will be sent to your address with instructions to reset your password."
+    },
+    "form": {
+      "firstName": "First name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "Enter your last name",
+      "email": "Email address",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter your phone number",
+      "roles": "Roles",
+      "fieldRequired": "This field is required",
+      "maxChars": "Maximum {max} characters"
+    },
+    "toast": {
+      "updateSuccess": "Profile updated successfully",
+      "updateError": "Error updating profile",
+      "passwordSent": "Password sent to your email",
+      "passwordError": "Error requesting password change"
+    }
   }
 }
