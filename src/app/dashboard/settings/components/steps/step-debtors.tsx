@@ -14,7 +14,6 @@ import InputNumberCart from "@/components/ui/input-number-cart";
 import { Switch } from "@/components/ui/switch";
 import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -23,6 +22,7 @@ import {
   Settings2,
   ShieldAlert,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -274,9 +274,7 @@ const StepDebtors: React.FC<StepProps> = ({
     } catch (error) {
       console.error("Error al enviar el formulario:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : t("toast.updateError"),
+        error instanceof Error ? error.message : t("toast.updateError"),
       );
     } finally {
       setLoading(false);
@@ -325,18 +323,13 @@ const StepDebtors: React.FC<StepProps> = ({
                 <TitleStep
                   title={t("segmentationTitle")}
                   icon={<Calculator size={16} />}
+                  helperText={t("segmentationDescription")}
                 />
-                <p className="text-sm">
-                  Clasifica tus clientes en segmentos según su nivel de
-                  facturación y su comportamiento de pago (DBT). La combinación
-                  de Facturación y DBT le permitirá a Qurionix determinar la
-                  prioridad de gestión, los cuadrantes de riesgo y la asignación
-                  de tareas automáticas. Para que funcione correctamente, debes
-                  definir los rangos que determinarán cada nivel:
-                </p>
+                {/* <p className="text-sm">{t("segmentationDescription")}</p> */}
                 <span className="text-sm font-bold flex justify-start gap-2">
                   Facturación{" "}
                   <InfoIcon
+                    size="sm"
                     color="#FF8113"
                     tooltipContent={
                       <div>
@@ -439,6 +432,7 @@ const StepDebtors: React.FC<StepProps> = ({
                 <span className="text-sm font-bold mt-5 flex justify-start gap-2">
                   DBT (Days Beyond Terms){" "}
                   <InfoIcon
+                    size="sm"
                     color="#FF8113"
                     tooltipContent={
                       <div>
@@ -548,15 +542,8 @@ const StepDebtors: React.FC<StepProps> = ({
                 <TitleStep
                   title={t("autoAdjustTitle")}
                   icon={<Settings2 size={16} />}
+                  helperText={t("autoAdjustDescription")}
                 />
-                <p className="text-sm">
-                  En esta sección defines las reglas bajo las cuales Quironix
-                  podrá compensar o ajustar automáticamente diferencias entre
-                  facturas y notas de crédito, sin intervención manual. Una
-                  correcta configuración permite reducir tareas operativas y
-                  mantener los saldos contables alineados con la realidad
-                  financiera.
-                </p>
                 <div className="space-y-2 w-full mt-1">
                   <div className="grid grid-cols-3 gap-2">
                     <FormField
@@ -568,6 +555,7 @@ const StepDebtors: React.FC<StepProps> = ({
                             {t("autoNetting")}
                             <span className="text-orange-500">*</span>{" "}
                             <InfoIcon
+                              size="sm"
                               color="#FF8113"
                               tooltipContent={
                                 <span>
@@ -600,6 +588,7 @@ const StepDebtors: React.FC<StepProps> = ({
                             {t("amountFrom")}
                             <span className="text-orange-500">*</span>
                             <InfoIcon
+                              size="sm"
                               color="#FF8113"
                               tooltipContent={
                                 <span>
@@ -656,15 +645,8 @@ const StepDebtors: React.FC<StepProps> = ({
                 <TitleStep
                   title={t("defaultPoliciesTitle")}
                   icon={<ShieldAlert size={16} />}
+                  helperText={t("defaultPoliciesDescription")}
                 />
-                <p className="text-sm">
-                  En esta sección defines las reglas que permitirán a Quironix
-                  determinar automáticamente cuándo un compromiso de pago debe
-                  considerarse cumplido o incumplido. Estos parámetros son
-                  fundamentales para medir la confiabilidad de tus deudores y
-                  alimentar los indicadores de credibilidad, priorización y
-                  gestión.
-                </p>
                 <div className="space-y-2 w-full mt-1">
                   <div className="grid grid-cols-3 gap-2">
                     <FormField
@@ -676,6 +658,7 @@ const StepDebtors: React.FC<StepProps> = ({
                             {t("committedAmountTolerance")}
                             <span className="text-orange-500">*</span>{" "}
                             <InfoIcon
+                              size="sm"
                               color="#FF8113"
                               tooltipContent={
                                 <div>
@@ -716,6 +699,7 @@ const StepDebtors: React.FC<StepProps> = ({
                             {t("daysTolerance")}
                             <span className="text-orange-500">*</span>
                             <InfoIcon
+                              size="sm"
                               color="#FF8113"
                               tooltipContent={
                                 <div>
@@ -786,7 +770,8 @@ const StepDebtors: React.FC<StepProps> = ({
                   variant="outline"
                   className="px-6 py-2"
                 >
-                  <ArrowLeftIcon className="w-4 h-4" /> {tCommon("buttons.back")}
+                  <ArrowLeftIcon className="w-4 h-4" />{" "}
+                  {tCommon("buttons.back")}
                 </Button>
               )}
 
@@ -799,11 +784,13 @@ const StepDebtors: React.FC<StepProps> = ({
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
-                    <Loader className="w-4 h-4 animate-spin" /> {tCommon("loading.submitting")}
+                    <Loader className="w-4 h-4 animate-spin" />{" "}
+                    {tCommon("loading.submitting")}
                   </div>
                 ) : (
                   <>
-                    {tCommon("buttons.continue")} <ArrowRightIcon className="w-4 h-4" />
+                    {tCommon("buttons.continue")}{" "}
+                    <ArrowRightIcon className="w-4 h-4" />
                   </>
                 )}
               </Button>

@@ -1,11 +1,14 @@
 import React from "react";
+import { InfoIcon } from "../../components/info-icon";
 
 const TitleStep = ({
   title,
   icon,
+  helperText,
 }: {
   title: string;
   icon: React.ReactNode;
+  helperText?: string;
 }) => {
   return (
     <div className="flex justify-start items-center gap-2">
@@ -13,6 +16,16 @@ const TitleStep = ({
         {icon}
       </div>
       <h1 className="text-md font-bold">{title}</h1>
+      {helperText && (
+        // <span className="text-sm font-bold flex justify-start gap-2">
+        <InfoIcon
+          color="#2f6eff"
+          size="sm"
+          tooltipContent={helperText}
+          tooltipClassName="max-w-xl"
+        />
+        // </span>
+      )}
     </div>
   );
 };

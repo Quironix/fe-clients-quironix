@@ -127,12 +127,12 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
                 url: "/dashboard/users",
                 scope: "client.users.users",
               },
-              {
-                disabled: true,
-                title: t("actionsHistory"),
-                url: "/dashboard/actions-history",
-                scope: "client.users.actions_history",
-              },
+              // {
+              //   disabled: true,
+              //   title: t("actionsHistory"),
+              //   url: "/dashboard/actions-history",
+              //   scope: "client.users.actions_history",
+              // },
             ],
           },
           {
@@ -311,12 +311,12 @@ export const sidebarData: any = {
               url: "/dashboard/roles",
               scope: "client.users.roles",
             },
-            {
-              disabled: true,
-              title: "Historial de acciones",
-              url: "/dashboard/actions-history",
-              scope: "client.users.actions_history",
-            },
+            // {
+            //   disabled: true,
+            //   title: "Historial de acciones",
+            //   url: "/dashboard/actions-history",
+            //   scope: "client.users.actions_history",
+            // },
           ],
         },
         {
@@ -567,6 +567,7 @@ export enum DocumentType {
   DEBT_COLLECTION = "Cobro Deuda",
   INTEREST = "Intereses",
   CREDIT_NOTE = "Abono",
+  PROTESTED_CHECK = "Cheque Protestado",
 }
 
 export const INVOICE_TYPES = [
@@ -622,6 +623,11 @@ export const INVOICE_TYPES = [
         label: "Nota de Débito de Exportación Electrónica",
         value: "EXPORT_DEBIT_NOTE",
         code: "ND Exp. E",
+      },
+      {
+        label: "Cheque Protestado",
+        value: "PROTESTED_CHECK",
+        code: "CHP",
       },
     ],
   },

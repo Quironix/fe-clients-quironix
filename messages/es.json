@@ -479,7 +479,7 @@
       "button": "Carga manual"
     },
     "bulkUpload": {
-      "title": "Subir {debtors} por carga masiva",
+      "title": "Subir <debtors></debtors> por carga masiva",
       "debtors": "varios deudores",
       "downloadDescription": "Descarga la estructura del archivo para completarlo con los datos de los deudores que quieres cargar.",
       "downloadButton": "Descargar estructura",
@@ -1444,7 +1444,7 @@
     "contacts": {
       "title": "Contactos cliente",
       "checkExtensionTitle": "Criterios para prorroga de cheques",
-      "checkExtensionDescription": "Esta sección forma parte de tus políticas de crédito. Aquí defines las condiciones bajo las cuales tu empresa permitirá extender el vencimiento de cheques emitidos por deudores.\nLas prórrogas deben gestionarse como una excepción controlada, ya que impactan directamente en la exposición financiera y en la disciplina de pago de la cartera. Para ello, debes definir:",
+      "checkExtensionDescription": "Esta sección forma parte de tus políticas de crédito. Aquí defines las condiciones bajo las cuales tu empresa permitirá extender el vencimiento de cheques emitidos por deudores.\nLas prórrogas deben gestionarse como una excepción controlada, ya que impactan directamente en la exposición financiera y en la disciplina de pago de la cartera. Para ello, debes definir lo siguiente...",
       "extensionRequestPeriod": "Plazo Para solicitud de prórroga",
       "extensionRequestPeriodTooltip": "Número de días de anticipación con los que el deudor debe solicitar la extensión antes del vencimiento del cheque.\nEsto evita decisiones reactivas y permite una evaluación adecuada del riesgo.",
       "annualExtensions": "Nro. Prórrogas anuales por deudor",

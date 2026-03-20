@@ -18,7 +18,15 @@ import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import DatePickerFormItem from "../../components/date-picker-form-item";
-import { BankMovementStatusEnum, PaymentNettingFilters } from "../types";
+import { PaymentNettingFilters } from "../types";
+
+const STATUS_OPTIONS = [
+  { value: "ALL", label: "Todos" },
+  { value: "PENDING", label: "Pendiente" },
+  { value: "COMPENSATED", label: "Compensado" },
+  { value: "MULTIPLE_SUGGESTIONS", label: "Múltiples sugerencias" },
+  { value: "ELIMINATED", label: "Eliminado" },
+];
 
 export interface FilterInputsRef {
   getCurrentFilters: () => PaymentNettingFilters;
@@ -123,13 +131,11 @@ const FilterInputs = React.forwardRef<
                       <SelectValue placeholder={t("selectStatus")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(BankMovementStatusEnum).map(
-                        ([key, value]) => (
-                          <SelectItem key={key} value={key}>
-                            {value}
-                          </SelectItem>
-                        )
-                      )}
+                      {STATUS_OPTIONS.map(({ value, label }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormControl>

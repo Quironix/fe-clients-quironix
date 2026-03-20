@@ -479,7 +479,7 @@
       "button": "Manual upload"
     },
     "bulkUpload": {
-      "title": "Upload {debtors} by bulk upload",
+      "title": "Upload <debtors></debtors> by bulk upload",
       "debtors": "multiple debtors",
       "downloadDescription": "Download the file structure to fill it with the debtor data you want to upload.",
       "downloadButton": "Download structure",
@@ -1444,7 +1444,7 @@
     "contacts": {
       "title": "Client contacts",
       "checkExtensionTitle": "Check extension criteria",
-      "checkExtensionDescription": "This section is part of your credit policies. Here you define the conditions under which your company will allow extending the maturity of checks issued by debtors.\nExtensions should be managed as a controlled exception, as they directly impact financial exposure and payment discipline of the portfolio. For this, you must define:",
+      "checkExtensionDescription": "This section is part of your credit policies. Here you define the conditions under which your company will allow extending the maturity of checks issued by debtors.\nExtensions should be managed as a controlled exception, as they directly impact financial exposure and payment discipline of the portfolio. For this, you must define following parameters...",
       "extensionRequestPeriod": "Extension request period",
       "extensionRequestPeriodTooltip": "Number of days in advance the debtor must request the extension before the check matures.\nThis avoids reactive decisions and allows proper risk assessment.",
       "annualExtensions": "Annual extensions per debtor",

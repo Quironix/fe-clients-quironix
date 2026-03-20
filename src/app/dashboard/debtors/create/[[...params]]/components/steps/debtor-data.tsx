@@ -74,7 +74,8 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
             z.object({
               id: z.string().min(1, "Campo requerido"),
               debtor_code: z.string().nullable(),
-            })
+            }),
+            { error: "Debes seleccionar al menos una compañía" },
           )
           .min(1, "Debes seleccionar al menos una compañía")
       : z.null(),
@@ -84,7 +85,7 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
           PREFERRED_CHANNELS.map((channel) => channel.code) as [
             string,
             ...string[],
-          ]
+          ],
         ),
         z.literal("__none__"),
         z.null(),
@@ -98,7 +99,7 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
           COMMUNICATION_CHANNEL.map((channel) => channel.code) as [
             string,
             ...string[],
-          ]
+          ],
         ),
         z.literal("__none__"),
         z.null(),
@@ -110,8 +111,8 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
       .union([
         z.enum(
           DEBTOR_PAYMENT_METHODS.map(
-            (paymentMethod) => paymentMethod.value
-          ) as [string, ...string[]]
+            (paymentMethod) => paymentMethod.value,
+          ) as [string, ...string[]],
         ),
         z.literal("__none__"),
         z.null(),
@@ -129,7 +130,7 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
           country: z.string().optional().nullable(),
           postal_code: z.string().optional().nullable(),
           is_primary: z.boolean().optional().nullable(),
-        })
+        }),
       )
       .optional()
       .nullable(),
@@ -145,7 +146,7 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
         z.object({
           value: z.any().optional(),
           type: z.string().optional(),
-        })
+        }),
       )
       .optional(),
     currency: z.string().optional(),
@@ -196,7 +197,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       channel: null,
       channel_communication: null,
       debtor_code: "",
-      payment_method: dataDebtor?.payment_method || null,
+      payment_method: null,
       sales_person: "",
       addresses: [
         {
@@ -251,6 +252,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
   });
 
   useEffect(() => {
+    if (isFactoring && !dataDebtor?.id) {
+      form.resetField("companies", { defaultValue: [] });
+    }
+  }, [isFactoring]);
+
+  useEffect(() => {
     if (dataDebtor?.id) {
       const formData: DebtorFormValues = {
         name: dataDebtor.name || "",
@@ -303,10 +310,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           {
             value:
               dataDebtor.metadata?.find(
-                (meta) => meta.type === "RISK_CLASSIFICATION"
+                (meta) => meta.type === "RISK_CLASSIFICATION",
               )?.value !== undefined
                 ? dataDebtor.metadata?.find(
-                    (meta) => meta.type === "RISK_CLASSIFICATION"
+                    (meta) => meta.type === "RISK_CLASSIFICATION",
                   )?.value
                 : "LOW",
             type: "RISK_CLASSIFICATION",
@@ -316,7 +323,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
               dataDebtor.metadata?.find((meta) => meta.type === "CREDIT_LINE")
                 ?.value !== undefined
                 ? dataDebtor.metadata?.find(
-                    (meta) => meta.type === "CREDIT_LINE"
+                    (meta) => meta.type === "CREDIT_LINE",
                   )?.value
                 : "false",
             type: "CREDIT_LINE",
@@ -324,16 +331,16 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           {
             value: safeNumber(
               dataDebtor.metadata?.find(
-                (meta) => meta.type === "CREDIT_LINE_AMOUNT"
+                (meta) => meta.type === "CREDIT_LINE_AMOUNT",
               )?.value,
-              0
+              0,
             ),
             type: "CREDIT_LINE_AMOUNT",
           },
           {
             value:
               dataDebtor.metadata?.find(
-                (meta) => meta.type === "CREDIT_LINE_TOLERANCE"
+                (meta) => meta.type === "CREDIT_LINE_TOLERANCE",
               )?.value || "",
             type: "CREDIT_LINE_TOLERANCE",
           },
@@ -367,7 +374,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         ) {
           form.setValue(
             "channel_communication",
-            formData.channel_communication
+            formData.channel_communication,
           );
         }
         if (
@@ -415,7 +422,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           if (channelCommValue === null || channelCommValue === undefined) {
             // Verificar si WHOLESALE está disponible en COMMUNICATION_CHANNEL
             const wholesaleAvailable = COMMUNICATION_CHANNEL.find(
-              (c) => c.code === "WHOLESALE"
+              (c) => c.code === "WHOLESALE",
             );
             if (wholesaleAvailable) {
               channelCommValue = "WHOLESALE";
@@ -439,7 +446,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             form.setValue(
               "addresses.0.country",
               formData.addresses[0].country,
-              { shouldValidate: true }
+              { shouldValidate: true },
             );
           }
         }, 300);
@@ -514,7 +521,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           const debtorCompanies = data.companies.map((company) => {
             // Buscar si ya existe una relación existente
             const existingRelation = dataDebtor.debtorCompanies?.find(
-              (dc) => dc.company_id === company.id
+              (dc) => dc.company_id === company.id,
             );
 
             return {
@@ -555,7 +562,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             await updateDebtor(
               session?.token,
               profile?.client?.id,
-              editPayload
+              editPayload,
             );
           }
         } else {
@@ -580,7 +587,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             await updateDebtor(
               session?.token,
               profile?.client?.id,
-              updatedData
+              updatedData,
             );
           }
         }
@@ -661,13 +668,17 @@ const DebtorsDataStep: React.FC<StepProps> = ({
             autoComplete="off"
           >
             <div className="grid gap-6">
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-3 gap-6 items-start">
                 {profile?.client?.type === "FACTORING" && (
                   <FormField
                     control={form.control}
                     name="companies"
                     render={({ field }) => (
-                      <SelectClient field={field} title={t("company")} required />
+                      <SelectClient
+                        field={field}
+                        title={t("company")}
+                        required
+                      />
                     )}
                   />
                 )}
@@ -701,7 +712,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           value={field.value || "RUT"}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder={t("selectDocumentType")} />
+                            <SelectValue
+                              placeholder={t("selectDocumentType")}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {typeDocuments.map((type) => (
@@ -807,7 +820,10 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   control={form.control}
                   name="addresses.0.country"
                   render={({ field }) => (
-                    <CountriesSelectFormItem field={field} title={t("country")} />
+                    <CountriesSelectFormItem
+                      field={field}
+                      title={t("country")}
+                    />
                   )}
                 />
                 <FormField
@@ -893,7 +909,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                                           "ml-auto h-4 w-4 shrink-0",
                                           category === field.value
                                             ? "opacity-100"
-                                            : "opacity-0"
+                                            : "opacity-0",
                                         )}
                                       />
                                     </CommandItem>
@@ -938,7 +954,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                           <Select
                             onValueChange={(value) =>
                               field.onChange(
-                                value === "__none__" ? null : value
+                                value === "__none__" ? null : value,
                               )
                             }
                             value={
@@ -1083,8 +1099,12 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                             <SelectValue placeholder={t("selectCreditLine")} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="true">{t("creditLineYes")}</SelectItem>
-                            <SelectItem value="false">{t("creditLineNo")}</SelectItem>
+                            <SelectItem value="true">
+                              {t("creditLineYes")}
+                            </SelectItem>
+                            <SelectItem value="false">
+                              {t("creditLineNo")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -1219,14 +1239,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
               </div>
             </div>
 
-            <div className="flex justify-end gap-2">
-              {submitAttempted &&
-                Object.keys(form.formState.errors).length > 0 && (
-                  <div className="text-red-500 text-xs self-center mr-2">
-                    {t("requiredFields")}
-                  </div>
-                )}
-
+            <div className="flex justify-end gap-2 items-start">
               {submitError && (
                 <div className="text-red-500 text-xs self-center mr-2">
                   {submitError}

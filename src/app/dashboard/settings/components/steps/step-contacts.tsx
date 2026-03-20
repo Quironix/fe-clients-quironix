@@ -33,11 +33,11 @@ import {
   Trash,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { getAll as getUsersService } from "../../../users/services";
 import { User } from "../../../users/services/types";
@@ -422,7 +422,9 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.first_name`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>{tCommon("labels.name")}</FormLabel>
+                                    <FormLabel>
+                                      {tCommon("labels.name")}
+                                    </FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
@@ -443,7 +445,9 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.last_name`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>{tCommon("labels.lastName")}</FormLabel>
+                                    <FormLabel>
+                                      {tCommon("labels.lastName")}
+                                    </FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
@@ -464,7 +468,9 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.email`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>{tCommon("labels.email")}</FormLabel>
+                                    <FormLabel>
+                                      {tCommon("labels.email")}
+                                    </FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
@@ -485,7 +491,9 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.phone`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>{tCommon("labels.phone")}</FormLabel>
+                                    <FormLabel>
+                                      {tCommon("labels.phone")}
+                                    </FormLabel>
                                     <FormControl>
                                       <PhoneInput
                                         placeholder="Ej: +56 9 9891 8080"
@@ -510,7 +518,9 @@ const StepContacts: React.FC<StepProps> = ({
                                 name={`contacts.${index}.position`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>{tCommon("labels.position")}</FormLabel>
+                                    <FormLabel>
+                                      {tCommon("labels.position")}
+                                    </FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
@@ -582,17 +592,8 @@ const StepContacts: React.FC<StepProps> = ({
                   <TitleStep
                     title={t("checkExtensionTitle")}
                     icon={<Banknote className="w-5 h-5" />}
+                    helperText={t("checkExtensionDescription")}
                   />
-                  <p className="text-sm">
-                    Esta sección forma parte de tus políticas de crédito. Aquí
-                    defines las condiciones bajo las cuales tu empresa permitirá
-                    extender el vencimiento de cheques emitidos por deudores.
-                    <br />
-                    Las prórrogas deben gestionarse como una excepción
-                    controlada, ya que impactan directamente en la exposición
-                    financiera y en la disciplina de pago de la cartera. Para
-                    ello, debes definir:
-                  </p>
                   <div className="space-y-2 flex justify-between items-start w-full gap-4">
                     <div className="grid grid-cols-3 gap-5 w-full">
                       <FormField
@@ -603,6 +604,7 @@ const StepContacts: React.FC<StepProps> = ({
                             <FormLabel>
                               {t("extensionRequestPeriod")}
                               <InfoIcon
+                                size="sm"
                                 color="#FF8113"
                                 tooltipContent={
                                   <span>
@@ -635,6 +637,7 @@ const StepContacts: React.FC<StepProps> = ({
                             <FormLabel>
                               {t("annualExtensions")}
                               <InfoIcon
+                                size="sm"
                                 color="#FF8113"
                                 tooltipContent={
                                   <span>
@@ -668,6 +671,7 @@ const StepContacts: React.FC<StepProps> = ({
                             <FormLabel>
                               {t("maxExtensionPeriod")}
                               <InfoIcon
+                                size="sm"
                                 color="#FF8113"
                                 tooltipContent={
                                   <span>
@@ -701,6 +705,7 @@ const StepContacts: React.FC<StepProps> = ({
                             <FormLabel>
                               {t("approvers")}{" "}
                               <InfoIcon
+                                size="sm"
                                 color="#FF8113"
                                 tooltipContent={
                                   <span>
@@ -873,14 +878,16 @@ const StepContacts: React.FC<StepProps> = ({
                   variant="outline"
                   className="px-6 py-2"
                 >
-                  <ArrowLeftIcon className="w-4 h-4" /> {tCommon("buttons.back")}
+                  <ArrowLeftIcon className="w-4 h-4" />{" "}
+                  {tCommon("buttons.back")}
                 </Button>
               )}
               <div className={isFirstStep ? "ml-auto" : ""}>
                 <Button type="submit" className="px-6 py-2" disabled={loading}>
                   {loading ? (
                     <div className="flex items-center gap-2">
-                      <Loader className="w-4 h-4 animate-spin" /> {tCommon("loading.submitting")}
+                      <Loader className="w-4 h-4 animate-spin" />{" "}
+                      {tCommon("loading.submitting")}
                     </div>
                   ) : (
                     <>

@@ -13,6 +13,7 @@ interface InfoIconProps {
   tooltipContent: React.ReactNode;
   size?: "sm" | "md" | "lg";
   className?: string;
+  tooltipClassName?: string;
 }
 
 const sizeClasses = {
@@ -26,6 +27,7 @@ export function InfoIcon({
   tooltipContent,
   size = "md",
   className,
+  tooltipClassName,
 }: InfoIconProps) {
   return (
     <Tooltip>
@@ -41,7 +43,9 @@ export function InfoIcon({
           ¡
         </div>
       </TooltipTrigger>
-      <TooltipContent className="whitespace-pre-line">{tooltipContent}</TooltipContent>
+      <TooltipContent className={cn("whitespace-pre-line max-w-2xl", tooltipClassName)}>
+        {tooltipContent}
+      </TooltipContent>
     </Tooltip>
   );
 }

@@ -27,13 +27,15 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
   const steps = getSteps(t);
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
-  const { fetchDebtorById, isFetchingDebtor } = useDebtorsStore();
+  const { fetchDebtorById, isFetchingDebtor, clearDataDebtor } = useDebtorsStore();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
   useEffect(() => {
     if (id && profile?.client?.id) {
       fetchDebtorById(session?.token, profile?.client?.id, id);
+    } else {
+      clearDataDebtor();
     }
   }, [id, profile?.client?.id]);
 

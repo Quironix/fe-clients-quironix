@@ -42,7 +42,11 @@ export const getPaymentNetting = async ({
 
     // Agregar filtro de status solo si no es vacío o "ALL"
     if (status && status !== "ALL") {
-      queryParams.append("status", status);
+      if (status === "ELIMINATED") {
+        queryParams.append("status", "ELIMINATED,ELIMINATED_NEGATIVE_AMOUNT,ELIMINATED_NO_TRACKING");
+      } else {
+        queryParams.append("status", status);
+      }
     }
 
     // Agregar filtros de búsqueda por amount y description
