@@ -1873,7 +1873,77 @@
     "integrationsTitle": "Integraciones",
     "integrationsDescription": "Integra la plataforma con tu sistema ERP mediante API",
     "configurationsTitle": "Configuraciones",
-    "configurationsDescription": "Configura los DTEs según tus necesidades"
+    "configurationsDescription": "Configura los DTEs según tus necesidades",
+    "apiKeys": {
+      "sectionTitle": "API Keys",
+      "sectionDescription": "Administra las API keys de tu cuenta a la plataforma.",
+      "createButton": "Crear API Key",
+      "maxKeysTooltip": "Ya tienes una API key. Elimina la existente para crear una nueva.",
+      "emptyMessage": "No tienes API keys generadas todavía.",
+      "table": {
+        "name": "Nombre",
+        "description": "Descripción",
+        "scopes": "Permisos",
+        "expiresAt": "Expira",
+        "lastUsed": "Último uso",
+        "status": "Estado",
+        "actions": "Acciones",
+        "never": "Nunca"
+      },
+      "status": {
+        "active": "Activa",
+        "inactive": "Inactiva"
+      },
+      "createTitle": "Crear API Key",
+      "createDescription": "Completa el formulario para generar una nueva API key.",
+      "createSuccess": "API Key creada exitosamente.",
+      "createError": "Error al crear la API key. Intenta de nuevo.",
+      "editTitle": "Editar API Key",
+      "editDescription": "Modifica los datos de tu API key.",
+      "updateSuccess": "API Key actualizada exitosamente.",
+      "updateError": "Error al actualizar la API key. Intenta de nuevo.",
+      "deleteTitle": "¿Eliminar API Key?",
+      "deleteDescription": "¿Estás seguro que quieres eliminar la API key \"{name}\"? Esta acción no se puede deshacer.",
+      "deleteSuccess": "API Key eliminada exitosamente.",
+      "deleteError": "Error al eliminar la API key. Intenta de nuevo.",
+      "form": {
+        "name": "Nombre",
+        "namePlaceholder": "Ej: Mi integración ERP",
+        "description": "Descripción",
+        "descriptionPlaceholder": "Descripción opcional de esta key",
+        "scopes": "Permisos",
+        "isActive": "Activa",
+        "submit": "Crear",
+        "submitEdit": "Guardar cambios",
+        "cancel": "Cancelar"
+      },
+      "reveal": {
+        "title": "API Key Creada",
+        "warning": "Esta key solo se mostrará una vez. Si la pierdes, deberás eliminarla y generar una nueva.",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "close": "Entendido, la guardé"
+      },
+      "scopes": {
+        "resourceLabels": {
+          "debtors": "Deudores",
+          "dte": "DTEs",
+          "payments": "Pagos",
+          "movements": "Movimientos",
+          "companies": "Empresas"
+        },
+        "actions": {
+          "read": "Leer",
+          "edit": "Crear/Editar",
+          "delete": "Eliminar"
+        }
+      },
+      "validation": {
+        "nameRequired": "El nombre es obligatorio.",
+        "nameMaxLength": "El nombre no puede superar los 255 caracteres.",
+        "scopesRequired": "Debés seleccionar al menos un permiso."
+      }
+    }
   },
   "companies": {
     "title": "Compañías",

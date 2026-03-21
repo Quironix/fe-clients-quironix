@@ -1873,7 +1873,77 @@
     "integrationsTitle": "Integrations",
     "integrationsDescription": "Integrate the platform with your ERP system via API",
     "configurationsTitle": "Configurations",
-    "configurationsDescription": "Configure DTEs according to your needs"
+    "configurationsDescription": "Configure DTEs according to your needs",
+    "apiKeys": {
+      "sectionTitle": "API Keys",
+      "sectionDescription": "Manage your account's API keys for programmatic access to the platform.",
+      "createButton": "Create API Key",
+      "maxKeysTooltip": "You already have an API key. Delete the existing one to create a new one.",
+      "emptyMessage": "You have no API keys yet.",
+      "table": {
+        "name": "Name",
+        "description": "Description",
+        "scopes": "Permissions",
+        "expiresAt": "Expires",
+        "lastUsed": "Last used",
+        "status": "Status",
+        "actions": "Actions",
+        "never": "Never"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "createTitle": "Create API Key",
+      "createDescription": "Fill in the form to generate a new API key.",
+      "createSuccess": "API Key created successfully.",
+      "createError": "Failed to create API key. Please try again.",
+      "editTitle": "Edit API Key",
+      "editDescription": "Update your API key details.",
+      "updateSuccess": "API Key updated successfully.",
+      "updateError": "Failed to update API key. Please try again.",
+      "deleteTitle": "Delete API Key?",
+      "deleteDescription": "Are you sure you want to delete the API key \"{name}\"? This action cannot be undone.",
+      "deleteSuccess": "API Key deleted successfully.",
+      "deleteError": "Failed to delete API key. Please try again.",
+      "form": {
+        "name": "Name",
+        "namePlaceholder": "e.g. My ERP Integration",
+        "description": "Description",
+        "descriptionPlaceholder": "Optional description for this key",
+        "scopes": "Permissions",
+        "isActive": "Active",
+        "submit": "Create",
+        "submitEdit": "Save changes",
+        "cancel": "Cancel"
+      },
+      "reveal": {
+        "title": "API Key Created",
+        "warning": "This key will only be shown once. If you lose it, you will need to delete it and generate a new one.",
+        "copy": "Copy",
+        "copied": "Copied ✓",
+        "close": "I saved it, close"
+      },
+      "scopes": {
+        "resourceLabels": {
+          "debtors": "Debtors",
+          "dte": "DTEs",
+          "payments": "Payments",
+          "movements": "Movements",
+          "companies": "Companies"
+        },
+        "actions": {
+          "read": "Read",
+          "edit": "Create/Edit",
+          "delete": "Delete"
+        }
+      },
+      "validation": {
+        "nameRequired": "Name is required.",
+        "nameMaxLength": "Name cannot exceed 255 characters.",
+        "scopesRequired": "You must select at least one permission."
+      }
+    }
   },
   "companies": {
     "title": "Companies",

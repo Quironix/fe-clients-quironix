@@ -44,3 +44,5 @@ coverage/
 .gga
 .documents/*
 skill-registry.md
+.atl/
+.plans/*
