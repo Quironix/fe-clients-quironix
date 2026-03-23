@@ -86,9 +86,9 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
     handlePageChange(data?.data?.pagination?.totalPages || 1);
 
   // Renderizar la celda de cada semana
-  const renderWeekCell = (weekData: any) => {
+  const renderWeekCell = (weekData: any, key?: number | string) => {
     return (
-      <TableCell className="text-center py-3 px-2 min-w-[120px]">
+      <TableCell key={key} className="text-center py-3 px-2 min-w-[120px]">
         <div className="space-y-2">
           <div className="text-sm">
             <div className="text-gray-600 text-xs mb-1">Estimado:</div>
@@ -221,19 +221,21 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                         <br />
                         en período
                       </TableHead>
-                      {data?.data?.data[0].weekly_projections.map((item) => (
-                        <TableHead
-                          key={item.week_number}
-                          className="font-bold text-blue-700 text-center px-4 py-3 min-w-[120px]"
-                        >
-                          Semana {item.week_number}
-                          <br />
-                          <span className="text-xs font-normal text-blue-700">
-                            {format(item.week_start, "dd MMM")} -{" "}
-                            {format(item.week_end, "dd MMM")}
-                          </span>
-                        </TableHead>
-                      ))}
+                      {[...data?.data?.data[0].weekly_projections]
+                        .sort((a, b) => a.week_number - b.week_number)
+                        .map((item) => (
+                          <TableHead
+                            key={item.week_number}
+                            className="font-bold text-blue-700 text-center px-4 py-3 min-w-[120px]"
+                          >
+                            Semana {item.week_number}
+                            <br />
+                            <span className="text-xs font-normal text-blue-700">
+                              {format(item.week_start, "dd MMM")} -{" "}
+                              {format(item.week_end, "dd MMM")}
+                            </span>
+                          </TableHead>
+                        ))}
 
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3 min-w-[100px]">
                         Acción
@@ -270,11 +272,11 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                           </span>
                         </TableCell>
 
-                        {renderWeekCell(row.weekly_projections[0])}
-                        {renderWeekCell(row.weekly_projections[1])}
-                        {renderWeekCell(row.weekly_projections[2])}
-                        {renderWeekCell(row.weekly_projections[3])}
-                        {renderWeekCell(row.weekly_projections[4])}
+                        {[...row.weekly_projections]
+                          .sort((a, b) => a.week_number - b.week_number)
+                          .map((weekData) =>
+                            renderWeekCell(weekData, weekData.week_number)
+                          )}
 
                         <TableCell className="text-center py-3 px-4">
                           <Button
