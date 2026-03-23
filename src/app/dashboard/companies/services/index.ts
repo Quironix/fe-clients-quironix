@@ -1,4 +1,38 @@
+import { BulkSchema } from "@/app/dashboard/transactions/dte/types";
 import { Company } from "../types";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export const bulkData = async (
+  accessToken: string,
+  clientId: string,
+  file: File
+) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("schemaType", BulkSchema.COMPANIES);
+
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/file-processing/upload`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: "POST",
+      body: formData,
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      JSON.stringify({
+        message: error.message || "Error al cargar el archivo",
+        code: "ERROR_BULK_COMPANIES",
+      })
+    );
+  }
+  return response.json();
+};
 
 export const getCompanies = async (accessToken: string, clientId: string) => {
   const response = await fetch(

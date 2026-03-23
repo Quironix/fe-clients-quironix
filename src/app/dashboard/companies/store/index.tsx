@@ -7,7 +7,7 @@ import {
   getCompanyById,
   updateCompany,
 } from "../services";
-import { Company } from "../types";
+import { BulkUploadResponse, Company } from "../types";
 
 interface CompaniesStore {
   companies: Company[];
@@ -41,6 +41,9 @@ interface CompaniesStore {
     clientId: string,
     companyId: string
   ) => Promise<void>;
+  bulkUploadErrors: BulkUploadResponse | null;
+  setBulkUploadErrors: (errors: BulkUploadResponse) => void;
+  clearBulkUploadErrors: () => void;
 }
 
 export const useCompaniesStore = create<CompaniesStore>((set, get) => ({
@@ -133,5 +136,12 @@ export const useCompaniesStore = create<CompaniesStore>((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+  bulkUploadErrors: null,
+  setBulkUploadErrors: (errors: BulkUploadResponse) => {
+    set({ bulkUploadErrors: errors });
+  },
+  clearBulkUploadErrors: () => {
+    set({ bulkUploadErrors: null });
   },
 }));

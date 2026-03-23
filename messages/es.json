@@ -1966,6 +1966,17 @@
     },
     "toast": {
       "saveSuccess": "Empresa guardada correctamente"
+    },
+    "upload": {
+      "manualTitle": "Crear <company>una compañía</company> de forma <manual>manual</manual>",
+      "bulkTitle": "Subir <companies>compañías</companies> por carga masiva",
+      "bulkInstruction": "Una vez que hayas completado el documento, selecciona <uploadFile>\"Subir archivo\"</uploadFile> para importarlo al sistema.",
+      "successBulk": "Archivo cargado exitosamente. {count} compañías procesadas correctamente.",
+      "warningBulk": "Carga completada con errores. {valid} válidos, {invalid} con errores.",
+      "errorBulk": "Error al cargar el archivo. Por favor intenta nuevamente.",
+      "downloadTemplate": "Descargar plantilla",
+      "uploadFile": "Subir archivo",
+      "uploading": "Procesando compañías..."
     }
   },
   "webrtc": {

@@ -1,3 +1,7 @@
+import { BulkUploadResponse, BulkUploadError } from "@/app/dashboard/transactions/dte/types";
+
+export type { BulkUploadResponse, BulkUploadError };
+
 export interface Company {
   id?: string;
   name: string;

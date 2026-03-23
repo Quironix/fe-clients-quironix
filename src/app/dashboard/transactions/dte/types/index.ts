@@ -35,6 +35,7 @@ export enum BulkSchema {
   MOVEMENTS = "MOVEMENTS",
   INVOICES = "INVOICES",
   PAYMENTS = "PAYMENTS",
+  COMPANIES = "COMPANIES",
 }
 
 export interface BulkUploadError {
