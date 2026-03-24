@@ -9,7 +9,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { MonthPicker } from "./components/month-picker";
 import Language from "@/components/ui/language";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChartSpline } from "lucide-react";
@@ -108,9 +108,12 @@ const PageSettings = () => {
                   name="period_month"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Período (MM/AAAA)</FormLabel>
+                      <FormLabel>Período</FormLabel>
                       <FormControl>
-                        <Input {...field} type="month" className="font-mono" />
+                        <MonthPicker
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

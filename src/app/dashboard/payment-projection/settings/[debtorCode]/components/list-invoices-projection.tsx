@@ -1,6 +1,7 @@
 "use client";
 
 import { INVOICE_TYPES } from "@/app/dashboard/data";
+import { parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useProfileContext } from "@/context/ProfileContext";
@@ -55,8 +56,8 @@ const ListInvoicesProjection = ({
       });
 
       // Formatear el rango de fechas
-      const startDate = new Date(weekProjection.week_start);
-      const endDate = new Date(weekProjection.week_end);
+      const startDate = parseISO(weekProjection.week_start);
+      const endDate = parseISO(weekProjection.week_end);
       const dateRange = `${startDate.getDate().toString().padStart(2, "0")}/${(startDate.getMonth() + 1).toString().padStart(2, "0")} - ${endDate.getDate().toString().padStart(2, "0")}/${(endDate.getMonth() + 1).toString().padStart(2, "0")}`;
 
       return {

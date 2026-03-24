@@ -15,7 +15,7 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import { cn, formatNumber } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Edit, Search, TrendingDown, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -231,8 +231,8 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                             Semana {item.week_number}
                             <br />
                             <span className="text-xs font-normal text-blue-700">
-                              {format(item.week_start, "dd MMM")} -{" "}
-                              {format(item.week_end, "dd MMM")}
+                              {format(parseISO(item.week_start), "dd MMM")} -{" "}
+                              {format(parseISO(item.week_end), "dd MMM")}
                             </span>
                           </TableHead>
                         ))}
