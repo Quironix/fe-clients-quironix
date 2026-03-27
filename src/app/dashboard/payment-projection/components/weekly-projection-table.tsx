@@ -187,21 +187,14 @@ const WeeklyProjectionTable = () => {
                 <TableHead className="font-semibold text-gray-700 text-left px-6 py-4 w-32">
                   {/* Columna de etiquetas */}
                 </TableHead>
-                <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  {t("week", { number: 1 })}
-                </TableHead>
-                <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  {t("week", { number: 2 })}
-                </TableHead>
-                <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  {t("week", { number: 3 })}
-                </TableHead>
-                <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  {t("week", { number: 4 })}
-                </TableHead>
-                <TableHead className="font-bold text-blue-700 text-center px-6 py-4">
-                  {t("week", { number: 5 })}
-                </TableHead>
+                {(data?.data?.weekly_projections ?? defaultData).map((item) => (
+                  <TableHead
+                    key={item.week_number ?? item.week}
+                    className="font-bold text-blue-700 text-center px-6 py-4"
+                  >
+                    {t("week", { number: item.week_number ?? item.week })}
+                  </TableHead>
+                ))}
               </TableRow>
               <TableRow className="border-b-2">
                 <TableHead className="text-left text-gray-600 text-sm px-6 py-2 w-32">
@@ -341,23 +334,20 @@ const WeeklyProjectionTable = () => {
                   <p
                     className={cn(
                       "text-2xl font-bold",
-                      data?.data?.total_monthly_estimated -
-                        (data?.data?.total_monthly_estimated -
-                          data?.data?.total_monthly_estimated * 0.3) <
+                      (data?.data?.total_monthly_estimated ?? 0) -
+                        (data?.data?.total_monthly_collected ?? 0) <
                         0
                         ? "text-red-600"
-                        : data?.data?.total_monthly_estimated -
-                              (data?.data?.total_monthly_estimated -
-                                data?.data?.total_monthly_estimated * 0.3) >
+                        : (data?.data?.total_monthly_estimated ?? 0) -
+                              (data?.data?.total_monthly_collected ?? 0) >
                             0
                           ? "text-green-600"
                           : "text-gray-900"
                     )}
                   >
                     {formatNumber(
-                      data?.data?.total_monthly_estimated -
-                        (data?.data?.total_monthly_estimated -
-                          data?.data?.total_monthly_estimated * 0.3)
+                      (data?.data?.total_monthly_estimated ?? 0) -
+                        (data?.data?.total_monthly_collected ?? 0)
                     )}
                   </p>
                 </div>
@@ -374,8 +364,7 @@ const WeeklyProjectionTable = () => {
                   <p className="text-sm text-gray-600">{t("totalReal")}</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {formatNumber(
-                      data?.data?.total_monthly_estimated -
-                        data?.data?.total_monthly_estimated * 0.3
+                      data?.data?.total_monthly_collected
                     )}
                   </p>
                 </div>
@@ -392,19 +381,15 @@ const WeeklyProjectionTable = () => {
                     Porcentaje = (variación / monto real) * 100
                   */}
                   {(() => {
-                    // Calcula el monto real y la variación
-                    const montoReal = data?.data?.total_monthly_estimated
-                      ? data.data.total_monthly_estimated -
-                        data.data.total_monthly_estimated * 0.3
-                      : 0;
-                    const variacion = data?.data?.total_monthly_estimated
-                      ? data.data.total_monthly_estimated -
-                        (data.data.total_monthly_estimated -
-                          data.data.total_monthly_estimated * 0.3)
-                      : 0;
-                    // Calcula el porcentaje de variación
+                    const montoReal = data?.data?.total_monthly_collected ?? 0;
+                    const variacion =
+                      (data?.data?.total_monthly_estimated ?? 0) - montoReal;
+                    const totalEstimado =
+                      data?.data?.total_monthly_estimated ?? 0;
                     const porcentaje =
-                      montoReal !== 0 ? (variacion / montoReal) * 100 : 0;
+                      totalEstimado > 0
+                        ? (variacion / totalEstimado) * 100
+                        : 0;
 
                     return (
                       <p

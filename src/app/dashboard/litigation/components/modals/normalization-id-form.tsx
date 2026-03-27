@@ -190,7 +190,7 @@ const NormalizationFormId = ({
                         />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent modal>
                       {NORMALIZATION_REASONS.map((item) => (
                         <SelectItem key={item.code} value={item.code}>
                           {item.label}
@@ -222,7 +222,7 @@ const NormalizationFormId = ({
                         />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent modal>
                       {litigation.debtor.contacts.map((item) => (
                         <SelectItem key={item.name} value={item.name}>
                           {item.name}

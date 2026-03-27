@@ -339,6 +339,7 @@ const FormPayments = () => {
                       field={field}
                       title={tForm("debtor")}
                       required
+                      initialDebtor={id && payment?.debtor ? payment.debtor : undefined}
                     />
                   )}
                 />

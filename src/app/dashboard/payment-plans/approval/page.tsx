@@ -15,7 +15,7 @@ import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
 import { usePaymentPlans } from "../hooks/usePaymentPlans";
 import { PaymentPlan } from "../types";
-import { columns } from "./components/columns";
+import { createColumns } from "./components/columns";
 import FilterInputs, { FilterInputsRef } from "./components/filter";
 
 const PageApproval = () => {
@@ -86,6 +86,11 @@ const PageApproval = () => {
       created_at: t("columnLabels.createdAt"),
       actions: t("columnLabels.actions"),
     }),
+    [t]
+  );
+
+  const columns = useMemo(
+    () => createColumns(undefined, undefined, undefined, t),
     [t]
   );
 

@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   FormControl,
@@ -7,10 +8,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
 import Required from "@/components/ui/required";
-import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
 import { useProfileContext } from "@/context/ProfileContext";
-import { Search } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useCompaniesStore } from "../companies/store";
@@ -25,11 +31,13 @@ const SelectClient = ({
   title,
   required,
   singleClient = false,
+  modal = false,
 }: {
   field: any;
   title: string;
   required?: boolean;
   singleClient?: boolean;
+  modal?: boolean;
 }) => {
   const { companies, getCompanies } = useCompaniesStore();
   const { session, profile } = useProfileContext();
@@ -43,19 +51,15 @@ const SelectClient = ({
     }
   }, [getCompanies, profile?.client?.id, session?.token]);
 
-  // Filtrar compañías basado en la búsqueda
   const filteredCompanies = companies.filter((company) =>
     company.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Manejar valores según el tipo de selección
   const selectedValues: CompanySelection[] = singleClient
-    ? // Para selección única, convertir a array para uso interno
-      field.value
+    ? field.value
       ? [typeof field.value === "string" ? { id: field.value } : field.value]
       : []
-    : // Para selección múltiple, comportamiento original
-      Array.isArray(field.value)
+    : Array.isArray(field.value)
       ? field.value.map((item: any) =>
           typeof item === "string"
             ? { id: item }
@@ -67,20 +71,18 @@ const SelectClient = ({
 
   const handleValueChange = (companyId: string, checked: boolean) => {
     if (singleClient) {
-      // Para selección única
       if (checked) {
         const company = companies.find((c) => c.id === companyId);
         const companyData: CompanySelection = {
           id: companyId,
           ...(company?.client_code && { debtor_code: company.client_code }),
         };
-        field.onChange(companyData.id); // Enviar objeto único
-        setOpen(false); // Cerrar el selector después de seleccionar
+        field.onChange(companyData.id);
+        setOpen(false);
       } else {
-        field.onChange(null); // Limpiar selección
+        field.onChange(null);
       }
     } else {
-      // Para selección múltiple (comportamiento original)
       let newValues: CompanySelection[];
       if (checked) {
         const company = companies.find((c) => c.id === companyId);
@@ -92,7 +94,7 @@ const SelectClient = ({
       } else {
         newValues = selectedValues.filter((item) => item.id !== companyId);
       }
-      field.onChange(newValues); // Enviar array
+      field.onChange(newValues);
     }
   };
 
@@ -112,51 +114,86 @@ const SelectClient = ({
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
-      setSearchQuery(""); // Limpiar búsqueda al cerrar
+      setSearchQuery("");
     }
   };
+
+  const dropdownContent = (
+    <>
+      <div className="flex items-center border-b px-3 py-2">
+        <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+        <Input
+          placeholder={tCommon("placeholders.searchCompanies")}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="border-0 px-0 py-1 h-8 focus-visible:ring-0 focus-visible:ring-offset-0"
+          autoFocus
+        />
+      </div>
+
+      <div className="max-h-60 overflow-auto">
+        {filteredCompanies.length > 0 ? (
+          filteredCompanies.map((company) => (
+            <div
+              key={company.id}
+              className="flex items-center space-x-2 px-2 py-2 hover:bg-accent cursor-pointer"
+              onClick={() => {
+                const isSelected = isCompanySelected(company.id || "");
+                handleValueChange(company.id || "", !isSelected);
+              }}
+            >
+              <Checkbox
+                checked={isCompanySelected(company.id || "")}
+                onChange={() => {}}
+              />
+              <div className="flex-1">
+                <div className="font-medium">{company.name}</div>
+                {company.client_code && (
+                  <div className="text-xs text-muted-foreground">
+                    {tCommon("labels.code")}: {company.client_code}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="px-2 py-1.5 text-sm text-muted-foreground">
+            {companies.length === 0
+              ? tCommon("loading.loadingCompanies")
+              : searchQuery
+                ? tCommon("placeholders.noCompaniesMatch")
+                : tCommon("placeholders.noCompaniesAvailable")}
+          </div>
+        )}
+      </div>
+    </>
+  );
 
   return (
     <FormItem>
       <FormLabel>
         {title} {required && <Required />}
       </FormLabel>
-      <Select open={open} onOpenChange={handleOpenChange}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <FormControl>
-          <SelectTrigger
-            className="w-full min-h-8"
-            onClick={() => setOpen(!open)}
-          >
-            <div className="flex flex-wrap gap-1 items-center w-full">
-              {selectedValues.length > 0 ? (
-                <>
-                  {singleClient ? (
-                    // Para selección única, mostrar solo el elemento seleccionado
-                    (() => {
-                      const company = companies.find(
-                        (c) => c.id === selectedValues[0].id
-                      );
-                      return company ? (
-                        <Badge
-                          key={selectedValues[0].id}
-                          variant="secondary"
-                          className="flex items-center gap-1 text-[0.6rem] px-1 py-0.5"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                        >
-                          {company.name}
-                        </Badge>
-                      ) : null;
-                    })()
-                  ) : (
-                    // Para selección múltiple, comportamiento original
-                    <>
-                      {selectedValues.slice(0, 2).map((item) => {
-                        const company = companies.find((c) => c.id === item.id);
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-full min-h-8 justify-between"
+            >
+              <div className="flex flex-wrap gap-1 items-center w-full">
+                {selectedValues.length > 0 ? (
+                  <>
+                    {singleClient ? (
+                      (() => {
+                        const company = companies.find(
+                          (c) => c.id === selectedValues[0].id
+                        );
                         return company ? (
                           <Badge
-                            key={item.id}
+                            key={selectedValues[0].id}
                             variant="secondary"
                             className="flex items-center gap-1 text-[0.6rem] px-1 py-0.5"
                             onClick={(e) => {
@@ -166,76 +203,58 @@ const SelectClient = ({
                             {company.name}
                           </Badge>
                         ) : null;
-                      })}
-                      {selectedValues.length > 2 && (
-                        <Badge variant="outline" className="text-xs">
-                          {tCommon("more", { count: selectedValues.length - 2 })}
-                        </Badge>
-                      )}
-                    </>
-                  )}
-                </>
-              ) : (
-                <span className="text-muted-foreground">
-                  {singleClient
-                    ? tCommon("placeholders.selectCompany")
-                    : tCommon("placeholders.selectCompanies")}
-                </span>
-              )}
-            </div>
-          </SelectTrigger>
-        </FormControl>
-        <SelectContent>
-          {/* Campo de búsqueda */}
-          <div className="flex items-center border-b px-3 py-2">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <Input
-              placeholder={tCommon("placeholders.searchCompanies")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="border-0 px-0 py-1 h-8 focus-visible:ring-0 focus-visible:ring-offset-0"
-              autoFocus
-            />
-          </div>
-
-          {/* Lista de compañías filtradas */}
-          <div className="max-h-60 overflow-auto">
-            {filteredCompanies.length > 0 ? (
-              filteredCompanies.map((company) => (
-                <div
-                  key={company.id}
-                  className="flex items-center space-x-2 px-2 py-2 hover:bg-accent cursor-pointer"
-                  onClick={() => {
-                    const isSelected = isCompanySelected(company.id || "");
-                    handleValueChange(company.id || "", !isSelected);
-                  }}
-                >
-                  <Checkbox
-                    checked={isCompanySelected(company.id || "")}
-                    onChange={() => {}} // Manejado por el onClick del div
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium">{company.name}</div>
-                    {company.client_code && (
-                      <div className="text-xs text-muted-foreground">
-                        {tCommon("labels.code")}: {company.client_code}
-                      </div>
+                      })()
+                    ) : (
+                      <>
+                        {selectedValues.slice(0, 2).map((item) => {
+                          const company = companies.find((c) => c.id === item.id);
+                          return company ? (
+                            <Badge
+                              key={item.id}
+                              variant="secondary"
+                              className="flex items-center gap-1 text-[0.6rem] px-1 py-0.5"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              {company.name}
+                            </Badge>
+                          ) : null;
+                        })}
+                        {selectedValues.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            {tCommon("more", { count: selectedValues.length - 2 })}
+                          </Badge>
+                        )}
+                      </>
                     )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                {companies.length === 0
-                  ? tCommon("loading.loadingCompanies")
-                  : searchQuery
-                    ? tCommon("placeholders.noCompaniesMatch")
-                    : tCommon("placeholders.noCompaniesAvailable")}
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {singleClient
+                      ? tCommon("placeholders.selectCompany")
+                      : tCommon("placeholders.selectCompanies")}
+                  </span>
+                )}
               </div>
-            )}
-          </div>
-        </SelectContent>
-      </Select>
+              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+        </FormControl>
+        {modal ? (
+          <PopoverPrimitive.Content
+            align="start"
+            sideOffset={4}
+            className="w-[var(--radix-popover-trigger-width)] p-0 z-[100] bg-popover text-popover-foreground rounded-md border shadow-md outline-hidden"
+          >
+            {dropdownContent}
+          </PopoverPrimitive.Content>
+        ) : (
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 !z-[100]">
+            {dropdownContent}
+          </PopoverContent>
+        )}
+      </Popover>
       <FormMessage />
     </FormItem>
   );

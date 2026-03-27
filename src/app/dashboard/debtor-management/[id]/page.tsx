@@ -62,25 +62,6 @@ const Content = ({ params }: PageProps) => {
     };
   }, [id, profile?.client?.id, session?.token]);
 
-  if (isFetchingDebtor) {
-    return (
-      <>
-        <Header fixed>
-          <Language />
-        </Header>
-        <Main>
-          <TitleSection
-            title={t("title")}
-            description={t("detail.loadingDescription")}
-            icon={<PhoneCall color="white" />}
-            subDescription={t("subDescription")}
-          />
-          <SkeletonFormDebtor />
-        </Main>
-      </>
-    );
-  }
-
   return (
     <>
       <Header fixed>
@@ -88,8 +69,8 @@ const Content = ({ params }: PageProps) => {
       </Header>
       <Main>
         <TitleSection
-          title={t("detail.title")}
-          description={t("detail.description")}
+          title={isFetchingDebtor ? t("title") : t("detail.title")}
+          description={isFetchingDebtor ? t("detail.loadingDescription") : t("detail.description")}
           icon={<PhoneCall color="white" />}
           subDescription={t("subDescription")}
         />
@@ -110,8 +91,14 @@ const Content = ({ params }: PageProps) => {
               <BreadcrumbItem>
                 <BreadcrumbPage>
                   <span className="font-bold">
-                    {`(${dataDebtor?.debtor_code}) ` || <Skeleton />}
-                    {dataDebtor?.name || <Skeleton />}
+                    {isFetchingDebtor ? (
+                      <Skeleton className="h-4 w-48 inline-block" />
+                    ) : (
+                      <>
+                        {`(${dataDebtor?.debtor_code}) `}
+                        {dataDebtor?.name}
+                      </>
+                    )}
                   </span>
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -126,7 +113,9 @@ const Content = ({ params }: PageProps) => {
           </Button>
         </div>
 
-        {dataDebtor?.contacts && dataDebtor.contacts.length > 0 ? (
+        {isFetchingDebtor ? (
+          <SkeletonFormDebtor />
+        ) : dataDebtor?.contacts && dataDebtor.contacts.length > 0 ? (
           <DebtorContacts
             mainContact={{
               name: dataDebtor.contacts[0]?.name || t("contacts.noName"),

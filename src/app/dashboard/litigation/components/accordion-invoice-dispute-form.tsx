@@ -340,7 +340,7 @@ const AccordionInvoiceDisputeForm = ({
                               />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent modal>
                             {INVOICE_TYPES.find((t) => t.country === "CL")
                               ?.types.filter((t) => t.value)
                               .map((type) => (
@@ -370,6 +370,7 @@ const AccordionInvoiceDisputeForm = ({
                       required
                       dtes={dtesByInvoice[index] || []}
                       onDteSelect={(dte: DTE) => handleDteSelect(dte, index)}
+                      modal
                     />
                   )}
                 />
@@ -529,7 +530,7 @@ const AccordionInvoiceDisputeForm = ({
                             />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent modal>
                           {disputes.map((item) => (
                             <SelectItem key={item.code} value={item.code}>
                               {item.label}
@@ -569,7 +570,7 @@ const AccordionInvoiceDisputeForm = ({
                               />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent modal>
                             {selectedDispute?.submotivo.map((sub) => (
                               <SelectItem key={sub.code} value={sub.code}>
                                 {sub.label}

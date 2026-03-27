@@ -247,7 +247,7 @@ const LitigationEditModal = ({
                         />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent modal>
                       {disputes.map((item) => (
                         <SelectItem key={item.code} value={item.code}>
                           {item.label}
@@ -285,7 +285,7 @@ const LitigationEditModal = ({
                           />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent modal>
                         {selectedDispute?.submotivo.map((sub) => (
                           <SelectItem key={sub.code} value={sub.code}>
                             {sub.label}
@@ -317,6 +317,7 @@ const LitigationEditModal = ({
                   field={field}
                   selectedDebtor={litigation?.debtor}
                   isFetchingDebtor={false}
+                  modal
                 />
               )}
             />

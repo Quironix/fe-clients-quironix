@@ -15,6 +15,7 @@ interface DteSelectFormItemProps {
   required: boolean;
   dtes: DTE[];
   onDteSelect?: (dte: DTE | null) => void;
+  modal?: boolean;
 }
 
 export default function DteSelectFormItem({
@@ -23,6 +24,7 @@ export default function DteSelectFormItem({
   required,
   dtes,
   onDteSelect,
+  modal = false,
 }: DteSelectFormItemProps) {
   const [searchText, setSearchText] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -60,6 +62,7 @@ export default function DteSelectFormItem({
             setSearchText(searchValue);
           }}
           isLoading={isSearching}
+          modal={modal}
         />
       </FormControl>
       <FormMessage />

@@ -81,7 +81,7 @@ const ThreadWelcome: FC = () => {
     <ThreadPrimitive.Empty>
       <div className="flex w-full max-w-[var(--thread-max-width)] flex-grow flex-col">
         <div className="flex w-full flex-grow flex-col items-center justify-center">
-          <p className="mt-4 font-medium">{t("welcomeMessage")}</p>
+          <p className="mt-4 font-medium">{t("welcome")}</p>
         </div>
       </div>
     </ThreadPrimitive.Empty>
@@ -95,7 +95,7 @@ const Composer: FC = () => {
       <ComposerPrimitive.Input
         rows={1}
         autoFocus
-        placeholder={t("inputPlaceholder")}
+        placeholder={t("composerPlaceholder")}
         className="placeholder:text-muted-foreground max-h-40 flex-grow resize-none border-none bg-transparent px-2 py-4 text-sm outline-none focus:ring-0 disabled:cursor-not-allowed"
       />
       <ComposerAction />

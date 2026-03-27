@@ -290,6 +290,7 @@ const DisputeForm = ({
                     title="Cliente"
                     singleClient
                     required
+                    modal
                   />
                 )}
               />
@@ -359,6 +360,7 @@ const DisputeForm = ({
                   field={field}
                   selectedDebtor={selectedDebtor}
                   isFetchingDebtor={isFetchingDebtor}
+                  modal
                 />
               )}
             />

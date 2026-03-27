@@ -102,7 +102,7 @@ const ListInvoicesProjection = ({
   return (
     <div className="space-y-6">
       {/* Columnas de semanas con scroll */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
         {weeks
           .sort((a, b) => a.week - b.week)
           .map((week) => (

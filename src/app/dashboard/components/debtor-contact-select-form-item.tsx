@@ -17,12 +17,14 @@ interface DebtorContactSelectFormItemProps {
   field: any;
   selectedDebtor: any;
   isFetchingDebtor: boolean;
+  modal?: boolean;
 }
 
 export default function DebtorContactSelectFormItem({
   field,
   selectedDebtor,
   isFetchingDebtor,
+  modal = false,
 }: DebtorContactSelectFormItemProps) {
   const tCommon = useTranslations("common");
   return (
@@ -51,7 +53,7 @@ export default function DebtorContactSelectFormItem({
             />
           </SelectTrigger>
         </FormControl>
-        <SelectContent>
+        <SelectContent modal={modal}>
           {selectedDebtor?.contacts?.length > 0 ? (
             selectedDebtor.contacts.map((contact: any) => {
               const contactName = `${contact.name} ${

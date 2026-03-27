@@ -218,7 +218,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
                 control={control}
                 name="client_id"
                 render={({ field }) => (
-                  <SelectClient field={field} title={tNorm("client")} singleClient />
+                  <SelectClient field={field} title={tNorm("client")} singleClient modal />
                 )}
               />
             )}
@@ -332,7 +332,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
                         />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent modal>
                       {NORMALIZATION_REASONS.map((item) => (
                         <SelectItem key={item.code} value={item.code}>
                           {item.label}
@@ -353,6 +353,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
                   field={field}
                   selectedDebtor={currentLitigation[0]?.debtor || []}
                   isFetchingDebtor={false}
+                  modal
                 />
               )}
             />
