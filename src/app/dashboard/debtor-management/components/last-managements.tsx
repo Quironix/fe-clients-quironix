@@ -41,8 +41,24 @@ const LastManagements = ({
       visit: t("visit"),
       letter: t("letter"),
       whatsapp: t("whatsapp"),
+      AUTOMATED_COLLECTOR: "Automatizado por collector",
     };
     return types[type] || type;
+  };
+
+  const getManagerName = (management: any) => {
+    if (management.management_type === "AUTOMATED_COLLECTOR") {
+      return "Motor de collector";
+    }
+    const name = management.manager?.trim();
+    return name && name !== "null null" ? name : "Motor collector";
+  };
+
+  const getDescriptionLabel = (management: any) => {
+    if (management.description === "AUTOMATED_COMMUNICATION") {
+      return "Ejecución automática";
+    }
+    return getExecutiveCommentLabel(management.description);
   };
 
   const IconPerson = ({ management }: { management: any }) => (
@@ -51,9 +67,11 @@ const LastManagements = ({
         <div className="flex items-center gap-1">
           <User className="text-blue-700" />
           <div className="flex flex-col gap-0">
-            <span className="font-bold text-sm">{management.manager}</span>
+            <span className="font-bold text-sm">
+              {getManagerName(management)}
+            </span>
             <span className="text-xs text-gray-400 -mt-1">
-              {getExecutiveCommentLabel(management.description)}
+              {getDescriptionLabel(management)}
             </span>
           </div>
         </div>
@@ -76,9 +94,7 @@ const LastManagements = ({
         ))
       ) : (
         <div className="flex items-center justify-center p-6 border border-gray-200 rounded-sm bg-gray-50">
-          <p className="text-sm text-gray-500">
-            {t("noManagements")}
-          </p>
+          <p className="text-sm text-gray-500">{t("noManagements")}</p>
         </div>
       )}
       {previousManagement.length > 0 && (
@@ -105,7 +121,7 @@ const LastManagements = ({
         <Button
           onClick={() =>
             router.push(
-              `/dashboard/debtor-management/${debtorId}/managements-list`
+              `/dashboard/debtor-management/${debtorId}/managements-list`,
             )
           }
           variant="outline"

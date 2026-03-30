@@ -113,7 +113,7 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
 
 export const createColumns = (
   onViewDetails?: (transaction: PaymentNetting) => void,
-  onReversePayment?: (transaction: PaymentNetting) => void
+  onReversePayment?: (transaction: PaymentNetting) => void,
 ): ColumnDef<PaymentNetting>[] => [
   {
     accessorKey: "status",
@@ -158,9 +158,7 @@ export const createColumns = (
     accessorKey: "date",
     header: "Fecha",
     cell: ({ row }) => (
-      <div className="font-medium text-sm">
-        {row.getValue("date")}
-      </div>
+      <div className="font-medium text-sm">{row.getValue("date")}</div>
     ),
   },
   {

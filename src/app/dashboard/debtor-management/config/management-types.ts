@@ -1269,6 +1269,11 @@ export const EXECUTIVE_COMMENTS = [
     label: "Envío de información",
     debtorComment: "NOTIFIED_COMMERCIAL_REPORTS_PUBLICATION",
   },
+  {
+    value: "AUTOMATED_COLLECTOR",
+    label: "Automatizado por collector",
+    debtorComment: "AUTOMATED_COLLECTOR",
+  },
 ];
 
 /**

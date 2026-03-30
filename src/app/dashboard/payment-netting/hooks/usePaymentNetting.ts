@@ -15,12 +15,13 @@ const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
   const adaptedData = apiData.data.map((item: any) => {
     let formattedDate = "";
 
-    if (item?.created_at) {
+    const rawDate = item.metadata?.transaction_date || item.movement_date;
+    if (rawDate) {
       try {
-        const parsedDate = parseISO(item.created_at);
-        formattedDate = format(parsedDate, "dd/MM/yyyy");
+        const dateStr = rawDate.includes("T") ? rawDate.split("T")[0] : rawDate;
+        formattedDate = format(parseISO(dateStr), "dd/MM/yyyy");
       } catch (error) {
-        console.error("Error formatting date:", item.created_at, error);
+        console.error("Error formatting date:", rawDate, error);
         formattedDate = "";
       }
     }

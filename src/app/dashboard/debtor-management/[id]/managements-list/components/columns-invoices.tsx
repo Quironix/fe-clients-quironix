@@ -34,6 +34,7 @@ const getManagementTypeLabel = (type: string) => {
     VISIT: "Visita",
     LETTER: "Carta",
     WHATSAPP: "WhatsApp",
+    AUTOMATED_COLLECTOR: "Automatizado por collector",
   };
   return types[type] || type;
 };
@@ -50,6 +51,7 @@ const getDebtorCommentLabel = (comment: string) => {
     INVOICE_WITH_LITIGATION: "Factura con litigio",
     NEED_PAYMENT_PLAN: "Necesito Plan de Pago",
     CHECK_CONFIRMED: "Cheque Confirmado",
+    AUTOMATED_COLLECTOR: "Automatizado por collector",
   };
   return comments[comment] || comment;
 };
@@ -92,7 +94,7 @@ const calculateTimeInPhase = (invoice: InvoiceWithTrack) => {
 };
 
 export const createInvoiceColumns = (
-  onViewDetails?: (invoice: InvoiceWithTrack) => void
+  onViewDetails?: (invoice: InvoiceWithTrack) => void,
 ): ColumnDef<InvoiceWithTrack>[] => [
   {
     accessorKey: "documentNumber",
@@ -160,7 +162,7 @@ export const createInvoiceColumns = (
     header: "Fecha y hora de gestión",
     cell: ({ row }) => (
       <div className="text-sm">
-        {formatDateTime(row.original.track.createdAt)}
+        {formatDateTime(row.original.track?.createdAt)}
       </div>
     ),
   },
@@ -168,24 +170,33 @@ export const createInvoiceColumns = (
     accessorKey: "managementType",
     header: "Tipo de Gestión",
     cell: ({ row }) =>
-      getManagementTypeBadge(row.original.track.managementType),
+      getManagementTypeBadge(row.original.track?.managementType),
   },
   {
     accessorKey: "executive",
     header: "Nombre analista",
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {row.original.track.executive.first_name}{" "}
-        {row.original.track.executive.last_name}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const track = row.original.track;
+      if (track?.executiveComment === "AUTOMATED_COMMUNICATION") {
+        return <div className="text-sm">Motor de collector</div>;
+      }
+      return (
+        <div className="text-sm">
+          {track?.executive
+            ? `${track.executive.first_name ?? ""} ${track.executive.last_name ?? ""}`.trim()
+            : "-"}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "contact",
     header: "Contacto",
     cell: ({ row }) => (
       <div className="flex flex-col text-xs">
-        <span className="text-sm">{row.original.track.contact.value}</span>
+        <span className="text-sm">
+          {row.original.track?.contact?.value || "-"}
+        </span>
       </div>
     ),
   },
@@ -194,7 +205,7 @@ export const createInvoiceColumns = (
     header: "Comentario deudor",
     cell: ({ row }) => (
       <div className="text-xs max-w-[200px] truncate">
-        {getDebtorCommentLabel(row.original.track.debtorComment)}
+        {getDebtorCommentLabel(row.original.track?.debtorComment)}
       </div>
     ),
   },
@@ -203,7 +214,7 @@ export const createInvoiceColumns = (
     header: "Comentario Analista",
     cell: ({ row }) => (
       <div className="text-xs max-w-[200px] truncate">
-        {getExecutiveCommentLabel(row.original.track.executiveComment)}
+        {getExecutiveCommentLabel(row.original.track?.executiveComment)}
       </div>
     ),
   },
@@ -212,7 +223,7 @@ export const createInvoiceColumns = (
     header: "Fecha de compromiso de pago",
     cell: ({ row }) => (
       <div className="text-sm">
-        {row.original.track.caseData?.commitmentDate
+        {row.original.track?.caseData?.commitmentDate
           ? formatDate(row.original.track.caseData.commitmentDate as string)
           : "-"}
       </div>
@@ -223,7 +234,7 @@ export const createInvoiceColumns = (
     header: "Litigio",
     cell: ({ row }) => (
       <div className="text-xs max-w-[150px] truncate">
-        {row.original.track.caseData?.litigationIds &&
+        {row.original.track?.caseData?.litigationIds &&
         row.original.track.caseData.litigationIds.length > 0
           ? `${row.original.track.caseData.litigationIds.length} litigio(s)`
           : "-"}
@@ -235,7 +246,7 @@ export const createInvoiceColumns = (
     header: "Observación",
     cell: ({ row }) => (
       <div className="text-xs max-w-[250px] truncate">
-        {row.original.track.observation || "-"}
+        {row.original.track?.observation || "-"}
       </div>
     ),
   },
@@ -244,7 +255,7 @@ export const createInvoiceColumns = (
     header: "Fecha de próxima gestión",
     cell: ({ row }) => (
       <div className="text-sm">
-        {row.original.track.nextManagementDate
+        {row.original.track?.nextManagementDate
           ? formatDateTime(row.original.track.nextManagementDate)
           : "-"}
       </div>
