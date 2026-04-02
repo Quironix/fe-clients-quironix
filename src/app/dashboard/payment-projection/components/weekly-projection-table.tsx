@@ -172,7 +172,7 @@ const WeeklyProjectionTable = () => {
                 </TableHead>
                 {(data?.data?.weekly_projections ?? defaultData).map((item) => (
                   <TableHead
-                    key={item.week_number ?? item.week}
+                    key={`week-header-${item.week_number ?? item.week}`}
                     className="font-bold text-blue-700 text-center px-6 py-4"
                   >
                     {t("week", { number: item.week_number ?? item.week })}
@@ -185,7 +185,7 @@ const WeeklyProjectionTable = () => {
                 </TableHead>
                 {data?.data?.weekly_projections.map((item) => (
                   <TableHead
-                    key={item.week_number}
+                    key={`week-dates-${item.week_number}`}
                     className="text-center text-gray-600 text-sm px-6 py-2"
                   >
                     {format(parseISO(item.week_start), "dd MMM")} -{" "}
@@ -279,7 +279,7 @@ const WeeklyProjectionTable = () => {
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`status-${index}`}
+                    key={`status-${item.week_number}`}
                     className="text-center py-4 px-6"
                   >
                     {renderStatusBadge(item.total_weekly_estimated, item.total_weekly_collected)}
