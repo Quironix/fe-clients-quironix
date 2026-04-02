@@ -170,9 +170,9 @@ const WeeklyProjectionTable = () => {
                 <TableHead className="font-semibold text-gray-700 text-left px-6 py-4 w-32">
                   {/* Columna de etiquetas */}
                 </TableHead>
-                {(data?.data?.weekly_projections ?? defaultData).map((item) => (
+                {(data?.data?.weekly_projections ?? defaultData).map((item, index) => (
                   <TableHead
-                    key={`week-header-${item.week_number ?? item.week}`}
+                    key={`week-header-${index}`}
                     className="font-bold text-blue-700 text-center px-6 py-4"
                   >
                     {t("week", { number: item.week_number ?? item.week })}
@@ -183,9 +183,9 @@ const WeeklyProjectionTable = () => {
                 <TableHead className="text-left text-gray-600 text-sm px-6 py-2 w-32">
                   {/* Espacio para etiquetas */}
                 </TableHead>
-                {data?.data?.weekly_projections.map((item) => (
+                {data?.data?.weekly_projections.map((item, index) => (
                   <TableHead
-                    key={`week-dates-${item.week_number}`}
+                    key={`week-dates-${index}`}
                     className="text-center text-gray-600 text-sm px-6 py-2"
                   >
                     {format(parseISO(item.week_start), "dd MMM")} -{" "}
@@ -203,7 +203,7 @@ const WeeklyProjectionTable = () => {
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`invoice-${item.week_number}`}
+                    key={`invoice-${index}`}
                     className="text-center py-4 px-6"
                   >
                     <span className="text-gray-600">
@@ -220,7 +220,7 @@ const WeeklyProjectionTable = () => {
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`projected-${item.week_number}`}
+                    key={`projected-${index}`}
                     className="text-center py-4 px-6"
                   >
                     <span className="text-gray-900 font-medium">
@@ -237,7 +237,7 @@ const WeeklyProjectionTable = () => {
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`real-${item.week_number}`}
+                    key={`real-${index}`}
                     className="text-center py-4 px-6"
                   >
                     <span className="text-gray-900 font-medium">
@@ -254,7 +254,7 @@ const WeeklyProjectionTable = () => {
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`variation-${item.week_number}`}
+                    key={`variation-${index}`}
                     className="text-center py-4 px-6"
                   >
                     <span
@@ -279,7 +279,7 @@ const WeeklyProjectionTable = () => {
                 </TableCell>
                 {data?.data?.weekly_projections.map((item, index) => (
                   <TableCell
-                    key={`status-${item.week_number}`}
+                    key={`status-${index}`}
                     className="text-center py-4 px-6"
                   >
                     {renderStatusBadge(item.total_weekly_estimated, item.total_weekly_collected)}
