@@ -107,14 +107,18 @@ const WeeklyProjectionTable = () => {
     },
   ];
 
-  const tableData = data?.data.length > 0 ? data?.data : defaultData;
+  const rawWeeklyProjections: any[] = data?.data?.weekly_projections ?? [];
+  const weeklyProjections = rawWeeklyProjections.filter(
+    (item, index, self) =>
+      self.findIndex((w) => w.week_number === item.week_number) === index
+  );
 
   // Calcular totales
-  const totals = tableData.reduce(
+  const totals = weeklyProjections.reduce(
     (acc, item) => ({
-      projected: acc.projected + item.projected,
-      real: acc.real + item.real,
-      variation: acc.variation + item.variation,
+      projected: acc.projected + (item.total_weekly_estimated ?? item.projected ?? 0),
+      real: acc.real + (item.total_weekly_collected ?? item.real ?? 0),
+      variation: acc.variation + ((item.total_weekly_estimated ?? 0) - (item.total_weekly_collected ?? 0)),
     }),
     { projected: 0, real: 0, variation: 0 }
   );
@@ -163,14 +167,14 @@ const WeeklyProjectionTable = () => {
       {/* Tabla principal */}
       <Card className="w-full">
         <CardContent className="p-0">
-          {/* <pre>{JSON.stringify(data?.data?.weekly_projections, null, 2)}</pre> */}
+          {/* <pre>{JSON.stringify(weeklyProjections, null, 2)}</pre> */}
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50/50">
                 <TableHead className="font-semibold text-gray-700 text-left px-6 py-4 w-32">
                   {/* Columna de etiquetas */}
                 </TableHead>
-                {(data?.data?.weekly_projections ?? defaultData).map((item, index) => (
+                {weeklyProjections.map((item, index) => (
                   <TableHead
                     key={`week-header-${index}`}
                     className="font-bold text-blue-700 text-center px-6 py-4"
@@ -183,7 +187,7 @@ const WeeklyProjectionTable = () => {
                 <TableHead className="text-left text-gray-600 text-sm px-6 py-2 w-32">
                   {/* Espacio para etiquetas */}
                 </TableHead>
-                {data?.data?.weekly_projections.map((item, index) => (
+                {weeklyProjections.map((item, index) => (
                   <TableHead
                     key={`week-dates-${index}`}
                     className="text-center text-gray-600 text-sm px-6 py-2"
@@ -201,7 +205,7 @@ const WeeklyProjectionTable = () => {
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   {t("invoiceCount")}
                 </TableCell>
-                {data?.data?.weekly_projections.map((item, index) => (
+                {weeklyProjections.map((item, index) => (
                   <TableCell
                     key={`invoice-${index}`}
                     className="text-center py-4 px-6"
@@ -218,7 +222,7 @@ const WeeklyProjectionTable = () => {
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   {t("projected")}
                 </TableCell>
-                {data?.data?.weekly_projections.map((item, index) => (
+                {weeklyProjections.map((item, index) => (
                   <TableCell
                     key={`projected-${index}`}
                     className="text-center py-4 px-6"
@@ -235,7 +239,7 @@ const WeeklyProjectionTable = () => {
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   {t("real")}
                 </TableCell>
-                {data?.data?.weekly_projections.map((item, index) => (
+                {weeklyProjections.map((item, index) => (
                   <TableCell
                     key={`real-${index}`}
                     className="text-center py-4 px-6"
@@ -252,7 +256,7 @@ const WeeklyProjectionTable = () => {
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   {t("variation")}
                 </TableCell>
-                {data?.data?.weekly_projections.map((item, index) => (
+                {weeklyProjections.map((item, index) => (
                   <TableCell
                     key={`variation-${index}`}
                     className="text-center py-4 px-6"
@@ -277,7 +281,7 @@ const WeeklyProjectionTable = () => {
                 <TableCell className="text-left py-4 px-6 font-bold text-gray-700 w-32">
                   {t("status")}
                 </TableCell>
-                {data?.data?.weekly_projections.map((item, index) => (
+                {weeklyProjections.map((item, index) => (
                   <TableCell
                     key={`status-${index}`}
                     className="text-center py-4 px-6"
