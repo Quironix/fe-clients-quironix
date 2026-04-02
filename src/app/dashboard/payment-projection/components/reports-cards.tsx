@@ -54,34 +54,28 @@ const ReportsCards = () => {
             value={formatNumber(data?.data?.data?.collected)}
             title={t("collected")}
           />
-          <CardDashboard
-            icon={<TrendingDown className="text-red-600" />}
-            value={
-              <span
-                className={cn(
-                  "",
-                  (data?.data?.data?.variation as number) > 0
-                    ? "text-black"
-                    : "text-red-400"
-                )}
-              >
-                {formatNumber(data?.data?.data?.variation)}
-              </span>
-            }
-            title={t("variation")}
-            description={
-              <span
-                className={cn(
-                  "text-xs",
-                  (data?.data?.data?.variation_percentage as number) >= 0
-                    ? "text-gray-400"
-                    : "text-red-400"
-                )}
-              >
-                ({data?.data?.data?.variation_percentage}%)
-              </span>
-            }
-          />
+          {(() => {
+            const estimated = data?.data?.data?.total_projection as number ?? 0;
+            const collected = data?.data?.data?.collected as number ?? 0;
+            const pct = estimated > 0 ? (collected / estimated) * 100 : 0;
+            const color = pct >= 100 ? "text-green-600" : pct >= 95 ? "text-yellow-600" : "text-red-500";
+            return (
+              <CardDashboard
+                icon={<TrendingDown className={color} />}
+                value={
+                  <span className={cn("", color)}>
+                    {formatNumber(data?.data?.data?.variation)}
+                  </span>
+                }
+                title={t("variation")}
+                description={
+                  <span className={cn("text-xs", color)}>
+                    ({pct.toFixed(1)}%)
+                  </span>
+                }
+              />
+            );
+          })()}
           <CardDashboard
             icon={<IconInfoCircle className="text-red-600" />}
             value={formatNumber(data?.data?.data?.critical_cases, false)}

@@ -122,38 +122,21 @@ const WeeklyProjectionTable = () => {
   const totalVariationPercentage =
     totals.projected > 0 ? (totals.variation / totals.projected) * 100 : 0;
 
-  const renderStatusBadge = (status: string, percentage: number) => {
-    if (percentage === 0) {
-      return (
-        <Badge
-          variant="outline"
-          className="border-yellow-300 text-yellow-700 bg-yellow-50"
-        >
-          <TrendingUp className="w-3 h-3 mr-1" />
-          0,0%
-        </Badge>
-      );
-    }
+  const getComplianceColor = (estimated: number, collected: number) => {
+    if (estimated <= 0) return { text: "text-gray-900", badge: "border-gray-300 text-gray-700 bg-gray-50", icon: TrendingUp };
+    const pct = (collected / estimated) * 100;
+    if (pct >= 100) return { text: "text-green-600", badge: "border-green-300 text-green-700 bg-green-50", icon: TrendingUp };
+    if (pct >= 95) return { text: "text-yellow-600", badge: "border-yellow-300 text-yellow-700 bg-yellow-50", icon: TrendingUp };
+    return { text: "text-red-600", badge: "border-red-300 text-red-700 bg-red-50", icon: TrendingDown };
+  };
 
-    if (percentage > 0) {
-      return (
-        <Badge
-          variant="outline"
-          className="border-green-300 text-green-700 bg-green-50"
-        >
-          <TrendingUp className="w-3 h-3 mr-1" />
-          {percentage.toFixed(1)}%
-        </Badge>
-      );
-    }
-
+  const renderStatusBadge = (estimated: number, collected: number) => {
+    const { badge, icon: Icon } = getComplianceColor(estimated, collected);
+    const pct = estimated > 0 ? (collected / estimated) * 100 : 0;
     return (
-      <Badge
-        variant="outline"
-        className="border-red-300 text-red-700 bg-red-50"
-      >
-        <TrendingDown className="w-3 h-3 mr-1" />
-        {Math.abs(percentage).toFixed(1)}%
+      <Badge variant="outline" className={badge}>
+        <Icon className="w-3 h-3 mr-1" />
+        {pct.toFixed(1)}%
       </Badge>
     );
   };
@@ -277,11 +260,7 @@ const WeeklyProjectionTable = () => {
                     <span
                       className={cn(
                         "font-medium",
-                        item.variation < 0
-                          ? "text-red-600"
-                          : item.variation > 0
-                            ? "text-green-600"
-                            : "text-gray-900"
+                        getComplianceColor(item.total_weekly_estimated, item.total_weekly_collected).text
                       )}
                     >
                       {formatNumber(
@@ -303,7 +282,7 @@ const WeeklyProjectionTable = () => {
                     key={`status-${index}`}
                     className="text-center py-4 px-6"
                   >
-                    {renderStatusBadge(item.status, 0)}
+                    {renderStatusBadge(item.total_weekly_estimated, item.total_weekly_collected)}
                   </TableCell>
                 ))}
               </TableRow>
@@ -334,15 +313,7 @@ const WeeklyProjectionTable = () => {
                   <p
                     className={cn(
                       "text-2xl font-bold",
-                      (data?.data?.total_monthly_estimated ?? 0) -
-                        (data?.data?.total_monthly_collected ?? 0) <
-                        0
-                        ? "text-red-600"
-                        : (data?.data?.total_monthly_estimated ?? 0) -
-                              (data?.data?.total_monthly_collected ?? 0) >
-                            0
-                          ? "text-green-600"
-                          : "text-gray-900"
+                      getComplianceColor(data?.data?.total_monthly_estimated ?? 0, data?.data?.total_monthly_collected ?? 0).text
                     )}
                   >
                     {formatNumber(
@@ -381,28 +352,17 @@ const WeeklyProjectionTable = () => {
                     Porcentaje = (variación / monto real) * 100
                   */}
                   {(() => {
-                    const montoReal = data?.data?.total_monthly_collected ?? 0;
-                    const variacion =
-                      (data?.data?.total_monthly_estimated ?? 0) - montoReal;
-                    const totalEstimado =
-                      data?.data?.total_monthly_estimated ?? 0;
-                    const porcentaje =
-                      totalEstimado > 0
-                        ? (variacion / totalEstimado) * 100
-                        : 0;
-
+                    const estimated = data?.data?.total_monthly_estimated ?? 0;
+                    const collected = data?.data?.total_monthly_collected ?? 0;
+                    const pct = estimated > 0 ? (collected / estimated) * 100 : 0;
                     return (
                       <p
                         className={cn(
                           "text-2xl font-bold",
-                          porcentaje < 0
-                            ? "text-red-600"
-                            : porcentaje > 0
-                              ? "text-green-600"
-                              : "text-gray-900"
+                          getComplianceColor(estimated, collected).text
                         )}
                       >
-                        {porcentaje.toFixed(1)}%
+                        {pct.toFixed(1)}%
                       </p>
                     );
                   })()}
