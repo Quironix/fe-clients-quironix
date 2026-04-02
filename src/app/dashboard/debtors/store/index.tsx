@@ -7,6 +7,7 @@ import {
   getDebtors,
   updateDebtor,
   getDebtorCollectionProfile,
+  getDebtorCallBrief,
 } from "../services";
 import { BulkUploadResponse, Debtor } from "../types";
 import { DEFAULT_PAGINATION_PARAMS } from "../types/pagination";
@@ -36,6 +37,10 @@ interface DebtorsStore {
   collectionProfile: any | null;
   isFetchingCollectionProfile: boolean;
   collectionProfileError: string | null;
+
+  // Estados para call brief
+  callBrief: string | null;
+  isFetchingCallBrief: boolean;
 
   // Métodos existentes
   fetchDebtors: (accessToken: string, clientId: string) => Promise<void>;
@@ -85,6 +90,12 @@ interface DebtorsStore {
     debtorId: string
   ) => Promise<void>;
   clearCollectionProfile: () => void;
+  fetchCallBrief: (
+    accessToken: string,
+    clientId: string,
+    debtorId: string
+  ) => Promise<void>;
+  clearCallBrief: () => void;
 }
 
 export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
@@ -113,6 +124,10 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   collectionProfile: null,
   isFetchingCollectionProfile: false,
   collectionProfileError: null,
+
+  // Estados iniciales para call brief
+  callBrief: null,
+  isFetchingCallBrief: false,
 
   // Método original mantenido para compatibilidad
   fetchDebtors: async (accessToken: string, clientId: string) => {
@@ -369,5 +384,24 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   },
   clearCollectionProfile: () => {
     set({ collectionProfile: null, collectionProfileError: null });
+  },
+  fetchCallBrief: async (
+    accessToken: string,
+    clientId: string,
+    debtorId: string
+  ) => {
+    set({ isFetchingCallBrief: true });
+    try {
+      const response = await getDebtorCallBrief(accessToken, clientId, debtorId);
+      set({ callBrief: response.brief ?? null });
+    } catch (error: any) {
+      console.error("Error en fetchCallBrief:", error);
+      set({ callBrief: null });
+    } finally {
+      set({ isFetchingCallBrief: false });
+    }
+  },
+  clearCallBrief: () => {
+    set({ callBrief: null });
   },
 }));

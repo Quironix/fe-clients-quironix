@@ -23,12 +23,16 @@ interface KeyReasonsTabProps {
   debtorId: string;
   collectionProfile: CollectionProfile | null;
   isFetchingCollectionProfile: boolean;
+  callBrief: string | null;
+  isFetchingCallBrief: boolean;
 }
 
 export const KeyReasonsTab = ({
   debtorId,
   collectionProfile,
   isFetchingCollectionProfile,
+  callBrief,
+  isFetchingCallBrief,
 }: KeyReasonsTabProps) => {
   const t = useTranslations("debtorManagement.keyReasonsTab");
   const tDetail = useTranslations("debtorManagement.detail");
@@ -89,7 +93,8 @@ export const KeyReasonsTab = ({
       <div className="h-full w-full">
         <DebtorChatbot
           debtorId={debtorId}
-          callBrief={collectionProfile.call_brief}
+          callBrief={callBrief}
+          isFetchingCallBrief={isFetchingCallBrief}
         />
       </div>
       <div className="h-full w-2xl overflow-y-auto">

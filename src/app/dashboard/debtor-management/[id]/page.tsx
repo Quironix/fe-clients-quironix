@@ -47,18 +47,23 @@ const Content = ({ params }: PageProps) => {
     collectionProfile,
     isFetchingCollectionProfile,
     clearCollectionProfile,
+    fetchCallBrief,
+    callBrief,
+    isFetchingCallBrief,
+    clearCallBrief,
   } = useDebtorsStore();
 
   useEffect(() => {
     if (id && profile?.client?.id && session?.token) {
       fetchDebtorById(session.token, profile.client.id, id);
       fetchCollectionProfile(session.token, profile.client.id, id);
+      fetchCallBrief(session.token, profile.client.id, id);
     }
 
-    // Limpiar datos al desmontar
     return () => {
       clearDataDebtor();
       clearCollectionProfile();
+      clearCallBrief();
     };
   }, [id, profile?.client?.id, session?.token]);
 
@@ -169,6 +174,8 @@ const Content = ({ params }: PageProps) => {
                 debtorId={id}
                 collectionProfile={collectionProfile}
                 isFetchingCollectionProfile={isFetchingCollectionProfile}
+                callBrief={callBrief}
+                isFetchingCallBrief={isFetchingCallBrief}
               />
             </TabsContent>
             <TabsContent value="add-management" className="flex-1">

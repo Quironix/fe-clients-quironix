@@ -56,3 +56,7 @@ export interface CollectionProfile {
   management?: any;
   credit_risk_summary?: CallReasons["credit_risk_summary"];
 }
+
+export interface CallBriefResponse {
+  call_brief: string;
+}

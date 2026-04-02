@@ -169,6 +169,23 @@ export const getDebtorCollectionProfile = async (
   return response.json();
 };
 
+export const getDebtorCallBrief = async (
+  accessToken: string,
+  clientId: string,
+  debtorId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/managements/call-briefs/debtor/${debtorId}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+};
+
 export const assignDebtorToExecutive = async (
   accessToken: string,
   clientId: string,
