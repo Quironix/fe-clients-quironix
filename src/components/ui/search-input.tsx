@@ -113,11 +113,21 @@ export function SearchInput({
             className
           )}
         >
-          <span className="truncate">
-            {value
-              ? options.find((option) => option.value === value)?.label
-              : resolvedPlaceholder}
-          </span>
+          {value ? (() => {
+            const selected = options.find((option) => option.value === value);
+            return (
+              <span className="flex items-center gap-2 truncate">
+                {selected?.custom && (
+                  <span className="shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-700">
+                    {selected.custom}
+                  </span>
+                )}
+                <span className="truncate">{selected?.label}</span>
+              </span>
+            );
+          })() : (
+            <span className="truncate">{resolvedPlaceholder}</span>
+          )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -152,21 +162,21 @@ export function SearchInput({
                     {options.map((option) => (
                       <CommandItem
                         key={option.value}
-                        value={`${option.label}`}
+                        value={option.value}
                         onSelect={(currentValue) => {
-                          const selectedOption = options.find(
-                            (opt) =>
-                              opt.label === currentValue ||
-                              opt.custom === currentValue
-                          );
-                          if (selectedOption) {
-                            onValueChange(selectedOption.value);
-                          }
+                          onValueChange(currentValue);
                           setJustSelected(true);
                           handleOpenChange(false);
                         }}
                       >
-                        <span className="truncate">{option.label}</span>
+                        <span className="flex items-center gap-2 truncate">
+                          {option.custom && (
+                            <span className="shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-700">
+                              {option.custom}
+                            </span>
+                          )}
+                          <span className="truncate">{option.label}</span>
+                        </span>
                         <Check
                           className={cn(
                             "ml-auto h-4 w-4 shrink-0",
@@ -208,21 +218,21 @@ export function SearchInput({
                     {options.map((option) => (
                       <CommandItem
                         key={option.value}
-                        value={`${option.label}`}
+                        value={option.value}
                         onSelect={(currentValue) => {
-                          const selectedOption = options.find(
-                            (opt) =>
-                              opt.label === currentValue ||
-                              opt.custom === currentValue
-                          );
-                          if (selectedOption) {
-                            onValueChange(selectedOption.value);
-                          }
+                          onValueChange(currentValue);
                           setJustSelected(true);
                           handleOpenChange(false);
                         }}
                       >
-                        <span className="truncate">{option.label}</span>
+                        <span className="flex items-center gap-2 truncate">
+                          {option.custom && (
+                            <span className="shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-700">
+                              {option.custom}
+                            </span>
+                          )}
+                          <span className="truncate">{option.label}</span>
+                        </span>
                         <Check
                           className={cn(
                             "ml-auto h-4 w-4 shrink-0",
