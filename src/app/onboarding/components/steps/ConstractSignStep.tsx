@@ -48,10 +48,12 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
         session?.token as string,
         profile?.client?.id as string
       );
-      setIsSigningContract(false);
       if (!success.error) {
+        await fetch("/api/auth/clear-cache", { method: "POST" });
+        setIsSigningContract(false);
         onNext();
       } else {
+        setIsSigningContract(false);
         toast.error(success.error);
       }
     }
