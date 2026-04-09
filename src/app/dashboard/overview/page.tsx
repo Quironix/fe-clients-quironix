@@ -8,6 +8,7 @@ import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import { KPIAIChat } from "./components/kpi-ai-chat";
+import { KPIPeriodFilter } from "./components/kpi-period-filter";
 import { KPISummaryHeader } from "./components/kpi-summary-header";
 import { KPIWidget } from "./components/kpi-widget-v4";
 import {
@@ -35,6 +36,7 @@ const KPIContent = () => {
     setKPIOrder,
     resetLayout,
     setIndicators,
+    setPeriod,
   } = useKPIStore();
 
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -48,6 +50,7 @@ const KPIContent = () => {
   } = useKPIData({
     accessToken: session?.token || "",
     clientId: profile?.client?.id || "",
+    period: preferences.period,
     enabled: !!session?.token && !!profile?.client?.id,
   });
 
@@ -158,6 +161,11 @@ const KPIContent = () => {
                         );
                       })}
                     </div>
+
+                    <KPIPeriodFilter
+                      value={preferences.period}
+                      onChange={setPeriod}
+                    />
 
                     <button
                       onClick={resetLayout}

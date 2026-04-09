@@ -11,6 +11,7 @@ export interface KPIPreferences {
   showCharts: boolean;
   showCriticalOnly: boolean;
   filterCategory: string;
+  period: string | null;
 }
 
 export const DEFAULT_PREFERENCES: KPIPreferences = {
@@ -23,4 +24,5 @@ export const DEFAULT_PREFERENCES: KPIPreferences = {
   showCharts: true,
   showCriticalOnly: false,
   filterCategory: "all",
+  period: null,
 };

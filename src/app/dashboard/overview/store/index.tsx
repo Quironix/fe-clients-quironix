@@ -27,6 +27,7 @@ interface KPIStore {
   setKPIOrder: (order: string[]) => void;
   resetLayout: () => void;
   setIndicators: (indicators: Indicators | null) => void;
+  setPeriod: (period: string | null) => void;
 }
 
 const cleanupPreferences = (preferences: KPIPreferences): KPIPreferences => {
@@ -207,6 +208,12 @@ export const useKPIStore = create<KPIStore>()(
       resetLayout: () => {
         set({ preferences: DEFAULT_PREFERENCES });
         get().applyFilters();
+      },
+
+      setPeriod: (period) => {
+        set((state) => ({
+          preferences: { ...state.preferences, period },
+        }));
       },
     }),
     {

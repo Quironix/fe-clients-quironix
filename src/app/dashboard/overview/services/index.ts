@@ -86,17 +86,18 @@ const transformResponseToKPIs = (response: ResponseKPIV2): KPI[] => {
 export const getAll = async (
   accessToken: string,
   clientId: string,
-  filters?: { from?: string; to?: string }
+  filters?: { from?: string; to?: string },
+  period?: string | null
 ): Promise<KPIResponse> => {
   try {
-    const response = await fetch(
-      `${API_URL}/v2/clients/${clientId}/reports/dashboard/kpis`,
-      {
+    const url = new URL(`${API_URL}/v2/clients/${clientId}/reports/dashboard/kpis`);
+    if (period) url.searchParams.set("period", period);
+
+    const response = await fetch(url.toString(), {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
-    );
+      });
 
     if (!response.ok) {
       throw new Error("Failed to fetch KPIs");
