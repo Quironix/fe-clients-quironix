@@ -4,7 +4,7 @@ import { Debtor } from "@/app/dashboard/debtors/types";
 import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/context/ProfileContext";
 import { ColumnDef, Row } from "@tanstack/react-table";
-import { Edit, Trash2, UserPlus } from "lucide-react";
+import { Edit, Trash2, UserPlus, UserRoundPen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AssignExecutiveDialog } from "@/app/dashboard/debtors/components/assign-executive-dialog";
@@ -60,11 +60,11 @@ const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
           }
           className={
             row.original.executive_id
-              ? "hover:bg-green-500 hover:text-white text-green-600"
+              ? "hover:bg-orange-500 hover:text-white text-orange-500"
               : "hover:bg-blue-500 hover:text-white text-primary"
           }
         >
-          <UserPlus />
+          {row.original.executive_id ? <UserRoundPen /> : <UserPlus />}
         </Button>
       <Button
         variant="ghost"

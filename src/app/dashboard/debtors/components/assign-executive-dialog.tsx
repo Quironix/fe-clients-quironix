@@ -122,7 +122,7 @@ export const AssignExecutiveDialog = ({
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose} modal={false}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>

@@ -772,6 +772,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                       <PopoverContent
                                         className="w-auto p-0"
                                         align="start"
+                                        modal
                                       >
                                         <Calendar
                                           mode="single"
