@@ -10,19 +10,19 @@ import { toast } from "sonner";
 import { AssignExecutiveDialog } from "@/app/dashboard/debtors/components/assign-executive-dialog";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useInvalidateDebtors } from "@/hooks/useDebtors";
 
 const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
   const t = useTranslations("debtors.actions");
   const tCommon = useTranslations("common.buttons");
   const router = useRouter();
   const { session, profile } = useProfileContext();
-  const { deleteDebtor, fetchDebtors } = useDebtorsStore();
+  const { deleteDebtor } = useDebtorsStore();
+  const invalidateDebtors = useInvalidateDebtors();
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
   const handleAssignSuccess = () => {
-    if (session?.token && profile?.client?.id) {
-      fetchDebtors(session.token, profile.client.id);
-    }
+    invalidateDebtors(profile?.client?.id);
   };
 
   const handleEdit = (debtor: Debtor) => {
@@ -38,7 +38,7 @@ const AcctionsCellComponent = ({ row }: { row: Row<Debtor> }) => {
           debtor.id as string
         );
         toast.success(t("deleteSuccess"));
-        fetchDebtors(session.token, profile.client.id);
+        invalidateDebtors(profile.client.id);
       } catch (error) {
         toast.error(t("deleteError"));
         console.error("Error al eliminar deudor:", error);
