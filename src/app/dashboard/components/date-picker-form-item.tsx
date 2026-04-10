@@ -58,7 +58,7 @@ export default function DatePickerFormItem({
             </Button>
           </FormControl>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start" modal>
+        <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
             selected={field.value}

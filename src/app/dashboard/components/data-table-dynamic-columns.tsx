@@ -388,7 +388,7 @@ export function DataTableDynamicColumns<TData, TValue>({
           <div className="flex items-center gap-2">
             {ctaNode && ctaNode}
             {enableColumnFilter && mounted && (
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen} modal={false}>
                 <SheetTrigger asChild>
                   <Button variant="outline">
                     <Columns className="h-4 w-4 mr-2 text-orange-400" />

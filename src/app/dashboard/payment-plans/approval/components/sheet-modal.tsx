@@ -457,7 +457,7 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
 
   const typeSelected = form.watch("type");
   return (
-    <Sheet>
+    <Sheet modal={false}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="sm">
           <Eye className="h-4 w-4" />
@@ -772,7 +772,6 @@ const SheetModal = ({ detail }: { detail: PaymentPlanResponse }) => {
                                       <PopoverContent
                                         className="w-auto p-0"
                                         align="start"
-                                        modal
                                       >
                                         <Calendar
                                           mode="single"
