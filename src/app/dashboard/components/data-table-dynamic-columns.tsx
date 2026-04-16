@@ -149,11 +149,11 @@ export function DataTableDynamicColumns<TData, TValue>({
   const [searchValue, setSearchValue] = useState(initialSearchValue);
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    initialColumnVisibility || {}
+    initialColumnVisibility || {},
   );
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>(
-    initialRowSelection || {}
+    initialRowSelection || {},
   );
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -161,6 +161,7 @@ export function DataTableDynamicColumns<TData, TValue>({
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
 
   const [mounted, setMounted] = useState(false);
+  const [isInitialMount, setIsInitialMount] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -172,7 +173,7 @@ export function DataTableDynamicColumns<TData, TValue>({
         .filter((col) => (col as any).id !== "select")
         .map(
           (col, index) =>
-            (col as any).accessorKey || (col as any).id || `column-${index}`
+            (col as any).accessorKey || (col as any).id || `column-${index}`,
         );
       setColumnOrder(initialOrder);
     }
@@ -185,6 +186,14 @@ export function DataTableDynamicColumns<TData, TValue>({
   }, [initialColumnConfiguration]);
 
   useEffect(() => {
+    // No ejecutar onSearchChange en el montaje inicial si searchValue está vacío
+    if (isInitialMount && searchValue === "") {
+      setIsInitialMount(false);
+      return;
+    }
+
+    setIsInitialMount(false);
+
     const timer = setTimeout(() => {
       onSearchChange?.(searchValue);
     }, debounceMs);
@@ -216,7 +225,7 @@ export function DataTableDynamicColumns<TData, TValue>({
       enableSorting: false,
       enableHiding: false,
     }),
-    []
+    [],
   );
 
   const orderedColumns = React.useMemo(() => {
@@ -228,14 +237,14 @@ export function DataTableDynamicColumns<TData, TValue>({
       .map((colId) =>
         columns.find(
           (col) =>
-            (col as any).accessorKey === colId || (col as any).id === colId
-        )
+            (col as any).accessorKey === colId || (col as any).id === colId,
+        ),
       )
       .filter(Boolean) as ColumnDef<TData, TValue>[];
 
     const missingCols = columns.filter(
       (col) =>
-        !columnOrder.includes((col as any).accessorKey || (col as any).id)
+        !columnOrder.includes((col as any).accessorKey || (col as any).id),
     );
 
     const finalDataColumns = [...orderedDataCols, ...missingCols];
@@ -339,7 +348,7 @@ export function DataTableDynamicColumns<TData, TValue>({
         : 0,
     showingTo: Math.min(
       (pagination?.page || 1) * (pagination?.limit || pageSize),
-      pagination?.total || 0
+      pagination?.total || 0,
     ),
   };
 
@@ -348,7 +357,9 @@ export function DataTableDynamicColumns<TData, TValue>({
       <div className="space-y-4 mb-4">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center justify-between gap-2 flex-1">
-            {resolvedTitle && <div className="font-bold text-black">{resolvedTitle}</div>}
+            {resolvedTitle && (
+              <div className="font-bold text-black">{resolvedTitle}</div>
+            )}
             {enableGlobalFilter && (
               <div className="relative flex-1 max-w-sm bg-white">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -388,7 +399,11 @@ export function DataTableDynamicColumns<TData, TValue>({
           <div className="flex items-center gap-2">
             {ctaNode && ctaNode}
             {enableColumnFilter && mounted && (
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen} modal={false}>
+              <Sheet
+                open={isSheetOpen}
+                onOpenChange={setIsSheetOpen}
+                modal={false}
+              >
                 <SheetTrigger asChild>
                   <Button variant="outline">
                     <Columns className="h-4 w-4 mr-2 text-orange-400" />
@@ -411,7 +426,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                         const column = columns.find(
                           (col) =>
                             (col as any).accessorKey === colId ||
-                            (col as any).id === colId
+                            (col as any).id === colId,
                         );
                         if (!column) return null;
 
@@ -421,7 +436,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                           .find(
                             (col) =>
                               col.id === columnId ||
-                              (col.columnDef as any).accessorKey === columnId
+                              (col.columnDef as any).accessorKey === columnId,
                           );
                         const columnLabel =
                           columnLabels[columnId] ||
@@ -459,7 +474,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                                   newOrder.splice(
                                     dropIndex,
                                     0,
-                                    draggedColumnId
+                                    draggedColumnId,
                                   );
                                   setColumnOrder(newOrder);
                                 }
@@ -555,7 +570,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   ))}
@@ -589,7 +604,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                           <TableCell key={cell.id} className="text-center">
                             {flexRender(
                               cell.column.columnDef.cell,
-                              cell.getContext()
+                              cell.getContext(),
                             )}
                           </TableCell>
                         ))}
@@ -616,20 +631,29 @@ export function DataTableDynamicColumns<TData, TValue>({
         {showPagination && (
           <div className="flex items-center justify-between px-2 py-1">
             <div className="text-sm text-muted-foreground">
-              {tPagination("showing", { from: paginationInfo.showingFrom, to: paginationInfo.showingTo, total: paginationInfo.total })}
+              {tPagination("showing", {
+                from: paginationInfo.showingFrom,
+                to: paginationInfo.showingTo,
+                total: paginationInfo.total,
+              })}
               {searchValue && (
-                <span className="text-muted-foreground"> {tPagination("filtered")}</span>
+                <span className="text-muted-foreground">
+                  {" "}
+                  {tPagination("filtered")}
+                </span>
               )}
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
               <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium">{tPagination("rowsPerPage")}</p>
+                <p className="text-sm font-medium">
+                  {tPagination("rowsPerPage")}
+                </p>
                 <Select
                   value={`${paginationInfo.pageSize}`}
                   onValueChange={(value) => {
                     onPaginationChange(
                       paginationInfo.currentPage,
-                      Number(value)
+                      Number(value),
                     );
                   }}
                 >
@@ -646,7 +670,10 @@ export function DataTableDynamicColumns<TData, TValue>({
                 </Select>
               </div>
               <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                {tPagination("page", { current: paginationInfo.currentPage, total: paginationInfo.totalPages })}
+                {tPagination("page", {
+                  current: paginationInfo.currentPage,
+                  total: paginationInfo.totalPages,
+                })}
               </div>
               <div className="flex items-center space-x-2">
                 <Button
@@ -668,7 +695,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                   onClick={() => {
                     onPaginationChange(
                       paginationInfo.currentPage - 1,
-                      paginationInfo.pageSize
+                      paginationInfo.pageSize,
                     );
                   }}
                   disabled={!paginationInfo.hasPrevious}
@@ -683,7 +710,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                   onClick={() => {
                     onPaginationChange(
                       paginationInfo.currentPage + 1,
-                      paginationInfo.pageSize
+                      paginationInfo.pageSize,
                     );
                   }}
                   disabled={!paginationInfo.hasNext}
@@ -698,7 +725,7 @@ export function DataTableDynamicColumns<TData, TValue>({
                   onClick={() => {
                     onPaginationChange(
                       paginationInfo.totalPages,
-                      paginationInfo.pageSize
+                      paginationInfo.pageSize,
                     );
                   }}
                   disabled={!paginationInfo.hasNext}

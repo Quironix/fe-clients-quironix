@@ -65,31 +65,35 @@ const FilterInputs = React.forwardRef<
     onFilterChange?.(data);
   };
 
-  React.useImperativeHandle(ref, () => ({
-    getCurrentFilters: () => {
-      const values = form.getValues();
-      return {
-        ...values,
-        dateFrom: values.dateFrom
-          ? new Date(values.dateFrom).toISOString().split("T")[0]
-          : undefined,
-        dateTo: values.dateTo
-          ? new Date(values.dateTo).toISOString().split("T")[0]
-          : undefined,
-      };
-    },
-    resetFilters: () => {
-      form.reset({
-        search: "",
-        status: "PENDING",
-        dateFrom: "",
-        dateTo: "",
-      });
-      onFilterChange?.({
-        status: "PENDING",
-      });
-    },
-  }), [form, onFilterChange]);
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      getCurrentFilters: () => {
+        const values = form.getValues();
+        return {
+          ...values,
+          dateFrom: values.dateFrom
+            ? new Date(values.dateFrom).toISOString().split("T")[0]
+            : undefined,
+          dateTo: values.dateTo
+            ? new Date(values.dateTo).toISOString().split("T")[0]
+            : undefined,
+        };
+      },
+      resetFilters: () => {
+        form.reset({
+          search: "",
+          status: "PENDING",
+          dateFrom: "",
+          dateTo: "",
+        });
+        onFilterChange?.({
+          status: "PENDING",
+        });
+      },
+    }),
+    [form, onFilterChange],
+  );
 
   return (
     <>
@@ -98,7 +102,7 @@ const FilterInputs = React.forwardRef<
       </div>
       <FormProvider {...form}>
         <form className="w-full space-y-3" autoComplete="off">
-          <div className="space-y-2 grid grid-cols-2 gap-2">
+          <div className="space-y-2 grid grid-cols-2 gap-2 flex justify-between items-start">
             <FormField
               control={form.control}
               name="dateFrom"

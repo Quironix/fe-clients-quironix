@@ -1,7 +1,7 @@
 "use client";
 
 import { RowSelectionState } from "@tanstack/react-table";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { getPaymentNetting } from "../services";
 import {
@@ -65,7 +65,7 @@ const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
 export function usePaymentNetting(
   accessToken?: string,
   clientId?: string,
-  useMockData: boolean = false
+  useMockData: boolean = false,
 ) {
   const [data, setData] = useState<PaymentNetting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,6 +83,7 @@ export function usePaymentNetting(
   });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isHydrated, setIsHydrated] = useState(false);
+  const hasInitialFetchRun = useRef(false);
 
   // Cargar datos de localStorage después de la hidratación
   useEffect(() => {
@@ -104,7 +105,7 @@ export function usePaymentNetting(
     async (
       page: number = 1,
       limit: number = 15,
-      searchFilters: PaymentNettingFilters = {}
+      searchFilters: PaymentNettingFilters = {},
     ) => {
       setIsServerSideLoading(true);
 
@@ -166,14 +167,14 @@ export function usePaymentNetting(
         setIsServerSideLoading(false);
       }
     },
-    [accessToken, clientId, useMockData]
+    [accessToken, clientId, useMockData],
   );
 
   const handlePaginationChange = useCallback(
     (page: number, pageSize: number) => {
       fetchPaymentNettings(page, pageSize, filters);
     },
-    [fetchPaymentNettings, filters]
+    [fetchPaymentNettings, filters],
   );
 
   const handleSearchChange = useCallback(
@@ -187,7 +188,8 @@ export function usePaymentNetting(
       if (filters.status) baseFilters.status = filters.status;
       if (filters.dateFrom) baseFilters.dateFrom = filters.dateFrom;
       if (filters.dateTo) baseFilters.dateTo = filters.dateTo;
-      if (filters.createdAtFrom) baseFilters.createdAtFrom = filters.createdAtFrom;
+      if (filters.createdAtFrom)
+        baseFilters.createdAtFrom = filters.createdAtFrom;
       if (filters.createdAtTo) baseFilters.createdAtTo = filters.createdAtTo;
 
       // Determinar si la búsqueda es numérica o textual
@@ -212,7 +214,7 @@ export function usePaymentNetting(
       setFilters(newFilters);
       fetchPaymentNettings(1, pagination.limit, newFilters);
     },
-    [fetchPaymentNettings, filters, pagination.limit]
+    [fetchPaymentNettings, filters, pagination.limit],
   );
 
   const handleFilterChange = useCallback(
@@ -220,7 +222,7 @@ export function usePaymentNetting(
       setFilters(newFilters);
       fetchPaymentNettings(1, pagination.limit, newFilters);
     },
-    [fetchPaymentNettings, pagination.limit]
+    [fetchPaymentNettings, pagination.limit],
   );
 
   const refetch = useCallback(() => {
@@ -236,11 +238,11 @@ export function usePaymentNetting(
       if (typeof window !== "undefined") {
         localStorage.setItem(
           "paymentNettingSelection",
-          JSON.stringify(newSelection)
+          JSON.stringify(newSelection),
         );
       }
     },
-    [rowSelection]
+    [rowSelection],
   );
 
   const getSelectedRows = useCallback(() => {
@@ -255,9 +257,17 @@ export function usePaymentNetting(
   }, []);
 
   useEffect(() => {
+    // No ejecutar si no tenemos las credenciales necesarias
+    if (!accessToken || !clientId) return;
+
+    // Prevenir ejecuciones múltiples
+    if (hasInitialFetchRun.current) return;
+
+    hasInitialFetchRun.current = true;
     setIsLoading(true);
     fetchPaymentNettings().finally(() => setIsLoading(false));
-  }, [fetchPaymentNettings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken, clientId]);
 
   return {
     data,
