@@ -15,8 +15,8 @@ import { cn, formatNumber } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { TrendingDown, TrendingUp } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { getReportsByDebtor } from "../services";
 import { usePaymentProjectionStore } from "../store";
 
@@ -48,90 +48,42 @@ const WeeklyProjectionTable = () => {
       getReportsByDebtor(
         session?.token,
         profile?.client_id,
-        debtorId.toString()
+        debtorId.toString(),
       ),
     enabled: !!session?.token && !!profile?.client_id && !!debtorId,
   });
 
-  // Datos de ejemplo basados en la imagen
-  const defaultData: WeeklyProjectionData[] = [
-    {
-      week: 1,
-      dateRange: "22 Jul - 28 Jul",
-      invoiceNumber: null,
-      projected: 0,
-      real: 0,
-      variation: 0,
-      variationPercentage: 0,
-      status: "neutral",
-    },
-    {
-      week: 2,
-      dateRange: "29 Jul - 04 Ago",
-      invoiceNumber: null,
-      projected: 0,
-      real: 0,
-      variation: 0,
-      variationPercentage: 0,
-      status: "neutral",
-    },
-    {
-      week: 3,
-      dateRange: "05 Ago - 11 Ago",
-      invoiceNumber: "1234567889",
-      projected: 50000,
-      real: 0,
-      variation: -50000,
-      variationPercentage: -100,
-      status: "negative",
-    },
-    {
-      week: 4,
-      dateRange: "12 Ago - 18 Ago",
-      invoiceNumber: null,
-      projected: 0,
-      real: 0,
-      variation: 0,
-      variationPercentage: 0,
-      status: "neutral",
-    },
-    {
-      week: 5,
-      dateRange: "19 Ago - 25 Ago",
-      invoiceNumber: null,
-      projected: 0,
-      real: 0,
-      variation: 0,
-      variationPercentage: 0,
-      status: "neutral",
-    },
-  ];
-
   const rawWeeklyProjections: any[] = data?.data?.weekly_projections ?? [];
   const weeklyProjections = rawWeeklyProjections.filter(
     (item, index, self) =>
-      self.findIndex((w) => w.week_number === item.week_number) === index
+      self.findIndex((w) => w.week_number === item.week_number) === index,
   );
-
-  // Calcular totales
-  const totals = weeklyProjections.reduce(
-    (acc, item) => ({
-      projected: acc.projected + (item.total_weekly_estimated ?? item.projected ?? 0),
-      real: acc.real + (item.total_weekly_collected ?? item.real ?? 0),
-      variation: acc.variation + ((item.total_weekly_estimated ?? 0) - (item.total_weekly_collected ?? 0)),
-    }),
-    { projected: 0, real: 0, variation: 0 }
-  );
-
-  const totalVariationPercentage =
-    totals.projected > 0 ? (totals.variation / totals.projected) * 100 : 0;
 
   const getComplianceColor = (estimated: number, collected: number) => {
-    if (estimated <= 0) return { text: "text-gray-900", badge: "border-gray-300 text-gray-700 bg-gray-50", icon: TrendingUp };
+    if (estimated <= 0)
+      return {
+        text: "text-gray-900",
+        badge: "border-gray-300 text-gray-700 bg-gray-50",
+        icon: TrendingUp,
+      };
     const pct = (collected / estimated) * 100;
-    if (pct >= 100) return { text: "text-green-600", badge: "border-green-300 text-green-700 bg-green-50", icon: TrendingUp };
-    if (pct >= 95) return { text: "text-yellow-600", badge: "border-yellow-300 text-yellow-700 bg-yellow-50", icon: TrendingUp };
-    return { text: "text-red-600", badge: "border-red-300 text-red-700 bg-red-50", icon: TrendingDown };
+    if (pct >= 100)
+      return {
+        text: "text-green-600",
+        badge: "border-green-300 text-green-700 bg-green-50",
+        icon: TrendingUp,
+      };
+    if (pct >= 95)
+      return {
+        text: "text-yellow-600",
+        badge: "border-yellow-300 text-yellow-700 bg-yellow-50",
+        icon: TrendingUp,
+      };
+    return {
+      text: "text-red-600",
+      badge: "border-red-300 text-red-700 bg-red-50",
+      icon: TrendingDown,
+    };
   };
 
   const renderStatusBadge = (estimated: number, collected: number) => {
@@ -264,12 +216,15 @@ const WeeklyProjectionTable = () => {
                     <span
                       className={cn(
                         "font-medium",
-                        getComplianceColor(item.total_weekly_estimated, item.total_weekly_collected).text
+                        getComplianceColor(
+                          item.total_weekly_estimated,
+                          item.total_weekly_collected,
+                        ).text,
                       )}
                     >
                       {formatNumber(
                         item.total_weekly_estimated -
-                          item.total_weekly_collected
+                          item.total_weekly_collected,
                       )}
                     </span>
                   </TableCell>
@@ -286,7 +241,10 @@ const WeeklyProjectionTable = () => {
                     key={`status-${index}`}
                     className="text-center py-4 px-6"
                   >
-                    {renderStatusBadge(item.total_weekly_estimated, item.total_weekly_collected)}
+                    {renderStatusBadge(
+                      item.total_weekly_estimated,
+                      item.total_weekly_collected,
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
@@ -317,12 +275,15 @@ const WeeklyProjectionTable = () => {
                   <p
                     className={cn(
                       "text-2xl font-bold",
-                      getComplianceColor(data?.data?.total_monthly_estimated ?? 0, data?.data?.total_monthly_collected ?? 0).text
+                      getComplianceColor(
+                        data?.data?.total_monthly_estimated ?? 0,
+                        data?.data?.total_monthly_collected ?? 0,
+                      ).text,
                     )}
                   >
                     {formatNumber(
                       (data?.data?.total_monthly_estimated ?? 0) -
-                        (data?.data?.total_monthly_collected ?? 0)
+                        (data?.data?.total_monthly_collected ?? 0),
                     )}
                   </p>
                 </div>
@@ -338,9 +299,7 @@ const WeeklyProjectionTable = () => {
                 <div>
                   <p className="text-sm text-gray-600">{t("totalReal")}</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatNumber(
-                      data?.data?.total_monthly_collected
-                    )}
+                    {formatNumber(data?.data?.total_monthly_collected)}
                   </p>
                 </div>
               </div>
@@ -350,7 +309,9 @@ const WeeklyProjectionTable = () => {
                   <TrendingDown className="w-4 h-4 text-orange-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">{t("variationPercentage")}</p>
+                  <p className="text-sm text-gray-600">
+                    {t("variationPercentage")}
+                  </p>
                   {/*
                     Calcula el porcentaje de variación basado en el monto real y la variación.
                     Porcentaje = (variación / monto real) * 100
@@ -358,12 +319,13 @@ const WeeklyProjectionTable = () => {
                   {(() => {
                     const estimated = data?.data?.total_monthly_estimated ?? 0;
                     const collected = data?.data?.total_monthly_collected ?? 0;
-                    const pct = estimated > 0 ? (collected / estimated) * 100 : 0;
+                    const pct =
+                      estimated > 0 ? (collected / estimated) * 100 : 0;
                     return (
                       <p
                         className={cn(
                           "text-2xl font-bold",
-                          getComplianceColor(estimated, collected).text
+                          getComplianceColor(estimated, collected).text,
                         )}
                       >
                         {pct.toFixed(1)}%

@@ -176,7 +176,7 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3 min-w-[120px]">
                         Deuda
                         <br />
-                        vencido
+                        vencida
                       </TableHead>
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3 min-w-[120px]">
                         Por vencer
