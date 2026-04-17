@@ -25,6 +25,7 @@ export interface Executive {
 export interface Contact {
   type: "EMAIL" | "PHONE" | "WHATSAPP" | "SMS" | "LETTER";
   value: string;
+  name?: string; // Opcional: nombre del contacto enriquecido en el frontend
 }
 
 export interface CaseData {

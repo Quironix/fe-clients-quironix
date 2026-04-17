@@ -192,13 +192,16 @@ export const createInvoiceColumns = (
   {
     accessorKey: "contact",
     header: "Contacto",
-    cell: ({ row }) => (
-      <div className="flex flex-col text-xs">
-        <span className="text-sm">
-          {row.original.track?.contact?.value || "-"}
-        </span>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const contact = row.original.track?.contact;
+      // Mostrar el nombre si existe, sino el email/teléfono como fallback
+      const displayValue = contact?.name || contact?.value || "-";
+      return (
+        <div className="flex flex-col text-xs">
+          <span className="text-sm">{displayValue}</span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "debtorComment",

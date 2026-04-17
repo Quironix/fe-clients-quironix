@@ -140,7 +140,7 @@ const Content = () => {
       nextManagementDate: "Fecha de próxima gestión",
       actions: "Acciones",
     }),
-    []
+    [],
   );
 
   const fetchDebtor = async () => {
@@ -150,7 +150,7 @@ const Content = () => {
       const debtor = await getDebtorById(
         session.token,
         profile.client.id,
-        debtorId
+        debtorId,
       );
       setDataDebtor(debtor);
     } catch (err) {
@@ -158,10 +158,45 @@ const Content = () => {
     }
   };
 
+  // Función helper para enriquecer el contacto con el nombre del deudor
+  const enrichContactWithName = (
+    invoices: InvoiceWithTrack[],
+    debtorContacts: any[],
+  ): InvoiceWithTrack[] => {
+    if (!debtorContacts || debtorContacts.length === 0) return invoices;
+
+    return invoices.map((invoice) => {
+      if (!invoice.track?.contact) return invoice;
+
+      // Buscar el nombre del contacto comparando el email/teléfono
+      const matchingContact = debtorContacts.find(
+        (contact: any) =>
+          contact.email === invoice.track.contact.value ||
+          contact.phone === invoice.track.contact.value,
+      );
+
+      // Si encontramos el contacto, agregamos el nombre
+      if (matchingContact) {
+        return {
+          ...invoice,
+          track: {
+            ...invoice.track,
+            contact: {
+              ...invoice.track.contact,
+              name: matchingContact.name,
+            },
+          },
+        };
+      }
+
+      return invoice;
+    });
+  };
+
   const fetchTracks = async (
     currentPage: number,
     currentLimit: number,
-    search?: string
+    search?: string,
   ) => {
     if (!session?.token || !profile?.client?.id || !debtorId) return;
 
@@ -172,7 +207,7 @@ const Content = () => {
         session.token,
         profile.client.id,
         debtorId,
-        { page: currentPage, limit: currentLimit, search }
+        { page: currentPage, limit: currentLimit, search },
       );
 
       setInvoicesWithTracks(response.data);
@@ -217,7 +252,7 @@ const Content = () => {
   // };
 
   const handleUpdateColumns = async (
-    config?: Array<{ name: string; is_visible: boolean }>
+    config?: Array<{ name: string; is_visible: boolean }>,
   ) => {
     try {
       const configToSave = config || columnConfiguration;
@@ -265,13 +300,21 @@ const Content = () => {
 
   const columns = useMemo(() => createInvoiceColumns(handleViewDetails), []);
 
-  const sortedInvoicesWithTracks = useMemo(() => {
-    return [...invoicesWithTracks].sort((a, b) => {
+  // Enriquecer y ordenar los datos de forma reactiva
+  const enrichedAndSortedInvoices = useMemo(() => {
+    // Primero enriquecemos con el nombre del contacto
+    const enriched = enrichContactWithName(
+      invoicesWithTracks,
+      dataDebtor?.contacts || [],
+    );
+
+    // Luego ordenamos por fecha de vencimiento
+    return enriched.sort((a, b) => {
       const dateA = new Date(a.due_date).getTime();
       const dateB = new Date(b.due_date).getTime();
       return dateA - dateB;
     });
-  }, [invoicesWithTracks]);
+  }, [invoicesWithTracks, dataDebtor?.contacts]);
 
   const TableSkeleton = () => (
     <>
@@ -409,7 +452,7 @@ const Content = () => {
             </div>
             <DataTableDynamicColumns
               columns={columns}
-              data={sortedInvoicesWithTracks}
+              data={enrichedAndSortedInvoices}
               isLoading={loading}
               emptyMessage="No hay gestiones registradas"
               pagination={tracksPagination}
