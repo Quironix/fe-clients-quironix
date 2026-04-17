@@ -242,26 +242,28 @@ export const createColumns = (
                 />
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem
-              className="text-destructive"
-              onSelect={(e) => e.preventDefault()}
-            >
-              <DialogConfirm
-                title="Eliminar movimiento"
-                description="¿Estás seguro de querer eliminar este movimiento?"
-                onConfirm={() => {
-                  onEliminatePayment?.(row.original);
-                }}
-                triggerButton={
-                  <div className="flex items-center gap-2">
-                    <Trash className="h-4 w-4 mr-2" />
-                    Eliminar
-                  </div>
-                }
-                confirmButtonText="Eliminar"
-                type="danger"
-              />
-            </DropdownMenuItem>
+            {(row.original.status === "PENDING" || row.original.status === "PAYMENT_CREATED") && (
+              <DropdownMenuItem
+                className="text-destructive"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <DialogConfirm
+                  title="Eliminar movimiento"
+                  description="¿Estás seguro de querer eliminar este movimiento?"
+                  onConfirm={() => {
+                    onEliminatePayment?.(row.original);
+                  }}
+                  triggerButton={
+                    <div className="flex items-center gap-2">
+                      <Trash className="h-4 w-4 mr-2" />
+                      Eliminar
+                    </div>
+                  }
+                  confirmButtonText="Eliminar"
+                  type="danger"
+                />
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );
