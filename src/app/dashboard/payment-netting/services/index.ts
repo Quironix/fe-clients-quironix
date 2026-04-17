@@ -476,3 +476,50 @@ export const reversePayment = async ({
     };
   }
 };
+
+export const eliminatePayment = async ({
+  accessToken,
+  clientId,
+  movementId,
+}: {
+  accessToken: string;
+  clientId: string;
+  movementId: string;
+}) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/reconciliation/bank-movements/eliminate`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ movementIds: [movementId] }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: data?.message || "Error al eliminar el movimiento",
+        data: null,
+      };
+    }
+
+    return {
+      success: true,
+      message: "Movimiento eliminado correctamente",
+      data,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Error al eliminar el movimiento",
+      data: null,
+    };
+  }
+};

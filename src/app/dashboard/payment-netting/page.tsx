@@ -35,7 +35,7 @@ import FormAssignDebtor from "./components/form-assign-debtor";
 import IconDescription from "./components/icon-description";
 import ViewDetailsModal from "./components/view-details-modal";
 import { usePaymentNetting } from "./hooks/usePaymentNetting";
-import { reversePayment, updateReconciliationTableProfile } from "./services";
+import { eliminatePayment, reversePayment, updateReconciliationTableProfile } from "./services";
 
 export default function PaymentNettingPage() {
   const t = useTranslations("paymentNetting");
@@ -232,9 +232,26 @@ export default function PaymentNettingPage() {
     }
   };
 
+  const handleEliminatePayment = async (row: any) => {
+    try {
+      const response = await eliminatePayment({
+        accessToken: session?.token,
+        clientId: profile?.client_id,
+        movementId: row.id,
+      });
+
+      toast.success(response.message);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      refetch();
+      window.location.reload();
+    }
+  };
+
   const columns = useMemo(
-    () => createColumns(handleOpenTransactionDetail, handleReversePayment),
-    [handleOpenTransactionDetail, handleReversePayment]
+    () => createColumns(handleOpenTransactionDetail, handleReversePayment, handleEliminatePayment),
+    [handleOpenTransactionDetail, handleReversePayment, handleEliminatePayment]
   );
 
   const handleResetFilters = () => {

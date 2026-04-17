@@ -114,6 +114,7 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
 export const createColumns = (
   onViewDetails?: (transaction: PaymentNetting) => void,
   onReversePayment?: (transaction: PaymentNetting) => void,
+  onEliminatePayment?: (transaction: PaymentNetting) => void,
 ): ColumnDef<PaymentNetting>[] => [
   {
     accessorKey: "status",
@@ -241,10 +242,26 @@ export const createColumns = (
                 />
               </DropdownMenuItem>
             )}
-            {/*<DropdownMenuItem className="text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar
-            </DropdownMenuItem> */}
+            <DropdownMenuItem
+              className="text-destructive"
+              onSelect={(e) => e.preventDefault()}
+            >
+              <DialogConfirm
+                title="Eliminar movimiento"
+                description="¿Estás seguro de querer eliminar este movimiento?"
+                onConfirm={() => {
+                  onEliminatePayment?.(row.original);
+                }}
+                triggerButton={
+                  <div className="flex items-center gap-2">
+                    <Trash className="h-4 w-4 mr-2" />
+                    Eliminar
+                  </div>
+                }
+                confirmButtonText="Eliminar"
+                type="danger"
+              />
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
