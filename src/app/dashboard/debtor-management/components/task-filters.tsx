@@ -1,10 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ExportExcelModal } from "@/components/ui/export-excel-modal";
 import { useProfileContext } from "@/context/ProfileContext";
-import { AlertTriangle, File, FileText, Scale } from "lucide-react";
+import { AlertTriangle, File, FileDown, FileText, Scale } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useCollectorQuadrants } from "../hooks/useCollectorQuadrants";
 import { QuadrantType } from "../services/types";
 import { DebtorSearchAutocomplete } from "./debtor-search-autocomplete";
@@ -20,6 +21,7 @@ export const TaskFilters = ({
 }: TaskFiltersProps) => {
   const t = useTranslations("debtorManagement");
   const { session, profile } = useProfileContext();
+  const [exportOpen, setExportOpen] = useState(false);
 
   // Obtener datos sin filtros para calcular totales
   const { data } = useCollectorQuadrants({
@@ -148,7 +150,23 @@ export const TaskFilters = ({
         >
           {t("filters.all")} {counts.total}
         </Button>
+        <Button
+          size="xs"
+          variant="outline"
+          className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-[4px]"
+          onClick={() => setExportOpen(true)}
+        >
+          <FileDown className="h-4 w-4 mr-1 text-orange-400" />
+          Exportar
+        </Button>
       </div>
+      <ExportExcelModal
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        schema="MANAGEMENTS"
+        accessToken={session?.token || ""}
+        clientId={profile?.client?.id || ""}
+      />
     </div>
   );
 };

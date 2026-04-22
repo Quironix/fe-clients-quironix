@@ -5,13 +5,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { VisibilityState } from "@tanstack/react-table";
-import { Archive, CheckCircle, Coins, Eye, Trash2 } from "lucide-react";
+import { Archive, CheckCircle, Coins, Eye, FileDown, Trash2 } from "lucide-react";
 
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
+import { ExportExcelModal } from "@/components/ui/export-excel-modal";
 import { toast } from "sonner";
 import { DataTableDynamicColumns } from "../components/data-table-dynamic-columns";
 import DialogForm from "../components/dialog-form";
@@ -30,6 +31,7 @@ const PaymentPlansPage = () => {
   const tCommon = useTranslations("common.buttons");
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
+  const [exportOpen, setExportOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [openDetailModal, setOpenDetailModal] = useState(false);
   const [selectedPaymentPlan, setSelectedPaymentPlan] =
@@ -277,6 +279,19 @@ const PaymentPlansPage = () => {
                 />
               }
               isApplyingFilters={isApplyingFilters}
+              ctaNode={
+                <Button variant="outline" onClick={() => setExportOpen(true)}>
+                  <FileDown className="h-4 w-4 mr-2 text-orange-400" />
+                  Exportar
+                </Button>
+              }
+            />
+            <ExportExcelModal
+              open={exportOpen}
+              onOpenChange={setExportOpen}
+              schema="PAYMENT_PLANS"
+              accessToken={session?.token || ""}
+              clientId={profile?.client_id || ""}
             />
             <DialogForm
               open={openDetailModal}

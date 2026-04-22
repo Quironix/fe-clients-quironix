@@ -8,10 +8,12 @@ import { Litigation, LitigationItem } from "../types";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { Archive, Eye, Trash2 } from "lucide-react";
+import { Archive, Eye, FileDown, Trash2 } from "lucide-react";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import { getColumns } from "./columns";
 import FilterInputs, { FilterInputsRef } from "./filter";
+import { Button } from "@/components/ui/button";
+import { ExportExcelModal } from "@/components/ui/export-excel-modal";
 
 interface ListLitigationProps {
   litigationHook: ReturnType<
@@ -22,6 +24,7 @@ interface ListLitigationProps {
 const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
   const t = useTranslations("litigation");
   const { session, profile } = useProfileContext();
+  const [exportOpen, setExportOpen] = useState(false);
 
   const {
     data,
@@ -197,6 +200,19 @@ const ListLitigation = ({ litigationHook }: ListLitigationProps) => {
           }
           isApplyingFilters={isApplyingFilters}
           initialColumnConfiguration={columnConfiguration}
+          ctaNode={
+            <Button variant="outline" onClick={() => setExportOpen(true)}>
+              <FileDown className="h-4 w-4 mr-2 text-orange-400" />
+              Exportar
+            </Button>
+          }
+        />
+        <ExportExcelModal
+          open={exportOpen}
+          onOpenChange={setExportOpen}
+          schema="LITIGATION"
+          accessToken={session?.token || ""}
+          clientId={profile?.client_id || ""}
         />
       </CardContent>
     </Card>

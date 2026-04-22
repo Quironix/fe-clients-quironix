@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ExportExcelModal } from "@/components/ui/export-excel-modal";
 import { Form, FormField } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useQuery } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { FileDown, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -20,6 +21,7 @@ const DebtorsList = () => {
   const t = useTranslations("paymentProjection");
   const { data: session } = useSession();
   const { profile } = useProfileContext();
+  const [exportOpen, setExportOpen] = useState(false);
   const { searchDebtorCode, setSearchDebtorCode, setDebtorId } =
     usePaymentProjectionStore();
   const { debtors: allDebtors } = useDebtorsStore();
@@ -84,15 +86,24 @@ const DebtorsList = () => {
         <CardTitle>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold">{t("debtors")}</h2>
-            {/* <Badge
+            <Button
               variant="outline"
-              className="bg-red-400 text-white rounded-full"
+              size="sm"
+              onClick={() => setExportOpen(true)}
             >
-              2 críticos
-            </Badge> */}
+              <FileDown className="h-4 w-4 mr-2 text-orange-400" />
+              Exportar
+            </Button>
           </div>
         </CardTitle>
       </CardHeader>
+      <ExportExcelModal
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        schema="PROJECTION"
+        accessToken={session?.token || ""}
+        clientId={profile?.client_id || ""}
+      />
       <CardContent className="p-6 pt-0">
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="w-full">

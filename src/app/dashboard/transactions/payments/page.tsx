@@ -2,7 +2,8 @@
 
 import TitleSection from "@/app/dashboard/components/title-section";
 import { useTranslations } from "next-intl";
-import { FileStack } from "lucide-react";
+import { FileDown, FileStack } from "lucide-react";
+import { useState } from "react";
 import Header from "@/app/dashboard/components/header";
 import { Main } from "@/app/dashboard/components/main";
 import Language from "@/components/ui/language";
@@ -14,10 +15,12 @@ import PaymentUploadSection from "./components/payments-upload-section";
 import { usePayments } from "./hooks/usePayments";
 import { Button } from "@/components/ui/button";
 import { Payments } from "./types";
+import { ExportExcelModal } from "@/components/ui/export-excel-modal";
 
 const PaymentPage = () => {
   const t = useTranslations("transactions.payments");
   const { session, profile } = useProfileContext();
+  const [exportOpen, setExportOpen] = useState(false);
 
   // Usar el nuevo hook usePayments con paginación del servidor
   const {
@@ -89,6 +92,12 @@ const PaymentPage = () => {
         />
         <PaymentUploadSection />
         <div className="mt-5 border border-gray-200 rounded-md p-3">
+          <div className="flex justify-end mb-3">
+            <Button variant="outline" onClick={() => setExportOpen(true)}>
+              <FileDown className="h-4 w-4 mr-2 text-orange-400" />
+              Exportar
+            </Button>
+          </div>
           <DataTable
             columns={columns}
             data={payments as Payments[]}
@@ -104,6 +113,13 @@ const PaymentPage = () => {
             pageSizeOptions={[15, 20, 25, 30, 40, 50]}
           />
         </div>
+        <ExportExcelModal
+          open={exportOpen}
+          onOpenChange={setExportOpen}
+          schema="PAYMENTS"
+          accessToken={session?.token || ""}
+          clientId={profile?.client?.id || ""}
+        />
       </Main>
     </>
   );

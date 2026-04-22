@@ -10,9 +10,10 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { useProfileContext } from "@/context/ProfileContext";
 import { VisibilityState } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { FileStack } from "lucide-react";
+import { FileDown, FileStack } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ExportExcelModal } from "@/components/ui/export-excel-modal";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import { columns } from "./components/columns";
 import DTEUploadSection from "./components/dte-upload-section";
@@ -23,6 +24,7 @@ import { DTE } from "./types";
 const PageDTE = () => {
   const t = useTranslations("transactions.dte");
   const { session, profile } = useProfileContext();
+  const [exportOpen, setExportOpen] = useState(false);
 
   const [columnConfiguration, setColumnConfiguration] = useState<
     Array<{ name: string; is_visible: boolean }>
@@ -228,8 +230,21 @@ const PageDTE = () => {
             rowClassName={(dte: DTE) =>
               dte.type === "CREDIT_NOTE" ? "bg-red-50" : ""
             }
+            ctaNode={
+              <Button variant="outline" onClick={() => setExportOpen(true)}>
+                <FileDown className="h-4 w-4 mr-2 text-orange-400" />
+                Exportar
+              </Button>
+            }
           />
         </div>
+        <ExportExcelModal
+          open={exportOpen}
+          onOpenChange={setExportOpen}
+          schema="INVOICES"
+          accessToken={session?.token || ""}
+          clientId={profile?.client?.id || ""}
+        />
       </Main>
     </>
   );
