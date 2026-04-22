@@ -4,21 +4,29 @@ import {
   EmailMultiplePayload,
 } from "../types/email";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export async function sendTrackEmail(
-  payload: EmailPayload
+  payload: EmailPayload,
+  token: string,
+  clientId: string
 ): Promise<EmailResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
-    const response = await fetch("/api/send-mail", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/managements/emails/send`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      }
+    );
 
     clearTimeout(timeoutId);
 
@@ -33,8 +41,8 @@ export async function sendTrackEmail(
     }
 
     return {
-      success: true,
-      message: data.message || "Email enviado exitosamente",
+      success: data.sent === true,
+      message: "Email enviado exitosamente",
     };
   } catch (error: any) {
     clearTimeout(timeoutId);
@@ -56,20 +64,26 @@ export async function sendTrackEmail(
 }
 
 export async function sendMultipleManagementEmail(
-  payload: EmailMultiplePayload
+  payload: EmailMultiplePayload,
+  token: string,
+  clientId: string
 ): Promise<EmailResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch("/api/send-mail", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/managements/emails/send`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      }
+    );
 
     clearTimeout(timeoutId);
 
@@ -84,8 +98,8 @@ export async function sendMultipleManagementEmail(
     }
 
     return {
-      success: true,
-      message: data.message || "Email de múltiples gestiones enviado exitosamente",
+      success: data.sent === true,
+      message: "Email de múltiples gestiones enviado exitosamente",
     };
   } catch (error: any) {
     clearTimeout(timeoutId);

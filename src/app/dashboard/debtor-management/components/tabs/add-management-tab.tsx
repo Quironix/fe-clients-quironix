@@ -651,7 +651,7 @@ export const AddManagementTab = ({
                   managementCombination: selectedCombination,
                 });
 
-                const emailResult = await sendTrackEmail(emailPayload);
+                const emailResult = await sendTrackEmail(emailPayload, session.token, profile.client_id);
 
                 if (emailResult.success) {
                   toast.success(t("emailSent", { email: group.email }));
@@ -670,7 +670,9 @@ export const AddManagementTab = ({
               });
 
               const emailResult = await sendMultipleManagementEmail(
-                emailPayload
+                emailPayload,
+                session.token,
+                profile.client_id
               );
 
               if (emailResult.success) {

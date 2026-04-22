@@ -26,11 +26,7 @@ export interface EmailDynamicTemplateData {
 
 export interface EmailPayload {
   to: string;
-  from: {
-    name: string;
-    email: string;
-  };
-  templateId?: string;
+  templateId: string;
   dynamicTemplateData: EmailDynamicTemplateData;
 }
 
@@ -55,10 +51,6 @@ export interface EmailMultipleDynamicTemplateData {
 
 export interface EmailMultiplePayload {
   to: string;
-  from: {
-    name: string;
-    email: string;
-  };
   templateId: string;
   dynamicTemplateData: EmailMultipleDynamicTemplateData;
 }

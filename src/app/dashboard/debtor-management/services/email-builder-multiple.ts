@@ -143,13 +143,12 @@ export function buildMultipleEmailPayload({
   const clientPhone = clientContact?.phone || "";
   const clientEmail = clientContact?.email || "";
 
+  const MULTIPLE_TEMPLATE_ID =
+    process.env.NEXT_SG_MULTIPLE_MANAGEMENT || "d-f3db644c64b1410f981ee7642d28aba4";
+
   const emailPayload: EmailMultiplePayload = {
     to: contactEmail,
-    from: {
-      name: "Comunicaciones Quironix",
-      email: "collector@quironix.com",
-    },
-    templateId: "",
+    templateId: MULTIPLE_TEMPLATE_ID,
     dynamicTemplateData: {
       logo_client: clientLogoUrl,
       name_client: contactName,

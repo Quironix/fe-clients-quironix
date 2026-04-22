@@ -90,7 +90,7 @@ export function buildEmailPayload({
 }: BuildEmailPayloadParams): EmailPayload {
   const contactEmail = managementFormData.contactValue;
 
-  if (!contactEmail || managementFormData.contactType !== "EMAIL") {
+  if (!contactEmail) {
     throw new Error("El contacto seleccionado no tiene un email válido");
   }
 
@@ -126,13 +126,12 @@ export function buildEmailPayload({
   const clientPhone = clientContact?.phone || "";
   const clientEmail = clientContact?.email || "";
 
+  const SINGLE_TEMPLATE_ID =
+    process.env.NEXT_SG_SINGLE_MANAGEMENT || "d-2ab3e2439491440c951a1cf46fdec7aa";
+
   const emailPayload: EmailPayload = {
     to: contactEmail,
-    from: {
-      name: "Comunicaciones Quironix",
-      email: "collector@quironix.com",
-    },
-    templateId: "",
+    templateId: SINGLE_TEMPLATE_ID,
     dynamicTemplateData: {
       logo_client: clientLogoUrl,
       name_client: contactName,
