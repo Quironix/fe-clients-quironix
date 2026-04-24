@@ -8,6 +8,7 @@ import {
   useChatRuntime,
 } from "@assistant-ui/react-ai-sdk";
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 import { KPIThread } from "./kpi-thread";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -15,6 +16,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export const KPIAIChat = () => {
   const t = useTranslations("overview");
   const { profile, session } = useProfileContext();
+
+  const threadId = useMemo(() => crypto.randomUUID(), []);
 
   const runtime = useChatRuntime({
     messages: [
@@ -34,6 +37,22 @@ export const KPIAIChat = () => {
       headers: {
         Authorization: `Bearer ${session?.token}`,
       },
+      prepareSendMessagesRequest: ({
+        messages,
+        trigger,
+        messageId,
+        requestMetadata,
+        body,
+      }) => ({
+        body: {
+          ...body,
+          id: threadId,
+          messages,
+          trigger,
+          messageId,
+          metadata: requestMetadata,
+        },
+      }),
     }),
   });
 

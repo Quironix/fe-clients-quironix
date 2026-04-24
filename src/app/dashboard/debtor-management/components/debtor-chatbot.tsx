@@ -1,14 +1,14 @@
 "use client";
 
 import { Thread } from "@/components/assistant-ui/thread";
-import { useProfileContext } from "@/context/ProfileContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useProfileContext } from "@/context/ProfileContext";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import {
   AssistantChatTransport,
   useChatRuntime,
 } from "@assistant-ui/react-ai-sdk";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 
 interface DebtorChatbotProps {
   debtorId: string;
@@ -33,9 +33,17 @@ function ChatbotSkeleton() {
   );
 }
 
-function DebtorChatbotRuntime({ debtorId, callBrief }: { debtorId: string; callBrief: string | null }) {
+function DebtorChatbotRuntime({
+  debtorId,
+  callBrief,
+}: {
+  debtorId: string;
+  callBrief: string | null;
+}) {
   const { profile, session } = useProfileContext();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const threadId = useMemo(() => crypto.randomUUID(), [debtorId]);
 
   const runtime = useChatRuntime({
     messages: callBrief
@@ -45,7 +53,9 @@ function DebtorChatbotRuntime({ debtorId, callBrief }: { debtorId: string; callB
             parts: [
               {
                 type: "text",
-                text: callBrief.replace(/```markdown\n?/g, "").replace(/```/g, ""),
+                text: callBrief
+                  .replace(/```markdown\n?/g, "")
+                  .replace(/```/g, ""),
               },
             ],
             id: "2WW5iArzjLZEFgtQ",
@@ -57,6 +67,22 @@ function DebtorChatbotRuntime({ debtorId, callBrief }: { debtorId: string; callB
       headers: {
         Authorization: `Bearer ${session?.token}`,
       },
+      prepareSendMessagesRequest: ({
+        messages,
+        trigger,
+        messageId,
+        requestMetadata,
+        body,
+      }) => ({
+        body: {
+          ...body,
+          id: threadId,
+          messages,
+          trigger,
+          messageId,
+          metadata: requestMetadata,
+        },
+      }),
     }),
   });
 
@@ -72,7 +98,11 @@ function DebtorChatbotRuntime({ debtorId, callBrief }: { debtorId: string; callB
   );
 }
 
-export function DebtorChatbot({ debtorId, callBrief, isFetchingCallBrief }: DebtorChatbotProps) {
+export function DebtorChatbot({
+  debtorId,
+  callBrief,
+  isFetchingCallBrief,
+}: DebtorChatbotProps) {
   if (isFetchingCallBrief) {
     return <ChatbotSkeleton />;
   }
