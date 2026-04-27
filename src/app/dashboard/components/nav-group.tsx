@@ -47,11 +47,8 @@ const hasAccessToItem = (itemScope: string, userScopes: string[]): boolean => {
     return false;
   }
 
-  // Verificar si algún scope del usuario coincide o es más específico que el scope del item
   return userScopes.some((userScope) => {
-    // Remover la parte de acción (:read, :edit, :delete) del scope del usuario
     const baseScopeUser = userScope.split(":")[0];
-    // El usuario tiene acceso si su scope base coincide o es más específico que el del item
     return (
       baseScopeUser === itemScope || baseScopeUser.startsWith(itemScope + ".")
     );
@@ -62,18 +59,16 @@ const hasAccessToItem = (itemScope: string, userScopes: string[]): boolean => {
 const NavGroupSkeleton = ({ title }: { title: string }) => {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-white font-extrabold">
+      <SidebarGroupLabel className="text-white/50 text-[10px] font-semibold tracking-widest uppercase">
         {title}
       </SidebarGroupLabel>
       <SidebarMenu>
-        {/* Skeleton para 3-4 items del menú */}
         {Array.from({ length: 4 }).map((_, index) => (
           <SidebarMenuItem key={index}>
             <SidebarMenuButton className="cursor-default pointer-events-none">
               <Skeleton className="h-4 w-4 bg-white/20" />
               <Skeleton className="h-4 w-20 bg-white/20" />
             </SidebarMenuButton>
-            {/* Skeleton para subitems (algunos items) */}
             {index % 2 === 0 && (
               <SidebarMenuSub>
                 {Array.from({ length: 2 }).map((_, subIndex) => (
@@ -92,48 +87,41 @@ const NavGroupSkeleton = ({ title }: { title: string }) => {
   );
 };
 
-export function NavGroup({ title, items }: NavGroup) {
+export function NavGroup({ title, items, isBottom }: NavGroup) {
   const { state } = useSidebar();
   const pathname = usePathname();
   const { profile, isLoading } = useProfileContext();
 
-  // Mostrar skeleton mientras se carga el perfil
   if (isLoading || !profile) {
     return <NavGroupSkeleton title={title} />;
   }
 
-  // Obtener todos los scopes del usuario desde sus roles
   const userScopes =
     profile?.roles?.flatMap((role: any) => role.scopes || []) || [];
 
-  // Filtrar items basándose en los scopes del usuario
   const filteredItems: NavItem[] = items
     .map((item): NavItem | null => {
-      // Si el item no tiene scope definido, se muestra por defecto
+      if (item.disabled) return item;
+
       if (!item.scope) return item;
 
-      // Verificar si el usuario tiene acceso al item padre
-      const hasParentAccess = hasAccessToItem(item.scope, userScopes);
-
-      // Si no tiene acceso al padre, retornar null
-      if (!hasParentAccess) return null;
-
-      // Si tiene items hijos, filtrar los hijos también
       if (item.items) {
         const filteredSubItems = item.items.filter((subItem) => {
+          if (subItem.disabled) return true;
           if (!subItem.scope) return true;
           return hasAccessToItem(subItem.scope, userScopes);
         });
 
-        // Solo mostrar el item padre si tiene al menos un hijo visible
         if (filteredSubItems.length === 0) return null;
 
-        // Crear una copia del item NavCollapsible con los subitems filtrados
         return {
           ...item,
           items: filteredSubItems,
         } as NavCollapsible;
       }
+
+      const hasParentAccess = hasAccessToItem(item.scope, userScopes);
+      if (!hasParentAccess) return null;
 
       return item;
     })
@@ -141,7 +129,7 @@ export function NavGroup({ title, items }: NavGroup) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-white font-extrabold">
+      <SidebarGroupLabel className="text-white/50 text-[10px] font-semibold tracking-widest uppercase">
         {title}
       </SidebarGroupLabel>
       <SidebarMenu>
@@ -178,6 +166,22 @@ const NavBadge = ({ children }: { children: ReactNode }) => (
 
 const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
   const { setOpenMobile } = useSidebar();
+
+  if (item.disabled) {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          tooltip={item.title}
+          className="text-white/40 cursor-not-allowed pointer-events-none"
+        >
+          {item.icon && <item.icon />}
+          <span className="text-white/40">{item.title}</span>
+          {item.badge && <NavBadge>{item.badge}</NavBadge>}
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  }
+
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -223,16 +227,24 @@ const SidebarMenuCollapsible = ({
           <SidebarMenuSub>
             {item.items.map((subItem) => (
               <SidebarMenuSubItem key={subItem.title}>
-                <SidebarMenuSubButton
-                  asChild
-                  isActive={checkIsActive(href, subItem)}
-                >
-                  <Link href={subItem.url} onClick={() => setOpenMobile(false)}>
+                {subItem.disabled ? (
+                  <SidebarMenuSubButton className="text-white/40 cursor-not-allowed pointer-events-none">
                     {subItem.icon && <subItem.icon />}
-                    <span className="text-white">{subItem.title}</span>
+                    <span className="text-white/40">{subItem.title}</span>
                     {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
-                  </Link>
-                </SidebarMenuSubButton>
+                  </SidebarMenuSubButton>
+                ) : (
+                  <SidebarMenuSubButton
+                    asChild
+                    isActive={checkIsActive(href, subItem)}
+                  >
+                    <Link href={subItem.url} onClick={() => setOpenMobile(false)}>
+                      {subItem.icon && <subItem.icon />}
+                      <span className="text-white">{subItem.title}</span>
+                      {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
+                    </Link>
+                  </SidebarMenuSubButton>
+                )}
               </SidebarMenuSubItem>
             ))}
           </SidebarMenuSub>
@@ -268,20 +280,34 @@ const SidebarMenuCollapsedDropdown = ({
             {item.title} {item.badge ? `(${item.badge})` : ""}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {item.items.map((sub) => (
-            <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>
-              <Link
-                href={sub.url}
-                className={`${checkIsActive(href, sub) ? "bg-[#2F6EFF]" : ""}`}
+          {item.items.map((sub) =>
+            sub.disabled ? (
+              <DropdownMenuItem
+                key={`${sub.title}-${sub.url}`}
+                disabled
+                className="opacity-40 cursor-not-allowed"
               >
                 {sub.icon && <sub.icon />}
                 <span className="max-w-52 text-wrap">{sub.title}</span>
                 {sub.badge && (
                   <span className="ml-auto text-xs">{sub.badge}</span>
                 )}
-              </Link>
-            </DropdownMenuItem>
-          ))}
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>
+                <Link
+                  href={sub.url}
+                  className={`${checkIsActive(href, sub) ? "bg-[#2F6EFF]" : ""}`}
+                >
+                  {sub.icon && <sub.icon />}
+                  <span className="max-w-52 text-wrap">{sub.title}</span>
+                  {sub.badge && (
+                    <span className="ml-auto text-xs">{sub.badge}</span>
+                  )}
+                </Link>
+              </DropdownMenuItem>
+            )
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
@@ -290,9 +316,9 @@ const SidebarMenuCollapsedDropdown = ({
 
 function checkIsActive(href: string, item: NavItem, mainNav = false) {
   return (
-    href === item.url || // /endpint?search=param
-    href.split("?")[0] === item.url || // endpoint
-    !!item?.items?.filter((i) => i.url === href).length || // if child nav is active
+    href === item.url ||
+    href.split("?")[0] === item.url ||
+    !!item?.items?.filter((i) => i.url === href).length ||
     (mainNav &&
       href.split("/")[1] !== "" &&
       href.split("/")[1] === item?.url?.split("/")[1])

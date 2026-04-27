@@ -1,12 +1,18 @@
 import {
+  IconAdjustments,
+  IconBuildingBank,
+  IconCash,
   IconCreditCard,
   IconFileCheckFilled,
   IconFileInvoice,
+  IconGavel,
   IconHeartHandshake,
-  IconInfoTriangle,
   IconLayoutDashboard,
   IconPhoneCall,
+  IconPlugConnected,
+  IconSettings,
   IconUsers,
+  IconWallet,
 } from "@tabler/icons-react";
 import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
 import { Bank } from "../banks/components/bank-form";
@@ -42,34 +48,6 @@ export const topNav: TopNavItem[] = [
 export const getSidebarData = (profile: any, t: (key: string) => string) => {
   const isFactoringClient = profile?.client?.type === "FACTORING";
 
-  const onboardingItems = [
-    {
-      title: t("clientSettings"),
-      url: "/dashboard/settings",
-      scope: "client.onboarding.settings",
-    },
-    {
-      disabled: true,
-      title: t("integrations"),
-      url: "/dashboard/integrations",
-      scope: "client.onboarding.integrations",
-    },
-    {
-      title: t("banksAndAccounts"),
-      url: "/dashboard/banks",
-      scope: "client.onboarding.banks",
-    },
-    ...(isFactoringClient
-      ? [
-          {
-            title: t("companies"),
-            url: "/dashboard/companies",
-            scope: "client.onboarding.companies",
-          },
-        ]
-      : []),
-  ];
-
   return {
     user: {
       name: "satnaing",
@@ -94,137 +72,180 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
       },
     ],
     navGroups: [
+      // 1. Centro de Control
       {
-        title: t("company"),
+        title: t("controlCenter"),
         items: [
           {
             title: t("dashboard"),
             url: "/dashboard/overview",
             icon: IconLayoutDashboard,
             scope: "client.dashboard",
-            is_parent: true,
-          },
-          {
-            title: t("onboarding"),
-            icon: IconCreditCard,
-            scope: "client.onboarding",
-            is_parent: true,
-            items: onboardingItems,
-          },
-          {
-            title: t("users"),
-            icon: IconUsers,
-            scope: "client.users",
-            is_parent: true,
-            items: [
-              {
-                title: t("roles"),
-                url: "/dashboard/roles",
-                scope: "client.users.roles",
-              },
-              {
-                title: t("users"),
-                url: "/dashboard/users",
-                scope: "client.users.users",
-              },
-              // {
-              //   disabled: true,
-              //   title: t("actionsHistory"),
-              //   url: "/dashboard/actions-history",
-              //   scope: "client.users.actions_history",
-              // },
-            ],
-          },
-          {
-            title: t("portfolioConfig"),
-            icon: IconHeartHandshake,
-            scope: "client.settings_account",
-            is_parent: true,
-            items: [
-              {
-                title: t("debtors"),
-                url: "/dashboard/debtors",
-                scope: "client.settings_account.debtors",
-              },
-              {
-                disabled: true,
-                title: t("cashFlow"),
-                url: "/dashboard/cash-flow",
-                scope: "client.settings_account.cash_flow",
-              },
-              {
-                disabled: true,
-                title: t("collectors"),
-                url: "/dashboard/collectors",
-                scope: "client.settings_account.collectors",
-              },
-            ],
-          },
-          {
-            title: t("transactions"),
-            icon: IconFileInvoice,
-            scope: "client.transactions",
-            is_parent: true,
-            items: [
-              {
-                title: t("dteEntry"),
-                url: "/dashboard/transactions/dte",
-                scope: "client.transactions.dte",
-              },
-              {
-                title: t("paymentEntry"),
-                url: "/dashboard/transactions/payments",
-                scope: "client.transactions.payments",
-              },
-              {
-                title: t("statementsUpload"),
-                url: "/dashboard/transactions/movements",
-                scope: "client.transactions.movements",
-              },
-            ],
-          },
-          {
-            title: t("paymentNetting"),
-            url: "/dashboard/payment-netting",
-            icon: IconFileCheckFilled,
-            scope: "client.payment_netting",
-          },
-          {
-            title: t("litigation"),
-            url: "/dashboard/litigation",
-            icon: IconInfoTriangle,
-            scope: "client.litigation",
-          },
-          {
-            title: t("paymentPlans"),
-            url: "/dashboard/payment-plans",
-            icon: IconInfoTriangle,
-            scope: "client.payment_plans",
-          },
-          {
-            title: t("paymentPlanApproval"),
-            url: "/dashboard/payment-plans/approval",
-            icon: IconInfoTriangle,
-            scope: "client.payment_plans.approval",
           },
           {
             title: t("paymentProjection"),
             url: "/dashboard/payment-projection",
-            icon: IconInfoTriangle,
+            icon: IconCash,
             scope: "client.payment_projection",
           },
           {
-            title: t("paymentProjectionSettings"),
-            url: "/dashboard/payment-projection/settings",
-            icon: IconInfoTriangle,
-            scope: "client.payment_projection.settings",
+            disabled: true,
+            title: t("collectorHistory"),
+            url: "/dashboard/collector-history",
+            icon: IconFileCheckFilled,
+            scope: "client.collector_history",
           },
+        ],
+      },
+      // 2. Copiloto de Cobranza
+      {
+        title: t("collectionCopilot"),
+        items: [
           {
             title: t("debtorManagement"),
             url: "/dashboard/debtor-management",
             icon: IconPhoneCall,
             scope: "client.debtor_management",
           },
+          {
+            disabled: true,
+            title: t("managementHistory"),
+            url: "/dashboard/management-history",
+            icon: IconHeartHandshake,
+            scope: "client.management_history",
+          },
+          {
+            title: t("litigation"),
+            url: "/dashboard/litigation",
+            icon: IconGavel,
+            scope: "client.litigation",
+          },
+          {
+            title: t("paymentPlans"),
+            icon: IconWallet,
+            scope: "client.payment_plans",
+            items: [
+              {
+                title: t("paymentPlansCreation"),
+                url: "/dashboard/payment-plans/create",
+                scope: "client.payment_plans",
+              },
+              {
+                title: t("paymentPlanApproval"),
+                url: "/dashboard/payment-plans/approval",
+                scope: "client.payment_plans.approval",
+              },
+            ],
+          },
+        ],
+      },
+      // 3. Conciliación de Pagos
+      {
+        title: t("paymentReconciliation"),
+        items: [
+          {
+            title: t("reconciliation"),
+            url: "/dashboard/payment-netting",
+            icon: IconFileCheckFilled,
+            scope: "client.payment_netting",
+          },
+          {
+            title: t("payments"),
+            url: "/dashboard/transactions/payments",
+            icon: IconCreditCard,
+            scope: "client.transactions.payments",
+          },
+          {
+            title: t("bankStatements"),
+            url: "/dashboard/transactions/movements",
+            icon: IconBuildingBank,
+            scope: "client.transactions.movements",
+          },
+        ],
+      },
+      // 4. Administración de Cartera
+      {
+        title: t("portfolioAdmin"),
+        items: [
+          {
+            title: t("cashFlowParams"),
+            url: "/dashboard/payment-projection/settings",
+            icon: IconAdjustments,
+            scope: "client.payment_projection.settings",
+          },
+          {
+            title: t("debtorsLoad"),
+            url: "/dashboard/debtors",
+            icon: IconUsers,
+            scope: "client.settings_account.debtors",
+          },
+          {
+            title: t("dteLoad"),
+            url: "/dashboard/transactions/dte",
+            icon: IconFileInvoice,
+            scope: "client.transactions.dte",
+          },
+          {
+            disabled: true,
+            title: t("collectorManagement"),
+            url: "/dashboard/collectors",
+            icon: IconPhoneCall,
+            scope: "client.settings_account.collectors",
+          },
+        ],
+      },
+      // 5. Configuración y Equipo — separado al fondo
+      {
+        title: t("configAndTeam"),
+        isBottom: true,
+        items: [
+          {
+            title: t("clientSettings"),
+            url: "/dashboard/settings",
+            icon: IconSettings,
+            scope: "client.onboarding.settings",
+          },
+          {
+            title: t("initialDebtorsLoad"),
+            url: "/dashboard/debtors/create",
+            icon: IconUsers,
+            scope: "client.settings_account.debtors",
+          },
+          {
+            title: t("integrations"),
+            url: "/dashboard/integrations",
+            icon: IconPlugConnected,
+            scope: "client.onboarding",
+          },
+          {
+            title: t("banksAndAccounts"),
+            url: "/dashboard/banks",
+            icon: IconBuildingBank,
+            scope: "client.onboarding.banks",
+          },
+          {
+            title: t("teamAndAccess"),
+            url: "/dashboard/users",
+            icon: IconUsers,
+            scope: "client.users",
+          },
+          {
+            disabled: true,
+            title: t("billing"),
+            url: "/dashboard/billing",
+            icon: IconFileInvoice,
+            scope: "client.billing",
+          },
+          ...(isFactoringClient
+            ? [
+                {
+                  title: t("companies"),
+                  url: "/dashboard/companies",
+                  icon: IconBuildingBank,
+                  scope: "client.onboarding.companies",
+                },
+              ]
+            : []),
         ],
       },
     ],
