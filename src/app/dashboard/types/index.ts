@@ -33,6 +33,7 @@ type NavItem = NavCollapsible | NavLink;
 interface NavGroup {
   title: string;
   items: NavItem[];
+  isBottom?: boolean;
 }
 
 interface SidebarData {

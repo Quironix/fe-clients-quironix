@@ -4,6 +4,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useProfileContext } from "@/context/ProfileContext";
@@ -13,6 +14,7 @@ import { useTranslations } from "next-intl";
 import { getSidebarData } from "../data";
 import { NavGroup } from "./nav-group";
 import { ProfileDropdown } from "./profile-dropdown";
+import { NavGroup as NavGroupType } from "../types";
 
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   const { state } = useSidebar();
@@ -20,6 +22,9 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   const t = useTranslations("dashboard.sidebar");
 
   const sidebarData = getSidebarData(profile, t);
+  const navGroups = sidebarData.navGroups as NavGroupType[];
+  const mainGroups = navGroups.filter((g) => !g.isBottom);
+  const bottomGroups = navGroups.filter((g) => g.isBottom);
 
   return (
     <Sidebar collapsible="icon" variant="floating" {...props}>
@@ -44,9 +49,17 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
         </div>
       </SidebarHeader>
       <SidebarContent className="bg-primary text-white">
-        {sidebarData.navGroups.map((props: any) => (
-          <NavGroup key={props.title} {...props} />
+        {mainGroups.map((groupProps: NavGroupType) => (
+          <NavGroup key={groupProps.title} {...groupProps} />
         ))}
+        {bottomGroups.length > 0 && (
+          <div className="mt-auto">
+            <SidebarSeparator className="bg-white/20 mx-2" />
+            {bottomGroups.map((groupProps: NavGroupType) => (
+              <NavGroup key={groupProps.title} {...groupProps} />
+            ))}
+          </div>
+        )}
       </SidebarContent>
       <SidebarFooter className="bg-primary text-white rounded-md rounded-t-none">
         {/* <div className="px-2 pb-2">
