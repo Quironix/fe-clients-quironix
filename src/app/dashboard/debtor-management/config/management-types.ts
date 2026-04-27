@@ -1001,6 +1001,11 @@ export const DEBTOR_COMMENTS = [
  */
 export const EXECUTIVE_COMMENTS = [
   {
+    value: "AUTOMATED_COMMUNICATION",
+    label: "Automatizado por collector",
+    debtorComment: "AUTOMATED_COLLECTOR_SENT",
+  },
+  {
     value: "WITH_PAYMENT_COMMITMENT",
     label: "Con compromiso de pago",
     debtorComment: "WILL_DEPOSIT_OR_TRANSFER",

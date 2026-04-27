@@ -365,7 +365,7 @@ const Content = () => {
           title="Lista de gestiones"
           description="Visualiza y gestiona todas las interacciones registradas"
           icon={<History color="white" />}
-          subDescription={`Histórico de gestiones`}
+          subDescription={`Historial de gestiones`}
         />
         <div className="flex justify-between items-center mb-5">
           <Breadcrumb>
