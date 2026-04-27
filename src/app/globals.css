@@ -121,6 +121,16 @@
   }
 }
 
+[data-slot="sidebar"],
+[data-slot="sidebar-inner"] {
+  scrollbar-width: none;
+}
+
+[data-slot="sidebar"]::-webkit-scrollbar,
+[data-slot="sidebar-inner"]::-webkit-scrollbar {
+  display: none;
+}
+
 [data-sidebar="content"] {
   scrollbar-width: thin;
   scrollbar-color: rgba(255 255 255 / 0.2) transparent;
