@@ -72,61 +72,56 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
       },
     ],
     navGroups: [
-      // 1. Centro de Control
+      // 1. Menú principal (Centro de Control + Copiloto)
       {
-        title: t("controlCenter"),
+        title: t("menu"),
         items: [
           {
-            title: t("dashboard"),
-            url: "/dashboard/overview",
+            title: t("controlCenter"),
             icon: IconLayoutDashboard,
             scope: "client.dashboard",
-          },
-          {
-            title: t("paymentProjection"),
-            url: "/dashboard/payment-projection",
-            icon: IconCash,
-            scope: "client.payment_projection",
-          },
-          {
-            disabled: true,
-            title: t("collectorHistory"),
-            url: "/dashboard/collector-history",
-            icon: IconFileCheckFilled,
-            scope: "client.collector_history",
-          },
-        ],
-      },
-      // 2. Copiloto de Cobranza
-      {
-        title: t("collectionCopilot"),
-        items: [
-          {
-            title: t("debtorManagement"),
-            url: "/dashboard/debtor-management",
-            icon: IconPhoneCall,
-            scope: "client.debtor_management",
-          },
-          {
-            disabled: true,
-            title: t("managementHistory"),
-            url: "/dashboard/management-history",
-            icon: IconHeartHandshake,
-            scope: "client.management_history",
-          },
-          {
-            title: t("litigation"),
-            url: "/dashboard/litigation",
-            icon: IconGavel,
-            scope: "client.litigation",
-          },
-          {
-            title: t("paymentPlans"),
-            icon: IconWallet,
-            scope: "client.payment_plans",
             items: [
               {
-                title: t("paymentPlansCreation"),
+                title: t("dashboard"),
+                url: "/dashboard/overview",
+                scope: "client.dashboard",
+              },
+              {
+                title: t("paymentProjection"),
+                url: "/dashboard/payment-projection",
+                scope: "client.payment_projection",
+              },
+              {
+                disabled: true,
+                title: t("collectorHistory"),
+                url: "/dashboard/collector-history",
+                scope: "client.collector_history",
+              },
+            ],
+          },
+          {
+            title: t("collectionCopilot"),
+            icon: IconPhoneCall,
+            scope: "client.debtor_management",
+            items: [
+              {
+                title: t("debtorManagement"),
+                url: "/dashboard/debtor-management",
+                scope: "client.debtor_management",
+              },
+              {
+                disabled: true,
+                title: t("managementHistory"),
+                url: "/dashboard/management-history",
+                scope: "client.management_history",
+              },
+              {
+                title: t("litigation"),
+                url: "/dashboard/litigation",
+                scope: "client.litigation",
+              },
+              {
+                title: t("paymentPlans"),
                 url: "/dashboard/payment-plans/create",
                 scope: "client.payment_plans",
               },
