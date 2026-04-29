@@ -137,6 +137,7 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
       // 2. Conciliación de Pagos
       {
         title: t("paymentReconciliation"),
+        hideTitle: true,
         items: [
           {
             title: t("paymentReconciliation"),
@@ -165,6 +166,7 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
       // 3. Administración de Cartera
       {
         title: t("portfolioAdmin"),
+        hideTitle: true,
         items: [
           {
             title: t("portfolioAdmin"),
@@ -200,6 +202,7 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
       {
         title: t("configAndTeam"),
         isBottom: true,
+        hideTitle: true,
         items: [
           {
             title: t("configAndTeam"),

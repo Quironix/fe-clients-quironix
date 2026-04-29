@@ -34,6 +34,7 @@ interface NavGroup {
   title: string;
   items: NavItem[];
   isBottom?: boolean;
+  hideTitle?: boolean;
 }
 
 interface SidebarData {

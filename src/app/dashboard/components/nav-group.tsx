@@ -87,7 +87,7 @@ const NavGroupSkeleton = ({ title }: { title: string }) => {
   );
 };
 
-export function NavGroup({ title, items, isBottom }: NavGroup) {
+export function NavGroup({ title, items, isBottom, hideTitle }: NavGroup) {
   const { state } = useSidebar();
   const pathname = usePathname();
   const { profile, isLoading } = useProfileContext();
@@ -129,9 +129,11 @@ export function NavGroup({ title, items, isBottom }: NavGroup) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-white/50 text-[10px] font-semibold tracking-widest uppercase">
-        {title}
-      </SidebarGroupLabel>
+      {!hideTitle && (
+        <SidebarGroupLabel className="text-white/50 text-[10px] font-semibold tracking-widest uppercase">
+          {title}
+        </SidebarGroupLabel>
+      )}
       <SidebarMenu>
         {filteredItems.map((item) => {
           const key = `${item.title}-${item.url || "collapsible"}`;
