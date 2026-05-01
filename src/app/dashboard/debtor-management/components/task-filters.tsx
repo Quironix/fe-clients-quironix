@@ -74,19 +74,31 @@ export const TaskFilters = ({
   };
 
   return (
-    <div className="mb-3 flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:justify-between">
-      <DebtorSearchAutocomplete placeholder={t("searchPlaceholder")} />
+    <div className="mb-3 flex flex-col gap-2">
+      {/* Fila 1: buscador + exportar */}
+      <div className="flex items-center justify-between gap-3">
+        <DebtorSearchAutocomplete placeholder={t("searchPlaceholder")} />
+        <Button
+          variant="outline"
+          className="h-9 px-3 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-[4px] shrink-0 text-sm"
+          onClick={() => setExportOpen(true)}
+        >
+          <FileDown className="h-4 w-4 mr-1 text-orange-400" />
+          Exportar
+        </Button>
+      </div>
 
-      <div className="flex items-center gap-1 flex-wrap">
+      <div className="h-px w-full bg-gray-200" />
+
+      {/* Fila 2: filtros de cuadrante */}
+      <div className="flex items-center gap-1 w-full">
         <Button
           size="xs"
-          variant={
-            selectedQuadrant === "CRITICAL_DEBTORS" ? "secondary" : "outline"
-          }
+          variant={selectedQuadrant === "CRITICAL_DEBTORS" ? "secondary" : "outline"}
           className={
             selectedQuadrant === "CRITICAL_DEBTORS"
-              ? "bg-red-500 hover:bg-red-600 text-white text-xs rounded-[4px]"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px]"
+              ? "bg-red-500 hover:bg-red-600 text-white text-xs rounded-[4px] flex-1"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px] flex-1"
           }
           onClick={() => handleQuadrantClick("CRITICAL_DEBTORS")}
         >
@@ -95,13 +107,11 @@ export const TaskFilters = ({
         </Button>
         <Button
           size="xs"
-          variant={
-            selectedQuadrant === "CASH_GENERATION" ? "secondary" : "outline"
-          }
+          variant={selectedQuadrant === "CASH_GENERATION" ? "secondary" : "outline"}
           className={
             selectedQuadrant === "CASH_GENERATION"
-              ? "bg-orange-500 hover:bg-orange-600 text-white text-xs rounded-[4px]"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px]"
+              ? "bg-orange-500 hover:bg-orange-600 text-white text-xs rounded-[4px] flex-1"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px] flex-1"
           }
           onClick={() => handleQuadrantClick("CASH_GENERATION")}
         >
@@ -113,8 +123,8 @@ export const TaskFilters = ({
           variant={selectedQuadrant === "LITIGATION" ? "secondary" : "outline"}
           className={
             selectedQuadrant === "LITIGATION"
-              ? "bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-[4px]"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px]"
+              ? "bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-[4px] flex-1"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px] flex-1"
           }
           onClick={() => handleQuadrantClick("LITIGATION")}
         >
@@ -123,15 +133,11 @@ export const TaskFilters = ({
         </Button>
         <Button
           size="xs"
-          variant={
-            selectedQuadrant === "DEFICIENT_TECHNICAL_FILE"
-              ? "secondary"
-              : "outline"
-          }
+          variant={selectedQuadrant === "DEFICIENT_TECHNICAL_FILE" ? "secondary" : "outline"}
           className={
             selectedQuadrant === "DEFICIENT_TECHNICAL_FILE"
-              ? "bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-[4px]"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px]"
+              ? "bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-[4px] flex-1"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 text-xs rounded-[4px] flex-1"
           }
           onClick={() => handleQuadrantClick("DEFICIENT_TECHNICAL_FILE")}
         >
@@ -143,23 +149,15 @@ export const TaskFilters = ({
           variant={selectedQuadrant === null ? "secondary" : "outline"}
           className={
             selectedQuadrant === null
-              ? "bg-gray-400 hover:bg-gray-500 text-white rounded-[4px]"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50 rounded-[4px]"
+              ? "bg-gray-400 hover:bg-gray-500 text-white rounded-[4px] flex-1"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50 rounded-[4px] flex-1"
           }
           onClick={() => onQuadrantChange(null)}
         >
           {t("filters.all")} {counts.total}
         </Button>
-        <Button
-          size="xs"
-          variant="outline"
-          className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-[4px]"
-          onClick={() => setExportOpen(true)}
-        >
-          <FileDown className="h-4 w-4 mr-1 text-orange-400" />
-          Exportar
-        </Button>
       </div>
+
       <ExportExcelModal
         open={exportOpen}
         onOpenChange={setExportOpen}

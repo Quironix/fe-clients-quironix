@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ExportExcelModal } from "@/components/ui/export-excel-modal";
 import Language from "@/components/ui/language";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -22,6 +23,7 @@ import { VisibilityState } from "@tanstack/react-table";
 import {
   ArrowLeft,
   Building2,
+  FileDown,
   History,
   IdCard,
   Mail,
@@ -79,6 +81,7 @@ const Content = () => {
   });
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [columnConfiguration, setColumnConfiguration] = useState<
     Array<{ name: string; is_visible: boolean }>
   >([
@@ -472,6 +475,19 @@ const Content = () => {
               rowClassName={(invoice) =>
                 invoice.type === "CREDIT_NOTE" ? "bg-red-50" : ""
               }
+              ctaNode={
+                <Button variant="outline" onClick={() => setExportOpen(true)}>
+                  <FileDown className="h-4 w-4 mr-2 text-orange-400" />
+                  Exportar
+                </Button>
+              }
+            />
+            <ExportExcelModal
+              open={exportOpen}
+              onOpenChange={setExportOpen}
+              schema="MANAGEMENTS"
+              accessToken={session?.token || ""}
+              clientId={profile?.client?.id || ""}
             />
           </CardContent>
         </Card>
