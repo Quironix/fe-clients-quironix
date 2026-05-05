@@ -7,12 +7,14 @@ import {
   EmailMultiplePayload,
 } from "../types/email";
 import { generateBodyDescription } from "../utils/email-templates";
+import { generateBankInfoHTML } from "./bank-info-formatter";
 
 interface BuildMultipleEmailPayloadParams {
   managements: SavedManagement[];
   profile: any;
   contactEmail: string;
   contactName: string;
+  bankAccountInfo?: string; // Pre-fetched bank account HTML (optional)
 }
 
 function formatCurrency(amount: number | string): string {
@@ -93,6 +95,7 @@ export function buildMultipleEmailPayload({
   profile,
   contactEmail,
   contactName,
+  bankAccountInfo,
 }: BuildMultipleEmailPayloadParams): EmailMultiplePayload {
   const emailManagements: EmailManagement[] = managements.map(
     (management, index) => {
@@ -146,18 +149,22 @@ export function buildMultipleEmailPayload({
   const MULTIPLE_TEMPLATE_ID =
     process.env.NEXT_SG_MULTIPLE_MANAGEMENT || "d-f3db644c64b1410f981ee7642d28aba4";
 
+  // For multiple managements, use generic message to avoid confusion
+  // Future enhancement: implement priority-based selection (LITIGATION > PAYMENT_COMMITMENT)
+  const bodyDescription = "Tus gestiones fueron completadas exitosamente. A continuación encontrarás el resumen con los detalles correspondientes.";
+
   const emailPayload: EmailMultiplePayload = {
     to: contactEmail,
     templateId: MULTIPLE_TEMPLATE_ID,
     dynamicTemplateData: {
       logo_client: clientLogoUrl,
       name_client: contactName,
-      body_description:
-        "Notificamos que las siguientes facturas han sido cedidas por su emisor a logoipsum, por lo cual <strong>solicitamos confirmarnos recepción, contabilización y fecha de pago.</strong>",
+      body_description: bodyDescription,
       managements: emailManagements,
       contact_phone: clientPhone,
       contact_mail: clientEmail,
       is_factoring: isFactoring,
+      bank_account_info: bankAccountInfo || generateBankInfoHTML(null), // Use provided or fallback
     },
   };
 

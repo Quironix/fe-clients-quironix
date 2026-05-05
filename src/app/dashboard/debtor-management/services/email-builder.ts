@@ -3,12 +3,15 @@ import { ManagementFormData } from "../components/tabs/add-management-tab";
 import { ManagementCombination } from "../config/management-types";
 import { EmailInvoice, EmailPayload } from "../types/email";
 import { generateBodyDescription } from "../utils/email-templates";
+import { generateBankInfoHTML } from "./bank-info-formatter";
+import { generateBodyDescriptionByDebtorComment } from "../utils/email-messages";
 
 interface BuildEmailPayloadParams {
   managementFormData: ManagementFormData;
   selectedInvoices: Invoice[];
   profile: any;
   managementCombination: ManagementCombination;
+  bankAccountInfo?: string; // Pre-fetched bank account HTML (optional)
 }
 
 function formatCurrency(amount: number | string): string {
@@ -87,6 +90,7 @@ export function buildEmailPayload({
   selectedInvoices,
   profile,
   managementCombination,
+  bankAccountInfo,
 }: BuildEmailPayloadParams): EmailPayload {
   const contactEmail = managementFormData.contactValue;
 
@@ -129,14 +133,21 @@ export function buildEmailPayload({
   const SINGLE_TEMPLATE_ID =
     process.env.NEXT_SG_SINGLE_MANAGEMENT || "d-2ab3e2439491440c951a1cf46fdec7aa";
 
+  // Generate dynamic body_description based on debtor_comment and executive_comment
+  const bodyDescription = generateBodyDescriptionByDebtorComment({
+    debtorComment: managementFormData.debtorComment || "",
+    executiveComment: managementFormData.executiveComment || "",
+    isFactoring,
+    caseData: managementFormData.caseData,
+  });
+
   const emailPayload: EmailPayload = {
     to: contactEmail,
     templateId: SINGLE_TEMPLATE_ID,
     dynamicTemplateData: {
       logo_client: clientLogoUrl,
       name_client: contactName,
-      body_description:
-        "Notificamos que las siguientes facturas han sido cedidas por su emisor a logoipsum, por lo cual <strong>solicitamos confirmarnos recepción, contabilización y fecha de pago.</strong>",
+      body_description: bodyDescription,
       header_text: managementCombination.label,
       header_amount: formatCurrency(totalAmount),
       is_invoices: true,
@@ -145,6 +156,7 @@ export function buildEmailPayload({
       body_html: bodyHtml,
       contact_phone: clientPhone,
       contact_email: clientEmail,
+      bank_account_info: bankAccountInfo || generateBankInfoHTML(null), // Use provided or fallback
     },
   };
 

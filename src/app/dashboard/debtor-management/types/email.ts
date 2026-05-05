@@ -22,6 +22,7 @@ export interface EmailDynamicTemplateData {
   body_html: string;
   contact_phone: string;
   contact_email: string;
+  bank_account_info?: string; // HTML formatted bank account information (optional)
 }
 
 export interface EmailPayload {
@@ -47,6 +48,7 @@ export interface EmailMultipleDynamicTemplateData {
   contact_phone: string;
   contact_mail: string;
   is_factoring: boolean;
+  bank_account_info?: string; // HTML formatted bank account information (optional)
 }
 
 export interface EmailMultiplePayload {

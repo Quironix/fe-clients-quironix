@@ -31,6 +31,7 @@ const getDocumentTypeDisplayData = (type: AllDocumentTypes) => {
   // Mapeo para tipos de pagos (DocumentType enum)
   const paymentTypeMapping: Record<string, { text: string; color: string }> = {
     CHECK: { text: "Cheque", color: "orange" },
+    PROTESTED_CHECK: { text: "Cheque protestado", color: "red" },
     DEPOSIT: { text: "Depósito", color: "blue" },
     CASH: { text: "Efectivo", color: "green" },
     SIGHT_DRAFT: { text: "Vale Vista", color: "blue" },

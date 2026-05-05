@@ -23,6 +23,10 @@ import {
   sendTrackEmail,
   sendMultipleManagementEmail,
 } from "../../services/email-sender";
+import {
+  fetchAndFormatBankInfo,
+  generateBankInfoHTML,
+} from "../../services/bank-info-formatter";
 import { createPaymentPlan } from "../../services/payment-plan";
 import { createTrack } from "../../services/tracks";
 import { CaseData } from "../../types/track";
@@ -602,6 +606,17 @@ export const AddManagementTab = ({
       );
 
       if (managementsToEmail.length > 0) {
+        // Fetch bank information once before sending emails
+        const clientName = profile?.client?.name || "Cliente";
+        const clientEmail = profile?.client?.contacts?.[0]?.email || "";
+        const bankInfo = await fetchAndFormatBankInfo(
+          session.token,
+          profile.client_id,
+          clientName,
+          clientEmail
+        );
+        const bankAccountInfoHTML = generateBankInfoHTML(bankInfo);
+
         const groupedByContact: Record<
           string,
           { managements: SavedManagement[]; contactName: string }
@@ -649,6 +664,7 @@ export const AddManagementTab = ({
                   selectedInvoices: management.selectedInvoices,
                   profile,
                   managementCombination: selectedCombination,
+                  bankAccountInfo: bankAccountInfoHTML,
                 });
 
                 const emailResult = await sendTrackEmail(emailPayload, session.token, profile.client_id);
@@ -667,6 +683,7 @@ export const AddManagementTab = ({
                 profile,
                 contactEmail: group.email,
                 contactName: group.contactName,
+                bankAccountInfo: bankAccountInfoHTML,
               });
 
               const emailResult = await sendMultipleManagementEmail(
