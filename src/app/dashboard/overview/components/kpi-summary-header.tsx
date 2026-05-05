@@ -45,9 +45,11 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
       <div className="bg-white border border-gray-200 rounded-xl p-4 py-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-md font-medium text-gray-400">{t("healthScore")}</p>
+            <p className="text-md font-medium text-gray-400">
+              {t("healthScore")}
+            </p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
-              {toPercentage(indicators?.optimal || 0)}
+              {toPercentage(indicators?.healthScore || 0)}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
@@ -61,7 +63,7 @@ export const KPISummaryHeader: React.FC<KPISummaryHeaderProps> = ({
           <div>
             <p className="text-md font-medium text-gray-400">{t("optimal")}</p>
             <p className="text-2xl font-bold text-emerald-600 mt-1">
-              {toPercentage(indicators?.optimal || 0)}
+              {indicators?.optimal || 0}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">

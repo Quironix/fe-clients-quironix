@@ -92,6 +92,7 @@ export function NavGroup({ title, items, isBottom, hideTitle }: NavGroup) {
   const pathname = usePathname();
   const { profile, isLoading } = useProfileContext();
 
+
   if (isLoading || !profile) {
     return <NavGroupSkeleton title={title} />;
   }
