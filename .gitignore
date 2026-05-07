@@ -41,6 +41,14 @@ package-lock.json
 
 # Test coverage
 coverage/
+
+# E2E Tests
+e2e/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
 .gga
 .documents/*
 skill-registry.md

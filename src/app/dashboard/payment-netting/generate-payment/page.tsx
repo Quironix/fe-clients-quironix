@@ -191,7 +191,7 @@ function GeneratePaymentContent() {
               </div>
             </div>
             <div className="">
-              <SummaryPaymentNetting selectedRows={selectedPayments} />
+              <SummaryPaymentNetting selectedRows={selectedPayments} debtorId={debtorId} />
             </div>
           </section>
         </section>

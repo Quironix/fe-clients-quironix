@@ -12,7 +12,13 @@ import ItemListPayment from "./item-list-payment";
 import PendingAlert from "./pending-alert";
 import SuccessAlert from "./success-alert";
 
-const SummaryPaymentNetting = ({ selectedRows }: { selectedRows: any[] }) => {
+const SummaryPaymentNetting = ({ 
+  selectedRows,
+  debtorId 
+}: { 
+  selectedRows: any[];
+  debtorId: string | null;
+}) => {
   const {
     selectedInvoices,
     selectedPayments,
@@ -56,7 +62,7 @@ const SummaryPaymentNetting = ({ selectedRows }: { selectedRows: any[] }) => {
       const response = await createConciliation({
         accessToken: session?.token,
         clientId: profile?.client?.id,
-        debtorId: selectedRows[0]?.payment?.debtor_id,
+        debtorId: debtorId!,
         invoices: selectedInvoices.map((invoice) => invoice.id),
         payments: selectedPayments.map((payment) => payment.id),
       });
@@ -72,7 +78,6 @@ const SummaryPaymentNetting = ({ selectedRows }: { selectedRows: any[] }) => {
       resetSelected();
 
       // Invalidar queries de payments e invoices
-      const debtorId = selectedRows[0]?.payment?.debtor_id;
       if (debtorId) {
         queryClient.invalidateQueries({
           queryKey: ["payments", debtorId],
