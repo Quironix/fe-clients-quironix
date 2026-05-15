@@ -2,6 +2,7 @@
   "name": "fe-manager-dbtlatam",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "yarn@4.14.1",
   "scripts": {
     "dev": "next dev --turbo --port 5173",
     "dev:webpack": "NODE_OPTIONS='--max-old-space-size=8192' next dev",
