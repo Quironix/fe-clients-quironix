@@ -1,4 +1,5 @@
 import { Invoice } from "@/app/dashboard/payment-plans/store";
+import { getDocumentTypeDisplayData } from "@/app/dashboard/payment-netting/components/document-type-badge";
 import { ManagementFormData } from "../components/tabs/add-management-tab";
 import { ManagementCombination } from "../config/management-types";
 import { EmailInvoice, EmailPayload } from "../types/email";
@@ -9,7 +10,7 @@ import { generateBodyDescriptionByDebtorComment } from "../utils/email-messages"
 interface BuildEmailPayloadParams {
   managementFormData: ManagementFormData;
   selectedInvoices: Invoice[];
-  profile: any;
+  profile: Record<string, unknown>;
   managementCombination: ManagementCombination;
   bankAccountInfo?: string; // Pre-fetched bank account HTML (optional)
 }
@@ -53,7 +54,7 @@ function formatInvoices(invoices: Invoice[]): EmailInvoice[] {
     const lastPhase = phases.length > 0 ? phases[phases.length - 1] : null;
 
     return {
-      type: invoice.type || "Factura electrónica",
+      type: getDocumentTypeDisplayData(invoice.type || "INVOICE").text,
       number: invoice.number || "",
       issue_date: invoice.issue_date
         ? formatDate(invoice.issue_date)
@@ -156,7 +157,16 @@ export function buildEmailPayload({
       body_html: bodyHtml,
       contact_phone: clientPhone,
       contact_email: clientEmail,
-      bank_account_info: bankAccountInfo || generateBankInfoHTML(null), // Use provided or fallback
+      bank_account_info: bankAccountInfo || generateBankInfoHTML(null),
+      amount: formatCurrency(totalAmount),
+      date: managementFormData.caseData?.commitmentDate
+        ? formatDate(managementFormData.caseData.commitmentDate)
+        : managementFormData.caseData?.paymentDate
+          ? formatDate(managementFormData.caseData.paymentDate)
+          : managementFormData.caseData?.pickupDate
+            ? formatDate(managementFormData.caseData.pickupDate)
+            : "",
+      email_company: clientEmail,
     },
   };
 
