@@ -398,6 +398,7 @@
     "description": "Here you can see a summary of your users.",
     "subDescription": "Users",
     "createUser": "Create user",
+    "createRoles": "Roles and permissions",
     "createTitle": "Create user",
     "createDescription": "Fill in the required fields to create a new user.",
     "editTitle": "Edit user",

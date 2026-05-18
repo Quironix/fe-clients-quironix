@@ -54,3 +54,4 @@ playwright/.cache/
 skill-registry.md
 .atl/
 .plans/*
+openspec/*

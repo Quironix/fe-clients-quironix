@@ -1,18 +1,13 @@
 import {
   IconAdjustments,
-  IconBuildingBank,
-  IconCash,
   IconCreditCard,
   IconFileCheckFilled,
   IconFileInvoice,
-  IconGavel,
   IconHeartHandshake,
   IconLayoutDashboard,
   IconPhoneCall,
-  IconPlugConnected,
   IconSettings,
   IconUsers,
-  IconWallet,
 } from "@tabler/icons-react";
 import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
 import { Bank } from "../banks/components/bank-form";
@@ -122,7 +117,7 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
               },
               {
                 title: t("paymentPlans"),
-                url: "/dashboard/payment-plans/create",
+                url: "/dashboard/payment-plans",
                 scope: "client.payment_plans",
               },
               {

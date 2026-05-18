@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
-import { UsersIcon } from "lucide-react";
+import { UserCheck, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import DialogForm from "../components/dialog-form";
@@ -54,7 +55,7 @@ const UsersContent = () => {
           editingUser.id,
           data,
           session?.token,
-          profile?.client?.id
+          profile?.client?.id,
         );
         toast.success(tc("toast.success"), {
           description: t("toast.updateSuccess"),
@@ -106,9 +107,7 @@ const UsersContent = () => {
     } catch (error: any) {
       console.error("Error al crear usuario:", error);
       toast.error(tc("toast.error"), {
-        description:
-          error.message ||
-          t("toast.createError"),
+        description: error.message || t("toast.createError"),
       });
     }
   };
@@ -127,27 +126,34 @@ const UsersContent = () => {
         />
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
           <div className="w-full h-full">
-            <section className="flex items-center justify-between mb-4">
+            <section className="flex items-center justify-between gap-3 mb-4">
               <Search />
-              <DialogForm
-                title={t("createTitle")}
-                description={t("createDescription")}
-                trigger={
-                  <Button
-                    className="bg-orange-500 text-white hover:bg-orange-400 cursor-pointer"
-                    onClick={() => setIsCreateDialogOpen(true)}
-                  >
-                    <UsersIcon className="mr-2" /> {t("createUser")}
+              <div className="flex justify-end gap-2">
+                <DialogForm
+                  title={t("createTitle")}
+                  description={t("createDescription")}
+                  trigger={
+                    <Button
+                      className="bg-orange-500 text-white hover:bg-orange-400 cursor-pointer"
+                      onClick={() => setIsCreateDialogOpen(true)}
+                    >
+                      <UsersIcon /> {t("createUser")}
+                    </Button>
+                  }
+                  open={isCreateDialogOpen}
+                  onOpenChange={setIsCreateDialogOpen}
+                >
+                  <UserForm
+                    onSubmit={handleUserSubmit}
+                    setOpen={setIsCreateDialogOpen}
+                  />
+                </DialogForm>
+                <Link href="/dashboard/roles">
+                  <Button>
+                    <UserCheck /> {t("createRoles")}
                   </Button>
-                }
-                open={isCreateDialogOpen}
-                onOpenChange={setIsCreateDialogOpen}
-              >
-                <UserForm
-                  onSubmit={handleUserSubmit}
-                  setOpen={setIsCreateDialogOpen}
-                />
-              </DialogForm>
+                </Link>
+              </div>
             </section>
             <Card className="p-4">
               <UsersTable
