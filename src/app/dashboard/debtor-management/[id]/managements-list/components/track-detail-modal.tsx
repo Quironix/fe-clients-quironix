@@ -4,6 +4,7 @@ import { disputes, PAYMENT_FREQUENCY, DEBTOR_PAYMENT_METHODS } from "@/app/dashb
 import {
   DEBTOR_COMMENTS,
   EXECUTIVE_COMMENTS,
+  getChannelTypeLabel,
   getManagementCombination,
 } from "@/app/dashboard/debtor-management/config/management-types";
 import { getTrackById } from "@/app/dashboard/debtor-management/services/tracks";
@@ -577,11 +578,7 @@ export const TrackDetailModal = ({
                     <IconDescription
                       icon={<FileText className="w-6 h-6 text-blue-600" />}
                       description="Tipo de gestión"
-                      value={
-                        trackData.managementType === "CALL_OUT"
-                          ? "Llamada saliente"
-                          : trackData.managementType
-                      }
+                      value={getChannelTypeLabel(trackData.managementType)}
                     />
                     <IconDescription
                       icon={<FileText className="w-6 h-6 text-blue-600" />}

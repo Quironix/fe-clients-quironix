@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye } from "lucide-react";
-import { DEBTOR_COMMENTS, getExecutiveCommentLabel } from "../../../config/management-types";
+import { DEBTOR_COMMENTS, getChannelTypeLabel, getExecutiveCommentLabel } from "../../../config/management-types";
 import { InvoiceWithTrack } from "../../../types/debtor-tracks";
 
 const formatDate = (dateString: string) => {
@@ -27,28 +27,15 @@ const formatDateTime = (dateString: string) => {
   });
 };
 
-const getManagementTypeLabel = (type: string) => {
-  const types: Record<string, string> = {
-    CALL_OUT: "Llamada telefónica",
-    EMAIL: "Correo electrónico",
-    VISIT: "Visita",
-    LETTER: "Carta",
-    WHATSAPP: "WhatsApp",
-    AUTOMATED_COLLECTOR: "Automatizado por collector",
-  };
-  return types[type] || type;
-};
-
 const getDebtorCommentLabel = (comment: string): string => {
   const found = DEBTOR_COMMENTS.find((c) => c.value === comment);
   return found?.label || comment;
 };
 
 const getManagementTypeBadge = (type: string) => {
-  const label = getManagementTypeLabel(type);
   return (
     <div className="border border-blue-600 px-3 text-center text-blue-600 rounded-full text-xs">
-      {label}
+      {getChannelTypeLabel(type)}
     </div>
   );
 };

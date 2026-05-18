@@ -9,7 +9,7 @@ import { History, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Badge } from "../../components/badge";
-import { getExecutiveCommentLabel } from "../config/management-types";
+import { getChannelTypeLabel, getExecutiveCommentLabel } from "../config/management-types";
 
 const LastManagements = ({
   data,
@@ -32,18 +32,6 @@ const LastManagements = ({
       month: "2-digit",
       year: "numeric",
     });
-  };
-
-  const getManagementTypeLabel = (type: string) => {
-    const types: Record<string, string> = {
-      CALL_OUT: t("callOut"),
-      email: t("email"),
-      visit: t("visit"),
-      letter: t("letter"),
-      whatsapp: t("whatsapp"),
-      AUTOMATED_COLLECTOR: "Automatizado por collector",
-    };
-    return types[type] || type;
   };
 
   const getManagerName = (management: any) => {
@@ -79,7 +67,7 @@ const LastManagements = ({
           <span className="text-xs">{formatDate(management.date)}</span>
           <Badge
             variant="info"
-            text={getManagementTypeLabel(management.management_type)}
+            text={getChannelTypeLabel(management.management_type)}
           />
         </div>
       </div>

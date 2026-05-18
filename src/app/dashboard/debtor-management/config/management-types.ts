@@ -1334,12 +1334,23 @@ export const getManagementTypeConfig = (
   return MANAGEMENT_COMBINATIONS.find((config) => config.id === id);
 };
 
-/**
- * Obtener label de executive_comment por su valor
- */
 export const getExecutiveCommentLabel = (type: string): string => {
   const comment = EXECUTIVE_COMMENTS.find((c) => c.value === type);
   return comment?.label || type;
+};
+
+const CHANNEL_TYPE_LABELS: Record<string, string> = {
+  CALL_OUT: "Llamada saliente",
+  CALL_IN: "Llamada entrante",
+  MAIL_OUT: "Correo saliente",
+  MAIL_IN: "Correo entrante",
+  SUPPLIER_PORTAL: "Portal de proveedores",
+  WHATSAPP: "Whatsapp",
+  AUTOMATED_COLLECTOR: "Automatizado por collector",
+};
+
+export const getChannelTypeLabel = (type: string): string => {
+  return CHANNEL_TYPE_LABELS[type] ?? type;
 };
 
 export const NORMAL_CLIENTS = [
