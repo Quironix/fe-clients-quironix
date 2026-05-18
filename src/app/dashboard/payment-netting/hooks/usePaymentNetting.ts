@@ -15,7 +15,7 @@ const adaptApiResponseToPaymentNetting = (apiData: any): PaymentNetting[] => {
   const adaptedData = apiData.data.map((item: any) => {
     let formattedDate = "";
 
-    const rawDate = item.metadata?.transaction_date || item.movement_date;
+    const rawDate = item.movement_date;
     if (rawDate) {
       try {
         const dateStr = rawDate.includes("T") ? rawDate.split("T")[0] : rawDate;

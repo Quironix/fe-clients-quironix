@@ -278,14 +278,14 @@ export default function ViewDetailsModal({
             </div>
             <div>
               <IconDescription
-                icon={<Calendar />}
-                description="Fecha de depósito"
-                value={
-                  paymentHistory?.data?.payment?.deposit_at
-                    ? format(parseISO(paymentHistory.data.payment.deposit_at), "dd/MM/yyyy")
-                    : "N/A"
-                }
-              />
+                  icon={<Calendar />}
+                  description="Fecha de depósito"
+                  value={
+                    paymentHistory?.data?.bank_movement?.movement_date
+                      ? format(parseISO(paymentHistory.data.bank_movement.movement_date.split("T")[0]), "dd/MM/yyyy")
+                      : "N/A"
+                  }
+                />
             </div>
           </div>
         </div>
@@ -391,7 +391,7 @@ export default function ViewDetailsModal({
                                 : "Aplicación de factura"}
                             </span>
                             <span className="text-xs text-gray-500">
-                              {format(parseISO(event.timestamp), "dd/MM/yyyy HH:mm")}
+                              {format(parseISO(event.timestamp.split("T")[0]), "dd/MM/yyyy")}
                             </span>
                           </div>
                           <div className="text-sm text-gray-700">
