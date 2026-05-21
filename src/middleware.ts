@@ -23,6 +23,8 @@ const ROUTE_SCOPE_MAP: Record<string, string> = {
   "/dashboard/transactions/dte": "client.transactions.dte",
   "/dashboard/transactions/payments": "client.transactions.payments",
   "/dashboard/transactions/movements": "client.transactions.movements",
+  "/dashboard/payment-projection": "client.payment_projection",
+  "/dashboard/payment-projection/settings": "client.payment_projection.settings",
 };
 
 // Función para validar si el usuario tiene acceso a una ruta basándose en sus scopes

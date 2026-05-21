@@ -1,18 +1,85 @@
-/**
- * Servicio para obtener los indicadores del dashboard de proyección de pagos.
- *
- * @param accessToken Token de acceso para autenticación Bearer
- * @param clientId ID del cliente
- * @returns Respuesta con los indicadores o mensaje de error
- */
+export interface Phase {
+  id: string;
+  phase: number;
+  is_current: boolean;
+}
+
+export interface InvoiceData {
+  invoice_id: string;
+  invoice_number: string;
+  document_type: string;
+  due_date: string;
+  estimated_amount: number;
+  collected_amount: number;
+  commitment_status: string;
+  phases: Phase[];
+}
+
+export interface DailyProjection {
+  date: string;
+  invoices_data: InvoiceData[];
+}
+
+export interface WeeklyProjection {
+  week_number: number;
+  week_start: string;
+  week_end: string;
+  total_weekly_estimated: number;
+  total_weekly_collected: number;
+  daily_projections: DailyProjection[];
+}
+
+export interface DebtorRow {
+  id: string;
+  name: string;
+  debtor_code: string;
+  overdue_debt: number;
+  period_debt: number;
+  weekly_projections: WeeklyProjection[];
+}
+
+export interface AllDebtorsData {
+  data: DebtorRow[];
+  pagination: { totalPages: number };
+  total_projection_period: number;
+  total_real_period: number;
+}
+
+export interface ReportsByDebtorData {
+  weekly_projections: WeeklyProjection[];
+  total_monthly_estimated: number;
+  total_monthly_collected: number;
+  overdue_debt: number;
+  period_debt: number;
+  debtor_id: string;
+  month: string;
+  year: number;
+}
+
+export interface IndicatorsPayload {
+  total_projection: number;
+  collected: number;
+  variation: number;
+  critical_cases: number;
+  metadata: {
+    period_days: number;
+  };
+}
+
+export interface IndicatorsData {
+  data: IndicatorsPayload;
+}
+
+export interface ServiceResponse<T> {
+  success: boolean;
+  message: string;
+  data: T | null;
+}
+
 export const getIndicators = async (
   accessToken: string,
   clientId: string
-): Promise<{
-  success: boolean;
-  message: string;
-  data: any;
-}> => {
+): Promise<ServiceResponse<IndicatorsData>> => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   try {
     const response = await fetch(
@@ -49,17 +116,6 @@ export const getIndicators = async (
   }
 };
 
-/**
- * Servicio para obtener todos los deudores del dashboard de proyección de pagos.
- *
- * @param accessToken Token de acceso para autenticación Bearer
- * @param clientId ID del cliente
- * @param search Código del deudor para filtrar (opcional)
- * @param period_month Mes del periodo para filtrar (opcional)
- * @param page Número de página (opcional, por defecto 1)
- * @param limit Límite de elementos por página (opcional, por defecto 10)
- * @returns Respuesta con la lista de deudores o mensaje de error
- */
 export const getAllDebtors = async (
   accessToken: string,
   clientId: string,
@@ -67,14 +123,9 @@ export const getAllDebtors = async (
   period_month?: string | null,
   page?: number,
   limit?: number
-): Promise<{
-  success: boolean;
-  message: string;
-  data: any;
-}> => {
+): Promise<ServiceResponse<AllDebtorsData>> => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   try {
-    // Construir los query parameters de manera dinámica
     const queryParams = new URLSearchParams();
 
     if (search) {
@@ -127,33 +178,25 @@ export const getAllDebtors = async (
   }
 };
 
-/**
- * Servicio para obtener los reportes mensuales de proyección de pagos por deudor.
- *
- * @param accessToken Token de acceso para autenticación Bearer
- * @param clientId ID del cliente
- * @param projectionId ID de la proyección
- * @returns Respuesta con los reportes mensuales o mensaje de error
- */
 export const getReportsByDebtor = async (
   accessToken: string,
   clientId: string,
-  projectionId: string
-): Promise<{
-  success: boolean;
-  message: string;
-  data: any;
-}> => {
+  debtorId: string,
+  periodMonth?: string | null
+): Promise<ServiceResponse<ReportsByDebtorData>> => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   try {
-    const response = await fetch(
-      `${API_URL}/v2/clients/${clientId}/reports/payment-projection/${projectionId}/monthly`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const queryParams = new URLSearchParams();
+    if (periodMonth) {
+      queryParams.append("period_month", periodMonth.replace("/", "-"));
+    }
+    const queryString = queryParams.toString();
+    const url = `${API_URL}/v2/clients/${clientId}/reports/payment-projection/${debtorId}/monthly${queryString ? `?${queryString}` : ""}`;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -182,15 +225,6 @@ export const getReportsByDebtor = async (
   }
 };
 
-/**
- * Cambia las facturas de semana en una proyección de pagos.
- *
- * @param accessToken Token de acceso del usuario
- * @param clientId ID del cliente
- * @param debtorCode Código del deudor
- * @param moves Array de movimientos, cada uno con targetDate y un array de IDs de facturas
- * @returns Respuesta con el resultado de la operación o mensaje de error
- */
 export const changeInvoices = async (
   accessToken: string,
   clientId: string,
@@ -199,11 +233,7 @@ export const changeInvoices = async (
     targetDate: string;
     invoices: string[];
   }>
-): Promise<{
-  success: boolean;
-  message: string;
-  data: any;
-}> => {
+): Promise<ServiceResponse<Record<string, unknown>>> => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   try {
     const response = await fetch(

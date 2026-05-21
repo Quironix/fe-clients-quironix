@@ -15,7 +15,7 @@ export interface Invoice {
 
 export interface WeekColumn {
   week: number;
-  title: string;
+  title: number;
   dateRange: string;
   estimated: number;
   collected: number;

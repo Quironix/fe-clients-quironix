@@ -20,12 +20,15 @@ import { Edit, Search, TrendingDown, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import useDebounce from "../../../hooks/useDebounce";
 import { getAllDebtors } from "../../services";
 
 // Tipos para los datos de la tabla mensual
 
 const MonthlyTable = ({ period_month }: { period_month: string }) => {
+  const t = useTranslations("paymentProjection.settings");
+  const tRoot = useTranslations("paymentProjection");
   const router = useRouter();
   const { data: session } = useSession();
   const { profile } = useProfileContext();
@@ -101,13 +104,13 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
       <TableCell key={key} className="text-center py-3 px-2 min-w-[120px]">
         <div className="space-y-2">
           <div className="text-sm">
-            <div className="text-gray-600 text-xs mb-1">Estimado:</div>
+            <div className="text-gray-600 text-xs mb-1">{t("estimated")}</div>
             <div className="font-medium text-gray-900">
               {formatNumber(estimated)}
             </div>
           </div>
           <div className="text-sm">
-            <div className="text-gray-600 text-xs mb-1">Recaudado:</div>
+            <div className="text-gray-600 text-xs mb-1">{t("collected")}</div>
             <div className={cn("font-medium", text)}>
               {formatNumber(collected)}
             </div>
@@ -134,13 +137,13 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
         <div className="w-full space-y-6">
           <div className="bg-blue-100/30 p-5 rounded-lg flex items-center justify-around">
             <div className="flex flex-col justify-center items-center">
-              <span className="text-xs text-black">Total estimado</span>
+              <span className="text-xs text-black">{t("totalEstimated")}</span>
               <span className="text-3xl font-bold text-black">
                 {formatNumber(data?.data?.total_projection_period || 0)}
               </span>
             </div>
             <div className="flex flex-col justify-center items-center">
-              <span className="text-xs text-black">Total real</span>
+              <span className="text-xs text-black">{t("totalReal")}</span>
               <span className="text-3xl font-bold text-green-700">
                 {formatNumber(data?.data?.total_real_period || 0)}
               </span>
@@ -152,7 +155,7 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               type="text"
-              placeholder="Buscar por código, nombre del deudor..."
+              placeholder={t("searchPlaceholder")}
               value={searchTerm}
               onChange={handleSearchChange}
               className="pl-10 w-full max-w-md"
@@ -166,22 +169,16 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                   <TableHeader>
                     <TableRow className="bg-blue-50/50">
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3 min-w-[100px]">
-                        Código
-                        <br />
-                        Deudor
+                        {t("debtorCode")}
                       </TableHead>
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3 min-w-[120px]">
-                        Deudor
+                        {t("debtor")}
                       </TableHead>
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3 min-w-[120px]">
-                        Deuda
-                        <br />
-                        vencida
+                        {t("overdueDebt")}
                       </TableHead>
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3 min-w-[120px]">
-                        Por vencer
-                        <br />
-                        en período
+                        {t("periodDebtCol")}
                       </TableHead>
                       {[...data?.data?.data[0].weekly_projections]
                         .sort((a, b) => a.week_number - b.week_number)
@@ -190,7 +187,7 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                             key={item.week_number}
                             className="font-bold text-blue-700 text-center px-4 py-3 min-w-[120px]"
                           >
-                            Semana {item.week_number}
+                            {tRoot("week", { number: item.week_number })}
                             <br />
                             <span className="text-xs font-normal text-blue-700">
                               {format(parseISO(item.week_start), "dd MMM")} -{" "}
@@ -200,7 +197,7 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                         ))}
 
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3 min-w-[100px]">
-                        Acción
+                        {t("action")}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -247,7 +244,7 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                             className="h-8 w-8 p-0 border-blue-300 text-blue-600 hover:bg-blue-50"
                             onClick={() => {
                               router.push(
-                                `/dashboard/payment-projection/settings/${row.debtor_code}`
+                                `/dashboard/payment-projection/settings/${row.id}?code=${row.debtor_code}`
                               );
                             }}
                           >
@@ -261,8 +258,8 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
               </div>
 
               {/* Paginación */}
-              <div className="flex items-center justify-between px-6 py-4 border-t">
-                <div className="text-sm text-gray-600">Filas por página</div>
+                <div className="flex items-center justify-between px-6 py-4 border-t">
+                <div className="text-sm text-gray-600">{t("rowsPerPage")}</div>
                 <div className="flex items-center gap-4">
                   <select
                     className="border border-gray-300 rounded px-3 py-1 text-sm"
@@ -274,8 +271,7 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                     <option value="50">50</option>
                   </select>
                   <div className="text-sm text-gray-600">
-                    Página {currentPage} de{" "}
-                    {data?.data?.pagination?.totalPages || 1}
+                    {t("page", { current: currentPage, total: data?.data?.pagination?.totalPages || 1 })}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button

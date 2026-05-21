@@ -5,6 +5,11 @@ import {
   Invoice,
   WeekColumn,
 } from "../types/invoice-projection";
+import { WeeklyProjection } from "../services";
+
+interface DebtorWithProjections {
+  weekly_projections?: WeeklyProjection[];
+}
 
 export const useInvoiceDragAndDrop = (
   weeks: WeekColumn[],
@@ -12,7 +17,7 @@ export const useInvoiceDragAndDrop = (
   accessToken?: string,
   clientId?: string,
   debtorCode?: string,
-  debtor?: any
+  debtor?: DebtorWithProjections
 ) => {
   const [dragState, setDragState] = useState<DragAndDropState>({
     draggedInvoice: null,
@@ -53,13 +58,11 @@ export const useInvoiceDragAndDrop = (
 
       if (!dragState.draggedInvoice) return;
 
-      // Obtener la fecha del último día de la semana objetivo
       const targetWeekData = debtor?.weekly_projections?.find(
-        (wp: any) => wp.week_number === targetWeek
+        (wp) => wp.week_number === targetWeek
       );
 
       if (targetWeekData && accessToken && clientId && debtorCode) {
-        // Obtener la fecha del último día de la semana (week_end)
         const targetDate = targetWeekData.week_end;
         const moveData = [
           {
@@ -68,8 +71,9 @@ export const useInvoiceDragAndDrop = (
           },
         ];
 
+        const previousWeeks = weeks;
+
         try {
-          // Comentar la llamada al API para validar primero
           const response = await changeInvoices(
             accessToken,
             clientId,
@@ -77,19 +81,30 @@ export const useInvoiceDragAndDrop = (
             moveData
           );
 
-          console.log("Respuesta del servicio:", response);
-
-          // TODO: Descomentar cuando se valide que la lógica es correcta
-          console.log("SERVICIO COMENTADO - Validar lógica antes de activar");
+          if (!response.success) {
+            setWeeks(previousWeeks);
+            setDragState({
+              draggedInvoice: null,
+              draggedOverWeek: null,
+              isDragging: false,
+            });
+            return;
+          }
         } catch (error) {
           console.error("Error al cambiar la factura:", error);
+          setWeeks(previousWeeks);
+          setDragState({
+            draggedInvoice: null,
+            draggedOverWeek: null,
+            isDragging: false,
+          });
+          return;
         }
       }
 
       setWeeks((prevWeeks: WeekColumn[]) => {
         const newWeeks = [...prevWeeks];
 
-        // Remover la factura de la semana original
         const sourceWeek = newWeeks.find(
           (w) => w.week === dragState.draggedInvoice!.week
         );
@@ -104,16 +119,15 @@ export const useInvoiceDragAndDrop = (
           );
         }
 
-        // Agregar la factura a la semana objetivo
-        const targetWeekData = newWeeks.find((w) => w.week === targetWeek);
-        if (targetWeekData) {
+        const targetWeekColumn = newWeeks.find((w) => w.week === targetWeek);
+        if (targetWeekColumn) {
           const updatedInvoice = {
             ...dragState.draggedInvoice,
             week: targetWeek,
           };
-          targetWeekData.invoices.push(updatedInvoice);
-          targetWeekData.count = targetWeekData.invoices.length;
-          targetWeekData.estimated = targetWeekData.invoices.reduce(
+          targetWeekColumn.invoices.push(updatedInvoice as Invoice);
+          targetWeekColumn.count = targetWeekColumn.invoices.length;
+          targetWeekColumn.estimated = targetWeekColumn.invoices.reduce(
             (sum, inv) => sum + inv.documentBalance,
             0
           );
@@ -130,6 +144,7 @@ export const useInvoiceDragAndDrop = (
     },
     [
       dragState.draggedInvoice,
+      weeks,
       setWeeks,
       accessToken,
       clientId,

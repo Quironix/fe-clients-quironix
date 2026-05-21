@@ -14,16 +14,17 @@ import Language from "@/components/ui/language";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChartSpline } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter, useSearchParams } from "next/navigation";
 import * as z from "zod";
+import { useTranslations } from "next-intl";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
 import { usePaymentProjectionStore } from "../store";
 import MonthlyTable from "./components/table-monthly";
 
-// Schema de validación para el formato AAAA-MM (formato month input)
 const formSchema = z.object({
   period_month: z
     .string()
@@ -37,31 +38,47 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const PageSettings = () => {
+  const t = useTranslations("paymentProjection.settings");
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { setPeriodMonth, periodMonth, setSearchDebtorCode } =
     usePaymentProjectionStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema),
     defaultValues: {
       period_month: "",
     },
   });
 
-  // Función para convertir formato MM/AAAA a AAAA-MM para display
+  useEffect(() => {
+    const periodParam = searchParams.get("period");
+    if (periodParam && !periodMonth) {
+      const [mm, yyyy] = periodParam.split("-");
+      if (mm && yyyy) {
+        setPeriodMonth(`${mm}/${yyyy}`);
+      }
+    }
+  }, []);
+
   const formatPeriodForDisplay = (period: string) => {
     if (!period) return "";
     const [year, month] = period.split("-");
     return `${month}/${year}`;
   };
 
-  // Handle principal para enviar el formulario
   const handleSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
       const displayPeriod = formatPeriodForDisplay(data.period_month);
       setSearchDebtorCode(null);
       setPeriodMonth(displayPeriod);
+
+      const [year, month] = data.period_month.split("-");
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("period", `${month}-${year}`);
+      router.push(`?${params.toString()}`);
     } catch (error) {
       console.error("Error al procesar el formulario:", error);
       alert("Error al procesar el formulario");
@@ -77,10 +94,10 @@ const PageSettings = () => {
       </Header>
       <Main>
         <TitleSection
-          title="Ingreso de proyección de pagos"
-          description="Organiza y monitorea tu plan de pagos de 5 semanas"
+          title={t("pageTitle")}
+          description={t("pageDescription")}
           icon={<ChartSpline color="white" />}
-          subDescription="Proyección de pagos"
+          subDescription={t("pageTitle")}
         />
 
         <div className="flex items-center justify-center gap-5 p-3 border border-gray-200 rounded-md h-[325px] mb-5">
@@ -96,7 +113,7 @@ const PageSettings = () => {
 
           <div className="w-full h-full border border-gray-200 rounded-md p-5 flex flex-col items-start justify-start gap-6">
             <span className="text-lg font-bold">
-              Configuración del plan de pago
+              {t("configTitle")}
             </span>
             <Form {...form}>
               <form
@@ -108,7 +125,7 @@ const PageSettings = () => {
                   name="period_month"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Período</FormLabel>
+                      <FormLabel>{t("periodLabel")}</FormLabel>
                       <FormControl>
                         <MonthPicker
                           value={field.value}
@@ -120,14 +137,13 @@ const PageSettings = () => {
                   )}
                 />
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? "Procesando..." : "Configurar Período"}
+                  {isLoading ? t("processing") : t("configurePeriod")}
                 </Button>
               </form>
             </Form>
           </div>
         </div>
 
-        {/* Tabla mensual */}
         <MonthlyTable period_month={periodMonth} />
       </Main>
     </>

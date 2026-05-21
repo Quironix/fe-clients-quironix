@@ -22,7 +22,10 @@ export interface EmailDynamicTemplateData {
   body_html: string;
   contact_phone: string;
   contact_email: string;
-  bank_account_info?: string; // HTML formatted bank account information (optional)
+  bank_account_info?: string;
+  amount?: string;
+  date?: string;
+  email_company?: string;
 }
 
 export interface EmailPayload {

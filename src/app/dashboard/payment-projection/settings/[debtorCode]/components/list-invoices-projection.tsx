@@ -8,11 +8,18 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { formatNumber } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useInvoiceDragAndDrop } from "../../../hooks/useInvoiceDragAndDrop";
-import { WeekColumn } from "../../../types/invoice-projection";
+import { WeekColumn, Invoice } from "../../../types/invoice-projection";
+import { DailyProjection, InvoiceData, WeeklyProjection } from "../../../services";
+
+interface DebtorProjection {
+  debtor_code?: string;
+  weekly_projections?: WeeklyProjection[];
+}
 
 interface ListInvoicesProjectionProps {
-  debtor?: any;
+  debtor?: DebtorProjection;
   periodMonth?: string;
   handleRefetch?: () => void;
 }
@@ -22,28 +29,33 @@ const ListInvoicesProjection = ({
   periodMonth,
   handleRefetch,
 }: ListInvoicesProjectionProps) => {
+  const t = useTranslations("paymentProjection.settings");
+  const tRoot = useTranslations("paymentProjection");
   const { data: session } = useSession();
   const { profile } = useProfileContext();
 
-  // Función para transformar los datos del debtor al formato esperado
-  const transformDebtorData = (debtorData: any): WeekColumn[] => {
+  const transformDebtorData = (debtorData: DebtorProjection | undefined): WeekColumn[] => {
     if (!debtorData?.weekly_projections) {
       return [];
     }
 
-    return debtorData.weekly_projections.map((weekProjection: any) => {
-      // Extraer todas las facturas de todos los días de la semana
-      const allInvoices: any[] = [];
-      weekProjection.daily_projections.forEach((dailyProjection: any) => {
+    return debtorData.weekly_projections.map((weekProjection) => {
+      const allInvoices: Invoice[] = [];
+      weekProjection.daily_projections.forEach((dailyProjection: DailyProjection) => {
         if (
           dailyProjection.invoices_data &&
           dailyProjection.invoices_data.length > 0
         ) {
-          dailyProjection.invoices_data.forEach((invoiceData: any) => {
+          dailyProjection.invoices_data.forEach((invoiceData: InvoiceData) => {
+            const currentPhase =
+              invoiceData.phases.find((p) => p.is_current)?.phase ??
+              invoiceData.phases[0]?.phase ??
+              1;
             allInvoices.push({
               id: invoiceData.invoice_id,
-              invoice_number: invoiceData.invoice_number, // Usar los últimos 8 caracteres como número
-              phase: 1, // TODO: CAMBIAR
+              invoice_number: invoiceData.invoice_number,
+              phase: String(currentPhase),
+              invoiceNumber: invoiceData.invoice_number,
               document_type: invoiceData.document_type,
               dueDate: new Date(invoiceData.due_date).toLocaleDateString(
                 "es-ES"
@@ -55,19 +67,20 @@ const ListInvoicesProjection = ({
         }
       });
 
-      // Formatear el rango de fechas
       const startDate = parseISO(weekProjection.week_start);
       const endDate = parseISO(weekProjection.week_end);
       const dateRange = `${startDate.getDate().toString().padStart(2, "0")}/${(startDate.getMonth() + 1).toString().padStart(2, "0")} - ${endDate.getDate().toString().padStart(2, "0")}/${(endDate.getMonth() + 1).toString().padStart(2, "0")}`;
 
       return {
         week: weekProjection.week_number,
-        title: `Semana ${weekProjection.week_number}`,
+        title: weekProjection.week_number,
         dateRange: dateRange,
         estimated: weekProjection.total_weekly_estimated || 0,
         collected: weekProjection.total_weekly_collected || 0,
         count: allInvoices.length,
         invoices: allInvoices,
+        startDate,
+        endDate,
       };
     });
   };
@@ -76,7 +89,6 @@ const ListInvoicesProjection = ({
     return transformDebtorData(debtor);
   });
 
-  // Actualizar los datos cuando cambie el debtor
   useEffect(() => {
     if (debtor) {
       setWeeks(transformDebtorData(debtor));
@@ -95,19 +107,18 @@ const ListInvoicesProjection = ({
     setWeeks,
     session?.token as string,
     profile?.client_id as string,
-    debtor?.id,
+    debtor?.debtor_code,
     debtor
   );
 
   return (
     <div className="space-y-6">
-      {/* Columnas de semanas con scroll */}
       <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
         {weeks
           .sort((a, b) => a.week - b.week)
           .map((week) => (
             <div
-              key={week.week}
+              key={`week-${week.week}-${week.dateRange}`}
               className={`bg-white rounded-lg border-2 transition-colors ${
                 dragState.draggedOverWeek === week.week
                   ? "border-blue-400 bg-blue-50"
@@ -117,11 +128,10 @@ const ListInvoicesProjection = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, week.week)}
             >
-              {/* Header de la columna */}
               <div className="p-2 bg-blue-100 rounded-t-lg space-y-2  border-b-2 border-blue-700">
                 <div className="flex items-center justify-between mb-0 pb-1">
                   <span className=" text-sm font-semibold text-gray-900">
-                    {week.title}
+                    {tRoot("week", { number: week.title })}
                   </span>
                   <Badge
                     variant="secondary"
@@ -133,13 +143,13 @@ const ListInvoicesProjection = ({
                 <div className="text-xs text-gray-600">{week.dateRange}</div>
                 <div className="space-y-1 text-xs bg-white p-3 rounded-md">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Estimado:</span>
+                    <span className="text-gray-600">{t("estimated")}</span>
                     <span className="font-medium text-blue-600">
                       {formatNumber(week.estimated)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Recaudado:</span>
+                    <span className="text-gray-600">{t("collected")}</span>
                     <span className="font-medium text-blue-600">
                       {formatNumber(week.collected)}
                     </span>
@@ -147,11 +157,10 @@ const ListInvoicesProjection = ({
                 </div>
               </div>
 
-              {/* Área de scroll para las facturas */}
               <div className="p-2 max-h-96 overflow-y-auto">
                 {week.invoices.length === 0 ? (
                   <div className="text-center py-8 text-gray-500 text-sm">
-                    Sin facturas
+                    {t("noInvoices")}
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -186,17 +195,17 @@ const ListInvoicesProjection = ({
                           </div>
                           <div className="space-y-1 text-xs">
                             <div className="font-medium">
-                              N° {invoice.invoice_number}
+                              {t("invoiceNumber", { number: invoice.invoice_number })}
                             </div>
                             <div className="text-gray-600">
-                              Fase: {invoice.phase}
+                              {t("phase", { phase: invoice.phase })}
                             </div>
                             <div className="text-gray-600">
-                              Vencimiento: {invoice.dueDate}
+                              {t("dueDate", { date: invoice.dueDate })}
                             </div>
                             <div className="bg-blue-50 p-2 rounded text-center flex flex-col items-start justify-between">
                               <span className="text-blue-800 font-medium">
-                                Saldo Documento:
+                                {t("documentBalance")}
                               </span>
                               <span className="text-blue-800 font-bold">
                                 {formatNumber(invoice.documentBalance)}

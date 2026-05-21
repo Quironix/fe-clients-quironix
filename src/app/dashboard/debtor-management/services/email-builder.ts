@@ -10,7 +10,13 @@ import { generateBodyDescriptionByDebtorComment } from "../utils/email-messages"
 interface BuildEmailPayloadParams {
   managementFormData: ManagementFormData;
   selectedInvoices: Invoice[];
-  profile: Record<string, unknown>;
+  profile: Record<string, unknown> & {
+    client?: {
+      contacts?: Array<{ phone?: string; email?: string; [key: string]: unknown }>;
+      operational?: { logo_url?: string };
+      type?: string;
+    };
+  };
   managementCombination: ManagementCombination;
   bankAccountInfo?: string; // Pre-fetched bank account HTML (optional)
 }
