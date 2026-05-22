@@ -14,6 +14,7 @@ import { WeekColumn, Invoice } from "../../../types/invoice-projection";
 import { DailyProjection, InvoiceData, WeeklyProjection } from "../../../services";
 
 interface DebtorProjection {
+  debtor_id?: string;
   debtor_code?: string;
   weekly_projections?: WeeklyProjection[];
 }
@@ -107,7 +108,7 @@ const ListInvoicesProjection = ({
     setWeeks,
     session?.token as string,
     profile?.client_id as string,
-    debtor?.debtor_code,
+    debtor?.debtor_id,
     debtor
   );
 
