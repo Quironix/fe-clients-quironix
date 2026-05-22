@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "steps": {
+    "build": {
+      "commands": [
+        "...",
+        "cp -r public build/standalone/",
+        "cp -r build/static build/standalone/build/"
+      ]
+    }
+  },
+  "deploy": {
+    "startCommand": "node build/standalone/server.js"
+  }
+}
