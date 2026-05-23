@@ -299,6 +299,7 @@
       "payments": "Payments",
       "bankStatements": "Bank Statements",
       "portfolioAdmin": "Portfolio Administration",
+      "managementsListNav": "Mgmt. History",
       "cashFlowParams": "Cash Flow Parameters",
       "debtorsLoad": "Debtor Load & Maintenance",
       "dteLoad": "Document Load & Maintenance (DTE)",
@@ -1064,6 +1065,21 @@
       "commentPlaceholder": "Write any additional comment about this management...",
       "sendEmailLabel": "Send summary by email after saving.",
       "normalizedLitigations": "Normalized litigations:"
+    },
+    "managementsList": {
+      "pageTitle": "Management History",
+      "pageDescription": "Search and select a debtor to view their management history",
+      "pageSubDescription": "Management History",
+      "selectCompanyLabel": "Company",
+      "tableTitle": "Select a debtor",
+      "searchPlaceholder": "Search debtor...",
+      "columnName": "Name",
+      "columnCode": "Code",
+      "columnRut": "RUT",
+      "emptyState": "No debtors found",
+      "rowsPerPage": "Rows per page:",
+      "page": "Page {current} of {total}",
+      "viewHistory": "View history"
     }
   },
   "paymentPlans": {

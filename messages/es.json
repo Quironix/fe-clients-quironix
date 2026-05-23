@@ -299,6 +299,7 @@
       "payments": "Pagos",
       "bankStatements": "Cartolas bancarias",
       "portfolioAdmin": "Adm. de cartera",
+      "managementsListNav": "Hist. de gestiones",
       "cashFlowParams": "Parámetros flujo de caja",
       "debtorsLoad": "Deudores",
       "dteLoad": "Documentos (DTE)",
@@ -1059,6 +1060,21 @@
       "commentPlaceholder": "Escribe algún comentario adicional sobre esta gestión...",
       "sendEmailLabel": "Enviar resumen por email después de guardar.",
       "normalizedLitigations": "Litigios normalizados:"
+    },
+    "managementsList": {
+      "pageTitle": "Historial de gestiones",
+      "pageDescription": "Busca y selecciona un deudor para ver su historial de gestiones",
+      "pageSubDescription": "Historial de gestiones",
+      "selectCompanyLabel": "Empresa",
+      "tableTitle": "Selecciona un deudor",
+      "searchPlaceholder": "Buscar deudor...",
+      "columnName": "Nombre",
+      "columnCode": "Código",
+      "columnRut": "RUT",
+      "emptyState": "No se encontraron deudores",
+      "rowsPerPage": "Filas por página:",
+      "page": "Página {current} de {total}",
+      "viewHistory": "Ver historial"
     }
   },
   "paymentPlans": {
