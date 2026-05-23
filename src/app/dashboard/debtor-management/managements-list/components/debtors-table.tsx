@@ -109,7 +109,7 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
         accessorKey: "name",
         header: t("columnName"),
         cell: ({ row }) => (
-          <div className="font-medium text-sm">{row.original.name}</div>
+          <div className="font-medium text-sm text-left">{row.original.name}</div>
         ),
       },
       {
