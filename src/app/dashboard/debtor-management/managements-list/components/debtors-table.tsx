@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -12,10 +13,12 @@ import {
 } from "@/components/ui/table";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useQuery } from "@tanstack/react-query";
+import { Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import useDebounce from "../../../hooks/useDebounce";
 import { getDebtors } from "@/app/dashboard/debtors/services";
 
 interface DebtorRow {
@@ -40,21 +43,30 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 500);
 
   const { data, isLoading } = useQuery({
     queryKey: [
       "debtors-managements-list",
       currentPage,
       itemsPerPage,
+      debouncedSearch,
       selectedCompanyId,
     ],
     queryFn: () =>
       getDebtors(session?.token ?? "", profile?.client_id ?? "", {
         page: currentPage,
         limit: itemsPerPage,
+        search: debouncedSearch || undefined,
       }),
     enabled: !!session?.token && !!profile?.client_id,
   });
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1);
+  };
 
   const handleItemsPerPageChange = (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -95,13 +107,24 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
     <Card className="w-full">
       <CardContent className="p-6">
         <div className="w-full space-y-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              type="text"
+              placeholder={t("searchPlaceholder")}
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="pl-10 w-full max-w-md"
+            />
+          </div>
+
           <Card className="w-full">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-blue-50/50">
-                      <TableHead className="font-bold text-blue-700 text-center px-4 py-3">
+                      <TableHead className="font-bold text-blue-700 text-left px-4 py-3">
                         {t("columnName")}
                       </TableHead>
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3">
@@ -110,8 +133,7 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3">
                         {t("columnRut")}
                       </TableHead>
-                      <TableHead className="font-bold text-blue-700 text-center px-4 py-3">
-                      </TableHead>
+                      <TableHead className="font-bold text-blue-700 text-center px-4 py-3" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -121,7 +143,7 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
                           key={debtor.id}
                           className={index % 2 === 0 ? "bg-gray-50/30" : "bg-white"}
                         >
-                          <TableCell className="text-center py-3 px-4 font-medium text-gray-900">
+                          <TableCell className="text-left py-3 px-4 font-medium text-gray-900">
                             {debtor.name}
                           </TableCell>
                           <TableCell className="text-center py-3 px-4 text-gray-700">
