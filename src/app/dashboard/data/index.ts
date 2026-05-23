@@ -174,6 +174,11 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
                 scope: "client.payment_projection.settings",
               },
               {
+                title: t("managementsListNav"),
+                url: "/dashboard/debtor-management/managements-list",
+                scope: "client.debtor_management",
+              },
+              {
                 title: t("debtorsLoad"),
                 url: "/dashboard/debtors",
                 scope: "client.settings_account.debtors",

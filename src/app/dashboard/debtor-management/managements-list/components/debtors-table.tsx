@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -13,12 +12,10 @@ import {
 } from "@/components/ui/table";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import useDebounce from "../../../hooks/useDebounce";
 import { getDebtors } from "@/app/dashboard/debtors/services";
 
 interface DebtorRow {
@@ -43,30 +40,21 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, 500);
 
   const { data, isLoading } = useQuery({
     queryKey: [
       "debtors-managements-list",
       currentPage,
       itemsPerPage,
-      debouncedSearch,
       selectedCompanyId,
     ],
     queryFn: () =>
       getDebtors(session?.token ?? "", profile?.client_id ?? "", {
         page: currentPage,
         limit: itemsPerPage,
-        search: debouncedSearch || undefined,
       }),
     enabled: !!session?.token && !!profile?.client_id,
   });
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    setCurrentPage(1);
-  };
 
   const handleItemsPerPageChange = (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -107,17 +95,6 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
     <Card className="w-full">
       <CardContent className="p-6">
         <div className="w-full space-y-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              type="text"
-              placeholder={t("searchPlaceholder")}
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="pl-10 w-full max-w-md"
-            />
-          </div>
-
           <Card className="w-full">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -155,7 +132,6 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
                           </TableCell>
                           <TableCell className="text-center py-3 px-4">
                             <Button
-                              variant="outline"
                               size="sm"
                               onClick={() =>
                                 router.push(

@@ -1,12 +1,10 @@
 "use client";
 
-import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { PhoneCall } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import Header from "../../components/header";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
 import SelectClient from "@/app/dashboard/components/select-client";
@@ -20,9 +18,6 @@ const ManagementsListPage = () => {
 
   return (
     <>
-      <Header fixed>
-        <Language />
-      </Header>
       <Main>
         <TitleSection
           title={t("pageTitle")}
