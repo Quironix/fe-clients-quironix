@@ -2,7 +2,11 @@
 
 import { formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { getExecutiveCommentLabel } from "../../../config/management-types";
+import {
+  DEBTOR_COMMENTS,
+  getChannelTypeLabel,
+  getExecutiveCommentLabel,
+} from "../../../config/management-types";
 import { DebtorTrack } from "../../../types/debtor-tracks";
 
 const formatDate = (dateString: string) => {
@@ -25,35 +29,13 @@ const formatDateTime = (dateString: string) => {
   });
 };
 
-const getManagementTypeLabel = (type: string) => {
-  const types: Record<string, string> = {
-    CALL_OUT: "Llamada telefónica",
-    EMAIL: "Correo electrónico",
-    VISIT: "Visita",
-    LETTER: "Carta",
-    WHATSAPP: "WhatsApp",
-  };
-  return types[type] || type;
-};
-
-const getDebtorCommentLabel = (comment: string) => {
-  const comments: Record<string, string> = {
-    WILL_DEPOSIT_OR_TRANSFER: "Depositará o hará transferencia",
-    DEPOSITED_OR_TRANSFERRED: "Depositó o transfirió",
-    CONTACT_NOT_RESPONDING: "Contacto no responde",
-    STATEMENT_SENT: "Envío Estado de Cuenta",
-    PAYMENT_MADE_AND_IDENTIFIED: "Pago realizado e identificado",
-    INVOICE_NOT_REGISTERED_IN_ACCOUNTING:
-      "Factura no registrada en contabilidad",
-    INVOICE_WITH_LITIGATION: "Factura con litigio",
-    NEED_PAYMENT_PLAN: "Necesito Plan de Pago",
-    CHECK_CONFIRMED: "Cheque Confirmado",
-  };
-  return comments[comment] || comment;
+const getDebtorCommentLabel = (comment: string): string => {
+  const found = DEBTOR_COMMENTS.find((c) => c.value === comment);
+  return found?.label ?? comment;
 };
 
 const getManagementTypeBadge = (type: string) => {
-  const label = getManagementTypeLabel(type);
+  const label = getChannelTypeLabel(type);
   return (
     <div className="border border-blue-600 px-3 text-center text-blue-600 rounded-full text-xs">
       {label}
