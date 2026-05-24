@@ -1279,6 +1279,11 @@ export const EXECUTIVE_COMMENTS = [
     label: "Automatizado por collector",
     debtorComment: "AUTOMATED_COLLECTOR",
   },
+  {
+    value: "AUTOMATED_COLLECTOR_SENT",
+    label: "Automatizado por collector",
+    managementType: "AUTOMATED_COLLECTOR_SENT",
+  },
 ];
 
 /**
