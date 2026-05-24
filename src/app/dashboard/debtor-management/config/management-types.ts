@@ -994,6 +994,11 @@ export const DEBTOR_COMMENTS = [
     label: "Notificado de publicación en informes comerciales",
     managementType: "NOTIFIED_COMMERCIAL_REPORTS_PUBLICATION",
   },
+  {
+    value: "AUTOMATED_COLLECTOR_SENT",
+    label: "Automatizado por collector",
+    managementType: "AUTOMATED_COLLECTOR_SENT",
+  },
 ];
 
 /**
@@ -1279,11 +1284,6 @@ export const EXECUTIVE_COMMENTS = [
     label: "Automatizado por collector",
     debtorComment: "AUTOMATED_COLLECTOR",
   },
-  {
-    value: "AUTOMATED_COLLECTOR_SENT",
-    label: "Automatizado por collector",
-    managementType: "AUTOMATED_COLLECTOR_SENT",
-  },
 ];
 
 /**
@@ -1352,6 +1352,7 @@ const CHANNEL_TYPE_LABELS: Record<string, string> = {
   SUPPLIER_PORTAL: "Portal de proveedores",
   WHATSAPP: "Whatsapp",
   AUTOMATED_COLLECTOR: "Automatizado por collector",
+  AUTOMATED_COLLECTOR_SENT: "Automatizado por collector",
 };
 
 export const getChannelTypeLabel = (type: string): string => {
