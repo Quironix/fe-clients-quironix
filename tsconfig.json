@@ -37,7 +37,7 @@
     "next-env.d.ts",
     "build/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "build", ".next", "**/*.spec.ts", "**/*.test.ts"],
+  "exclude": ["node_modules", "build", ".next", "**/*.spec.ts", "**/*.test.ts", "e2e"],
   "ts-node": {
     "esm": true
   },
