@@ -105,6 +105,7 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
                 scope: "client.debtor_management",
               },
               {
+                disabled: true,
                 title: t("managementHistory"),
                 url: "/dashboard/management-history",
                 scope: "client.management_history",
@@ -241,12 +242,12 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
               },
               ...(isFactoringClient
                 ? [
-                  {
-                    title: t("companies"),
-                    url: "/dashboard/companies",
-                    scope: "client.onboarding.companies",
-                  },
-                ]
+                    {
+                      title: t("companies"),
+                      url: "/dashboard/companies",
+                      scope: "client.onboarding.companies",
+                    },
+                  ]
                 : []),
             ],
           },
