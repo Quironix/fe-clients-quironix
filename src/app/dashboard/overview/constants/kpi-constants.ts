@@ -3,6 +3,7 @@ import {
   Columns3,
   Columns4,
   Gauge,
+  History,
   LayoutGrid,
   LineChart,
   List,
@@ -17,7 +18,8 @@ export type ViewType =
   | "sparkline"
   | "ring"
   | "compact"
-  | "detailed";
+  | "detailed"
+  | "history";
 
 export const KPI_NAME_MAP: Record<string, string> = {
   CASH_GENERATION: "Generación de caja",
@@ -93,6 +95,7 @@ export const VIEW_TYPES: Array<{
   { id: "ring", name: "Ring", icon: PieChart },
   { id: "compact", name: "Compacto", icon: List },
   { id: "detailed", name: "Detallado", icon: Maximize },
+  { id: "history", name: "Historial", icon: History },
 ];
 
 export const GRID_COLUMN_OPTIONS = [

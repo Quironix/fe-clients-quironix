@@ -1,11 +1,11 @@
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, History } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { KPI } from "../services/types";
 import { KPIStatusInfo, KPITrendInfoNullable } from "../utils/kpi-utils";
 import { KPICardDetailed } from "./kpi-card-detailed";
 import { GaugeChart, RingChart, Sparkline } from "./kpi-visualizations";
 
-interface ViewProps {
+export interface ViewProps {
   kpi: KPI;
   status: KPIStatusInfo;
   trend: KPITrendInfoNullable;
@@ -226,3 +226,63 @@ export const CompactView: React.FC<ViewProps> = ({ kpi, status, trend }) => {
 export const DetailedView: React.FC<ViewProps> = ({ kpi }) => (
   <KPICardDetailed kpi={kpi} isDragging={false} />
 );
+
+export const HistoryView: React.FC<ViewProps> = ({ kpi, status }) => {
+  const history = kpi.history ?? [];
+
+  if (history.length === 0) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center gap-2 text-gray-400">
+        <History size={24} />
+        <p className="text-xs">Sin historial disponible</p>
+      </div>
+    );
+  }
+
+  const formatDate = (dateStr: string): string => {
+    const d = new Date(dateStr);
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const year = d.getUTCFullYear();
+    return `${month}-${year}`;
+  };
+
+  const colorClass =
+    status.color === "emerald"
+      ? "text-emerald-600"
+      : status.color === "amber"
+      ? "text-amber-600"
+      : "text-red-600";
+
+  const bgClass =
+    status.color === "emerald"
+      ? "bg-emerald-50"
+      : status.color === "amber"
+      ? "bg-amber-50"
+      : "bg-red-50";
+
+  return (
+    <div className="px-4 py-3 max-h-52 overflow-y-auto">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-gray-400 border-b border-gray-100">
+            <th className="text-left pb-2 font-medium">Período</th>
+            <th className="text-right pb-2 font-medium">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...history].reverse().map((item, i) => (
+            <tr key={i} className="border-b border-gray-50 last:border-0">
+              <td className="py-1.5 text-gray-600">{formatDate(item.period)}</td>
+              <td className="py-1.5 text-right">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold ${bgClass} ${colorClass}`}>
+                  {item.value != null ? item.value.toFixed(2) : "—"}
+                  <span className="ml-0.5 font-normal text-[10px]">{kpi.unit}</span>
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};

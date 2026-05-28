@@ -4,7 +4,7 @@ import { useState } from "react";
 import { VIEW_TYPES, ViewType } from "../constants/kpi-constants";
 import { useKPIMetrics } from "../hooks/useKPIMetrics";
 import { KPI } from "../services/types";
-import { CardView, CompactView, DetailedView, GaugeView, RingView, SparklineView } from "./kpi-view-types";
+import { CardView, CompactView, DetailedView, GaugeView, HistoryView, RingView, SparklineView, ViewProps } from "./kpi-view-types";
 
 interface KPIWidgetProps {
   kpi: KPI;
@@ -29,13 +29,14 @@ export const KPIWidget: React.FC<KPIWidgetProps> = ({
   const [showSettings, setShowSettings] = useState(false);
   const { status, trend, categoryBadge } = useKPIMetrics(kpi);
 
-  const views: Record<ViewType, React.ComponentType<any>> = {
+  const views: Record<ViewType, React.ComponentType<ViewProps>> = {
     card: CardView,
     gauge: GaugeView,
     sparkline: SparklineView,
     ring: RingView,
     compact: CompactView,
     detailed: DetailedView,
+    history: HistoryView,
   };
 
   const ViewComponent = views[viewType];

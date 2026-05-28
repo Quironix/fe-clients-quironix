@@ -14,6 +14,15 @@ export interface KPIThresholds {
   direction: ColorDirection;
 }
 
+export interface KPIHistoryItem {
+  period: string;
+  value: number | null;
+}
+
+export interface KPIInvoiceItem {
+  [key: string]: unknown;
+}
+
 export interface KPI {
   id: string;
   name: string;
@@ -28,8 +37,8 @@ export interface KPI {
   sla?: string;
   criterio?: string;
   lastUpdated?: string;
-  history?: any[];
-  invoices?: any[];
+  history?: KPIHistoryItem[];
+  invoices?: KPIInvoiceItem[];
 }
 
 export interface KPIFilters {
@@ -67,6 +76,6 @@ export interface ItemKPI {
   value: null | number;
   sla: null | number;
   acceptance_criteria: null | number;
-  history: any[];
-  invoices: any[];
+  history: KPIHistoryItem[];
+  invoices: KPIInvoiceItem[];
 }

@@ -6,7 +6,7 @@ import {
   UNIT_MAP,
 } from "../constants/kpi-constants";
 import { calculateKPIStatus, getTrendDirection } from "../utils/kpi-utils";
-import { KPI, KPIResponse, KPIThresholds, KPIType, ResponseKPIV2 } from "./types";
+import { ItemKPI, KPI, KPIResponse, KPIThresholds, KPIType, ResponseKPIV2 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -27,7 +27,7 @@ const determineDirection = (metricName: string): "ascending" | "descending" => {
 };
 
 const buildKPIObject = (
-  item: any,
+  item: ItemKPI,
   categoryKey: keyof typeof CATEGORY_MAP,
   index: number
 ): KPI => {
@@ -110,7 +110,7 @@ export const getAll = async (
       kpis = kpis.map((kpi) => ({
         ...kpi,
         history: kpi.history?.filter((h) => {
-          const date = new Date(h.date);
+          const date = new Date(h.period);
           const from = filters.from ? new Date(filters.from) : null;
           const to = filters.to ? new Date(filters.to) : null;
 
