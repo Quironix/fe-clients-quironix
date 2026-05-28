@@ -45,7 +45,10 @@ function ListAccountReceivableContent() {
     id: invoice.id || Math.random(),
     number: invoice.number || "N/A",
     balance: invoice.balance || 0,
-    debtor: invoice.debtor || { name: "N/A" },
+    debtor: {
+      name: invoice.debtor?.name || "N/A",
+      debtor_code: invoice.debtor?.debtor_code ?? invoice.debtor?.code ?? undefined,
+    },
     phases: invoice.phases || [],
     due_date: invoice.due_date || "",
     amount: invoice.amount?.toString() || "0",

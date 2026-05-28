@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Clock2,
   DollarSign,
+  Hash,
   InfoIcon,
   Trash,
 } from "lucide-react";
@@ -20,7 +21,10 @@ interface ItemListPaymentProps {
   row: {
     id: number;
     number: string;
-    debtor: any;
+    debtor: {
+      name: string;
+      debtor_code?: string;
+    };
     phases: Array<any>;
     due_date: string;
     amount: string;
@@ -119,9 +123,14 @@ const ItemListPayment = ({
   return (
     <div className={getContainerClasses()} onClick={handleClick}>
       <div className="flex items-center w-full justify-between">
-        <div>
-          {/* Badge de seleccionado */}
+        <div className="flex items-center gap-1.5">
           {isSelected && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+          {row.debtor?.debtor_code && (
+            <span className="inline-flex items-center gap-0.5 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px] text-gray-400">
+              <Hash className="w-2.5 h-2.5" />
+              {row.debtor.debtor_code}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <DocumentTypeBadge type={row.type} />
