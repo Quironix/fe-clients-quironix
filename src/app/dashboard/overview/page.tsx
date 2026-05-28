@@ -106,9 +106,7 @@ const KPIContent = () => {
               <p className="text-lg font-semibold text-gray-700">
                 {t("loading")}
               </p>
-              <p className="text-sm text-gray-500">
-                {t("loadingCache")}
-              </p>
+              <p className="text-sm text-gray-500">{t("loadingCache")}</p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center gap-4 p-12">
@@ -129,7 +127,7 @@ const KPIContent = () => {
                         return (
                           <button
                             key={type.id}
-                            onClick={() => setAllViews(type.id)}
+                            onClick={() => setAllViews(type.id as any)}
                             className={`p-2 rounded-md transition-colors ${
                               preferences.viewMode === type.id
                                 ? "bg-orange-500 text-white"
@@ -203,12 +201,12 @@ const KPIContent = () => {
                 >
                   {filteredKpis.map((kpi) => {
                     const validViewTypes: ViewType[] = VIEW_TYPES.map(
-                      (vt) => vt.id
+                      (vt) => vt.id,
                     );
                     const storedView =
                       preferences.kpiViews[kpi.id] || preferences.viewMode;
                     const viewType = validViewTypes.includes(
-                      storedView as ViewType
+                      storedView as ViewType,
                     )
                       ? (storedView as ViewType)
                       : "card";
