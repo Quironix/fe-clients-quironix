@@ -217,7 +217,7 @@ const KPIContent = () => {
                         kpi={kpi}
                         viewType={viewType}
                         onViewChange={(viewType) =>
-                          setKPIView(kpi.id, viewType)
+                          setKPIView(kpi.id, viewType as any)
                         }
                         onDragStart={(e) => handleDragStart(e, kpi.id)}
                         onDragOver={handleDragOver}
