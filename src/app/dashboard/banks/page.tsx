@@ -45,7 +45,7 @@ const BanksContent = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [selectedBank, setSelectedBank] = useState<BankInformation | null>(
-    null
+    null,
   );
   const [selectDeleteBank, setSelectDeleteBank] =
     useState<BankInformation | null>(null);
@@ -65,11 +65,21 @@ const BanksContent = () => {
     deleteBankInformation,
     setIsLoading,
   } = useBankInformationStore();
+  const [loadFintoc, setLoadFintoc] = useState<any>(null);
 
   useEffect(() => {
     if (session?.token && profile?.client?.id) {
       getAllBanksInformations(session.token, profile.client.id);
     }
+  }, [session?.token, profile?.client?.id]);
+
+  useEffect(() => {
+    const loadFintocWidget = async () => {
+      const Fintoc = await getFintoc();
+      setLoadFintoc(Fintoc);
+    };
+
+    loadFintocWidget();
   }, [session?.token, profile?.client?.id]);
 
   const handleFintocDateConfirm = (date?: string) => {
@@ -83,10 +93,10 @@ const BanksContent = () => {
       setIsFintocProccessOpen(true);
       const linkIntent = await createFintocLinkIntent(
         session?.token,
-        profile?.client?.id
+        profile?.client?.id,
       );
 
-      const Fintoc = await getFintoc();
+      // const Fintoc = await getFintoc();
       const options = {
         widgetToken: linkIntent.widget_token,
         publicKey: process.env.NEXT_PUBLIC_FINTOC_PUBLIC_KEY,
@@ -96,7 +106,7 @@ const BanksContent = () => {
             session?.token,
             profile?.client?.id,
             data.exchangeToken,
-            since
+            since,
           );
           if (response.code === "SUCCESSFULLY_CONNECTED") {
             toast.success(t("toast.connectSuccess"));
@@ -112,7 +122,7 @@ const BanksContent = () => {
         },
       };
 
-      const widget = Fintoc?.create(options);
+      const widget = loadFintoc?.create(options);
       if (!widget) {
         toast.error(t("toast.connectError"));
         return;
@@ -157,7 +167,7 @@ const BanksContent = () => {
             disabled={false}
             className={cn(
               "flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm",
-              "text-primary focus:text-primary focus:bg-primary/10 dark:focus:bg-primary/20"
+              "text-primary focus:text-primary focus:bg-primary/10 dark:focus:bg-primary/20",
             )}
           >
             <Edit className="h-4 w-4 text-primary shrink-0" />
@@ -177,7 +187,7 @@ const BanksContent = () => {
             disabled={false}
             className={cn(
               "flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm",
-              "text-primary focus:text-primary focus:bg-primary/10 dark:focus:bg-primary/20"
+              "text-primary focus:text-primary focus:bg-primary/10 dark:focus:bg-primary/20",
             )}
           >
             <Trash2 className="h-4 w-4 text-primary shrink-0" />
@@ -259,7 +269,8 @@ const BanksContent = () => {
                         <div className="flex items-center gap-2">
                           {isFintocProccessOpen ? (
                             <>
-                              <Loader2 className="animate-spin" /> {tLoading("connecting")}
+                              <Loader2 className="animate-spin" />{" "}
+                              {tLoading("connecting")}
                             </>
                           ) : (
                             <>
@@ -280,7 +291,9 @@ const BanksContent = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-primary">{t("tableHeaders.banks")}</TableHead>
+                          <TableHead className="text-primary">
+                            {t("tableHeaders.banks")}
+                          </TableHead>
                           <TableHead className="text-primary">
                             {t("tableHeaders.accountNumber")}
                           </TableHead>
@@ -347,7 +360,10 @@ const BanksContent = () => {
       />
       <DialogConfirm
         title={t("deleteTitle")}
-        description={t("deleteDescription", { bank: selectDeleteBank?.bank ?? "", account: selectDeleteBank?.account_number ?? "" })}
+        description={t("deleteDescription", {
+          bank: selectDeleteBank?.bank ?? "",
+          account: selectDeleteBank?.account_number ?? "",
+        })}
         isOpen={isDeleteDialogOpen}
         setIsOpen={setIsDeleteDialogOpen}
         cancelButtonText={tCommon("cancel")}
@@ -357,7 +373,7 @@ const BanksContent = () => {
             deleteBankInformation(
               session.token,
               selectDeleteBank?.id || "",
-              profile.client.id
+              profile.client.id,
             );
           }
         }}
