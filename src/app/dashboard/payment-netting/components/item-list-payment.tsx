@@ -232,7 +232,12 @@ const ItemListPayment = ({
             <div className="flex items-start gap-1">
               <span className="font-bold text-xs">F. Depósito</span>
               <span className="text-xs text-gray-500">
-                {format(row?.received_at, "dd/MM/yyyy")}
+                {row?.received_at
+                  ? format(
+                      new Date(row.received_at.slice(0, 10) + "T00:00:00"),
+                      "dd/MM/yyyy"
+                    )
+                  : "Sin fecha"}
               </span>
             </div>
           )}
@@ -240,7 +245,10 @@ const ItemListPayment = ({
             <span className="font-bold text-xs">Vencimiento</span>
             <span className="text-xs text-gray-500">
               {row?.due_date
-                ? format(row?.due_date, "dd/MM/yyyy")
+                ? format(
+                    new Date(row.due_date.slice(0, 10) + "T00:00:00"),
+                    "dd/MM/yyyy"
+                  )
                 : "Sin fecha"}
             </span>
           </div>
