@@ -19,6 +19,7 @@ export interface PaginationParams {
   page?: number;
   limit?: number;
   search?: string;
+  company_ids?: string[];
 }
 
 // Parámetros por defecto

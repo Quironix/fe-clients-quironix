@@ -8,6 +8,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -32,12 +33,14 @@ const SelectClient = ({
   required,
   singleClient = false,
   modal = false,
+  standalone = false,
 }: {
   field: any;
   title: string;
   required?: boolean;
   singleClient?: boolean;
   modal?: boolean;
+  standalone?: boolean;
 }) => {
   const { companies, getCompanies } = useCompaniesStore();
   const { session, profile } = useProfileContext();
@@ -168,6 +171,95 @@ const SelectClient = ({
       </div>
     </>
   );
+
+  if (standalone) {
+    return (
+      <div className="space-y-2">
+        <Label>
+          {title} {required && <Required />}
+        </Label>
+        <Popover open={open} onOpenChange={handleOpenChange}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-full min-h-8 justify-between"
+            >
+              <div className="flex flex-wrap gap-1 items-center w-full">
+                {selectedValues.length > 0 ? (
+                  <>
+                    {singleClient ? (
+                      (() => {
+                        const company = companies.find(
+                          (c) => c.id === selectedValues[0].id
+                        );
+                        return company ? (
+                          <Badge
+                            key={selectedValues[0].id}
+                            variant="secondary"
+                            className="flex items-center gap-1 text-[0.6rem] px-1 py-0.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            {company.name}
+                          </Badge>
+                        ) : null;
+                      })()
+                    ) : (
+                      <>
+                        {selectedValues.slice(0, 2).map((item) => {
+                          const company = companies.find((c) => c.id === item.id);
+                          return company ? (
+                            <Badge
+                              key={item.id}
+                              variant="secondary"
+                              className="flex items-center gap-1 text-[0.6rem] px-1 py-0.5"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              {company.name}
+                            </Badge>
+                          ) : null;
+                        })}
+                        {selectedValues.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            {tCommon("more", { count: selectedValues.length - 2 })}
+                          </Badge>
+                        )}
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {singleClient
+                      ? tCommon("placeholders.selectCompany")
+                      : tCommon("placeholders.selectCompanies")}
+                  </span>
+                )}
+              </div>
+              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          {modal ? (
+            <PopoverPrimitive.Content
+              align="start"
+              sideOffset={4}
+              className="w-[var(--radix-popover-trigger-width)] p-0 z-[100] bg-popover text-popover-foreground rounded-md border shadow-md outline-hidden"
+            >
+              {dropdownContent}
+            </PopoverPrimitive.Content>
+          ) : (
+            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 !z-[100]">
+              {dropdownContent}
+            </PopoverContent>
+          )}
+        </Popover>
+      </div>
+    );
+  }
 
   return (
     <FormItem>

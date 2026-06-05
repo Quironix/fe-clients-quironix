@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getDebtors } from "@/app/dashboard/debtors/services";
+import { useCompaniesStore } from "@/app/dashboard/companies/store";
 
 interface DebtorRow {
   id: string;
@@ -22,14 +23,15 @@ interface DebtorRow {
 }
 
 interface DebtorsTableProps {
-  selectedCompanyId: string | null;
+  isFactoring: boolean;
 }
 
-const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
+const DebtorsTable = ({ isFactoring }: DebtorsTableProps) => {
   const t = useTranslations("debtorManagement.managementsList");
   const router = useRouter();
   const { data: session } = useSession();
   const { profile } = useProfileContext();
+  const { companies, getCompanies } = useCompaniesStore();
 
   const [data, setData] = useState<DebtorRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,15 +47,29 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
   const [search, setSearch] = useState("");
   const hasInitialized = useRef(false);
 
+  useEffect(() => {
+    if (isFactoring && session?.token && profile?.client?.id && companies.length === 0) {
+      getCompanies(session.token, profile.client.id);
+    }
+  }, [isFactoring, session?.token, profile?.client?.id, companies.length, getCompanies]);
+
+  const companyIds = isFactoring ? companies.map((c) => c.id).filter(Boolean) as string[] : [];
+
   const fetchDebtors = useCallback(
     async (page: number = 1, limit: number = 15, searchTerm: string = "") => {
       if (!session?.token || !profile?.client_id) return;
+      if (isFactoring && companyIds.length === 0) return;
       setIsServerSideLoading(true);
       try {
         const response = await getDebtors(
           session.token,
           profile.client_id,
-          { page, limit, search: searchTerm || undefined }
+          {
+            page,
+            limit,
+            search: searchTerm || undefined,
+            ...(isFactoring && companyIds.length > 0 ? { company_ids: companyIds } : {}),
+          }
         );
         setData((response.data as DebtorRow[]) ?? []);
         const total = response.pagination?.total ?? 0;
@@ -72,20 +88,18 @@ const DebtorsTable = ({ selectedCompanyId }: DebtorsTableProps) => {
         setIsServerSideLoading(false);
       }
     },
-    [session?.token, profile?.client_id]
+    [session?.token, profile?.client_id, isFactoring, companyIds]
   );
 
   useEffect(() => {
-    if (session?.token && profile?.client_id && !hasInitialized.current) {
+    if (!session?.token || !profile?.client_id) return;
+    if (isFactoring && companyIds.length === 0) return;
+    if (!hasInitialized.current) {
       hasInitialized.current = true;
       setIsLoading(true);
       fetchDebtors(1, 15, "").finally(() => setIsLoading(false));
     }
-  }, [session?.token, profile?.client_id, fetchDebtors]);
-
-  useEffect(() => {
-    hasInitialized.current = false;
-  }, [selectedCompanyId]);
+  }, [session?.token, profile?.client_id, isFactoring, companyIds, fetchDebtors]);
 
   const handlePaginationChange = useCallback(
     (page: number, pageSize: number) => {

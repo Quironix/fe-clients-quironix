@@ -105,10 +105,9 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
                 scope: "client.debtor_management",
               },
               {
-                disabled: true,
-                title: t("managementHistory"),
-                url: "/dashboard/management-history",
-                scope: "client.management_history",
+                title: t("managementsListNav"),
+                url: "/dashboard/debtor-management/managements-list",
+                scope: "client.debtor_management",
               },
               {
                 title: t("litigation"),
@@ -172,11 +171,6 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
                 title: t("cashFlowParams"),
                 url: "/dashboard/payment-projection/settings",
                 scope: "client.payment_projection.settings",
-              },
-              {
-                title: t("managementsListNav"),
-                url: "/dashboard/debtor-management/managements-list",
-                scope: "client.debtor_management",
               },
               {
                 title: t("debtorsLoad"),

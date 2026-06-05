@@ -9,18 +9,14 @@ export const getDebtors = async (
   params?: PaginationParams
 ): Promise<PaginatedResponse<any>> => {
   try {
-    const paginationParams = {
-      page: params?.page,
-      limit: params?.limit,
-      ...(params?.search && { search: params.search }),
-    };
-
-    const queryString = new URLSearchParams(
-      Object.entries(paginationParams).map(([key, value]) => [
-        key,
-        value?.toString() || "",
-      ])
-    ).toString();
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.company_ids?.length) {
+      params.company_ids.forEach((id) => searchParams.append("company_ids", id));
+    }
+    const queryString = searchParams.toString();
 
     const response = await fetch(
       `${API_URL}/v2/clients/${clientId}/debtors?${queryString}`,
