@@ -50,7 +50,7 @@ function ListCreditFavorContent() {
     due_date: invoice.due_at || "",
     received_at: invoice.received_at || "",
     amount: invoice.amount?.toString() || "0",
-    type: invoice.type || "PAYMENT",
+    type: invoice.document_type || invoice.type || "PAYMENT",
   });
 
   // Función para contar propiedades válidas (no null, undefined, vacías)

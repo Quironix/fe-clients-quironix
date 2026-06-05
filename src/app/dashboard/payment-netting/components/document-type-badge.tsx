@@ -66,6 +66,7 @@ const getDocumentTypeDisplayData = (type: AllDocumentTypes) => {
     Anticipo: { text: "Anticipo", color: "green" },
     Retención: { text: "Retención", color: "blue" },
     "Fac. comercial": { text: "Fac. comercial", color: "orange" },
+    Transferencia: { text: "Transferencia", color: "blue" },
   };
 
   // Buscar en los mapeos en orden de prioridad
