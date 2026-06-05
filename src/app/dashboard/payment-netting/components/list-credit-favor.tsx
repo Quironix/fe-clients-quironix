@@ -45,7 +45,9 @@ function ListCreditFavorContent() {
     id: invoice.id || `fallback-${invoice.payment_number || Date.now()}`,
     number: invoice.payment_number || "N/A",
     balance: invoice.balance || 0,
-    debtor: invoice.debtor || { name: "N/A" },
+    debtor: invoice.debtor
+      ? invoice.debtor
+      : { name: "N/A", debtor_code: invoice.debtor_code || undefined },
     phases: invoice.phases || [],
     due_date: invoice.due_at || "",
     received_at: invoice.received_at || "",
