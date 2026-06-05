@@ -23,12 +23,14 @@ interface ListInvoicesProjectionProps {
   debtor?: DebtorProjection;
   periodMonth?: string;
   handleRefetch?: () => void;
+  onDropSuccess?: () => void;
 }
 
 const ListInvoicesProjection = ({
   debtor,
   periodMonth,
   handleRefetch,
+  onDropSuccess,
 }: ListInvoicesProjectionProps) => {
   const t = useTranslations("paymentProjection.settings");
   const tRoot = useTranslations("paymentProjection");
@@ -98,6 +100,7 @@ const ListInvoicesProjection = ({
 
   const {
     dragState,
+    loadingWeeks,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
@@ -109,7 +112,8 @@ const ListInvoicesProjection = ({
     session?.token as string,
     profile?.client_id as string,
     debtor?.debtor_id,
-    debtor
+    debtor,
+    onDropSuccess
   );
 
   return (
@@ -120,7 +124,7 @@ const ListInvoicesProjection = ({
           .map((week) => (
             <div
               key={`week-${week.week}-${week.dateRange}`}
-              className={`bg-white rounded-lg border-2 transition-colors ${
+              className={`relative bg-white rounded-lg border-2 transition-colors ${
                 dragState.draggedOverWeek === week.week
                   ? "border-blue-400 bg-blue-50"
                   : "border-gray-200"
@@ -129,6 +133,11 @@ const ListInvoicesProjection = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, week.week)}
             >
+              {loadingWeeks.has(week.week) && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70 backdrop-blur-[2px]">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-700 border-t-transparent" />
+                </div>
+              )}
               <div className="p-2 bg-blue-100 rounded-t-lg space-y-2  border-b-2 border-blue-700">
                 <div className="flex items-center justify-between mb-0 pb-1">
                   <span className=" text-sm font-semibold text-gray-900">

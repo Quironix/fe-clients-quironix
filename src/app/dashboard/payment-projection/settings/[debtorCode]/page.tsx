@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ChartSpline } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -27,6 +27,7 @@ const PageDetailDebtor = () => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const { periodMonth: zustandPeriodMonth } = usePaymentProjectionStore();
+  const queryClient = useQueryClient();
 
   const derivedPeriodMonth =
     zustandPeriodMonth ??
@@ -74,6 +75,11 @@ const PageDetailDebtor = () => {
   const handleRetry = () => {
     refetchProjection();
     refetchDebtorInfo();
+  };
+
+  const handleDropSuccess = () => {
+    refetchProjection();
+    queryClient.invalidateQueries({ queryKey: ["debtors"] });
   };
 
   const debtor = {
@@ -139,6 +145,7 @@ const PageDetailDebtor = () => {
                   debtor={debtor}
                   periodMonth={derivedPeriodMonth ?? undefined}
                   handleRefetch={refetchProjection}
+                  onDropSuccess={handleDropSuccess}
                 />
               </div>
             </CardContent>

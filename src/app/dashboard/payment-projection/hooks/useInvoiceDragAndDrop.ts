@@ -17,13 +17,15 @@ export const useInvoiceDragAndDrop = (
   accessToken?: string,
   clientId?: string,
   debtorCode?: string,
-  debtor?: DebtorWithProjections
+  debtor?: DebtorWithProjections,
+  onDropSuccess?: () => void
 ) => {
   const [dragState, setDragState] = useState<DragAndDropState>({
     draggedInvoice: null,
     draggedOverWeek: null,
     isDragging: false,
   });
+  const [loadingWeeks, setLoadingWeeks] = useState<Set<number>>(new Set());
 
   const handleDragStart = useCallback(
     (e: React.DragEvent, invoice: Invoice) => {
@@ -58,6 +60,7 @@ export const useInvoiceDragAndDrop = (
 
       if (!dragState.draggedInvoice) return;
 
+      const sourceWeek = dragState.draggedInvoice.week;
       const targetWeekData = debtor?.weekly_projections?.find(
         (wp) => wp.week_number === targetWeek
       );
@@ -72,6 +75,7 @@ export const useInvoiceDragAndDrop = (
         ];
 
         const previousWeeks = weeks;
+        setLoadingWeeks(new Set([sourceWeek, targetWeek]));
 
         try {
           const response = await changeInvoices(
@@ -80,6 +84,8 @@ export const useInvoiceDragAndDrop = (
             debtorCode,
             moveData
           );
+
+          setLoadingWeeks(new Set());
 
           if (!response.success) {
             setWeeks(previousWeeks);
@@ -90,8 +96,10 @@ export const useInvoiceDragAndDrop = (
             });
             return;
           }
+
+          onDropSuccess?.();
         } catch (error) {
-          console.error("Error al cambiar la factura:", error);
+          setLoadingWeeks(new Set());
           setWeeks(previousWeeks);
           setDragState({
             draggedInvoice: null,
@@ -150,6 +158,7 @@ export const useInvoiceDragAndDrop = (
       clientId,
       debtorCode,
       debtor,
+      onDropSuccess,
     ]
   );
 
@@ -163,6 +172,7 @@ export const useInvoiceDragAndDrop = (
 
   return {
     dragState,
+    loadingWeeks,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
