@@ -24,7 +24,7 @@ export interface PaginationParams {
 
 // Parámetros por defecto
 export const DEFAULT_PAGINATION_PARAMS: Required<
-  Omit<PaginationParams, "search">
+  Omit<PaginationParams, "search" | "company_ids">
 > = {
   page: 1,
   limit: 15,
