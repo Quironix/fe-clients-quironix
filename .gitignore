@@ -18,6 +18,11 @@ next-env.d.ts
 .vscode/
 .idea/
 
+# Yarn
+.yarn/
+.yarnrc.yml
+yarn.lock
+
 # Logs
 logs
 *.log
@@ -34,10 +39,7 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
-package-lock.json
-#yarn.lock
 .env
-package-lock.json
 
 # Test coverage
 coverage/
