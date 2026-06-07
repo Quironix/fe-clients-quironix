@@ -52,15 +52,18 @@ const PageSettings = () => {
     },
   });
 
-  useEffect(() => {
+  const periodFromUrl = (() => {
     const periodParam = searchParams.get("period");
-    if (periodParam && !periodMonth) {
-      const [mm, yyyy] = periodParam.split("-");
-      if (mm && yyyy) {
-        setPeriodMonth(`${mm}/${yyyy}`);
-      }
+    if (!periodParam) return null;
+    const [mm, yyyy] = periodParam.split("-");
+    return mm && yyyy ? `${mm}/${yyyy}` : null;
+  })();
+
+  useEffect(() => {
+    if (periodFromUrl) {
+      setPeriodMonth(periodFromUrl);
     }
-  }, []);
+  }, [periodFromUrl]);
 
   const formatPeriodForDisplay = (period: string) => {
     if (!period) return "";
@@ -144,7 +147,7 @@ const PageSettings = () => {
           </div>
         </div>
 
-        <MonthlyTable period_month={periodMonth} />
+        <MonthlyTable period_month={periodFromUrl ?? periodMonth} />
       </Main>
     </>
   );

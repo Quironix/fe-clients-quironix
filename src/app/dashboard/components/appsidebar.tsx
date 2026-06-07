@@ -8,6 +8,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useProfileContext } from "@/context/ProfileContext";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import React from "react";
 import { useTranslations } from "next-intl";
@@ -30,22 +31,20 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
     <Sidebar collapsible="icon" variant="floating" {...props}>
       <SidebarHeader className="bg-primary text-white rounded-md rounded-b-none border-none">
         <div className="flex items-center justify-start py-2">
-          {state === "expanded" ? (
-            <Image
-              src="/img/logo-sidebar.png"
-              alt="logo"
-              className="ml-2 mt-2"
-              width={120}
-              height={120}
-            />
-          ) : (
-            <Image
-              src="/img/isotipo-quironix.png"
-              alt="logo"
-              width={100}
-              height={100}
-            />
-          )}
+          <Image
+            src="/img/logo-sidebar.png"
+            alt="logo"
+            className={cn("ml-2 mt-2", state !== "expanded" && "hidden")}
+            width={120}
+            height={120}
+          />
+          <Image
+            src="/img/isotipo-quironix.png"
+            alt="logo"
+            className={cn(state === "expanded" && "hidden")}
+            width={100}
+            height={100}
+          />
         </div>
       </SidebarHeader>
       <SidebarContent className="bg-primary text-white">

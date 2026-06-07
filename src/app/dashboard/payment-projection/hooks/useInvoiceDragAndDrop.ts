@@ -98,6 +98,12 @@ export const useInvoiceDragAndDrop = (
           }
 
           onDropSuccess?.();
+          setDragState({
+            draggedInvoice: null,
+            draggedOverWeek: null,
+            isDragging: false,
+          });
+          return;
         } catch (error) {
           setLoadingWeeks(new Set());
           setWeeks(previousWeeks);
@@ -109,40 +115,6 @@ export const useInvoiceDragAndDrop = (
           return;
         }
       }
-
-      setWeeks((prevWeeks: WeekColumn[]) => {
-        const newWeeks = [...prevWeeks];
-
-        const sourceWeek = newWeeks.find(
-          (w) => w.week === dragState.draggedInvoice!.week
-        );
-        if (sourceWeek) {
-          sourceWeek.invoices = sourceWeek.invoices.filter(
-            (inv) => inv.id !== dragState.draggedInvoice!.id
-          );
-          sourceWeek.count = sourceWeek.invoices.length;
-          sourceWeek.estimated = sourceWeek.invoices.reduce(
-            (sum, inv) => sum + inv.documentBalance,
-            0
-          );
-        }
-
-        const targetWeekColumn = newWeeks.find((w) => w.week === targetWeek);
-        if (targetWeekColumn) {
-          const updatedInvoice = {
-            ...dragState.draggedInvoice,
-            week: targetWeek,
-          };
-          targetWeekColumn.invoices.push(updatedInvoice as Invoice);
-          targetWeekColumn.count = targetWeekColumn.invoices.length;
-          targetWeekColumn.estimated = targetWeekColumn.invoices.reduce(
-            (sum, inv) => sum + inv.documentBalance,
-            0
-          );
-        }
-
-        return newWeeks;
-      });
 
       setDragState({
         draggedInvoice: null,

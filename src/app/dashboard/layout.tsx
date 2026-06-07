@@ -3,16 +3,14 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { SearchProvider } from "@/context/search-context";
 import { WebRTCProvider } from "@/context/WebRTCContext";
 import { cn } from "@/lib/utils";
-import { useDashboard } from "@/stores/dashboard/dashboardStore";
 import React from "react";
 import AppSidebar from "./components/appsidebar";
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const { defaultOpen } = useDashboard();
   return (
     <>
       <WebRTCProvider>
         <SearchProvider>
-          <SidebarProvider defaultOpen={defaultOpen}>
+          <SidebarProvider defaultOpen={true}>
             <AppSidebar />
             <div
               id="content"

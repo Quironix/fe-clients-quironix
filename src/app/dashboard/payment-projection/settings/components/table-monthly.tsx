@@ -180,7 +180,7 @@ const MonthlyTable = ({ period_month }: { period_month: string }) => {
                       <TableHead className="font-bold text-blue-700 text-center px-4 py-3 min-w-[120px]">
                         {t("periodDebtCol")}
                       </TableHead>
-                      {[...data?.data?.data[0].weekly_projections]
+                      {[...(data?.data?.data?.[0]?.weekly_projections ?? [])]
                         .sort((a, b) => a.week_number - b.week_number)
                         .map((item) => (
                           <TableHead

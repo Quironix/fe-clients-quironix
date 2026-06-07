@@ -82,6 +82,16 @@ const PageDetailDebtor = () => {
     queryClient.invalidateQueries({ queryKey: ["debtors"] });
   };
 
+  const handleBack = () => {
+    queryClient.invalidateQueries({ queryKey: ["debtors"] });
+    const period = periodParam ?? (derivedPeriodMonth ? derivedPeriodMonth.replace("/", "-") : null);
+    if (period) {
+      router.push(`/dashboard/payment-projection/settings?period=${period}`);
+    } else {
+      router.push("/dashboard/payment-projection/settings");
+    }
+  };
+
   const debtor = {
     ...projection?.data,
     name: debtorInfo?.data?.data?.[0]?.name,
@@ -131,7 +141,7 @@ const PageDetailDebtor = () => {
                 <div className="flex items-center justify-start gap-2">
                   <Button
                     className="bg-blue-900 text-white"
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                   >
                     <ArrowLeft className="text-white" />
                     {t("back")}

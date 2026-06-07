@@ -29,7 +29,6 @@ interface ListInvoicesProjectionProps {
 const ListInvoicesProjection = ({
   debtor,
   periodMonth,
-  handleRefetch,
   onDropSuccess,
 }: ListInvoicesProjectionProps) => {
   const t = useTranslations("paymentProjection.settings");
@@ -184,10 +183,7 @@ const ListInvoicesProjection = ({
                         }`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, invoice)}
-                        onDragEnd={() => {
-                          handleDragEnd();
-                          handleRefetch?.();
-                        }}
+                        onDragEnd={handleDragEnd}
                       >
                         <CardContent className="p-1">
                           <div className="flex items-start justify-end mb-2">
