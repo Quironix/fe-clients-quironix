@@ -183,10 +183,10 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
                 scope: "client.transactions.dte",
               },
               {
-                disabled: true,
+                disabled: false,
                 title: t("collectorManagement"),
                 url: "/dashboard/collectors",
-                scope: "client.settings_account.collectors",
+                scope: "client.collectors",
               },
             ],
           },

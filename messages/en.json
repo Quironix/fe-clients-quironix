@@ -2278,6 +2278,8 @@
       "deleteSingleSuccess": "Collector deleted successfully",
       "deleteSingleError": "Error deleting collector",
       "columnSaveError": "Error saving column configuration",
+      "executeSuccess": "Collector sent successfully",
+      "executeError": "Failed to send collector",
       "statusActivated": "Collector activated successfully",
       "statusDeactivated": "Collector deactivated successfully",
       "statusError": "Error updating collector status",

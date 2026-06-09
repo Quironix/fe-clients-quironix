@@ -198,13 +198,16 @@ export function useCollectors(
   }, []);
 
   useEffect(() => {
-    if (accessToken && clientId && !hasInitialized.current) {
-      hasInitialized.current = true;
-      setIsLoading(true);
-      fetchCollectors(1, 15, initialFiltersRef.current).finally(() =>
-        setIsLoading(false)
-      );
+    if (!accessToken || !clientId) {
+      setIsLoading(false);
+      return;
     }
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+    setIsLoading(true);
+    fetchCollectors(1, 15, initialFiltersRef.current).finally(() =>
+      setIsLoading(false)
+    );
   }, [accessToken, clientId, fetchCollectors]);
 
   return {

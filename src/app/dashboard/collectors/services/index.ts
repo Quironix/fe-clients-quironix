@@ -147,3 +147,23 @@ export const deleteCollector = async (
     );
   }
 };
+
+export const executeCollector = async (
+  accessToken: string,
+  collectorId: string,
+  clientId: string
+): Promise<void> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/collectors/${collectorId}/execute`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to execute collector");
+  }
+};
