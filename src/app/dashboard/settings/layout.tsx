@@ -13,6 +13,7 @@ import StepDebtors from "./components/steps/step-debtors";
 import StepContacts from "./components/steps/step-contacts";
 import Language from "@/components/ui/language";
 import { useTranslations } from "next-intl";
+import { useSettingsImageStore } from "./store";
 
 const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
   const t = useTranslations("settings");
@@ -37,6 +38,12 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
 
   const handleBack = () => {
     if (currentStep > 0) {
+      const { logoUpdated, resetLogoUpdated } = useSettingsImageStore.getState();
+      if (currentStep === 1 && logoUpdated) {
+        resetLogoUpdated();
+        window.location.reload();
+        return;
+      }
       setCurrentStep(currentStep - 1);
     }
   };

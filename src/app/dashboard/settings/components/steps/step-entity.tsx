@@ -53,20 +53,18 @@ const StepEntity: React.FC<StepProps> = ({
 }) => {
   const { session, refreshProfile } = useProfileContext();
   const [countries, setCountries] = useState([]);
-  const { previewUrl, clearImage, setBase64String } = useSettingsImageStore();
+  const { previewUrl, clearImage, setLogoUrl, markLogoUpdated } = useSettingsImageStore();
   const [loading, setLoading] = useState(false);
   const t = useTranslations("settings.entity");
   const tCommon = useTranslations("common");
 
   useEffect(() => {
-    if (profile?.client?.operational?.logo_url) {
-      const base64Image = profile.client.operational.logo_url;
-      setBase64String(base64Image);
-      if (!base64Image.startsWith("data:image")) {
-        setBase64String(`data:image/jpeg;base64,${base64Image}`);
-      }
-    }
-  }, [profile?.client?.operational?.logo_url]);
+    const logoUrl = profile?.client?.operational?.logo_url;
+    if (!logoUrl) return;
+    const { base64String } = useSettingsImageStore.getState();
+    if (base64String) return;
+    setLogoUrl(logoUrl);
+  }, [profile]);
 
   const formSchema = z.object({
     first_name: z.string().min(1, t("validation.nameRequired")),
@@ -122,6 +120,9 @@ const StepEntity: React.FC<StepProps> = ({
   }, [profile, form]);
 
   const hasFormChanges = () => {
+    const { base64String } = useSettingsImageStore.getState();
+    if (base64String) return true;
+
     const currentValues = form.getValues();
     const initialValues = {
       first_name: profile?.client?.name || "",
@@ -155,17 +156,18 @@ const StepEntity: React.FC<StepProps> = ({
         ...data,
         operational: {
           ...data.operational,
-          logo_url: base64String,
+          ...(base64String && { logo_url: base64String }),
         },
       };
-      console.log("Datos del formulario:", formData);
       const response = await updateDataClient(
         formData,
         profile?.client_id,
         session?.token
       );
-      console.log("Respuesta del servidor:", response);
       if (!response.error) {
+        const hadLogoChange = !!useSettingsImageStore.getState().base64String;
+        clearImage();
+        if (hadLogoChange) markLogoUpdated();
         await refreshProfile();
         onNext();
       } else {

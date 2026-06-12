@@ -3,7 +3,7 @@ import { useSettingsImageStore } from "../../store";
 import { FileUpIcon, UploadIcon } from "lucide-react";
 
 const ImageUploader: React.FC = () => {
-  const { image, previewUrl, setImage, clearImage } = useSettingsImageStore();
+  const { setImage } = useSettingsImageStore();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,11 +19,11 @@ const ImageUploader: React.FC = () => {
       return;
     }
 
-    // Convertir la imagen a base64
+    const objectUrl = URL.createObjectURL(file);
     const reader = new FileReader();
     reader.onload = (event) => {
-      const base64String = event.target?.result as string;
-      setImage(file, base64String);
+      const base64 = event.target?.result as string;
+      setImage(file, objectUrl, base64);
     };
     reader.readAsDataURL(file);
   };
