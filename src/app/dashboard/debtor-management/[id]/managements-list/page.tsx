@@ -102,6 +102,8 @@ const Content = () => {
     { name: "caseData", is_visible: false },
     { name: "observation", is_visible: true },
     { name: "nextManagementDate", is_visible: true },
+    { name: "collectorName", is_visible: true },
+    { name: "collectorChannel", is_visible: true },
     { name: "actions", is_visible: true },
   ]);
 
@@ -115,10 +117,40 @@ const Content = () => {
 
   useEffect(() => {
     if (profile?.profile?.tracks_table?.length > 0) {
-      const savedConfig = profile.profile.tracks_table;
-      if (Array.isArray(savedConfig)) {
-        setColumnConfiguration(savedConfig);
-      }
+      const savedConfig = profile.profile.tracks_table as Array<{ name: string; is_visible: boolean }>;
+      if (!Array.isArray(savedConfig)) return;
+
+      const defaultConfig = [
+        { name: "documentNumber", is_visible: true },
+        { name: "order_code", is_visible: false },
+        { name: "number_of_installments", is_visible: true },
+        { name: "daysOverdue", is_visible: true },
+        { name: "amount", is_visible: true },
+        { name: "documentPhase", is_visible: true },
+        { name: "timeInPhase", is_visible: true },
+        { name: "createdAt", is_visible: true },
+        { name: "managementType", is_visible: true },
+        { name: "executive", is_visible: true },
+        { name: "contact", is_visible: true },
+        { name: "debtorComment", is_visible: true },
+        { name: "executiveComment", is_visible: true },
+        { name: "paymentCommitmentDate", is_visible: false },
+        { name: "caseData", is_visible: false },
+        { name: "observation", is_visible: true },
+        { name: "nextManagementDate", is_visible: true },
+        { name: "collectorName", is_visible: true },
+        { name: "collectorChannel", is_visible: true },
+        { name: "actions", is_visible: true },
+      ];
+
+      const savedNames = new Set(savedConfig.map((c) => c.name));
+      const newCols = defaultConfig.filter((c) => !savedNames.has(c.name));
+
+      // Insert new cols before "actions", keep actions always last
+      const withoutActions = savedConfig.filter((c) => c.name !== "actions");
+      const merged = [...withoutActions, ...newCols, { name: "actions", is_visible: true }];
+
+      setColumnConfiguration(merged);
     }
   }, [profile?.profile]);
 
@@ -141,6 +173,8 @@ const Content = () => {
       caseData: "Litigio",
       observation: "Observación",
       nextManagementDate: "Fecha de próxima gestión",
+      collectorName: "Collector",
+      collectorChannel: "Canal",
       actions: "Acciones",
     }),
     [],

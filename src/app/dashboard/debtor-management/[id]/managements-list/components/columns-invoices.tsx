@@ -222,8 +222,9 @@ export const createInvoiceColumns = (
   {
     accessorKey: "observation",
     header: "Observación",
+    size: 350,
     cell: ({ row }) => (
-      <div className="text-xs max-w-[250px] truncate">
+      <div className="text-xs w-[350px] whitespace-normal break-words">
         {row.original.track?.observation || "-"}
       </div>
     ),
@@ -238,6 +239,33 @@ export const createInvoiceColumns = (
           : "-"}
       </div>
     ),
+  },
+  {
+    accessorKey: "collectorName",
+    header: "Collector",
+    cell: ({ row }) => {
+      if (row.original.track?.caseData?.debtorComment !== "AUTOMATED_COLLECTOR_SENT") {
+        return <div className="text-sm">-</div>;
+      }
+      const name = row.original.track?.caseData?.collector?.name;
+      return <div className="text-sm">{name || "-"}</div>;
+    },
+  },
+  {
+    accessorKey: "collectorChannel",
+    header: "Canal",
+    cell: ({ row }) => {
+      if (row.original.track?.caseData?.debtorComment !== "AUTOMATED_COLLECTOR_SENT") {
+        return <div className="text-sm">-</div>;
+      }
+      const CHANNEL_LABELS: Record<string, string> = {
+        EMAIL: "Email",
+        SMS: "Mensaje de texto",
+        WHATSAPP: "Whatsapp",
+      };
+      const channel = row.original.track?.caseData?.collector?.channel;
+      return <div className="text-sm">{channel ? (CHANNEL_LABELS[channel] ?? channel) : "-"}</div>;
+    },
   },
   {
     id: "actions",

@@ -28,9 +28,15 @@ export interface Contact {
   name?: string; // Opcional: nombre del contacto enriquecido en el frontend
 }
 
+export interface Collector {
+  name?: string;
+  channel?: string;
+}
+
 export interface CaseData {
   debtorComment?: string;
   litigationIds?: string[];
+  collector?: Collector;
   [key: string]: any;
 }
 

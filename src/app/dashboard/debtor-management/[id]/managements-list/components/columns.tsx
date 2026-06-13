@@ -181,7 +181,7 @@ export const createColumns = (): ColumnDef<DebtorTrack>[] => [
     accessorKey: "observation",
     header: "Observación",
     cell: ({ row }) => (
-      <div className="text-xs max-w-[250px] truncate">
+      <div className="text-xs max-w-[250px] whitespace-normal break-words">
         {row.original.observation || "-"}
       </div>
     ),
@@ -196,5 +196,26 @@ export const createColumns = (): ColumnDef<DebtorTrack>[] => [
           : "-"}
       </div>
     ),
+  },
+  {
+    accessorKey: "collector",
+    header: "Collector",
+    cell: ({ row }) => {
+      if (row.original.caseData?.debtorComment !== "AUTOMATED_COLLECTOR_SENT") {
+        return <div className="text-sm">-</div>;
+      }
+      const collector = row.original.caseData?.collector;
+      if (!collector?.name && !collector?.channel) return <div className="text-sm">-</div>;
+      return (
+        <div className="flex flex-col gap-0.5">
+          {collector.name && (
+            <span className="text-sm font-medium">{collector.name}</span>
+          )}
+          {collector.channel && (
+            <span className="text-xs text-muted-foreground">{collector.channel}</span>
+          )}
+        </div>
+      );
+    },
   },
 ];

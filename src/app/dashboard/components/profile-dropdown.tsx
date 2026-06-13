@@ -26,6 +26,7 @@ export const ProfileDropdown = () => {
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <div
+            suppressHydrationWarning
             className={cn(
               "flex items-center border-t border-white py-3 gap-2",
               state === "expanded" ? "justify-start" : "justify-center"
