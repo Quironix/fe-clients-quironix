@@ -6,7 +6,6 @@ import {
   EmailManagement,
   EmailMultiplePayload,
 } from "../types/email";
-import { generateBodyDescription } from "../utils/email-templates";
 import { generateBankInfoHTML } from "./bank-info-formatter";
 
 interface BuildMultipleEmailPayloadParams {
@@ -123,28 +122,21 @@ export function buildMultipleEmailPayload({
 
       const formattedInvoices = formatInvoices(invoicesToSend);
 
-      const bodyHtml = generateBodyDescription(
-        managementCombination,
-        management.formData.caseData || {},
-        invoicesToSend.length,
-      );
-
       return {
         id: index + 1,
         header_text: managementCombination.label,
         header_amount: totalAmount > 0 ? formatCurrency(totalAmount) : "",
         is_invoices: invoicesToSend.length > 0,
         invoices: formattedInvoices,
-        body_html: bodyHtml,
+        body_html: "",
       };
     },
   );
 
-  const clientContact = profile?.client?.contacts?.[0];
   const clientLogoUrl = profile?.client?.operational?.logo_url || "";
-  const isFactoring = profile?.client?.type === "FACTORING";
-  const clientPhone = clientContact?.phone || "";
-  const clientEmail = clientContact?.email || "";
+  const isFactoring = (profile as any)?.client?.type === "FACTORING";
+  const clientPhone = (profile as any)?.client?.contacts?.[0]?.phone || "";
+  const clientEmail = (profile as any)?.client?.contacts?.[0]?.email || "";
 
   const MULTIPLE_TEMPLATE_ID =
     process.env.NEXT_SG_MULTIPLE_MANAGEMENT || "d-f3db644c64b1410f981ee7642d28aba4";

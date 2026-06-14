@@ -60,7 +60,7 @@ export function generateBankInfoHTML(bankInfo: FormattedBankInfo | null): string
 
   return `
     <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #0066cc; margin: 10px 0;">
-      <p style="margin: 5px 0;"><strong>Banco:</strong> ${bankInfo.bank}</p>
+      <p style="margin: 5px 0;"><strong>Entidad bancaria:</strong> ${bankInfo.bank}</p>
       <p style="margin: 5px 0;"><strong>Tipo de Cuenta:</strong> ${bankInfo.account_type}</p>
       <p style="margin: 5px 0;"><strong>Número de Cuenta:</strong> ${bankInfo.account_number}</p>
       <p style="margin: 5px 0;"><strong>Titular:</strong> ${bankInfo.holder_name}</p>

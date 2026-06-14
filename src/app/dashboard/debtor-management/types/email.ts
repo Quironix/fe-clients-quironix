@@ -22,6 +22,7 @@ export interface EmailDynamicTemplateData {
   body_html: string;
   contact_phone: string;
   contact_email: string;
+  contact_mail?: string;
   bank_account_info?: string;
   amount?: string;
   date?: string;

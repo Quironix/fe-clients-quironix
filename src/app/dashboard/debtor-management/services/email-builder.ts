@@ -3,7 +3,6 @@ import { getDocumentTypeDisplayData } from "@/app/dashboard/payment-netting/comp
 import { ManagementFormData } from "../components/tabs/add-management-tab";
 import { ManagementCombination } from "../config/management-types";
 import { EmailInvoice, EmailPayload } from "../types/email";
-import { generateBodyDescription } from "../utils/email-templates";
 import { generateBankInfoHTML } from "./bank-info-formatter";
 import { generateBodyDescriptionByDebtorComment } from "../utils/email-messages";
 
@@ -119,34 +118,44 @@ export function buildEmailPayload({
 
   const formattedInvoices = formatInvoices(invoicesToSend);
 
-  const bodyHtml = generateBodyDescription(
-    managementCombination,
-    managementFormData.caseData || {},
-    invoicesToSend.length,
-  );
 
-  const clientContact = profile?.client?.contacts?.[0];
+
   const clientLogoUrl = profile?.client?.operational?.logo_url || "";
 
   const contactName =
     managementFormData.selectedContact?.name ||
     `${managementFormData.selectedContact?.label || "Contacto"}`;
 
-  const isFactoring = profile?.client?.type === "FACTORING";
+  const isFactoring = (profile as any)?.client?.type === "FACTORING";
 
-  const clientPhone = clientContact?.phone || "";
-  const clientEmail = clientContact?.email || "";
+  const clientPhone = (profile as any)?.client?.contacts?.[0]?.phone || "";
+  const clientEmail = (profile as any)?.client?.contacts?.[0]?.email || "";
 
   const SINGLE_TEMPLATE_ID =
     process.env.NEXT_SG_SINGLE_MANAGEMENT || "d-2ab3e2439491440c951a1cf46fdec7aa";
 
   // Generate dynamic body_description based on debtor_comment and executive_comment
-  const bodyDescription = generateBodyDescriptionByDebtorComment({
+  const rawBodyDescription = generateBodyDescriptionByDebtorComment({
     debtorComment: managementFormData.debtorComment || "",
     executiveComment: managementFormData.executiveComment || "",
     isFactoring,
     caseData: managementFormData.caseData,
   });
+
+  const commitmentDate = managementFormData.caseData?.commitmentDate
+    ? formatDate(managementFormData.caseData.commitmentDate)
+    : managementFormData.caseData?.paymentDate
+      ? formatDate(managementFormData.caseData.paymentDate)
+      : managementFormData.caseData?.pickupDate
+        ? formatDate(managementFormData.caseData.pickupDate)
+        : "";
+
+  const bodyDescription = rawBodyDescription
+    .replace(/\{amount\}/g, `<strong>$${formatCurrency(totalAmount)}</strong>`)
+    .replace(/\{date\}/g, `<strong>${commitmentDate}</strong>`)
+    .replace(/\{email_company\}/g, `<strong>${clientEmail}</strong>`)
+    .replace(/\{bank_account_info\}/g, bankAccountInfo || "")
+    .replace(/\{name_client\}/g, `<strong>${contactName}</strong>`);
 
   const emailPayload: EmailPayload = {
     to: contactEmail,
@@ -160,9 +169,10 @@ export function buildEmailPayload({
       is_invoices: true,
       invoices: formattedInvoices,
       is_factoring: isFactoring,
-      body_html: bodyHtml,
+      body_html: "",
       contact_phone: clientPhone,
       contact_email: clientEmail,
+      contact_mail: clientEmail,
       bank_account_info: bankAccountInfo || generateBankInfoHTML(null),
       amount: formatCurrency(totalAmount),
       date: managementFormData.caseData?.commitmentDate
