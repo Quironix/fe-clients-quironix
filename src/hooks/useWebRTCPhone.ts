@@ -5,6 +5,10 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+const TURN_URL = process.env.NEXT_PUBLIC_TURN_URL || "";
+const TURN_USERNAME = process.env.NEXT_PUBLIC_TURN_USERNAME || "";
+const TURN_CREDENTIAL = process.env.NEXT_PUBLIC_TURN_CREDENTIAL || "";
+
 // Importar JsSIP de forma dinámica para evitar problemas con SSR
 let JsSIP: any = null;
 
@@ -66,8 +70,7 @@ export const useWebRTCPhone = () => {
       if (!JsSIP && typeof window !== "undefined") {
         JsSIP = await import("jssip");
 
-        // Habilitar debug de JsSIP para ver todos los logs
-        JsSIP.debug.enable("JsSIP:*");
+        JsSIP.debug.disable("JsSIP:*");
       }
 
       if (!JsSIP) {
@@ -85,38 +88,44 @@ export const useWebRTCPhone = () => {
         session_timers: false,
         register_expires: 300,
         contact_uri: `sip:${config.sipUser}@${config.sipDomain}`,
-        ice_servers: config.iceServers || [],
+        pcConfig: {
+          iceServers: [
+            {
+              urls: TURN_URL,
+              username: TURN_USERNAME,
+              credential: TURN_CREDENTIAL,
+            },
+          ],
+          iceTransportPolicy: "relay" as RTCIceTransportPolicy,
+        },
       };
 
       uaRef.current = new JsSIP.UA(configuration);
 
-      // Event: WebSocket conectado
       uaRef.current.on("connected", () => {
-        console.log("🔗 [WebRTC] WebSocket conectado");
+        console.log("🔗 [WebRTC] WS conectado →", config.wsUri);
       });
 
-      // Event: WebSocket desconectado
       uaRef.current.on("disconnected", () => {
-        console.warn("⚠️ [WebRTC] WebSocket desconectado");
+        console.warn("⚠️ [WebRTC] WS desconectado");
       });
 
-      // Event: Registrado exitosamente
       uaRef.current.on("registered", () => {
+        console.log("✅ [WebRTC] Registrado como", `sip:${config.sipUser}@${config.sipDomain}`);
         setIsRegistered(true);
         setCallStatus("registered");
         toast.success(t("connected"));
       });
 
-      // Event: Fallo en el registro
       uaRef.current.on("registrationFailed", (e: any) => {
+        console.error("❌ [WebRTC] Registro fallido →", e?.cause, e?.response?.status_code);
         setIsRegistered(false);
         setCallStatus("failed");
         toast.error(t("connectionError"));
       });
 
-      // Event: Nueva sesión RTC (llamada entrante)
       uaRef.current.on("newRTCSession", (e: any) => {
-        console.log("📞 [WebRTC] Nueva sesión RTC:", e);
+        console.log("📞 [WebRTC] Nueva sesión →", e?.originator, e?.request?.ruri?.toString());
       });
 
       uaRef.current.start();
@@ -154,62 +163,109 @@ export const useWebRTCPhone = () => {
 
         const options = {
           mediaConstraints: { audio: true, video: false },
+          pcConfig: {
+            iceServers: [
+              {
+                urls: TURN_URL,
+                username: TURN_USERNAME,
+                credential: TURN_CREDENTIAL,
+              },
+            ],
+            iceTransportPolicy: "relay" as RTCIceTransportPolicy,
+          },
           eventHandlers: {
-            progress: () => {
+            peerconnection: (data: any) => {
+              const pc = data.peerconnection;
+              console.log("🔌 [WebRTC] PeerConnection creado | signalingState:", pc.signalingState);
+
+              let gatheringForced = false;
+              pc.addEventListener("icecandidate", (ev: any) => {
+                if (ev.candidate) {
+                  console.log(`🧊 [ICE] Candidato: type=${ev.candidate.type} | proto=${ev.candidate.protocol} | addr=${ev.candidate.address}:${ev.candidate.port}`);
+                  if (ev.candidate.type === "relay" && !gatheringForced) {
+                    gatheringForced = true;
+                    console.log("🧊 [ICE] Relay encontrado — forzando gatheringState=complete en 500ms");
+                    setTimeout(() => {
+                      if (pc.iceGatheringState !== "complete") {
+                        Object.defineProperty(pc, "iceGatheringState", {
+                          get: () => "complete" as RTCIceGatheringState,
+                          configurable: true,
+                        });
+                        pc.dispatchEvent(new Event("icegatheringstatechange"));
+                        setTimeout(() => {
+                          try { delete (pc as any).iceGatheringState; } catch (_) {}
+                        }, 0);
+                      }
+                    }, 500);
+                  }
+                } else {
+                  console.log("🧊 [ICE] Gathering completo (null candidate)");
+                }
+              });
+
+              pc.addEventListener("icegatheringstatechange", () => {
+                console.log("🧊 [ICE] gatheringState →", pc.iceGatheringState);
+              });
+
+              pc.addEventListener("iceconnectionstatechange", () => {
+                console.log("🧊 [ICE] connectionState →", pc.iceConnectionState);
+              });
+
+              pc.addEventListener("connectionstatechange", () => {
+                console.log("🔌 [PC] connectionState →", pc.connectionState);
+              });
+
+              pc.addEventListener("track", (ev: any) => {
+                console.log("🔊 [WebRTC] Track recibido:", ev.track.kind);
+                if (ev.track.kind === "audio" && remoteAudioRef.current) {
+                  remoteAudioRef.current.srcObject = new MediaStream([ev.track]);
+                  remoteAudioRef.current
+                    .play()
+                    .catch((err: any) => console.warn("⚠️ [WebRTC] Autoplay bloqueado:", err));
+                }
+              });
+            },
+            progress: (e: any) => {
+              console.log("📶 [SIP] Progress →", e?.response?.status_code, e?.response?.reason_phrase);
               setCallStatus("ringing");
               toast.info(t("calling", { number: numberToCall }));
             },
             failed: (e: any) => {
+              console.error("❌ [SIP] Llamada fallida →", {
+                cause: e?.cause,
+                status: e?.response?.status_code,
+                reason: e?.response?.reason_phrase,
+              });
               setCallStatus("failed");
               toast.error(t("callFailed"));
               if (localStreamRef.current) {
-                localStreamRef.current
-                  .getTracks()
-                  .forEach((track) => track.stop());
+                localStreamRef.current.getTracks().forEach((track) => track.stop());
                 localStreamRef.current = null;
               }
               setTimeout(() => setCallStatus("registered"), 3000);
             },
-            ended: () => {
+            ended: (e: any) => {
+              console.log("📴 [SIP] Llamada terminada →", e?.cause);
               setCallStatus("ended");
               toast.info(t("callEnded"));
               if (localStreamRef.current) {
-                localStreamRef.current
-                  .getTracks()
-                  .forEach((track) => track.stop());
+                localStreamRef.current.getTracks().forEach((track) => track.stop());
                 localStreamRef.current = null;
               }
               currentSessionRef.current = null;
               setTimeout(() => setCallStatus("registered"), 2000);
             },
             confirmed: () => {
+              console.log("✅ [SIP] Llamada confirmada (200 OK)");
               setCallStatus("in-call");
               toast.success(t("callConnected"));
             },
           },
         };
 
+        console.log("📲 [SIP] Iniciando llamada →", targetUri);
         currentSessionRef.current = uaRef.current.call(targetUri, options);
         setCallStatus("calling");
-
-        // Captura de audio remoto
-        currentSessionRef.current.connection.addEventListener(
-          "track",
-          (e: any) => {
-            if (e.track.kind === "audio" && remoteAudioRef.current) {
-              if (!remoteAudioRef.current.srcObject) {
-                remoteAudioRef.current.srcObject = new MediaStream();
-              }
-              const srcObject = remoteAudioRef.current.srcObject;
-              if (srcObject instanceof MediaStream) {
-                srcObject.addTrack(e.track);
-                remoteAudioRef.current
-                  .play()
-                  .catch((err) => console.warn("Autoplay bloqueado:", err));
-              }
-            }
-          },
-        );
       } catch (error) {
         setCallStatus("failed");
         toast.error(t("callError"));
