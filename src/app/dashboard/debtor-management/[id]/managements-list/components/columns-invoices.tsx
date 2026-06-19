@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
+import { formatDate, formatDateTime, formatDateTimeUTC, formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye } from "lucide-react";
 import { DEBTOR_COMMENTS, getChannelTypeLabel, getExecutiveCommentLabel } from "../../../config/management-types";
@@ -118,7 +118,7 @@ export const createInvoiceColumns = (
     header: "Fecha y hora de gestión",
     cell: ({ row }) => (
       <div className="text-sm">
-        {formatDateTime(row.original.track?.createdAt)}
+        {formatDateTimeUTC(row.original.track?.createdAt)}
       </div>
     ),
   },

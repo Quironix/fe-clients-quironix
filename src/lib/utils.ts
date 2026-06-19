@@ -66,6 +66,14 @@ export function formatDateTime(date: string) {
   });
 }
 
+export function formatDateTimeUTC(date: string) {
+  if (!date) return "-";
+  return format(new Date(date), "dd-MM-yyyy HH:mm", {
+    timeZone: "UTC",
+    locale: es,
+  });
+}
+
 // Función helper para convertir fechas a ISO String
 export function toISOString(date: string | Date | null | undefined): string {
   if (!date) return "";
