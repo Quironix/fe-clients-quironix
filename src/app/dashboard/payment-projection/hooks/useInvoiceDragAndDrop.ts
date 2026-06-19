@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { changeInvoices } from "../services";
 import {
   DragAndDropState,
@@ -26,6 +26,7 @@ export const useInvoiceDragAndDrop = (
     isDragging: false,
   });
   const [loadingWeeks, setLoadingWeeks] = useState<Set<number>>(new Set());
+  const isDropInFlight = useRef(false);
 
   const handleDragStart = useCallback(
     (e: React.DragEvent, invoice: Invoice) => {
@@ -58,6 +59,8 @@ export const useInvoiceDragAndDrop = (
     async (e: React.DragEvent, targetWeek: number) => {
       e.preventDefault();
 
+      if (isDropInFlight.current) return;
+
       if (!dragState.draggedInvoice) return;
 
       const sourceWeek = dragState.draggedInvoice.week;
@@ -76,6 +79,7 @@ export const useInvoiceDragAndDrop = (
 
         const previousWeeks = weeks;
         setLoadingWeeks(new Set([sourceWeek, targetWeek]));
+        isDropInFlight.current = true;
 
         try {
           const response = await changeInvoices(
@@ -113,6 +117,8 @@ export const useInvoiceDragAndDrop = (
             isDragging: false,
           });
           return;
+        } finally {
+          isDropInFlight.current = false;
         }
       }
 

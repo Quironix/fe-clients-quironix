@@ -110,7 +110,7 @@ const ListInvoicesProjection = ({
     setWeeks,
     session?.token as string,
     profile?.client_id as string,
-    debtor?.debtor_id,
+    debtor?.debtor_code,
     debtor,
     onDropSuccess
   );
