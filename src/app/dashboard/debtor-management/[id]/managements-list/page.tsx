@@ -345,11 +345,11 @@ const Content = () => {
       dataDebtor?.contacts || [],
     );
 
-    // Luego ordenamos por fecha de vencimiento
+    // Sort by management date DESC (most recent first)
     return enriched.sort((a, b) => {
-      const dateA = new Date(a.due_date).getTime();
-      const dateB = new Date(b.due_date).getTime();
-      return dateA - dateB;
+      const dateA = new Date(a.track?.createdAt ?? 0).getTime();
+      const dateB = new Date(b.track?.createdAt ?? 0).getTime();
+      return dateB - dateA;
     });
   }, [invoicesWithTracks, dataDebtor?.contacts]);
 
