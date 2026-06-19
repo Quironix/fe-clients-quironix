@@ -1,31 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { formatNumber } from "@/lib/utils";
+import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye } from "lucide-react";
 import { DEBTOR_COMMENTS, getChannelTypeLabel, getExecutiveCommentLabel } from "../../../config/management-types";
 import { InvoiceWithTrack } from "../../../types/debtor-tracks";
 
-const formatDate = (dateString: string) => {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("es-CL", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-};
-
-const formatDateTime = (dateString: string) => {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleString("es-CL", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
 
 const getDebtorCommentLabel = (comment: string): string => {
   const found = DEBTOR_COMMENTS.find((c) => c.value === comment);
