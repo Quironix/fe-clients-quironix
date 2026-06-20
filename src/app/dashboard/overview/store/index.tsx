@@ -233,11 +233,7 @@ export const useKPIStore = create<KPIStore>()(
     }),
     {
       name: "kpi-preferences-v4",
-      partialize: (state) => ({
-        preferences: state.preferences,
-        chatThreadId: state.chatThreadId,
-        chatMessages: state.chatMessages,
-      }),
+      partialize: (state) => ({ preferences: state.preferences }),
       onRehydrateStorage: () => (state) => {
         if (state?.preferences) {
           state.preferences = cleanupPreferences(state.preferences);

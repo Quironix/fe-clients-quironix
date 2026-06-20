@@ -9,6 +9,7 @@ import {
 import { BotIcon, SendIcon, UserIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { FC } from "react";
+import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 
 export const KPIThread: FC = () => {
   return (
@@ -86,7 +87,7 @@ const AssistantMessage: FC = () => {
       </div>
       <div className="max-w-[80%] rounded-lg p-3 bg-gray-100 text-gray-900">
         <div className="text-xs">
-          <MessagePrimitive.Content />
+          <MessagePrimitive.Content components={{ Text: MarkdownText }} />
         </div>
         <span className="text-[10px] text-gray-500">
           {new Date().toLocaleTimeString("es-CL", {
