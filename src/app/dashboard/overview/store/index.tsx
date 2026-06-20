@@ -28,6 +28,14 @@ interface KPIStore {
   resetLayout: () => void;
   setIndicators: (indicators: Indicators | null) => void;
   setPeriod: (period: string | null) => void;
+
+  // Chat persistence
+  chatThreadId: string | null;
+  chatMessages: any;
+  setChatThreadId: (threadId: string) => void;
+  getChatThreadId: () => string;
+  setChatMessages: (messages: any) => void;
+  getChatMessages: () => any;
 }
 
 const cleanupPreferences = (preferences: KPIPreferences): KPIPreferences => {
@@ -215,10 +223,21 @@ export const useKPIStore = create<KPIStore>()(
           preferences: { ...state.preferences, period },
         }));
       },
+
+      chatThreadId: null,
+      chatMessages: null,
+      setChatThreadId: (threadId) => set({ chatThreadId: threadId }),
+      getChatThreadId: () => get().chatThreadId as string,
+      setChatMessages: (messages) => set({ chatMessages: messages }),
+      getChatMessages: () => get().chatMessages,
     }),
     {
       name: "kpi-preferences-v4",
-      partialize: (state) => ({ preferences: state.preferences }),
+      partialize: (state) => ({
+        preferences: state.preferences,
+        chatThreadId: state.chatThreadId,
+        chatMessages: state.chatMessages,
+      }),
       onRehydrateStorage: () => (state) => {
         if (state?.preferences) {
           state.preferences = cleanupPreferences(state.preferences);

@@ -96,6 +96,18 @@ interface DebtorsStore {
     debtorId: string
   ) => Promise<void>;
   clearCallBrief: () => void;
+
+  // Estados para chat threads
+  chatThreads: Record<string, string>;
+  getChatThreadId: (debtorId: string) => string | undefined;
+  setChatThreadId: (debtorId: string, threadId: string) => void;
+  clearChatThreadId: (debtorId: string) => void;
+
+  // Estados para historial de mensajes del chatbot
+  chatMessages: Record<string, any>;
+  getChatMessages: (debtorId: string) => any;
+  setChatMessages: (debtorId: string, messages: any) => void;
+  clearChatMessages: (debtorId: string) => void;
 }
 
 export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
@@ -404,4 +416,22 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   clearCallBrief: () => {
     set({ callBrief: null });
   },
+  chatThreads: {},
+  getChatThreadId: (debtorId: string) => get().chatThreads[debtorId],
+  setChatThreadId: (debtorId: string, threadId: string) =>
+    set((state) => ({ chatThreads: { ...state.chatThreads, [debtorId]: threadId } })),
+  clearChatThreadId: (debtorId: string) =>
+    set((state) => {
+      const { [debtorId]: _, ...rest } = state.chatThreads;
+      return { chatThreads: rest };
+    }),
+  chatMessages: {},
+  getChatMessages: (debtorId: string) => get().chatMessages[debtorId] ?? null,
+  setChatMessages: (debtorId: string, messages: any) =>
+    set((state) => ({ chatMessages: { ...state.chatMessages, [debtorId]: messages } })),
+  clearChatMessages: (debtorId: string) =>
+    set((state) => {
+      const { [debtorId]: _, ...rest } = state.chatMessages;
+      return { chatMessages: rest };
+    }),
 }));
