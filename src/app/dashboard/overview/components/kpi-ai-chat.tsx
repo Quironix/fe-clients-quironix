@@ -9,15 +9,21 @@ import {
 } from "@assistant-ui/react-ai-sdk";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
-import { KPIThread } from "./kpi-thread";
 import { useKPIStore } from "../store";
+import { KPIThread } from "./kpi-thread";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const KPIAIChat = () => {
   const t = useTranslations("overview");
   const { profile, session } = useProfileContext();
-  const { getChatThreadId, setChatThreadId, getChatMessages, setChatMessages } = useKPIStore();
+  const {
+    kpis,
+    getChatThreadId,
+    setChatThreadId,
+    getChatMessages,
+    setChatMessages,
+  } = useKPIStore();
 
   const threadId = useMemo(() => {
     const existing = getChatThreadId();
@@ -34,21 +40,36 @@ export const KPIAIChat = () => {
   const saved = useMemo(() => getChatMessages(), []);
   const hasSaved = !!saved;
 
-  const runtime = useChatRuntime({
-    messages: hasSaved
-      ? []
-      : [
+  const initialMessages = useMemo(() => {
+    if (hasSaved) return [];
+
+    return [
+      {
+        role: "assistant",
+        parts: [
           {
-            role: "assistant",
-            parts: [
-              {
-                type: "text",
-                text: t("kpiAssistantWelcome"),
-              },
-            ],
-            id: "3WW5iArzjLZEFgtQ",
+            type: "text",
+            text: t("kpiAssistantWelcome"),
           },
         ],
+        id: "3WW5iArzjLZEFgtQ",
+      },
+    ];
+  }, [hasSaved, t]);
+
+  const systemPrompt = useMemo(() => {
+    if (!kpis.length) return "";
+    const kpiList = kpis
+      .map(
+        (kpi) =>
+          `- ${kpi.name}: ${kpi.value}${kpi.unit} (meta: ${kpi.target}${kpi.unit}, estado: ${kpi.status}, definición: ${kpi.definition})`,
+      )
+      .join("\n");
+    return `Estos son los KPIs actuales:\n${kpiList}`;
+  }, [kpis]);
+
+  const runtime = useChatRuntime({
+    messages: initialMessages,
     transport: new AssistantChatTransport({
       api: `${API_URL}/v2/clients/${profile?.client?.id}/ai-engines/management-recap`,
       headers: {
@@ -75,6 +96,16 @@ export const KPIAIChat = () => {
 
   const runtimeRef = useRef(runtime);
   runtimeRef.current = runtime;
+
+  useEffect(() => {
+    if (!systemPrompt) return;
+
+    const unsub = runtime.registerModelContextProvider({
+      getModelContext: () => ({ system: systemPrompt }),
+    });
+
+    return () => unsub();
+  }, [runtime, systemPrompt]);
 
   useEffect(() => {
     if (hasSaved && saved) {
