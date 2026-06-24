@@ -48,12 +48,12 @@ export const KPIAIChat = () => {
         role: "assistant",
         parts: [
           {
-            type: "text",
+            type: "text" as const,
             text: t("kpiAssistantWelcome"),
           },
         ],
         id: "3WW5iArzjLZEFgtQ",
-      },
+      } as any,
     ];
   }, [hasSaved, t]);
 
