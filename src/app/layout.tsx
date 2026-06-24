@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { IdleSessionGuard } from "@/components/idle-session-guard";
 import { ProfileProvider } from "@/context/ProfileContext";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
@@ -47,6 +48,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             <SessionProvider>
+              <IdleSessionGuard />
               <ProfileProvider>
                 {children}
                 <Toaster position="top-right" />
