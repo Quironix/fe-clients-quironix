@@ -214,14 +214,24 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
         header: t("phase"),
         cell: ({ row }) => {
           const phasesArray = row.original.phases;
-          const lastPhase =
-            Array.isArray(phasesArray) && phasesArray.length > 0
-              ? phasesArray[phasesArray.length - 1]
-              : null;
-          if (!lastPhase) {
+          if (!Array.isArray(phasesArray) || phasesArray.length === 0) {
             return <div>-</div>;
           }
-          return <div>{(lastPhase as any).phase ?? 0}</div>;
+
+          const currentPhases = phasesArray.filter((p: any) => p.is_current === true);
+
+          let activePhase: any;
+          if (currentPhases.length === 1) {
+            activePhase = currentPhases[0];
+          } else if (currentPhases.length > 1) {
+            activePhase = currentPhases.reduce((latest: any, p: any) =>
+              new Date(p.created_at) > new Date(latest.created_at) ? p : latest
+            );
+          } else {
+            activePhase = phasesArray[phasesArray.length - 1];
+          }
+
+          return <div>{activePhase?.phase ?? 0}</div>;
         },
       },
       {
