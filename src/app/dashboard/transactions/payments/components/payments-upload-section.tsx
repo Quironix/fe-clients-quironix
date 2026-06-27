@@ -1,8 +1,8 @@
 "use client";
 
 import { useProfileContext } from "@/context/ProfileContext";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -24,7 +24,7 @@ const PaymentUploadSection = () => {
   const tCommon = useTranslations("common.upload");
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -50,7 +50,7 @@ const PaymentUploadSection = () => {
       const response: BulkUploadResponse = await bulkData(
         session.token,
         profile.client.id,
-        file
+        file,
       );
 
       setUploadResult(response);
@@ -62,17 +62,19 @@ const PaymentUploadSection = () => {
       } else {
         // Almacenar errores en el store
         setBulkUploadErrors(response);
-        toast.warning(tUpload("warningBulk", { valid: response.validCount, invalid: response.invalidCount }));
+        toast.warning(
+          tUpload("warningBulk", {
+            valid: response.validCount,
+            invalid: response.invalidCount,
+          }),
+        );
 
         // Redirigir a la página de errores incompletos
         router.push("/dashboard/transactions/payments/incomplete");
       }
     } catch (error: any) {
       console.error("Error al cargar archivo:", error);
-      toast.error(
-        JSON.parse(error.message).message ||
-          tUpload("errorBulk")
-      );
+      toast.error(JSON.parse(error.message).message || tUpload("errorBulk"));
     } finally {
       setIsUploading(false);
       // Limpiar el input
@@ -105,7 +107,7 @@ const PaymentUploadSection = () => {
               <span className="text-orange-500">manual</span>
             </>
           }
-          description="Completa el formulario con los datos del pagos que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuestas con un archivo para importar."
+          description="Completa el formulario con los datos del pagos que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuentas con un archivo para importar."
           buttonText="Crear pago"
           buttonLink="/dashboard/transactions/payments/create"
         />

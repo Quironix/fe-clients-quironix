@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Copy } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -41,7 +41,7 @@ const DTEUploadSection = () => {
   };
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -67,7 +67,7 @@ const DTEUploadSection = () => {
       const response: BulkUploadResponse = await bulkData(
         session.token,
         profile.client.id,
-        file
+        file,
       );
 
       setUploadResult(response);
@@ -79,17 +79,19 @@ const DTEUploadSection = () => {
       } else {
         // Almacenar errores en el store
         setBulkUploadErrors(response);
-        toast.warning(tUpload("warningBulk", { valid: response.validCount, invalid: response.invalidCount }));
+        toast.warning(
+          tUpload("warningBulk", {
+            valid: response.validCount,
+            invalid: response.invalidCount,
+          }),
+        );
 
         // Redirigir a la página de errores incompletos
         router.push("/dashboard/transactions/dte/incomplete");
       }
     } catch (error: any) {
       console.error("Error al cargar archivo:", error);
-      toast.error(
-        JSON.parse(error.message).message ||
-          tUpload("errorBulk")
-      );
+      toast.error(JSON.parse(error.message).message || tUpload("errorBulk"));
     } finally {
       setIsUploading(false);
       // Limpiar el input
@@ -122,7 +124,7 @@ const DTEUploadSection = () => {
               <span className="text-orange-500">manual</span>
             </>
           }
-          description="Completa el formulario con los datos del DTE que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuestas con un archivo para importar."
+          description="Completa el formulario con los datos del DTE que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuentas con un archivo para importar."
           buttonText="Crear DTE"
           buttonLink="/dashboard/transactions/dte/create"
         />
@@ -134,14 +136,12 @@ const DTEUploadSection = () => {
           </h2>
           <div className="flex flex-col w-full">
             <span className="text-sm text-gray-500">
-              Configura este correo en tu sistema de facturación. Al recibir tus DTEs en esta dirección, los procesaremos automáticamente, los cargaremos al sistema y almacenaremos el PDF asociado.
+              Configura este correo en tu sistema de facturación. Al recibir tus
+              DTEs en esta dirección, los procesaremos automáticamente, los
+              cargaremos al sistema y almacenaremos el PDF asociado.
             </span>
             <div className="flex items-center gap-2 mt-4">
-              <Input
-                value={dteEmail}
-                disabled
-                className="bg-gray-50 text-sm"
-              />
+              <Input value={dteEmail} disabled className="bg-gray-50 text-sm" />
               <Button
                 variant="outline"
                 size="icon"

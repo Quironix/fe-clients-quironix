@@ -499,7 +499,7 @@
       "title": "Crear <debtor></debtor> de forma <manual></manual>",
       "debtor": "deudor",
       "manual": "manual",
-      "description": "Completa el formulario con los datos del deudor que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuestas con un archivo para importar.",
+      "description": "Completa el formulario con los datos del deudor que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuentas con un archivo para importar.",
       "button": "Carga manual"
     },
     "bulkUpload": {
@@ -1601,7 +1601,7 @@
       "createError": "Error al crear el DTE, revisa la información ingresada",
       "copyEmailSuccess": "Email copiado al portapapeles",
       "clientIdError": "No se pudo obtener el ID del cliente",
-      "uploadDescription": "Completa el formulario con los datos del DTE que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuestas con un archivo para importar.",
+      "uploadDescription": "Completa el formulario con los datos del DTE que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cunstas con un archivo para importar.",
       "toast": {
         "deleteSuccess": "DTE eliminado exitosamente",
         "deleteError": "Error al eliminar el DTE"
@@ -1653,7 +1653,7 @@
       },
       "upload": {
         "manualTitle": "Subir {dte} por carga {manual}",
-        "manualDescription": "Completa el formulario con los datos del DTE que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuestas con un archivo para importar.",
+        "manualDescription": "Completa el formulario con los datos del DTE que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cunstas con un archivo para importar.",
         "createButton": "Crear DTE",
         "autoReceptionTitle": "Recepción {auto} de DTE",
         "autoReceptionDescription": "Configura este correo en tu sistema de facturación. Al recibir tus DTEs en esta dirección, los procesaremos automáticamente, los cargaremos al sistema y almacenaremos el PDF asociado.",
@@ -1690,7 +1690,7 @@
       "clientNotFound": "No se encontró el cliente",
       "updateSuccess": "Pago actualizado correctamente",
       "createSuccess": "Pago creado correctamente",
-      "uploadDescription": "Completa el formulario con los datos del pagos que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuestas con un archivo para importar.",
+      "uploadDescription": "Completa el formulario con los datos del pagos que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cunstas con un archivo para importar.",
       "toast": {
         "deleteSuccess": "Pago eliminado correctamente",
         "deleteError": "Error al eliminar el pago"
@@ -1735,7 +1735,7 @@
       },
       "upload": {
         "manualTitle": "Subir {payment} por carga {manual}",
-        "manualDescription": "Completa el formulario con los datos del pagos que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cuestas con un archivo para importar.",
+        "manualDescription": "Completa el formulario con los datos del pagos que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cunstas con un archivo para importar.",
         "createButton": "Crear pago",
         "bulkTitle": "Subir {payments} por carga masiva",
         "processingDocs": "Procesando documentos...",
