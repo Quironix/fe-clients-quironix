@@ -147,6 +147,8 @@ const Content = ({ params }: PageProps) => {
                   "email",
               }))}
             callSchedule={dataDebtor.attention_days_hours || t("contacts.notDefined")}
+            clientId={profile?.client?.id ?? ""}
+            accessToken={session?.token ?? ""}
           />
         ) : (
           <DebtorContacts
@@ -160,6 +162,8 @@ const Content = ({ params }: PageProps) => {
             }}
             additionalContacts={[]}
             callSchedule={t("contacts.notDefined")}
+            clientId={profile?.client?.id ?? ""}
+            accessToken={session?.token ?? ""}
           />
         )}
 

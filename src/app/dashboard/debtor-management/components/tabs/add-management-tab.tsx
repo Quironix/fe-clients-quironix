@@ -6,6 +6,7 @@ import { Step } from "@/components/Stepper/types";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useWebRTCContext } from "@/context/WebRTCContext";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -75,6 +76,7 @@ export const AddManagementTab = ({
   profile,
 }: AddManagementTabProps) => {
   const t = useTranslations("debtorManagement.management");
+  const { pendingCallUniqueIds, clearCallUniqueIds } = useWebRTCContext();
   const steps: Step[] = [
     { id: 1, label: t("step1"), completed: false },
     { id: 2, label: t("step2"), completed: false },
@@ -396,6 +398,10 @@ export const AddManagementTab = ({
       invoice_ids: selectedInvoices.map((inv) => inv.id),
     };
 
+    if (pendingCallUniqueIds.length > 0) {
+      payload.metadata = { callUniqueIds: pendingCallUniqueIds };
+    }
+
     if (
       managementFormData.caseData &&
       Object.keys(managementFormData.caseData).length > 0
@@ -524,6 +530,7 @@ export const AddManagementTab = ({
         payload
       );
 
+      clearCallUniqueIds();
       toast.success(t("managementAdded"));
 
       const newManagement: SavedManagement = {
@@ -592,6 +599,7 @@ export const AddManagementTab = ({
 
       const result = await createTrack(session.token, profile.client_id, payload);
 
+      clearCallUniqueIds();
       const currentManagement: SavedManagement = {
         id: result.track.id,
         formData: { ...managementFormData },

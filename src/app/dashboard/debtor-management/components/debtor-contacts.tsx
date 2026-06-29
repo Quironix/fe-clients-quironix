@@ -6,8 +6,10 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { useWebRTCContext } from "@/context/WebRTCContext";
 import { useWebRTCAutoConnect } from "@/hooks/useWebRTCAutoConnect";
 import { useWebRTCPhone } from "@/hooks/useWebRTCPhone";
+import { getSipCallExternalId } from "../services/sip";
 import {
   Clock,
   Mail,
@@ -29,18 +31,23 @@ interface DebtorContactsProps {
   mainContact: Contact;
   additionalContacts?: Contact[] | any;
   callSchedule: string;
+  clientId: string;
+  accessToken: string;
 }
 
 export const DebtorContacts = ({
   mainContact,
   additionalContacts = [],
   callSchedule,
+  clientId,
+  accessToken,
 }: DebtorContactsProps) => {
   const t = useTranslations("debtorManagement.contacts");
   const [openAdd, setOpenAdd] = useState<boolean>(false);
   const [callDuration, setCallDuration] = useState(0);
   const { dataDebtor } = useDebtorsStore();
   const { isRegistered, callStatus, makeCall, hangup } = useWebRTCPhone();
+  const { addCallUniqueId, clearCallUniqueIds } = useWebRTCContext();
 
   const { isConnected } = useWebRTCAutoConnect();
 
@@ -56,6 +63,11 @@ export const DebtorContacts = ({
   const [currentAdditionalContacts, setCurrentAdditionalContacts] = useState<
     Contact[]
   >(contacts.slice(1) || additionalContacts);
+
+  // Clear accumulated call IDs when the debtor changes
+  useEffect(() => {
+    clearCallUniqueIds();
+  }, [clientId, clearCallUniqueIds]);
 
   // Actualizar cuando cambian los contactos en el store
   useEffect(() => {
@@ -111,9 +123,12 @@ export const DebtorContacts = ({
     } else {
       // Realizar nueva llamada
       const phoneNumber = currentMainContact.phone;
-      if (phoneNumber) {
-        makeCall(phoneNumber);
-      } else {
+        if (phoneNumber) {
+          makeCall(phoneNumber);
+          getSipCallExternalId(accessToken, clientId)
+            .then((res) => addCallUniqueId(res.uniqueid))
+            .catch(() => addCallUniqueId(null));
+        } else {
         toast.error(t("noPhone"));
       }
     }

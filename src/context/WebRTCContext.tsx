@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 
 export type CallStatus =
   | "idle"
@@ -30,6 +30,9 @@ interface WebRTCContextType {
   setCallStatus: (status: CallStatus) => void;
   setCurrentNumber: (number: string) => void;
   setIsRegistered: (registered: boolean) => void;
+  pendingCallUniqueIds: Array<string | null>;
+  addCallUniqueId: (id: string | null) => void;
+  clearCallUniqueIds: () => void;
 }
 
 const WebRTCContext = createContext<WebRTCContextType | undefined>(undefined);
@@ -41,6 +44,15 @@ export const WebRTCProvider: React.FC<{ children: React.ReactNode }> = ({
   const [callStatus, setCallStatus] = useState<CallStatus>("idle");
   const [currentNumber, setCurrentNumber] = useState("");
   const [config, setConfig] = useState<WebRTCConfig | null>(null);
+  const [pendingCallUniqueIds, setPendingCallUniqueIds] = useState<Array<string | null>>([]);
+
+  const addCallUniqueId = useCallback((id: string | null) => {
+    setPendingCallUniqueIds((prev) => [...prev, id]);
+  }, []);
+
+  const clearCallUniqueIds = useCallback(() => {
+    setPendingCallUniqueIds([]);
+  }, []);
 
   return (
     <WebRTCContext.Provider
@@ -53,6 +65,9 @@ export const WebRTCProvider: React.FC<{ children: React.ReactNode }> = ({
         setCallStatus,
         setCurrentNumber,
         setIsRegistered,
+        pendingCallUniqueIds,
+        addCallUniqueId,
+        clearCallUniqueIds,
       }}
     >
       {children}

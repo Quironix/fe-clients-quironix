@@ -64,6 +64,9 @@ export interface CreateTrackPayload {
   next_management_date: string; // ISO 8601 format
   case_data?: CaseData;
   invoice_ids: string[];
+  metadata?: {
+    callUniqueIds?: Array<string | null>;
+  };
 }
 
 /**
