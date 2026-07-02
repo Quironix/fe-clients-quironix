@@ -23,7 +23,7 @@ export async function getSipCallExternalId(
   clientId: string
 ): Promise<SipCallExternalIdResponse> {
   const response = await fetch(
-    `${API_URL}/bff/api/v2/clients/${clientId}/sip-call-external-id`,
+    `${API_URL}/v2/clients/${clientId}/sip-call-external-id`,
     {
       method: "GET",
       headers: {

@@ -77,6 +77,15 @@ export const DebtorContacts = ({
     }
   }, [dataDebtor?.contacts]);
 
+  // Fetch SIP uniqueid when call reaches ringing state
+  useEffect(() => {
+    if (callStatus === "ringing") {
+      getSipCallExternalId(accessToken, clientId)
+        .then((res) => addCallUniqueId(res.uniqueid))
+        .catch(() => addCallUniqueId(null));
+    }
+  }, [callStatus, accessToken, clientId, addCallUniqueId]);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -125,9 +134,6 @@ export const DebtorContacts = ({
       const phoneNumber = currentMainContact.phone;
         if (phoneNumber) {
           makeCall(phoneNumber);
-          getSipCallExternalId(accessToken, clientId)
-            .then((res) => addCallUniqueId(res.uniqueid))
-            .catch(() => addCallUniqueId(null));
         } else {
         toast.error(t("noPhone"));
       }
