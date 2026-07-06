@@ -179,13 +179,6 @@ export const TrackDetailModal = ({
     return timeString;
   };
 
-  const formatDuration = (durationInSeconds?: number) => {
-    if (durationInSeconds == null || isNaN(durationInSeconds)) return "-";
-    const minutes = Math.floor(durationInSeconds / 60);
-    const seconds = durationInSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
-
   const getCallTypeLabel = (callType?: string) => {
     if (callType === "outbound") return "Saliente";
     if (callType === "inbound") return "Entrante";
@@ -598,7 +591,6 @@ export const TrackDetailModal = ({
                       <TableHead className="text-xs">Contacto</TableHead>
                       <TableHead className="text-xs">Tipo</TableHead>
                       <TableHead className="text-xs">Fecha/Hora</TableHead>
-                      <TableHead className="text-xs">Duración</TableHead>
                       <TableHead className="text-xs">Grabación</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -624,13 +616,10 @@ export const TrackDetailModal = ({
                           {formatDateTime(call.date)}
                         </TableCell>
                         <TableCell className="text-xs">
-                          {formatDuration(call.duration)}
-                        </TableCell>
-                        <TableCell className="text-xs">
                           {call.url ? (
                             <audio
                               controls
-                              preload="none"
+                              preload="metadata"
                               src={call.url}
                               className="h-8 max-w-[220px]"
                             />
