@@ -13,6 +13,7 @@ import { getPaymentPlanById } from "@/app/dashboard/payment-plans/services";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import DialogForm from "@/app/dashboard/components/dialog-form";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -31,6 +32,7 @@ import {
   FileText,
   History,
   MessageCircle,
+  Phone,
   ThermometerSnowflake,
 } from "lucide-react";
 import { useMemo, useEffect, useState } from "react";
@@ -123,6 +125,9 @@ export const TrackDetailModal = ({
   const invoices = trackData?.invoices || [];
   const hasInvoices = invoices.length > 0;
 
+  const callRecordings = trackData?.callRecordings || [];
+  const hasCallRecordings = callRecordings.length > 0;
+
   const selectedConfig = useMemo(() => {
     if (
       trackData?.managementType &&
@@ -172,6 +177,19 @@ export const TrackDetailModal = ({
   const formatTime = (timeString: string) => {
     if (!timeString) return "-";
     return timeString;
+  };
+
+  const formatDuration = (durationInSeconds?: number) => {
+    if (durationInSeconds == null || isNaN(durationInSeconds)) return "-";
+    const minutes = Math.floor(durationInSeconds / 60);
+    const seconds = durationInSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  const getCallTypeLabel = (callType?: string) => {
+    if (callType === "outbound") return "Saliente";
+    if (callType === "inbound") return "Entrante";
+    return callType || "-";
   };
 
   const calculateDelay = (dueDate: string) => {
@@ -563,6 +581,75 @@ export const TrackDetailModal = ({
               </p>
             )}
           </div>
+
+          {hasCallRecordings && (
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Phone className="w-4 h-4 text-gray-700" />
+              <h3 className="font-semibold text-sm text-gray-700">
+                Llamadas ({callRecordings.length})
+              </h3>
+            </div>
+            {hasCallRecordings ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Contacto</TableHead>
+                      <TableHead className="text-xs">Tipo</TableHead>
+                      <TableHead className="text-xs">Fecha/Hora</TableHead>
+                      <TableHead className="text-xs">Duración</TableHead>
+                      <TableHead className="text-xs">Grabación</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {callRecordings.map((call: any, index: number) => (
+                      <TableRow key={call.id || index}>
+                        <TableCell className="text-xs">
+                          <div className="font-medium">
+                            {call.contact?.name || "-"}
+                          </div>
+                          {call.contact?.phone && (
+                            <div className="text-gray-500">
+                              {call.contact.phone}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          <Badge variant="outline">
+                            {getCallTypeLabel(call.callType)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {formatDateTime(call.date)}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {formatDuration(call.duration)}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {call.url ? (
+                            <audio
+                              controls
+                              preload="none"
+                              src={call.url}
+                              className="h-8 max-w-[220px]"
+                            />
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No hay llamadas asociadas a este track
+              </p>
+            )}
+          </div>
+          )}
 
           {selectedConfig && (
             <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-col gap-3">

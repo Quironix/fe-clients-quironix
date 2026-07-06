@@ -14,6 +14,27 @@ export interface TrackContact {
 }
 
 /**
+ * Contacto asociado a una llamada telefónica
+ */
+export interface CallRecordingContact {
+  name?: string;
+  email?: string;
+  phone?: string;
+}
+
+/**
+ * Llamada telefónica asociada a un track
+ */
+export interface CallRecording {
+  id: string;
+  contact?: CallRecordingContact;
+  callType?: "outbound" | "inbound" | string;
+  date?: string | Date;
+  duration?: number;
+  url?: string;
+}
+
+/**
  * Datos específicos del caso (dinámicos según el tipo de gestión)
  */
 export interface CaseData {
