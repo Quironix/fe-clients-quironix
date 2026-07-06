@@ -121,25 +121,17 @@ const SuggestedQuestions: FC = () => {
       </p>
       <div className="flex flex-wrap gap-2">
         {suggestedQuestions.map((question, index) => (
-          <button
+          <ThreadPrimitive.Suggestion
             key={index}
-            onClick={() => {
-              const input = document.querySelector(
-                `textarea[placeholder="${t("composerPlaceholder")}"]`
-              ) as HTMLTextAreaElement;
-              if (input) {
-                input.value = question;
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-                const form = input.closest("form");
-                if (form) {
-                  form.requestSubmit();
-                }
-              }
-            }}
-            className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full transition-colors"
+            prompt={question}
+            clearComposer
+            send={false}
+            asChild
           >
-            {question}
-          </button>
+            <button className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full transition-colors">
+              {question}
+            </button>
+          </ThreadPrimitive.Suggestion>
         ))}
       </div>
     </div>

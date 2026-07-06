@@ -1,0 +1,578 @@
+# Complete Functional Flow: `/dashboard/debtor-management/[id]`
+
+## 1. Page Entry Point
+
+**File:** `src/app/dashboard/debtor-management/[id]/page.tsx`
+
+- **Client component** using `use()` to unwrap the `params` promise (Next.js 15+ pattern)
+- **UUID param**: `id` extracted from route params
+- **Data fetching** on mount via `useEffect`:
+  - `fetchDebtorById(token, clientId, id)` → stores debtor data in `useDebtorsStore`
+  - `fetchCollectionProfile(token, clientId, id)` → stores collection profile (call reasons, payment commitments, credit risk, litigations, etc.)
+  - `fetchCallBrief(token, clientId, id)` → stores AI-generated call brief
+- **Cleanup**: `clearDataDebtor()`, `clearCollectionProfile()`, `clearCallBrief()` on unmount
+- **Renders**:
+  1. `Header` with language toggle
+  2. `TitleSection` with debtor name/code
+  3. `Breadcrumb` (management list → debtor detail)
+  4. `DebtorContacts` — contact cards with VoIP calling
+  5. **Tabs** (`key-reasons` | `add-management`):
+     - `KeyReasonsTab` — AI chatbot + collection profile cards
+     - `AddManagementTab` — 3-step management creation wizard
+
+---
+
+## 2. All Components Rendered
+
+### 2a. DebtorContacts (`components/debtor-contacts.tsx`)
+- **Functionality**: Displays debtor contact information with integrated VoIP calling
+- **Data displayed**: Main contact (name, email, phone, role, function, channel), additional contacts as hover cards, call schedule
+- **Interactions**:
+  - Click contact hover cards to swap main contact
+  - "Call" button → initiates WebRTC call via `useWebRTCPhone`
+  - During call: shows duration timer, hang-up button
+  - "+" button → opens `CreateContactForm` dialog to add new contacts
+- **API calls**: `getSipCallExternalId()` to get PBX unique ID for call tracking, stores via `WebRTCContext.addCallUniqueId()`
+
+### 2b. KeyReasonsTab (`components/tabs/key-reasons-tab.tsx`)
+- **Functionality**: Two-column layout — left: AI chatbot, right: collection profile info cards
+- **Data displayed**: `CollectionProfile` data (call reasons, payment commitments, credit risk, protested checks, last payment, litigations, last managements)
+- **Interactions**: Each section is collapsible via `CardCollapsible`, chatbot is interactive
+- **Sub-components**:
+  - `DebtorChatbot` — AI chat interface
+  - `KeyReasons` — call reasons dashboard
+  - `PaymentCommitment` — pie chart + credibility table
+  - `CreditRisk` — current/available credit, risk category, credit status badge
+  - `ProtestedChecks` — list of protested checks
+  - `LastPaymentReceived` — last payment + pending payments
+  - `LitigationsCard` — litigation debt by type
+  - `LastManagements` — recent + previous management history with accordion, link to managements-list sub-route
+
+### 2c. DebtorChatbot (`components/debtor-chatbot.tsx`)
+- **Functionality**: AI-powered conversational assistant for the debtor
+- **Data displayed**: Call brief (initial message), user/assistant chat thread
+- **Interactions**: Full chat interface via `@assistant-ui/react`
+- **API calls**: Posts to `${API_URL}/v2/clients/${clientId}/ai-engines/chat` with thread ID
+- **State**: Thread ID and messages persisted in `useDebtorsStore` per debtor ID
+
+### 2d. KeyReasons (`components/key-reasons.tsx`)
+- **Functionality**: Dashboard showing key call reason metrics
+- **Data displayed**: Unfulfilled commitment amount, overdue debt (with progress bar %), cash estimate (collected vs projected), upcoming maturities (15 days), open litigations count + amount
+- **Interactions**: Read-only, live clock updates every second
+
+### 2e. CreditRisk (`components/credit-risk.tsx`)
+- **Functionality**: Credit risk summary display
+- **Data displayed**: Current credit, available credit, risk category (LOW/MEDIUM/HIGH/UNKNOWN with colored indicator), credit status badge (Active/Under Review/Retained/No Credit Line)
+
+### 2f. PaymentCommitment (`components/payment-commitment.tsx`)
+- **Functionality**: Payment commitment credibility visualization
+- **Data displayed**: Pie chart (fulfilled vs unfulfilled), percentage, expandable table of latest commitments (date, amount, status badge, invoice number, description)
+
+### 2g. ProtestedChecks (`components/protested-checks.tsx`)
+- **Functionality**: Lists protested checks
+- **Data displayed**: Check number, amount, status badge, days overdue
+
+### 2h. LastPaymentReceived (`components/last-payment-received.tsx`)
+- **Functionality**: Shows last payment + other pending payments in accordion
+- **Data displayed**: Amount, date, payment type badge, expandable list of other pending payments
+
+### 2i. LitigationsCard (`components/litigations-card.tsx`)
+- **Functionality**: Shows litigation debt summary by document type
+- **Data displayed**: Total debt in litigation, breakdown by type (amount + count) with document type badges
+
+### 2j. LastManagements (`components/last-managements.tsx`)
+- **Functionality**: Shows recent management history
+- **Data displayed**: Recent managements (manager name, description, date, channel badge), previous managements in accordion
+- **Interactions**: "All Managements" button → navigates to `/dashboard/debtor-management/${debtorId}/managements-list`
+- **Labels**: Uses `getChannelTypeLabel()` and `getExecutiveCommentLabel()` from config
+
+### 2k. AddManagementTab (`components/tabs/add-management-tab.tsx`)
+- **Functionality**: 3-step wizard for creating management tracks
+- **Data**: Manages `ManagementFormData` state (managementType, debtorComment, executiveComment, contact, observation, dates, caseData, file, comment, sendEmail)
+- **Interactions**:
+  - Step navigation (back/next/step change)
+  - "Add Management" → saves current management, resets form for next one
+  - "Finish" → creates all saved + current managements, sends emails, resets everything
+  - Delete saved managements
+- **API calls on finish**:
+  1. Validates management data
+  2. Conditionally creates litigations, normalizes litigations, or creates payment plan
+  3. Creates track via `createTrack()`
+  4. If `sendEmail` enabled:
+     - Fetches bank info via `fetchAndFormatBankInfo()`
+     - Groups managements by contact email
+     - Single management → `buildEmailPayload()` + `sendTrackEmail()`
+     - Multiple managements per contact → `buildMultipleEmailPayload()` + `sendMultipleManagementEmail()`
+
+### 2l. SavedManagementCard (`components/tabs/saved-management-card.tsx`)
+- **Functionality**: Expandable card showing a queued management
+- **Data displayed**: Debtor comment label, executive comment label, selected invoices table (number, type, issue/due dates, amount, balance, delay, phase), management config (type, debtor/executive comments, observation, next management date/time), case data fields (varies by type — litigation, normalization, payment plan), additional comment
+- **Interactions**: Accordion expand/collapse, delete button
+
+### 2m. TaskFilters (`components/task-filters.tsx`)
+- **Functionality**: Filter bar for the task management page (parent route)
+- **Data displayed**: Quadrant filter buttons with counts (Critical, Cash Generation, Litigation, Technical File, All), search autocomplete, export button
+- **Interactions**: Toggle quadrant filter, search debtors, export Excel
+
+### 2n. TasksList (`components/tasks-list.tsx`)
+- **Functionality**: Displays debtor tasks organized by quadrant
+- **Data displayed**: Groups of `TaskItem` cards inside `TaskIsland` containers (Critical Debtors, Broken Commitments, Cash Generation, Litigation, Deficient Technical File, Unclassified)
+- **Interactions**: Click task → navigate to debtor detail page
+
+### 2o. TaskItem (`components/task-item.tsx`)
+- **Functionality**: Individual debtor task card
+- **Data displayed**: Debtor code, name (truncated with tooltip), incidents count, overdue debt, status badge
+- **Interactions**: Click → navigate to debtor detail (highlighted = direct, non-highlighted = confirmation dialog first)
+
+### 2p. TaskIsland (`components/task-island.tsx`)
+- **Functionality**: Container component for task groups with colored header
+- **Data displayed**: Group title, icon, children (task items)
+
+### 2q. TasksPagination (`components/tasks-pagination.tsx`)
+- **Functionality**: Pagination with ellipsis logic
+- **Interactions**: Page navigation, previous/next
+
+### 2r. IndicatorCard (`components/indicator-card.tsx`)
+- **Functionality**: Reusable card wrapper for indicator displays
+
+### 2s. IndicatorsDebtor (`components/indicators-debtors.tsx`)
+- **Functionality**: Sidebar indicator dashboard for the management list page
+- **Data displayed**: Status (active/inactive badge), current time, tasks completed/pending, executive progress %, daily goal, overdue reduction %, payment commitments amount, monthly goal %
+- **API calls**: Uses `useManagementIndicators` hook (React Query → `getManagementIndicators`)
+
+### 2t. ProgressBarChart (`components/progress-bar-chart.tsx`)
+- **Functionality**: Dual-segment horizontal progress bar
+- **Data displayed**: Left value (colored) + right value (gray) with formatted numbers
+
+### 2u. DebtorSearchAutocomplete (`components/debtor-search-autocomplete.tsx`)
+- **Functionality**: Autocomplete search for debtors across quadrants
+- **Data displayed**: Suggestions showing debtor code, name, overdue amount, quadrant badge
+- **Interactions**: Type to search (debounced 300ms), click to navigate (first-in-quadrant = direct, others = confirmation dialog)
+- **API calls**: `getCollectorQuadrants()` with search param
+
+---
+
+## 3. Services Layer
+
+### 3a. `services/index.ts`
+- `getCollectorQuadrants(token, clientId, params)` → `GET /v2/clients/${clientId}/managements/collector-quadrants` — paginated, filterable by quadrant + search
+- `getManagementIndicators(token, clientId)` → `GET /v2/clients/${clientId}/managements/indicators` — status, tasks, payment commitments, daily/monthly goals, overdue reduction
+
+### 3b. `services/tracks.ts`
+- `createTrack(token, clientId, payload)` → `POST /v2/clients/${clientId}/managements/tracks` — creates single track, returns track + phaseTransitions
+- `createMultipleTracks(token, clientId, payloads)` → sequential `createTrack` calls, collects errors
+- `getDebtorTracks(token, clientId, debtorId, params)` → `GET /v2/clients/${clientId}/managements/tracks/debtor/${debtorId}` — paginated, filterable by status/type/result/executive/date
+- `getDebtorTracksByInvoices(token, clientId, debtorId, params)` → `GET .../debtor/${debtorId}/invoices` — tracks grouped by invoices
+- `getTrackById(token, clientId, trackId)` → `GET /v2/clients/${clientId}/managements/tracks/${trackId}`
+
+### 3c. `services/sip.ts`
+- `getSipCallExternalId(token, clientId)` → `GET /bff/api/v2/clients/${clientId}/sip-call-external-id` — returns PBX uniqueid for call tracking
+
+### 3d. `services/payment-plan.ts`
+- `createPaymentPlan({ token, clientId, dataToInsert })` → `POST /v2/clients/${clientId}/payment-plans` — calculates installment via amortization formula, computes end date, sends full plan payload
+- Helper functions: `getFrequencyFactor()`, `calculateInstallmentAmount()`, `calculateEndDate()`, `formatToISO()`
+
+### 3e. `services/email-builder.ts`
+- `buildEmailPayload({ managementFormData, selectedInvoices, profile, managementCombination, bankAccountInfo })` → constructs `EmailPayload` for single management email
+- Formats invoices, calculates total amount, generates body description via `generateBodyDescriptionByDebtorComment()`, replaces placeholders ({amount}, {date}, {email_company}, {bank_account_info}, {name_client})
+
+### 3f. `services/email-builder-multiple.ts`
+- `buildMultipleEmailPayload({ managements, profile, contactEmail, contactName, bankAccountInfo })` → constructs `EmailMultiplePayload` for multiple managements in one email
+- Groups managements, formats each independently, uses generic body description
+
+### 3g. `services/email-sender.ts`
+- `sendTrackEmail(payload, token, clientId)` → `POST /v2/clients/${clientId}/managements/emails/send` — 10s timeout
+- `sendMultipleManagementEmail(payload, token, clientId)` → same endpoint, 15s timeout
+
+### 3h. `services/bank-info-formatter.ts`
+- `fetchAndFormatBankInfo(token, clientId, clientName, clientEmail)` → fetches bank info from `getAllBankInformations()`, returns formatted object
+- `generateBankInfoHTML(bankInfo)` → HTML block with bank entity, account number, type, holder, email
+- `generateBankInfoText(bankInfo)` → plain text version
+
+---
+
+## 4. Types
+
+### 4a. `types/index.ts` — `CallReasons`, `PaymentCommitment`, `CollectionProfile`, `CallBriefResponse`
+- `CallReasons`: unfulfilled_commitment, overdue_debt, upcoming_maturities, protested_checks, open_litigations, cash_estimate, credit_risk_summary
+- `CollectionProfile`: call_brief, call_reasons, payment_commitment, protested_checks, last_payment_received, litigations, management, credit_risk_summary
+
+### 4b. `types/debtor-tracks.ts`
+- `DebtorTrack`: full track entity with executive, contact, caseData, invoices, metadata
+- `InvoiceWithTrack`: invoice with embedded track data and phases
+- `DebtorTracksResponse`, `InvoiceTracksResponse`: paginated responses
+- `InvoicePhase`: invoice phase tracking
+
+### 4c. `types/track.ts`
+- `CreateTrackPayload`: debtor_id, management_type, contact, observation, debtor_comment, executive_comment, next_management_date, case_data, invoice_ids, metadata
+- `CreateTrackResponse`: track object + PhaseTransitionsResult
+- `CaseData`: union of all possible case data fields (commitmentDate, paymentDate, litigationData, paymentPlanData, etc.)
+
+### 4d. `types/email.ts`
+- `EmailInvoice`: formatted invoice for email templates
+- `EmailDynamicTemplateData`: SendGrid dynamic template data (logo, name, body, invoices, contact info, bank info)
+- `EmailPayload`, `EmailMultiplePayload`: single/multiple management email payloads
+- `EmailResponse`: success/message
+
+---
+
+## 5. Hooks
+
+### 5a. `hooks/useCollectorQuadrants.ts`
+- React Query hook for collector quadrants data
+- Query key: `["collector-quadrants", clientId, params]`
+- staleTime: 30s, gcTime: 5min, retry: 2
+- Returns: data, isLoading, isError, error, refetch, invalidateQuadrants
+
+### 5b. `hooks/useManagementIndicators.ts`
+- React Query hook for management indicators
+- Query key: `["management-indicators", clientId]`
+- staleTime: 30s, gcTime: 5min, refetchOnWindowFocus: true
+- Returns: data, isLoading, isError, error, refetch, invalidateIndicators
+
+---
+
+## 6. Config: Management Types
+
+**File:** `config/management-types.ts`
+
+### Management Combination Structure
+Each combination defines a unique management action:
+```typescript
+interface ManagementCombination {
+  id: string;
+  label: string;
+  description: string;
+  management_type: string;   // Channel: CALL_OUT, EMAIL, etc.
+  debtor_comment: string;     // What the debtor said/did
+  executive_comment: string;  // Executive's assessment/action
+  targetPhase: number;        // Phase to transition invoices to (1-7)
+  fields: FieldConfig[];      // Dynamic form fields for this combination
+}
+```
+
+### ~50+ Combinations defined covering:
+- Payment commitments (WILL_DEPOSIT_OR_TRANSFER → WITH_PAYMENT_COMMITMENT, phase 5)
+- Payment declared (DEPOSITED_OR_TRANSFERRED → CONFIRM_PAYMENT_IN_STATEMENT, phase 7)
+- Contact not responding (various executive actions, phase 1)
+- Statement sent (various follow-ups, phase 1)
+- Payment identified (PARTIAL_PAYMENT_OR_INCOMPLETE_DETAIL, phase 1)
+- Invoice not registered (NOT_ACCOUNTED, phase 3)
+- Litigation (DOCUMENT_IN_LITIGATION, phase 2)
+- Litigation normalization (LITIGATION_NORMALIZATION, phase 2)
+- Payment plan request (PAYMENT_PLAN_APPROVAL_REQUEST, phase 4)
+- Check pickup (WITH_PAYMENT_COMMITMENT, phase 5)
+- Documents without payment commitment (various, phase 1)
+- Credit notes, acknowledgment of receipt, cash flow problems
+- Protested documents, order blocking, SII rejection
+- Commercial reports publication, commitment breached
+- And more...
+
+### 3-Level Selection Cascade:
+1. **Management Type** (channel): CALL_OUT, CALL_IN, MAIL_OUT, MAIL_IN, etc.
+2. **Debtor Comment** (debtor's situation): ~24 options
+3. **Executive Comment** (action taken): ~40+ options filtered by debtor comment
+
+### Two Client Type Configurations:
+- `NORMAL_CLIENTS`: ~24 management types with full escalation paths
+- `FACTORING_CLIENTS`: ~18 management types specific to factoring operations (includes certificate requests, partial payments)
+
+---
+
+## 7. Sub-Route: Managements List
+
+### `managements-list/page.tsx` (root level)
+- Lists all debtors in a paginated data table
+- Columns: Name, Code, RUT, "View History" button
+- Server-side pagination and search
+- For FACTORING clients: filters debtors by company IDs
+- "View History" → navigates to `/${debtorId}/managements-list`
+
+### `[id]/managements-list/page.tsx`
+- Shows management history for a specific debtor
+- Fetches debtor info via `getDebtorById()` and tracks via `getDebtorTracksByInvoices()`
+- Enriches contact names by matching email/phone with debtor contacts
+- Sorts by management date DESC
+- **Data table columns** (20 configurable, saved to user profile):
+  - Document number, order code, installments, days overdue, amount, phase, time in phase
+  - Management date/time, management type (badge), executive name, contact
+  - Debtor comment, executive comment, payment commitment date, litigation info
+  - Observation, next management date, collector name/channel
+  - Actions (view details)
+- **TrackDetailModal**: fetches full track via `getTrackById()`, also fetches litigation details and payment plan details as needed, displays comprehensive management record
+- **Column visibility**: persisted to user profile via `updateTableProfile()` API call
+- **Export**: Excel export via `ExportExcelModal`
+
+### `managements-list/components/columns-invoices.tsx`
+- Creates 19-column table definition for `InvoiceWithTrack[]` data
+- Dynamic columns with computed fields (days overdue, time in phase, phase detection)
+
+### `managements-list/components/columns.tsx`
+- Creates 16-column table definition for `DebtorTrack[]` data (alternative view)
+
+### `managements-list/components/track-detail-modal.tsx`
+- Full modal showing single track detail
+- Fetches track, litigations (by ID array), payment plan (by ID)
+- Displays: associated invoices table, management config, observation, executive/contact info, next management date, case data fields (litigation details, payment plan summary with financial calculations)
+
+---
+
+## 8. Add Management Flow (3-Step Wizard)
+
+### Step 1 (`tabs/steps/StepOne.tsx`)
+- **Invoice selection**: Fetches all invoices for the debtor via `getInvoices()` from payment-netting service
+- **Data table**: Paginated, searchable, with row selection (checkboxes)
+- **Columns**: Document number, type badge, issue date, due date, amount, balance, delay, phase, document preview (iframe via Google Docs viewer)
+- **Validation**: At least 1 invoice must be selected
+
+### Step 2 (`tabs/steps/StepTwo.tsx`)
+- **Management type selection** (3 cascading selects):
+  1. Management Type (channel) → resets debtorComment + executiveComment
+  2. Debtor Comment → filtered by management type, resets executiveComment
+  3. Executive Comment → filtered by debtor comment
+- **Dynamic form fields** appear based on selected combination (via `ManagementCombination.fields`):
+  - Text inputs, numbers, dates, times, selects, textareas
+  - Special components: `ManagementLitigationForm`, `ManagementNormalizedLitigationForm`, `ManagementPaymentPlanForm`
+- **Contact selection**: Maps debtor contacts to select options (email-based), supports manual entry
+- **Next management date/time**: Date and time pickers
+- **Observation**: Auto-generated text area (disabled, presumably AI-generated)
+- **Auto-fill**: Amount/paymentAmount fields auto-populated from invoice totals
+- **Validation**: Zod schema dynamically built based on combination + fields
+
+### Step 3 (`tabs/steps/StepThree.tsx`)
+- **Preview/confirmation**: Shows all data from steps 1-2 in read-only format
+- **Debtor data**: Code, business name, contact, email/phone
+- **Management data**: Current date/time, analyst name, type, comments, next management date/time
+- **Invoice table**: Full list of selected invoices
+- **Case data display**: Renders combination-specific details (litigation cards, payment plan summary with financial calculations, normalization details)
+- **File upload**: Drag-and-drop or click to upload images (JPEG, PNG, GIF, max 5MB)
+- **Additional comment**: Free-text textarea
+- **Send email checkbox**: Defaults to `true`
+
+---
+
+## 9. Management Type Forms
+
+### 9a. Litigation Form (`components/litigation/ManagementLitigationForm.tsx`)
+- **Multi-litigation support**: Add/remove multiple litigation groups
+- **Per litigation**:
+  - Select invoices from available pool (shared across litigations, disables already-used)
+  - Per-invoice amount input (defaults to balance, customizable)
+  - Auto-calculated total litigation amount (sum of per-invoice amounts)
+  - Motivo (reason) select → submotivo (sub-reason) select (from `disputes` data)
+- **InvoiceCardLitigation** (`litigation/InvoiceCardLitigation.tsx`): Card with invoice details, selection state, amount input field
+- **Validation**: At least 1 litigation, at least 1 invoice per litigation, reason + subreason required
+
+### 9b. Normalization Form (`components/normalization/ManagementNormalizedLitigationForm.tsx`)
+- **Litigation selection**: Only shows invoices with active litigations (via `getLitigationsByDebtor()`)
+- Displays litigation amount per invoice
+- **Normalization reason**: Select from `NORMALIZATION_REASONS`
+- **Comment**: Required textarea
+- **Total amount**: Auto-calculated sum of selected litigations
+- Collects `litigationIds` for bulk normalization API call
+- **InvoiceCardLitigation** (`normalization/InvoiceCardLitigation.tsx`): Card showing litigation amount, disabled if no active litigation
+
+### 9c. Payment Plan Form (`components/payment-plan/ManagementPaymentPlanForm.tsx`)
+- **Two-column layout**: Form (8 cols) + Financial summary (4 cols)
+- **Invoice summary**: Count + total amount
+- **Form fields**:
+  - Down payment (pago contado)
+  - Number of installments (1-36)
+  - Annual interest rate (0-48%)
+  - Payment method (from `DEBTOR_PAYMENT_METHODS`)
+  - Payment frequency (from `PAYMENT_FREQUENCY`: weekly, biweekly, monthly, quarterly, semestral)
+  - Start date
+- **Real-time calculation**: Amortization formula computes installment + total interest
+- **Financial summary sidebar**: Colocación total, pago contado %, monto a financiar, cuota, total intereses, total a pagar
+
+---
+
+## 10. Email System
+
+### Flow:
+1. On "Finish" in AddManagementTab, managements with `sendEmail: true` are collected
+2. Bank info fetched once via `fetchAndFormatBankInfo()`
+3. Managements grouped by contact email
+4. **Single management per contact**:
+   - `buildEmailPayload()` → `EmailPayload` with template ID from env
+   - `sendTrackEmail()` → `POST /v2/clients/${clientId}/managements/emails/send`
+5. **Multiple managements per contact**:
+   - `buildMultipleEmailPayload()` → `EmailMultiplePayload` with different template ID
+   - `sendMultipleManagementEmail()` → same endpoint
+
+### Email Content Generation:
+- `generateBodyDescriptionByDebtorComment()` in `utils/email-messages.ts`:
+  - Priority 1: PARTIAL_PAYMENT_OR_INCOMPLETE_DETAIL executive comment
+  - Priority 2: INVOICE_WITH_LITIGATION debtor comment
+  - Priority 3: Lookup by debtor_comment in 27 predefined messages
+  - Priority 4: Default message (different for FACTORING vs NORMAL)
+- Placeholders replaced: `{amount}`, `{date}`, `{email_company}`, `{bank_account_info}`, `{name_client}`
+- Each message is a business-crafted Spanish text explaining the management action
+
+### Email Template IDs:
+- Single: env `NEXT_SG_SINGLE_MANAGEMENT` (default: `d-2ab3e2439491440c951a1cf46fdec7aa`)
+- Multiple: env `NEXT_SG_MULTIPLE_MANAGEMENT` (default: `d-f3db644c64b1410f981ee7642d28aba4`)
+
+---
+
+## 11. Tasks System
+
+- `TaskIsland`: Colored container for task groups (red=broken commitments/critical, orange=cash generation, yellow=litigation, purple=technical file, gray=unclassified)
+- `TaskItem`: Debtor row showing code, name, incidents, overdue debt, status badge
+  - First item in each quadrant is "highlighted" (navigates directly)
+  - Non-highlighted items show confirmation dialog before navigation
+- `TasksList`: Fetches `useCollectorQuadrants()` and organizes into 6 quadrant sections, sorted by debt amount (critical debtors)
+- `TaskFilters`: Quadrant filter buttons with live counts, search autocomplete, Excel export
+- `TasksPagination`: Standard pagination with ellipsis
+
+---
+
+## 12. Indicator/Metrics Components
+
+- `IndicatorsDebtor`: Sidebar dashboard fetching `useManagementIndicators()`
+  - Status card (active/inactive with live clock)
+  - Executive progress: completed/total tasks %
+  - Daily goal: current/target amount
+  - Overdue reduction: percentage with progress bar
+  - Payment commitments: amount/count
+  - Monthly goal: percentage with progress bar
+- `ProgressBarChart`: Dual-segment bar with color coding and K/M number formatting
+- `IndicatorCard`: Reusable wrapper with icon + title + children
+
+---
+
+## 13. Other Components
+
+### 13a. CreditRisk
+- Current/available credit amounts, risk category colored dot, credit status badge (Active/Under Review/Retained/No Credit Line)
+
+### 13b. DebtorContacts
+- Full contact card system with VoIP integration (WebRTC), contact swapping, add new contact dialog, call duration timer
+
+### 13c. DebtorChatbot
+- AI chat interface using `@assistant-ui/react` + `@assistant-ui/react-ai-sdk`
+- Initial message from call brief (markdown cleaned)
+- Thread persistence in Zustand store per debtor ID
+- Transport posts to AI engine endpoint
+
+### 13d. Key Reasons
+- Dashboard: unfulfilled commitment, overdue debt %, cash estimate, upcoming maturities, open litigations
+
+### 13e. Last Managements
+- Recent managements list with manager, description, date, channel badge
+- Expandable accordion for previous managements
+- "All Managements" button links to history page
+
+### 13f. Last Payment Received
+- Last payment amount/date/type + expandable accordion for other pending payments
+
+### 13g. Litigations Card
+- Total debt in litigation + breakdown by document type with amounts and counts
+
+### 13h. Payment Commitment
+- Credibility pie chart (fulfilled vs unfulfilled %), expandable table of latest commitments
+
+### 13i. Protested Checks
+- List of protested checks with number, amount, status, days
+
+---
+
+## 14. Collector Quadrants
+
+### Hook: `hooks/useCollectorQuadrants.ts`
+- React Query-based data fetching
+- Query key: `["collector-quadrants", clientId, params]`
+- Configurable params: quadrant filter, search, page, limit
+- staleTime: 30s, gcTime: 5min, retry: 2
+
+### Service: `getCollectorQuadrants()`
+- `GET /v2/clients/${clientId}/managements/collector-quadrants`
+- Query params: quadrant, search, page, limit
+- Response: 6 quadrant arrays (broken_commitments, critical_debtors, cash_generation, deficient_technical_file, litigation, unclassified) + pagination
+
+### Quadrant Types (`services/types.ts`):
+```typescript
+type QuadrantType = "BROKEN_COMMITMENTS" | "CRITICAL_DEBTORS" | "CASH_GENERATION" | "DEFICIENT_TECHNICAL_FILE" | "LITIGATION" | "UNCLASSIFIED" | null;
+```
+
+### QuadrantItem shape:
+```typescript
+interface QuadrantItem {
+  debtorId: string;
+  quadrant: string | null;
+  quadrantName: string;
+  debtor: { id, name, email, debtor_code, broken_commitments_count, broken_commitments_percentage, due_debt_amount };
+}
+```
+
+### UI Usage:
+- `TaskFilters` shows quadrant buttons with live counts
+- `TasksList` renders quadrant sections with colored islands
+- `DebtorSearchAutocomplete` searches across all quadrants
+- `IndicatorsDebtor` shows management metrics in sidebar
+
+---
+
+## Architecture Summary
+
+```
+Parent Route: /dashboard/debtor-management
+├── IndicatorsDebtor (sidebar metrics)
+├── TaskFilters (quadrant filter + search + export)
+│   └── DebtorSearchAutocomplete
+└── TasksList
+    └── TaskIsland × 6 quadrants
+        └── TaskItem (click → detail page)
+
+Detail Route: /dashboard/debtor-management/[id]
+├── DebtorContacts (VoIP calling)
+└── Tabs
+    ├── KeyReasonsTab
+    │   ├── DebtorChatbot (AI assistant)
+    │   └── Collapsible cards:
+    │       ├── KeyReasons
+    │       ├── PaymentCommitment
+    │       ├── CreditRisk
+    │       ├── ProtestedChecks
+    │       ├── LastPaymentReceived
+    │       ├── LitigationsCard
+    │       └── LastManagements → managements-list
+    └── AddManagementTab (3-step wizard)
+        ├── Step 1: Invoice selection
+        ├── Step 2: Management type cascade + dynamic fields
+        │   ├── ManagementLitigationForm
+        │   ├── ManagementNormalizedLitigationForm
+        │   └── ManagementPaymentPlanForm
+        └── Step 3: Preview + file upload + email checkbox
+        On finish → createTrack + optionally createLitigation/createPaymentPlan + sendEmail
+
+Managements List Route: /dashboard/debtor-management/[id]/managements-list
+├── Debtor info header
+├── DataTableDynamicColumns (20 configurable columns)
+│   └── InvoiceWithTrack data
+└── TrackDetailModal (full management detail)
+
+Root Managements List: /dashboard/debtor-management/managements-list
+└── DebtorsTable (all debtors, paginated, search, link to per-debtor history)
+```
+
+### Data Flow:
+1. Debtor data from `useDebtorsStore` (Zustand)
+2. Collection profile + call brief from store
+3. Collector quadrants from React Query (`useCollectorQuadrants`)
+4. Management indicators from React Query (`useManagementIndicators`)
+5. WebRTC call state from `WebRTCContext` + `useWebRTCPhone`
+6. Chat thread persistence in `useDebtorsStore`
+7. Profile/session from `ProfileContext`
+
+### Key API Endpoints:
+- `GET /v2/clients/{id}/managements/collector-quadrants`
+- `GET /v2/clients/{id}/managements/indicators`
+- `POST /v2/clients/{id}/managements/tracks`
+- `GET /v2/clients/{id}/managements/tracks/debtor/{debtorId}`
+- `GET /v2/clients/{id}/managements/tracks/debtor/{debtorId}/invoices`
+- `GET /v2/clients/{id}/managements/tracks/{trackId}`
+- `POST /v2/clients/{id}/managements/emails/send`
+- `POST /v2/clients/{id}/payment-plans`
+- `GET /bff/api/v2/clients/{id}/sip-call-external-id`
+- `POST /v2/clients/{id}/ai-engines/chat`
