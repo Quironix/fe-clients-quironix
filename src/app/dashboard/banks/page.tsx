@@ -19,7 +19,7 @@ import { Edit, FileText, Link, Loader2, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import BulletMenu, { BulletMenuItem } from "../components/bullet-menu";
 import DialogConfirm from "../components/dialog-confirm";
@@ -66,6 +66,7 @@ const BanksContent = () => {
     setIsLoading,
   } = useBankInformationStore();
   const [loadFintoc, setLoadFintoc] = useState<any>(null);
+  const widgetRef = useRef<any>(null);
 
   useEffect(() => {
     if (session?.token && profile?.client?.id) {
@@ -90,6 +91,7 @@ const BanksContent = () => {
 
   const openFintocModal = async (since?: string) => {
     try {
+      widgetRef.current?.destroy();
       setIsFintocProccessOpen(true);
       const linkIntent = await createFintocLinkIntent(
         session?.token,
@@ -101,6 +103,8 @@ const BanksContent = () => {
         widgetToken: linkIntent.widget_token,
         publicKey: process.env.NEXT_PUBLIC_FINTOC_PUBLIC_KEY,
         onSuccess: async (data: any) => {
+          widgetRef.current?.destroy();
+          widgetRef.current = null;
           setIsLoading(true);
           const response = await exchangeDataFintoc(
             session?.token,
@@ -117,18 +121,23 @@ const BanksContent = () => {
         },
 
         onExit: () => {
+          widgetRef.current?.destroy();
+          widgetRef.current = null;
           setIsFintocProccessOpen(false);
           toast.error(t("toast.connectCancelled"));
         },
       };
 
       const widget = loadFintoc?.create(options);
+      widgetRef.current = widget ?? null;
       if (!widget) {
         toast.error(t("toast.connectError"));
         return;
       }
       widget?.open();
     } catch (error) {
+      widgetRef.current?.destroy();
+      widgetRef.current = null;
       console.error("Error al abrir el widget de Fintoc:", error);
       toast.error(t("toast.connectError"), {
         description: t("toast.connectErrorDescription"),
