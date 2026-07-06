@@ -179,6 +179,21 @@ export const TrackDetailModal = ({
     return timeString;
   };
 
+  const formatCallDateTime = (dateString: string | Date) => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      const dd = String(date.getUTCDate()).padStart(2, "0");
+      const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const yyyy = date.getUTCFullYear();
+      const hh = String(date.getUTCHours()).padStart(2, "0");
+      const min = String(date.getUTCMinutes()).padStart(2, "0");
+      return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+    } catch {
+      return typeof dateString === "string" ? dateString : "-";
+    }
+  };
+
   const getCallTypeLabel = (callType?: string) => {
     if (callType === "outbound") return "Saliente";
     if (callType === "inbound") return "Entrante";
@@ -613,7 +628,7 @@ export const TrackDetailModal = ({
                           </Badge>
                         </TableCell>
                         <TableCell className="text-xs">
-                          {formatDateTime(call.date)}
+                          {formatCallDateTime(call.date)}
                         </TableCell>
                         <TableCell className="text-xs">
                           {call.url ? (
