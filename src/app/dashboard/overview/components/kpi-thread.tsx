@@ -1,5 +1,6 @@
 "use client";
 
+import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import {
   ComposerPrimitive,
   MessagePrimitive,
@@ -9,7 +10,6 @@ import {
 import { BotIcon, SendIcon, UserIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { FC } from "react";
-import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 
 export const KPIThread: FC = () => {
   return (
@@ -22,27 +22,6 @@ export const KPIThread: FC = () => {
               AssistantMessage: AssistantMessage,
             }}
           />
-
-          <ThreadPrimitive.If running>
-            <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center flex-shrink-0">
-                <BotIcon className="h-4 w-4 text-white" />
-              </div>
-              <div className="bg-gray-100 rounded-lg p-3">
-                <div className="flex gap-1">
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" />
-                  <div
-                    className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  />
-                  <div
-                    className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.4s" }}
-                  />
-                </div>
-              </div>
-            </div>
-          </ThreadPrimitive.If>
         </div>
 
         <ThreadPrimitive.If empty={false}>
@@ -80,6 +59,35 @@ const UserMessage: FC = () => {
 };
 
 const AssistantMessage: FC = () => {
+  const isRunning = useAssistantState(({ thread }) => thread.isRunning);
+  const hasContent = useAssistantState(({ message }) => {
+    const parts = message.parts;
+    return parts && parts.length > 0;
+  });
+
+  if (isRunning && !hasContent) {
+    return (
+      <div className="flex gap-3 justify-start mb-4">
+        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+          <BotIcon className="h-4 w-4 text-white" />
+        </div>
+        <div className="bg-gray-100 rounded-lg p-3">
+          <div className="flex gap-1">
+            <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" />
+            <div
+              className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.2s" }}
+            />
+            <div
+              className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.4s" }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <MessagePrimitive.Root className="flex gap-3 justify-start mb-4">
       <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center flex-shrink-0">
@@ -103,7 +111,7 @@ const AssistantMessage: FC = () => {
 const SuggestedQuestions: FC = () => {
   const t = useTranslations("overview");
   const messageCount = useAssistantState(
-    ({ thread }) => thread.messages.length
+    ({ thread }) => thread.messages.length,
   );
 
   const suggestedQuestions = [

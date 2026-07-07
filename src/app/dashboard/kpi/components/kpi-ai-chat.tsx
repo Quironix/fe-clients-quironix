@@ -120,10 +120,7 @@ export const KPIAIChat = () => {
             ))}
 
             {isLoading && (
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center flex-shrink-0">
-                  <BotIcon className="h-4 w-4 text-white" />
-                </div>
+              <div className="flex gap-3 justify-start pl-2">
                 <div className="bg-gray-100 rounded-lg p-3">
                   <div className="flex gap-1">
                     <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" />
