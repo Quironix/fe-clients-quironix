@@ -252,9 +252,10 @@ export const createInvoiceColumns = (
     id: "actions",
     header: "Acciones",
     cell: ({ row }) => {
-      // Los correos entrantes son informativos (no crean una gestión real
-      // en el backend), no tienen un detalle de track que abrir.
-      if (row.original.type === "EMAIL_REPLY") {
+      // Los correos entrantes solo tienen detalle de track si el backend
+      // logró vincularlos automáticamente a la gestión que los originó
+      // (ver PRD §17). Si no hay track_id, no hay nada que abrir.
+      if (row.original.type === "EMAIL_REPLY" && !row.original.track?.id) {
         return null;
       }
       return (
