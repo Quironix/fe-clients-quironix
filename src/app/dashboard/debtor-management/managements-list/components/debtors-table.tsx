@@ -148,7 +148,7 @@ const DebtorsTable = ({ isFactoring }: DebtorsTableProps) => {
             size="sm"
             onClick={() =>
               router.push(
-                `/dashboard/debtor-management/${row.original.id}/managements-list`
+                `/dashboard/debtor-management/${row.original.id}/managements-list?from=managements-list`
               )
             }
           >

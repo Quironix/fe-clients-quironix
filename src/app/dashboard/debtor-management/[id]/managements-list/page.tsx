@@ -31,7 +31,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getDebtorTracksByInvoices } from "../../services/tracks";
@@ -61,6 +61,9 @@ const IconDescription = ({
 const Content = () => {
   const params = useParams();
   const debtorId = params?.id as string;
+  const searchParams = useSearchParams();
+  const fromManagementsList =
+    searchParams.get("from") === "managements-list";
   const { profile, session } = useProfileContext();
 
   const [invoicesWithTracks, setInvoicesWithTracks] = useState<
@@ -407,36 +410,66 @@ const Content = () => {
         <div className="flex justify-between items-center mb-5">
           <Breadcrumb>
             <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link
-                    href="/dashboard/debtor-management"
-                    className="text-blue-600"
-                  >
-                    Gestión de deudores
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link
-                    href={`/dashboard/debtor-management/${dataDebtor?.id}`}
-                    className="text-blue-600"
-                  >
+              {fromManagementsList ? (
+                <>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link
+                        href="/dashboard/debtor-management/managements-list"
+                        className="text-blue-600"
+                      >
+                        Lista de gestiones
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
                     <span className="font-bold">
                       {`(${dataDebtor?.debtor_code}) ` || <Skeleton />}
                       {dataDebtor?.name || <Skeleton />}
                     </span>
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>Lista de gestiones</BreadcrumbItem>
+                  </BreadcrumbItem>
+                </>
+              ) : (
+                <>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link
+                        href="/dashboard/debtor-management"
+                        className="text-blue-600"
+                      >
+                        Gestión de deudores
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link
+                        href={`/dashboard/debtor-management/${dataDebtor?.id}`}
+                        className="text-blue-600"
+                      >
+                        <span className="font-bold">
+                          {`(${dataDebtor?.debtor_code}) ` || <Skeleton />}
+                          {dataDebtor?.name || <Skeleton />}
+                        </span>
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>Lista de gestiones</BreadcrumbItem>
+                </>
+              )}
             </BreadcrumbList>
           </Breadcrumb>
           <Button variant="ghost" asChild>
-            <Link href={`/dashboard/debtor-management/${dataDebtor?.id}`}>
+            <Link
+              href={
+                fromManagementsList
+                  ? "/dashboard/debtor-management/managements-list"
+                  : `/dashboard/debtor-management/${dataDebtor?.id}`
+              }
+            >
               <div className="flex gap-1 justify-start items-center text-blue-700">
                 <ArrowLeft /> Volver
               </div>
