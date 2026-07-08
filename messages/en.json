@@ -777,7 +777,8 @@
     },
     "tabs": {
       "keyReasons": "Key reasons",
-      "addManagement": "Add management"
+      "addManagement": "Add management",
+      "emailThread": "Emails"
     },
     "keyReasons": {
       "title": "Key call reasons",
@@ -799,6 +800,12 @@
       "lastPayment": "Last payment received",
       "litigations": "Litigations",
       "lastManagements": "Last managements"
+    },
+    "emailThreadTab": {
+      "empty": "The debtor has not replied to any collection email",
+      "from": "From",
+      "noSubject": "(No subject)",
+      "loading": "Loading emails..."
     },
     "creditRisk": {
       "currentCredit": "Current credit",

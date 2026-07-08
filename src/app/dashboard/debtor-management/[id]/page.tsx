@@ -24,6 +24,7 @@ import TitleSection from "../../components/title-section";
 import { useDebtorsStore } from "../../debtors/store";
 import { DebtorContacts } from "../components/debtor-contacts";
 import { AddManagementTab } from "../components/tabs/add-management-tab";
+import { EmailThreadTab } from "../components/tabs/email-thread-tab";
 import { KeyReasonsTab } from "../components/tabs/key-reasons-tab";
 
 interface PageProps {
@@ -51,6 +52,10 @@ const Content = ({ params }: PageProps) => {
     callBrief,
     isFetchingCallBrief,
     clearCallBrief,
+    fetchDebtorEmailReplies,
+    emailReplies,
+    isFetchingEmailReplies,
+    clearDebtorEmailReplies,
   } = useDebtorsStore();
 
   useEffect(() => {
@@ -58,12 +63,14 @@ const Content = ({ params }: PageProps) => {
       fetchDebtorById(session.token, profile.client.id, id);
       fetchCollectionProfile(session.token, profile.client.id, id);
       fetchCallBrief(session.token, profile.client.id, id);
+      fetchDebtorEmailReplies(session.token, profile.client.id, id);
     }
 
     return () => {
       clearDataDebtor();
       clearCollectionProfile();
       clearCallBrief();
+      clearDebtorEmailReplies();
     };
   }, [id, profile?.client?.id, session?.token]);
 
@@ -172,6 +179,9 @@ const Content = ({ params }: PageProps) => {
             <TabsList>
               <TabsTrigger value="key-reasons">{t("tabs.keyReasons")}</TabsTrigger>
               <TabsTrigger value="add-management">{t("tabs.addManagement")}</TabsTrigger>
+              <TabsTrigger value="email-thread">
+                {t("tabs.emailThread")} ({emailReplies.length})
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="key-reasons" className="flex-1">
               <KeyReasonsTab
@@ -187,6 +197,12 @@ const Content = ({ params }: PageProps) => {
                 dataDebtor={dataDebtor}
                 session={session}
                 profile={profile}
+              />
+            </TabsContent>
+            <TabsContent value="email-thread" className="flex-1">
+              <EmailThreadTab
+                emailReplies={emailReplies}
+                isFetchingEmailReplies={isFetchingEmailReplies}
               />
             </TabsContent>
           </Tabs>

@@ -772,7 +772,8 @@
     },
     "tabs": {
       "keyReasons": "Razones clave",
-      "addManagement": "Agregar gestión"
+      "addManagement": "Agregar gestión",
+      "emailThread": "Correos"
     },
     "keyReasons": {
       "title": "Razones clave de llamada",
@@ -794,6 +795,12 @@
       "lastPayment": "Último pago recibido",
       "litigations": "Litigios",
       "lastManagements": "Últimas gestiones"
+    },
+    "emailThreadTab": {
+      "empty": "El deudor no ha respondido ningún correo de cobranza",
+      "from": "De",
+      "noSubject": "(Sin asunto)",
+      "loading": "Cargando correos..."
     },
     "creditRisk": {
       "currentCredit": "Crédito actual",
