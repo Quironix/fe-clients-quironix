@@ -251,15 +251,22 @@ export const createInvoiceColumns = (
   {
     id: "actions",
     header: "Acciones",
-    cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onViewDetails?.(row.original)}
-        className="h-8 w-8 p-0"
-      >
-        <Eye className="h-4 w-4" />
-      </Button>
-    ),
+    cell: ({ row }) => {
+      // Los correos entrantes son informativos (no crean una gestión real
+      // en el backend), no tienen un detalle de track que abrir.
+      if (row.original.type === "EMAIL_REPLY") {
+        return null;
+      }
+      return (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onViewDetails?.(row.original)}
+          className="h-8 w-8 p-0"
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      );
+    },
   },
 ];

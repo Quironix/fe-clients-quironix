@@ -8,7 +8,6 @@ import {
   updateDebtor,
   getDebtorCollectionProfile,
   getDebtorCallBrief,
-  getDebtorEmailReplies,
 } from "../services";
 import { BulkUploadResponse, Debtor } from "../types";
 import { DEFAULT_PAGINATION_PARAMS } from "../types/pagination";
@@ -97,16 +96,6 @@ interface DebtorsStore {
     debtorId: string
   ) => Promise<void>;
   clearCallBrief: () => void;
-
-  // Estados para correos de respuesta del deudor
-  emailReplies: any[];
-  isFetchingEmailReplies: boolean;
-  fetchDebtorEmailReplies: (
-    accessToken: string,
-    clientId: string,
-    debtorId: string
-  ) => Promise<void>;
-  clearDebtorEmailReplies: () => void;
 
   // Estados para chat threads
   chatThreads: Record<string, string>;
@@ -426,31 +415,6 @@ export const useDebtorsStore = create<DebtorsStore>((set, get) => ({
   },
   clearCallBrief: () => {
     set({ callBrief: null });
-  },
-  emailReplies: [],
-  isFetchingEmailReplies: false,
-  fetchDebtorEmailReplies: async (
-    accessToken: string,
-    clientId: string,
-    debtorId: string
-  ) => {
-    set({ isFetchingEmailReplies: true });
-    try {
-      const response = await getDebtorEmailReplies(
-        accessToken,
-        clientId,
-        debtorId
-      );
-      set({ emailReplies: Array.isArray(response) ? response : [] });
-    } catch (error: any) {
-      console.error("Error en fetchDebtorEmailReplies:", error);
-      set({ emailReplies: [] });
-    } finally {
-      set({ isFetchingEmailReplies: false });
-    }
-  },
-  clearDebtorEmailReplies: () => {
-    set({ emailReplies: [] });
   },
   chatThreads: {},
   getChatThreadId: (debtorId: string) => get().chatThreads[debtorId],
