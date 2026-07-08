@@ -210,7 +210,7 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
               },
               {
                 title: t("initialDebtorsLoad"),
-                url: "/dashboard/debtors/create",
+                url: "/dashboard/transactions/dte",
                 scope: "client.settings_account.debtors",
               },
               {
