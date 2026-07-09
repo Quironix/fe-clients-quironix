@@ -79,6 +79,7 @@ const useLogin = () => {
       toast.success(t("login.successTitle"), {
         description: t("login.successDescription"),
       });
+      sessionStorage.setItem("session_active", "1");
       form.reset();
       router.push("/dashboard/overview");
     } catch (error: any) {
