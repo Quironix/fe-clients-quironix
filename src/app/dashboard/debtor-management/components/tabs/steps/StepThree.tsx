@@ -711,8 +711,8 @@ export const StepThree = ({
                   </h3>
                 </div>
                 <p className="text-xs italic  text-gray-600">
-                  {formData.observation.charAt(0).toUpperCase() +
-                    formData.observation.slice(1)}
+                  {(formData.observation || "").charAt(0).toUpperCase() +
+                    (formData.observation || "").slice(1)}
                 </p>
               </div>
             </div>

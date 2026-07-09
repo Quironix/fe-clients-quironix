@@ -22,6 +22,15 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import {
   Form,
   FormControl,
   FormField,
@@ -60,6 +69,7 @@ interface StepTwoProps {
   onFormChange: (data: Partial<ManagementFormData>) => void;
   selectedInvoices?: Invoice[];
   onValidationChange?: (isValid: boolean) => void;
+  onNoEmailContact?: (hasNoEmail: boolean) => void;
 }
 
 const createFormSchema = (
@@ -344,8 +354,10 @@ export const StepTwo = ({
   onFormChange,
   selectedInvoices = [],
   onValidationChange,
+  onNoEmailContact,
 }: StepTwoProps) => {
   const t = useTranslations("debtorManagement.stepTwo");
+  const [showNoEmailAlert, setShowNoEmailAlert] = useState(false);
 
   const managementTypeLabels: Record<string, string> = {
     CALL_OUT: t("callOut"),
@@ -453,8 +465,6 @@ export const StepTwo = ({
   const debtorContacts = useMemo<DebtorContact[]>(() => {
     if (!dataDebtor?.contacts) return [];
 
-    console.log("Raw contacts from dataDebtor:", dataDebtor.contacts);
-
     const mappedContacts = dataDebtor.contacts
       .filter((contact: any) => contact.email)
       .map(
@@ -467,10 +477,19 @@ export const StepTwo = ({
         })
       );
 
-    console.log("Mapped debtorContacts (only with email):", mappedContacts);
-
     return mappedContacts;
   }, [dataDebtor]);
+
+  const hasNoEmailContacts = dataDebtor?.contacts?.length > 0 && debtorContacts.length === 0;
+
+  useEffect(() => {
+    if (hasNoEmailContacts) {
+      setShowNoEmailAlert(true);
+      onNoEmailContact?.(true);
+    } else {
+      onNoEmailContact?.(false);
+    }
+  }, [hasNoEmailContacts]);
 
   const form = useForm<any>({
     resolver: zodResolver(formSchema) as any,
@@ -592,6 +611,24 @@ export const StepTwo = ({
 
   return (
     <div className="space-y-5">
+      <AlertDialog open={showNoEmailAlert} onOpenChange={setShowNoEmailAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Contacto sin email asignado</AlertDialogTitle>
+            <AlertDialogDescription>
+              El contacto seleccionado no tiene un email registrado. Para poder
+              enviar la gestión, editá el contacto existente o creá uno nuevo con
+              un email válido.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowNoEmailAlert(false)}>
+              Entendido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Form {...form}>
         <form className="space-y-5">
           <Accordion

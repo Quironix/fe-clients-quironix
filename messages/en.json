@@ -151,6 +151,11 @@
     "saveContact": "Save contact",
     "selectedUsers": "Selected users:"
   },
+  "idleSession": {
+    "title": "Your session is about to expire",
+    "description": "You will be automatically logged out due to inactivity in:",
+    "stayLoggedIn": "Stay logged in"
+  },
   "auth": {
     "login": {
       "title": "Welcome",

@@ -17,7 +17,8 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { ArrowLeft, PhoneCall } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
+import type { Contact } from "../../debtors/types";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
@@ -38,6 +39,7 @@ const Content = ({ params }: PageProps) => {
   const t = useTranslations("debtorManagement");
 
   const { profile, session } = useProfileContext();
+  const [activeContact, setActiveContact] = useState<Contact | null>(null);
   const {
     fetchDebtorById,
     dataDebtor,
@@ -149,6 +151,7 @@ const Content = ({ params }: PageProps) => {
             callSchedule={dataDebtor.attention_days_hours || t("contacts.notDefined")}
             clientId={profile?.client?.id ?? ""}
             accessToken={session?.token ?? ""}
+            onContactChange={setActiveContact}
           />
         ) : (
           <DebtorContacts
@@ -164,6 +167,7 @@ const Content = ({ params }: PageProps) => {
             callSchedule={t("contacts.notDefined")}
             clientId={profile?.client?.id ?? ""}
             accessToken={session?.token ?? ""}
+            onContactChange={setActiveContact}
           />
         )}
 
@@ -187,6 +191,7 @@ const Content = ({ params }: PageProps) => {
                 dataDebtor={dataDebtor}
                 session={session}
                 profile={profile}
+                activeContact={activeContact}
               />
             </TabsContent>
           </Tabs>

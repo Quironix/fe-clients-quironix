@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useWebRTCContext } from "@/context/WebRTCContext";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { Contact } from "@/app/dashboard/debtors/types";
 import { toast } from "sonner";
 import {
   bulkLitigatiions,
@@ -38,6 +39,7 @@ interface AddManagementTabProps {
   dataDebtor: any;
   session?: any;
   profile?: any;
+  activeContact?: Contact | null;
 }
 
 export interface DebtorContact {
@@ -70,10 +72,30 @@ export interface SavedManagement {
   createdAt: Date;
 }
 
+const buildContactFromActive = (contact: Contact | null | undefined): Pick<ManagementFormData, "contactType" | "contactValue" | "selectedContact"> => {
+  if (!contact) {
+    return { contactType: "", contactValue: "", selectedContact: null };
+  }
+  const channel = contact.channel?.toUpperCase() || "EMAIL";
+  const value = channel === "PHONE" ? (contact.phone || "") : (contact.email || "");
+  return {
+    contactType: channel as ManagementFormData["contactType"],
+    contactValue: value,
+    selectedContact: {
+      id: (contact as any).id || "",
+      type: channel,
+      value,
+      label: `${contact.name} - ${value}`,
+      name: contact.name || "",
+    },
+  };
+};
+
 export const AddManagementTab = ({
   dataDebtor,
   session,
   profile,
+  activeContact,
 }: AddManagementTabProps) => {
   const t = useTranslations("debtorManagement.management");
   const { pendingCallUniqueIds, clearCallUniqueIds } = useWebRTCContext();
@@ -94,9 +116,7 @@ export const AddManagementTab = ({
       managementType: "",
       debtorComment: "",
       executiveComment: "",
-      contactType: "",
-      contactValue: "",
-      selectedContact: null,
+      ...buildContactFromActive(activeContact),
       observation: "",
       nextManagementDate: "",
       nextManagementTime: "",
@@ -106,11 +126,19 @@ export const AddManagementTab = ({
       sendEmail: true,
     });
 
+  useEffect(() => {
+    setManagementFormData((prev) => ({
+      ...prev,
+      ...buildContactFromActive(activeContact),
+    }));
+  }, [activeContact]);
+
   const [stepValidations, setStepValidations] = useState({
     step1: false,
     step2: false,
     step3: true,
   });
+  const [contactHasNoEmail, setContactHasNoEmail] = useState(false);
 
   const handleStep1ValidationChange = useCallback((isValid: boolean) => {
     setStepValidations((prev) => ({ ...prev, step1: isValid }));
@@ -756,6 +784,7 @@ export const AddManagementTab = ({
             onFormChange={handleManagementFormChange}
             selectedInvoices={selectedInvoices}
             onValidationChange={handleStep2ValidationChange}
+            onNoEmailContact={setContactHasNoEmail}
           />
         );
       case 2:
@@ -871,7 +900,7 @@ export const AddManagementTab = ({
                 disabled={
                   isSubmitting ||
                   (currentStep === 0 && !stepValidations.step1) ||
-                  (currentStep === 1 && !stepValidations.step2)
+                  (currentStep === 1 && (!stepValidations.step2 || contactHasNoEmail))
                 }
               >
                 {t("continue")} <ArrowRight className="w-4 h-4 text-white ml-2" />

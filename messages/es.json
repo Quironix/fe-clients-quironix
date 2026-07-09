@@ -151,6 +151,11 @@
     "saveContact": "Guardar contacto",
     "selectedUsers": "Usuarios seleccionados:"
   },
+  "idleSession": {
+    "title": "Tu sesión está por expirar",
+    "description": "Vas a ser desconectado automáticamente por inactividad en:",
+    "stayLoggedIn": "Continuar sesión"
+  },
   "auth": {
     "login": {
       "title": "Bienvenidos/as",

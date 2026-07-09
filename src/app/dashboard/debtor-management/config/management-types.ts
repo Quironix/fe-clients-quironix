@@ -554,18 +554,18 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   // ENVIO CEDIBLE / GUIA DE DESPACHO
   {
-    id: "dispatch_guide_sent_assignable_document_dispatch_guide_sent",
-    label: "",
-    description: "Envío de Guía de Despacho",
+    id: "send_assignable_invoice_copy",
+    label: "Envío de copia cedible",
+    description: "Envío cedible/ Guía de despacho",
     management_type: "CALL_OUT",
     debtor_comment: "ASSIGNABLE_DOCUMENT_DISPATCH_GUIDE_SENT",
-    executive_comment: "DISPATCH_GUIDE_SENT",
+    executive_comment: "SEND_ASSIGNABLE_INVOICE_COPY",
     targetPhase: 1,
     fields: [],
   },
   {
     id: "dispatch_guide_sent_assignable_document_dispatch_guide_sent",
-    label: "",
+    label: "Envío de Guía de Despacho",
     description: "Envío de Guía de Despacho",
     management_type: "CALL_OUT",
     debtor_comment: "ASSIGNABLE_DOCUMENT_DISPATCH_GUIDE_SENT",
@@ -780,7 +780,6 @@ export const MANAGEMENT_TYPES = [
     label: "Factura no registrada en contabilidad",
   },
   { value: "INVOICE_WITH_LITIGATION", label: "Factura con litigio" },
-  { value: "LITIGATION_NORMALIZATION", label: "Normalización de litigio" },
   { value: "NEED_PAYMENT_PLAN", label: "Necesito Plan de Pago" },
   { value: "CHECK_CONFIRMED", label: "Cheque Confirmado" },
   {

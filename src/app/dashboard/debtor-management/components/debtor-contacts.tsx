@@ -33,6 +33,7 @@ interface DebtorContactsProps {
   callSchedule: string;
   clientId: string;
   accessToken: string;
+  onContactChange?: (contact: Contact) => void;
 }
 
 export const DebtorContacts = ({
@@ -41,6 +42,7 @@ export const DebtorContacts = ({
   callSchedule,
   clientId,
   accessToken,
+  onContactChange,
 }: DebtorContactsProps) => {
   const t = useTranslations("debtorManagement.contacts");
   const [openAdd, setOpenAdd] = useState<boolean>(false);
@@ -69,11 +71,18 @@ export const DebtorContacts = ({
     clearCallUniqueIds();
   }, [clientId, clearCallUniqueIds]);
 
+  // Notificar al padre el contacto activo inicial
+  useEffect(() => {
+    onContactChange?.(currentMainContact);
+  }, []);
+
   // Actualizar cuando cambian los contactos en el store
   useEffect(() => {
     if (dataDebtor?.contacts && dataDebtor.contacts.length > 0) {
-      setCurrentMainContact(dataDebtor.contacts[0]);
+      const newMain = dataDebtor.contacts[0];
+      setCurrentMainContact(newMain);
       setCurrentAdditionalContacts(dataDebtor.contacts.slice(1));
+      onContactChange?.(newMain);
     }
   }, [dataDebtor?.contacts]);
 
@@ -114,6 +123,7 @@ export const DebtorContacts = ({
     newAdditionalContacts[index] = currentMainContact;
     setCurrentMainContact(selectedContact);
     setCurrentAdditionalContacts(newAdditionalContacts);
+    onContactChange?.(selectedContact);
   };
 
   const handleCall = () => {
