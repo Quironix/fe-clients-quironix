@@ -13,7 +13,8 @@ interface BuildMultipleEmailPayloadParams {
   profile: any;
   contactEmail: string;
   contactName: string;
-  bankAccountInfo?: string; // Pre-fetched bank account HTML (optional)
+  bankAccountInfo?: string;
+  debtorName?: string;
 }
 
 function formatCurrency(amount: number | string): string {
@@ -95,6 +96,7 @@ export function buildMultipleEmailPayload({
   contactEmail,
   contactName,
   bankAccountInfo,
+  debtorName,
 }: BuildMultipleEmailPayloadParams): EmailMultiplePayload {
   const emailManagements: EmailManagement[] = managements.map(
     (management, index) => {
@@ -137,21 +139,43 @@ export function buildMultipleEmailPayload({
   const isFactoring = (profile as any)?.client?.type === "FACTORING";
   const clientPhone = (profile as any)?.client?.contacts?.[0]?.phone || "";
   const clientEmail = (profile as any)?.client?.contacts?.[0]?.email || "";
+  const clientName = (profile as any)?.client?.name || "Quironix";
 
   const MULTIPLE_TEMPLATE_ID =
     process.env.NEXT_SG_MULTIPLE_MANAGEMENT || "d-f3db644c64b1410f981ee7642d28aba4";
 
-  // For multiple managements, use generic message to avoid confusion
-  // Future enhancement: implement priority-based selection (LITIGATION > PAYMENT_COMMITMENT)
   const bodyDescription = "Tus gestiones fueron completadas exitosamente. A continuación encontrarás el resumen con los detalles correspondientes.";
+
+  const firstLabel = emailManagements[0]?.header_text || "Gestiones";
+  const subject = ["Quironix", firstLabel, debtorName].filter(Boolean).join(" - ");
+
+  const greeting = `Estimado/a ${contactName},<br><br>`;
+  const bodyDescriptionWithGreeting = greeting + bodyDescription;
 
   const emailPayload: EmailMultiplePayload = {
     to: contactEmail,
     templateId: MULTIPLE_TEMPLATE_ID,
+    subject,
+    personalizations: [
+      {
+        to: [{ email: contactEmail }],
+        subject,
+        dynamicTemplateData: {
+          logo_client: clientLogoUrl,
+          name_client: contactName,
+          body_description: bodyDescriptionWithGreeting,
+          managements: emailManagements,
+          contact_phone: clientPhone,
+          contact_mail: clientEmail,
+          is_factoring: isFactoring,
+          bank_account_info: bankAccountInfo || generateBankInfoHTML(null),
+        },
+      },
+    ],
     dynamicTemplateData: {
       logo_client: clientLogoUrl,
       name_client: contactName,
-      body_description: bodyDescription,
+      body_description: bodyDescriptionWithGreeting,
       managements: emailManagements,
       contact_phone: clientPhone,
       contact_mail: clientEmail,

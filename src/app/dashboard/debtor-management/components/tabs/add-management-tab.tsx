@@ -702,6 +702,7 @@ export const AddManagementTab = ({
                   managementCombination: selectedCombination,
                   bankAccountInfo: bankAccountInfoHTML,
                   trackId: management.id,
+                  debtorName: dataDebtor?.name,
                 });
 
                 const emailResult = await sendTrackEmail(emailPayload, session.token, profile.client_id);
@@ -721,6 +722,7 @@ export const AddManagementTab = ({
                 contactEmail: group.email,
                 contactName: group.contactName,
                 bankAccountInfo: bankAccountInfoHTML,
+                debtorName: dataDebtor?.name,
               });
 
               const emailResult = await sendMultipleManagementEmail(

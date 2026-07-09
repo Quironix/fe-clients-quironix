@@ -32,6 +32,12 @@ export interface EmailDynamicTemplateData {
 export interface EmailPayload {
   to: string;
   templateId: string;
+  subject?: string;
+  personalizations?: Array<{
+    to: Array<{ email: string }>;
+    subject: string;
+    dynamicTemplateData: EmailDynamicTemplateData | any;
+  }>;
   dynamicTemplateData: EmailDynamicTemplateData;
   trackId?: string;
 }
@@ -53,12 +59,18 @@ export interface EmailMultipleDynamicTemplateData {
   contact_phone: string;
   contact_mail: string;
   is_factoring: boolean;
-  bank_account_info?: string; // HTML formatted bank account information (optional)
+  bank_account_info?: string;
 }
 
 export interface EmailMultiplePayload {
   to: string;
   templateId: string;
+  subject?: string;
+  personalizations?: Array<{
+    to: Array<{ email: string }>;
+    subject: string;
+    dynamicTemplateData: EmailMultipleDynamicTemplateData | any;
+  }>;
   dynamicTemplateData: EmailMultipleDynamicTemplateData;
   trackId?: string;
 }

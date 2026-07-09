@@ -518,14 +518,23 @@ export const StepTwo = ({
         executiveComment: formData.executiveComment || "",
         contactType: formData.contactType || "",
         contactValue: formData.contactValue || "",
+        selectedContact: formData.selectedContact || null,
         observation: formData.observation || "",
         nextManagementDate: formData.nextManagementDate || "",
         nextManagementTime: formData.nextManagementTime || "",
         caseData: formData.caseData || {},
       }) !==
       JSON.stringify({
-        ...currentValues,
-        selectedContact: undefined,
+        managementType: currentValues.managementType || "CALL_OUT",
+        debtorComment: currentValues.debtorComment || "",
+        executiveComment: currentValues.executiveComment || "",
+        contactType: currentValues.contactType || "",
+        contactValue: currentValues.contactValue || "",
+        selectedContact: currentValues.selectedContact || null,
+        observation: currentValues.observation || "",
+        nextManagementDate: currentValues.nextManagementDate || "",
+        nextManagementTime: currentValues.nextManagementTime || "",
+        caseData: currentValues.caseData || {},
       });
 
     if (hasChanges) {

@@ -1,22 +1,28 @@
-import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { getDocumentTypeDisplayData } from "@/app/dashboard/payment-netting/components/document-type-badge";
+import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { ManagementFormData } from "../components/tabs/add-management-tab";
 import { ManagementCombination } from "../config/management-types";
 import { EmailInvoice, EmailPayload } from "../types/email";
-import { generateBankInfoHTML } from "./bank-info-formatter";
 import { generateBodyDescriptionByDebtorComment } from "../utils/email-messages";
+import { generateBankInfoHTML } from "./bank-info-formatter";
 
 interface BuildEmailPayloadParams {
   managementFormData: ManagementFormData;
   selectedInvoices: Invoice[];
   profile: Record<string, unknown> & {
     client?: {
-      contacts?: Array<{ phone?: string; email?: string; [key: string]: unknown }>;
+      name?: string;
+      contacts?: Array<{
+        phone?: string;
+        email?: string;
+        [key: string]: unknown;
+      }>;
       operational?: { logo_url?: string };
       type?: string;
     };
   };
   managementCombination: ManagementCombination;
+  debtorName?: string;
   bankAccountInfo?: string; // Pre-fetched bank account HTML (optional)
   trackId?: string;
 }
@@ -99,6 +105,7 @@ export function buildEmailPayload({
   managementCombination,
   bankAccountInfo,
   trackId,
+  debtorName,
 }: BuildEmailPayloadParams): EmailPayload {
   const contactEmail = managementFormData.contactValue;
 
@@ -120,13 +127,13 @@ export function buildEmailPayload({
 
   const formattedInvoices = formatInvoices(invoicesToSend);
 
-
-
   const clientLogoUrl = profile?.client?.operational?.logo_url || "";
 
   const contactName =
     managementFormData.selectedContact?.name ||
-    `${managementFormData.selectedContact?.label || "Contacto"}`;
+    managementFormData.selectedContact?.label?.split(" - ")[0] ||
+    managementFormData.contactValue ||
+    "Contacto";
 
   const isFactoring = (profile as any)?.client?.type === "FACTORING";
 
@@ -134,7 +141,8 @@ export function buildEmailPayload({
   const clientEmail = (profile as any)?.client?.contacts?.[0]?.email || "";
 
   const SINGLE_TEMPLATE_ID =
-    process.env.NEXT_SG_SINGLE_MANAGEMENT || "d-2ab3e2439491440c951a1cf46fdec7aa";
+    process.env.NEXT_SG_SINGLE_MANAGEMENT ||
+    "d-2ab3e2439491440c951a1cf46fdec7aa";
 
   // Generate dynamic body_description based on debtor_comment and executive_comment
   const rawBodyDescription = generateBodyDescriptionByDebtorComment({
@@ -159,13 +167,51 @@ export function buildEmailPayload({
     .replace(/\{bank_account_info\}/g, bankAccountInfo || "")
     .replace(/\{name_client\}/g, `<strong>${contactName}</strong>`);
 
+  const subject = ["Quironix", managementCombination.label, debtorName]
+    .filter(Boolean)
+    .join(" - ");
+
+  const greeting = `Estimado/a ${contactName},<br><br>`;
+  const bodyDescriptionWithGreeting = greeting + bodyDescription;
+
   const emailPayload: EmailPayload = {
     to: contactEmail,
     templateId: SINGLE_TEMPLATE_ID,
+    subject,
+    personalizations: [
+      {
+        to: [{ email: contactEmail }],
+        subject,
+        dynamicTemplateData: {
+          logo_client: clientLogoUrl,
+          name_client: contactName,
+          body_description: bodyDescriptionWithGreeting,
+          header_text: managementCombination.label,
+          header_amount: formatCurrency(totalAmount),
+          is_invoices: true,
+          invoices: formattedInvoices,
+          is_factoring: isFactoring,
+          body_html: "",
+          contact_phone: clientPhone,
+          contact_email: clientEmail,
+          contact_mail: clientEmail,
+          bank_account_info: bankAccountInfo || generateBankInfoHTML(null),
+          amount: formatCurrency(totalAmount),
+          date: managementFormData.caseData?.commitmentDate
+            ? formatDate(managementFormData.caseData.commitmentDate)
+            : managementFormData.caseData?.paymentDate
+              ? formatDate(managementFormData.caseData.paymentDate)
+              : managementFormData.caseData?.pickupDate
+                ? formatDate(managementFormData.caseData.pickupDate)
+                : "",
+          email_company: clientEmail,
+        },
+      },
+    ],
     dynamicTemplateData: {
       logo_client: clientLogoUrl,
       name_client: contactName,
-      body_description: bodyDescription,
+      body_description: bodyDescriptionWithGreeting,
       header_text: managementCombination.label,
       header_amount: formatCurrency(totalAmount),
       is_invoices: true,
