@@ -147,7 +147,7 @@ export function buildMultipleEmailPayload({
   const bodyDescription = "Tus gestiones fueron completadas exitosamente. A continuación encontrarás el resumen con los detalles correspondientes.";
 
   const firstLabel = emailManagements[0]?.header_text || "Gestiones";
-  const subject = ["Quironix", firstLabel, debtorName].filter(Boolean).join(" - ");
+  const subject = [clientName, firstLabel, debtorName].filter(Boolean).join(" - ");
 
   const greeting = `Estimado/a ${contactName},<br><br>`;
   const bodyDescriptionWithGreeting = greeting + bodyDescription;

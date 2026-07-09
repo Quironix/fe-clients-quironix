@@ -167,14 +167,14 @@ export function buildEmailPayload({
     .replace(/\{bank_account_info\}/g, bankAccountInfo || "")
     .replace(/\{name_client\}/g, `<strong>${contactName}</strong>`);
 
-  const subject = ["Quironix", managementCombination.label, debtorName]
+  const clientName = (profile as any)?.client?.name || "Quironix";
+
+  const subject = [clientName, managementCombination.label, debtorName]
     .filter(Boolean)
     .join(" - ");
 
   const greeting = `Estimado/a ${contactName},<br><br>`;
   const bodyDescriptionWithGreeting = greeting + bodyDescription;
-
-  const clientName = (profile as any)?.client?.name || "Quironix";
 
   const emailPayload: EmailPayload = {
     to: contactEmail,
