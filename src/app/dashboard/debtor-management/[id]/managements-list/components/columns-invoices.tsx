@@ -53,6 +53,15 @@ export const createInvoiceColumns = (
   onViewDetails?: (invoice: InvoiceWithTrack) => void,
 ): ColumnDef<InvoiceWithTrack>[] => [
   {
+    accessorKey: "debtor_code",
+    header: "Código Deudor",
+    cell: ({ row }) => (
+      <div className="font-medium text-sm">
+        {row.original.debtor_code || "-"}
+      </div>
+    ),
+  },
+  {
     accessorKey: "documentNumber",
     header: "N° Documento",
     cell: ({ row }) => (

@@ -125,6 +125,7 @@ export interface InvoiceWithTrack {
   ref_4: string | null;
   client_id: string;
   debtor_id: string;
+  debtor_code: string;
   status: string;
   created_at: string;
   updated_at: string;

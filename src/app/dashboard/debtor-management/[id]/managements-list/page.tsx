@@ -93,6 +93,7 @@ const Content = () => {
   const [columnConfiguration, setColumnConfiguration] = useState<
     Array<{ name: string; is_visible: boolean }>
   >([
+    { name: "debtor_code", is_visible: true },
     { name: "documentNumber", is_visible: true },
     { name: "order_code", is_visible: false },
     { name: "number_of_installments", is_visible: true },
@@ -129,6 +130,7 @@ const Content = () => {
       if (!Array.isArray(savedConfig)) return;
 
       const defaultConfig = [
+        { name: "debtor_code", is_visible: true },
         { name: "documentNumber", is_visible: true },
         { name: "order_code", is_visible: false },
         { name: "number_of_installments", is_visible: true },
@@ -164,6 +166,7 @@ const Content = () => {
 
   const columnLabels = useMemo(
     () => ({
+      debtor_code: "Código Deudor",
       documentNumber: "N° Documento",
       order_code: "N° Pedido",
       numberOfInstallments: "N° de cuotas",
@@ -399,6 +402,7 @@ const Content = () => {
         ref_4: null,
         client_id: dataDebtor?.client_id || "",
         debtor_id: debtorId,
+        debtor_code: dataDebtor?.debtor_code || "",
         status: "",
         created_at: reply.created_at,
         updated_at: reply.created_at,
