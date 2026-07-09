@@ -174,15 +174,21 @@ export function buildEmailPayload({
   const greeting = `Estimado/a ${contactName},<br><br>`;
   const bodyDescriptionWithGreeting = greeting + bodyDescription;
 
+  const clientName = (profile as any)?.client?.name || "Quironix";
+
   const emailPayload: EmailPayload = {
     to: contactEmail,
     templateId: SINGLE_TEMPLATE_ID,
     subject,
+    from: {
+      name: clientName,
+    },
     personalizations: [
       {
         to: [{ email: contactEmail }],
         subject,
         dynamicTemplateData: {
+          subject,
           logo_client: clientLogoUrl,
           name_client: contactName,
           body_description: bodyDescriptionWithGreeting,
@@ -209,6 +215,7 @@ export function buildEmailPayload({
       },
     ],
     dynamicTemplateData: {
+      subject,
       logo_client: clientLogoUrl,
       name_client: contactName,
       body_description: bodyDescriptionWithGreeting,

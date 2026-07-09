@@ -156,11 +156,15 @@ export function buildMultipleEmailPayload({
     to: contactEmail,
     templateId: MULTIPLE_TEMPLATE_ID,
     subject,
+    from: {
+      name: clientName,
+    },
     personalizations: [
       {
         to: [{ email: contactEmail }],
         subject,
         dynamicTemplateData: {
+          subject,
           logo_client: clientLogoUrl,
           name_client: contactName,
           body_description: bodyDescriptionWithGreeting,
@@ -173,6 +177,7 @@ export function buildMultipleEmailPayload({
       },
     ],
     dynamicTemplateData: {
+      subject,
       logo_client: clientLogoUrl,
       name_client: contactName,
       body_description: bodyDescriptionWithGreeting,
@@ -180,7 +185,7 @@ export function buildMultipleEmailPayload({
       contact_phone: clientPhone,
       contact_mail: clientEmail,
       is_factoring: isFactoring,
-      bank_account_info: bankAccountInfo || generateBankInfoHTML(null), // Use provided or fallback
+      bank_account_info: bankAccountInfo || generateBankInfoHTML(null),
     },
     // Best-effort: a single email can bundle multiple managements/tracks,
     // but a debtor reply can only link to one track_id — use the first.

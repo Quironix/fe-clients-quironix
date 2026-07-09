@@ -11,6 +11,7 @@ export interface EmailInvoice {
 }
 
 export interface EmailDynamicTemplateData {
+  subject?: string;
   logo_client: string;
   name_client: string;
   body_description: string;
@@ -33,6 +34,9 @@ export interface EmailPayload {
   to: string;
   templateId: string;
   subject?: string;
+  from?: {
+    name?: string;
+  };
   personalizations?: Array<{
     to: Array<{ email: string }>;
     subject: string;
@@ -52,6 +56,7 @@ export interface EmailManagement {
 }
 
 export interface EmailMultipleDynamicTemplateData {
+  subject?: string;
   logo_client: string;
   name_client: string;
   body_description: string;
@@ -66,6 +71,9 @@ export interface EmailMultiplePayload {
   to: string;
   templateId: string;
   subject?: string;
+  from?: {
+    name?: string;
+  };
   personalizations?: Array<{
     to: Array<{ email: string }>;
     subject: string;
