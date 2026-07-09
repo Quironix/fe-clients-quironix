@@ -4,7 +4,10 @@ import { DataTableDynamicColumns } from "@/app/dashboard/components/data-table-d
 import Header from "@/app/dashboard/components/header";
 import { Main } from "@/app/dashboard/components/main";
 import TitleSection from "@/app/dashboard/components/title-section";
-import { getDebtorById } from "@/app/dashboard/debtors/services";
+import {
+  getDebtorById,
+  getDebtorEmailReplies,
+} from "@/app/dashboard/debtors/services";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -70,6 +73,8 @@ const Content = () => {
     InvoiceWithTrack[]
   >([]);
   const [dataDebtor, setDataDebtor] = useState<any>(null);
+  const [emailReplies, setEmailReplies] = useState<any[]>([]);
+  const [isFetchingEmailReplies, setIsFetchingEmailReplies] = useState(true);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -198,6 +203,25 @@ const Content = () => {
     }
   };
 
+  const fetchEmailReplies = async () => {
+    if (!session?.token || !profile?.client?.id || !debtorId) return;
+
+    setIsFetchingEmailReplies(true);
+    try {
+      const replies = await getDebtorEmailReplies(
+        session.token,
+        profile.client.id,
+        debtorId,
+      );
+      setEmailReplies(Array.isArray(replies) ? replies : []);
+    } catch (err) {
+      console.error("Error fetching debtor email replies:", err);
+      setEmailReplies([]);
+    } finally {
+      setIsFetchingEmailReplies(false);
+    }
+  };
+
   // Función helper para enriquecer el contacto con el nombre del deudor
   const enrichContactWithName = (
     invoices: InvoiceWithTrack[],
@@ -268,6 +292,7 @@ const Content = () => {
 
   useEffect(() => {
     fetchDebtor();
+    fetchEmailReplies();
   }, [session, debtorId]);
 
   useEffect(() => {
@@ -340,6 +365,68 @@ const Content = () => {
 
   const columns = useMemo(() => createInvoiceColumns(handleViewDetails), []);
 
+  // Convierte cada correo entrante en una fila más de la tabla de gestiones,
+  // con managementType "MAIL_IN" (ya mapeado a la etiqueta "Correo entrante"
+  // en config/management-types.ts). Es puramente una vista unificada en el
+  // frontend — no crea una gestión real en el backend.
+  const emailReplyRows = useMemo<InvoiceWithTrack[]>(
+    () =>
+      emailReplies.map((reply) => ({
+        id: reply.id,
+        type: "EMAIL_REPLY",
+        number: reply.invoice?.number || "",
+        external_number: reply.invoice?.external_number || "",
+        is_internal_document: false,
+        amount: "",
+        order_number: null,
+        issue_date: "",
+        is_fictitious: false,
+        company_id: null,
+        reference: null,
+        file: "",
+        due_date: reply.invoice?.due_date || "",
+        operation_date: null,
+        reception_date: null,
+        folio: "",
+        balance: reply.invoice?.balance || "",
+        litigation_balance: "",
+        number_of_installments: reply.invoice?.number_of_installments || 0,
+        observations: "",
+        order_code: reply.invoice?.order_code || "",
+        ref_1: null,
+        ref_2: null,
+        ref_3: null,
+        ref_4: null,
+        client_id: dataDebtor?.client_id || "",
+        debtor_id: debtorId,
+        status: "",
+        created_at: reply.created_at,
+        updated_at: reply.created_at,
+        payment_plan_id: null,
+        phases: [],
+        track: {
+          id: reply.track_id || null,
+          clientId: dataDebtor?.client_id || "",
+          debtorId: debtorId,
+          managementType: "MAIL_IN",
+          executiveId: "",
+          executive: null,
+          contact: { type: "EMAIL", value: reply.from_address },
+          debtorComment: reply.subject || "",
+          executiveComment: "",
+          observation: reply.body_text || "",
+          nextManagementDate: "",
+          caseData: {},
+          metadata: {},
+          invoiceIds: [],
+          invoices: [],
+          createdAt: reply.created_at,
+          updatedAt: reply.created_at,
+        },
+      })) as unknown as InvoiceWithTrack[],
+    [emailReplies, dataDebtor?.client_id, debtorId],
+  );
+
   // Enriquecer y ordenar los datos de forma reactiva
   const enrichedAndSortedInvoices = useMemo(() => {
     // Primero enriquecemos con el nombre del contacto
@@ -348,13 +435,13 @@ const Content = () => {
       dataDebtor?.contacts || [],
     );
 
-    // Sort by management date DESC (most recent first)
-    return enriched.sort((a, b) => {
+    // Mezclar gestiones reales con los correos entrantes y ordenar por fecha
+    return [...enriched, ...emailReplyRows].sort((a, b) => {
       const dateA = new Date(a.track?.createdAt ?? 0).getTime();
       const dateB = new Date(b.track?.createdAt ?? 0).getTime();
       return dateB - dateA;
     });
-  }, [invoicesWithTracks, dataDebtor?.contacts]);
+  }, [invoicesWithTracks, dataDebtor?.contacts, emailReplyRows]);
 
   const TableSkeleton = () => (
     <>
@@ -523,7 +610,7 @@ const Content = () => {
             <DataTableDynamicColumns
               columns={columns}
               data={enrichedAndSortedInvoices}
-              isLoading={loading}
+              isLoading={loading || isFetchingEmailReplies}
               emptyMessage="No hay gestiones registradas"
               pagination={tracksPagination}
               loadingComponent={<TableSkeleton />}

@@ -205,6 +205,23 @@ export const assignDebtorToExecutive = async (
   return response.json();
 };
 
+export const getDebtorEmailReplies = async (
+  accessToken: string,
+  clientId: string,
+  debtorId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/debtors/${debtorId}/email-replies`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+};
+
 export const getExecutives = async (
   accessToken: string,
   clientId: string
