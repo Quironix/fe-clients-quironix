@@ -158,6 +158,9 @@ export function buildMultipleEmailPayload({
       is_factoring: isFactoring,
       bank_account_info: bankAccountInfo || generateBankInfoHTML(null), // Use provided or fallback
     },
+    // Best-effort: a single email can bundle multiple managements/tracks,
+    // but a debtor reply can only link to one track_id — use the first.
+    trackId: managements[0]?.id,
   };
 
   return emailPayload;

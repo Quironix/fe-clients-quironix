@@ -18,6 +18,7 @@ interface BuildEmailPayloadParams {
   };
   managementCombination: ManagementCombination;
   bankAccountInfo?: string; // Pre-fetched bank account HTML (optional)
+  trackId?: string;
 }
 
 function formatCurrency(amount: number | string): string {
@@ -97,6 +98,7 @@ export function buildEmailPayload({
   profile,
   managementCombination,
   bankAccountInfo,
+  trackId,
 }: BuildEmailPayloadParams): EmailPayload {
   const contactEmail = managementFormData.contactValue;
 
@@ -184,6 +186,7 @@ export function buildEmailPayload({
             : "",
       email_company: clientEmail,
     },
+    trackId,
   };
 
   return emailPayload;

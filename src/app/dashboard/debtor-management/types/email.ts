@@ -33,6 +33,7 @@ export interface EmailPayload {
   to: string;
   templateId: string;
   dynamicTemplateData: EmailDynamicTemplateData;
+  trackId?: string;
 }
 
 export interface EmailManagement {
@@ -59,6 +60,7 @@ export interface EmailMultiplePayload {
   to: string;
   templateId: string;
   dynamicTemplateData: EmailMultipleDynamicTemplateData;
+  trackId?: string;
 }
 
 export interface EmailResponse {

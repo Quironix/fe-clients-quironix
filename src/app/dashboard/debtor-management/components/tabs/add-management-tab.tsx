@@ -673,6 +673,7 @@ export const AddManagementTab = ({
                   profile,
                   managementCombination: selectedCombination,
                   bankAccountInfo: bankAccountInfoHTML,
+                  trackId: management.id,
                 });
 
                 const emailResult = await sendTrackEmail(emailPayload, session.token, profile.client_id);
