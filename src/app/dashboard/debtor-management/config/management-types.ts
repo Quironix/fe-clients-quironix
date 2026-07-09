@@ -166,7 +166,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "information_sent_statement_sent",
-    label: "",
+    label: "Envío de información",
     description: "Envío de información",
     management_type: "CALL_OUT",
     debtor_comment: "STATEMENT_SENT",
@@ -176,7 +176,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "increase_pressure_statement_sent",
-    label: "",
+    label: "Aumentar Presión",
     description: "Aumentar Presión",
     management_type: "CALL_OUT",
     debtor_comment: "STATEMENT_SENT",
@@ -186,7 +186,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "no_progress_statement_sent",
-    label: "",
+    label: "Sin progreso",
     description: "Sin progreso",
     management_type: "CALL_OUT",
     debtor_comment: "STATEMENT_SENT",
@@ -196,7 +196,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "invoice_pdf_sent",
-    label: "",
+    label: "Se envió pdf de factura",
     description: "Se envió pdf de factura",
     management_type: "CALL_OUT",
     debtor_comment: "STATEMENT_SENT",
@@ -379,7 +379,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // DOCUMENTOS SIN COMPROMISO DE PAGO
   {
     id: "debtor_unreachable_no_payment_commitment",
-    label: "",
+    label: "Deudor inubicable",
     description: "Deudor inubicable",
     management_type: "CALL_OUT",
     debtor_comment: "DOCUMENTS_WITHOUT_PAYMENT_COMMITMENT",
@@ -389,7 +389,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "information_sent_no_payment_commitment",
-    label: "",
+    label: "Envío de información",
     description: "Envío de información",
     management_type: "CALL_OUT",
     debtor_comment: "DOCUMENTS_WITHOUT_PAYMENT_COMMITMENT",
@@ -399,7 +399,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "increasse_pressure_no_payment_commitment",
-    label: "",
+    label: "Aumentar Presión",
     description: "Aumentar Presión",
     management_type: "CALL_OUT",
     debtor_comment: "DOCUMENTS_WITHOUT_PAYMENT_COMMITMENT",
@@ -409,7 +409,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "no_contact_no_payment_commitment",
-    label: "",
+    label: "Sin contacto",
     description: "Sin contacto",
     management_type: "CALL_OUT",
     debtor_comment: "DOCUMENTS_WITHOUT_PAYMENT_COMMITMENT",
@@ -419,7 +419,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "no_progress_no_payment_commitment",
-    label: "",
+    label: "Sin progreso",
     description: "Sin progreso",
     management_type: "CALL_OUT",
     debtor_comment: "DOCUMENTS_WITHOUT_PAYMENT_COMMITMENT",
@@ -429,7 +429,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "meeting_wdr_no_payment_commitment",
-    label: "",
+    label: "Se solicitará reunión a Deudor",
     description: "Se solicitará reunión a Deudor",
     management_type: "CALL_OUT",
     debtor_comment: "DOCUMENTS_WITHOUT_PAYMENT_COMMITMENT",
@@ -440,7 +440,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // SOLICITO ENVÍO DE NOTAS DE CRÉDITO
   {
     id: "information_sent_request_credit_notes_sending",
-    label: "",
+    label: "Envío de información",
     description: "Envío de información",
     management_type: "CALL_OUT",
     debtor_comment: "REQUEST_CREDIT_NOTES_SENDING",
@@ -451,7 +451,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // SOLICITO ACUSE DE RECIBO
   {
     id: "apply_credit_note_request_acknowledgment_of_receipt",
-    label: "",
+    label: "Aplicar N/C",
     description: "Aplicar N/C",
     management_type: "CALL_OUT",
     debtor_comment: "REQUEST_ACKNOWLEDGMENT_OF_RECEIPT",
@@ -461,7 +461,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "confirm_payment_in_statement_request_acknowledgment_of_receipt",
-    label: "",
+    label: "Confirmar abono en cartola",
     description: "Confirmar abono en cartola",
     management_type: "CALL_OUT",
     debtor_comment: "REQUEST_ACKNOWLEDGMENT_OF_RECEIPT",
@@ -471,7 +471,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "document_in_litigation_request_acknowledgment_of_receipt",
-    label: "",
+    label: "Documento en litigio",
     description: "Documento en litigio",
     management_type: "CALL_OUT",
     debtor_comment: "REQUEST_ACKNOWLEDGMENT_OF_RECEIPT",
@@ -481,7 +481,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "apply_credit_note_request_apply_available_credit_note",
-    label: "",
+    label: "Aplicar N/C",
     description: "Aplicar N/C",
     management_type: "CALL_OUT",
     debtor_comment: "REQUEST_APPLY_AVAILABLE_CREDIT_NOTE",
@@ -492,7 +492,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // PROBLEMAS DE CAJA
   {
     id: "debtor_unreachable_cash_flow_problems",
-    label: "",
+    label: "Deudor inubicable",
     description: "Deudor inubicable",
     management_type: "CALL_OUT",
     debtor_comment: "CASH_FLOW_PROBLEMS",
@@ -502,7 +502,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "suggest_send_to_dicom_cash_flow_problems",
-    label: "",
+    label: "Se sugiere enviar a Dicom",
     description: "Se sugiere enviar a Dicom",
     management_type: "CALL_OUT",
     debtor_comment: "CASH_FLOW_PROBLEMS",
@@ -513,7 +513,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // INFORMADO BLOQUEO DE PEDIDOS
   {
     id: "service_cut_order_blocking",
-    label: "",
+    label: "Corte de servicio",
     description: "Corte de servicio",
     management_type: "CALL_OUT",
     debtor_comment: "INFORMED_ORDER_BLOCKING",
@@ -524,7 +524,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // INFORMADO DOCUMENTO PROTESTADO
   {
     id: "informed_protested_document",
-    label: "",
+    label: "Envío de información",
     description: "Envío de información",
     management_type: "CALL_OUT",
     debtor_comment: "INFORMED_PROTESTED_DOCUMENT",
@@ -534,7 +534,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "increase_pressure_informed_protested_document",
-    label: "",
+    label: "Aumentar presión",
     description: "Aumentar presión",
     management_type: "CALL_OUT",
     debtor_comment: "INFORMED_PROTESTED_DOCUMENT",
@@ -544,7 +544,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "redeposit_document_informed_protested_document",
-    label: "",
+    label: "Redepositar documento",
     description: "Redepositar documento",
     management_type: "CALL_OUT",
     debtor_comment: "INFORMED_PROTESTED_DOCUMENT",
@@ -576,7 +576,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // REVISARA TEMA
   {
     id: "information_sent_will_review_issue",
-    label: "",
+    label: "Envío de información",
     description: "Envío de información",
     management_type: "CALL_OUT",
     debtor_comment: "WILL_REVIEW_ISSUE",
@@ -594,7 +594,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "increase_pressure_will_review_issue",
-    label: "",
+    label: "Aumentar presión",
     description: "Aumentar presión",
     management_type: "CALL_OUT",
     debtor_comment: "WILL_REVIEW_ISSUE",
@@ -612,7 +612,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "no_progress_will_review_issue",
-    label: "",
+    label: "Sin progreso",
     description: "Sin progreso",
     management_type: "CALL_OUT",
     debtor_comment: "WILL_REVIEW_ISSUE",
@@ -631,7 +631,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // CONTABILIZA SIN COMPROMISO DE PAGO
   {
     id: "no_contact_accounted_without_payment_commitment",
-    label: "",
+    label: "Sin contacto",
     description: "Sin contacto",
     management_type: "CALL_OUT",
     debtor_comment: "ACCOUNTED_WITHOUT_PAYMENT_COMMITMENT",
@@ -641,7 +641,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "no_progress_accounted_without_payment_commitment",
-    label: "",
+    label: "Sin progreso",
     description: "Sin progreso",
     management_type: "CALL_OUT",
     debtor_comment: "ACCOUNTED_WITHOUT_PAYMENT_COMMITMENT",
@@ -652,7 +652,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // COMPROMISO INCUMPLIDO
   {
     id: "increase_pressure_commitment_breached",
-    label: "",
+    label: "Aumentar presión",
     description: "Aumentar presión",
     management_type: "CALL_OUT",
     debtor_comment: "COMMITMENT_BREACHED",
@@ -662,7 +662,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "no_contact_commitment_breached",
-    label: "",
+    label: "Sin contacto",
     description: "Sin contacto",
     management_type: "CALL_OUT",
     debtor_comment: "COMMITMENT_BREACHED",
@@ -672,7 +672,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   },
   {
     id: "no_progress_commitment_breached",
-    label: "",
+    label: "Sin progreso",
     description: "Sin progreso",
     management_type: "CALL_OUT",
     debtor_comment: "COMMITMENT_BREACHED",
@@ -683,7 +683,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // MOTIVO DE NO PAGO
   {
     id: "no_progress_reason_for_non_payment",
-    label: "",
+    label: "Sin progreso",
     description: "Sin progreso",
     management_type: "CALL_OUT",
     debtor_comment: "REASON_FOR_NON_PAYMENT",
@@ -717,7 +717,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // NOTIFICADO DE POSIBLE BLOQUEO DE PEDIDOS
   {
     id: "suggest_order_blocking_notified_possible_order_blocking",
-    label: "",
+    label: "Sugerir bloqueo de pedidos",
     description: "Sugerir bloqueo de pedidos",
     management_type: "CALL_OUT",
     debtor_comment: "NOTIFIED_POSSIBLE_ORDER_BLOCKING",
@@ -728,7 +728,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // INFORMO MOTIVO DE RECHAZO SII
   {
     id: "information_sent_inform_sii_rejection_reason",
-    label: "",
+    label: "Informo motivo de rechazo SII",
     description: "Informo motivo de rechazo SII",
     management_type: "CALL_OUT",
     debtor_comment: "INFORM_SII_REJECTION_REASON",
@@ -739,7 +739,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // FACTURA REGISTRADA EN CONTABILIDAD
   {
     id: "accounted_invoice_registered_in_accounting",
-    label: "",
+    label: "Contabilizada",
     description: "Contabilizada",
     management_type: "CALL_OUT",
     debtor_comment: "INVOICE_REGISTERED_IN_ACCOUNTING",
@@ -750,7 +750,7 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
   // NOTIFICADO DE PUBLICACION EN INFORMES COMERCIALES
   {
     id: "information_sent_notified_commercial_reports_publication",
-    label: "",
+    label: "Envío de información",
     description: "Envío de información",
     management_type: "CALL_OUT",
     debtor_comment: "NOTIFIED_COMMERCIAL_REPORTS_PUBLICATION",
