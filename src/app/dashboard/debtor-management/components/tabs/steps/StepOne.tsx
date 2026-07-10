@@ -291,18 +291,17 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
     return selection;
   }, [selectedInvoices, paginatedData]);
 
-  useEffect(() => {
-    paginatedDataRef.current = paginatedData;
-  }, [paginatedData]);
+  // Keep ref in sync synchronously so handleRowSelectionChange always reads current data
+  paginatedDataRef.current = paginatedData;
 
   const handleRowSelectionChange = useCallback(
     (selection: RowSelectionState) => {
       const selectedIndices = Object.keys(selection).filter(
         (key) => selection[key]
       );
-      const selectedInvoices = selectedIndices.map(
-        (index) => paginatedDataRef.current[parseInt(index)]
-      );
+      const selectedInvoices = selectedIndices
+        .map((index) => paginatedDataRef.current[parseInt(index)])
+        .filter(Boolean);
       onInvoicesSelectedRef.current?.(selectedInvoices);
     },
     []
