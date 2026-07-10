@@ -4,8 +4,31 @@ import { Button } from "@/components/ui/button";
 import { formatDate, formatDateTime, formatDateTimeUTC, formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye } from "lucide-react";
+import { useState } from "react";
 import { DEBTOR_COMMENTS, getChannelTypeLabel, getExecutiveCommentLabel } from "../../../config/management-types";
 import { InvoiceWithTrack } from "../../../types/debtor-tracks";
+
+const OBSERVATION_TRUNCATE_LENGTH = 100;
+
+const ObservationText = ({ text }: { text: string }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!text) return <>-</>;
+  if (text.length <= OBSERVATION_TRUNCATE_LENGTH) return <>{text}</>;
+
+  return (
+    <>
+      {expanded ? text : `${text.slice(0, OBSERVATION_TRUNCATE_LENGTH)}...`}{" "}
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        className="text-blue-600 hover:underline font-medium"
+      >
+        {expanded ? "Ver menos" : "Ver más"}
+      </button>
+    </>
+  );
+};
 
 
 const getDebtorCommentLabel = (comment: string): string => {
@@ -52,231 +75,252 @@ const calculateTimeInPhase = (invoice: InvoiceWithTrack) => {
 export const createInvoiceColumns = (
   onViewDetails?: (invoice: InvoiceWithTrack) => void,
 ): ColumnDef<InvoiceWithTrack>[] => [
-  {
-    accessorKey: "debtor_code",
-    header: "Código Deudor",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm">
-        {row.original.debtor_code || "-"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "documentNumber",
-    header: "N° Documento",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm">
-        {row.original.number || row.original.external_number || "-"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "order_code",
-    header: "N° Pedido",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm">
-        {row.original.order_code || row.original.order_code || "-"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "number_of_installments",
-    header: "N° de cuotas",
-    cell: ({ row }) => (
-      <div className="font-medium text-sm">
-        {row.original.number_of_installments}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "daysOverdue",
-    header: "Días de atraso",
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {calculateDaysOverdue(row.original.due_date)}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "amount",
-    header: "Monto",
-    cell: ({ row }) => (
-      <div className="font-bold text-sm">
-        {row.original.balance
-          ? formatNumber(parseFloat(row.original.balance))
-          : "-"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "documentPhase",
-    header: "Fase del documento",
-    cell: ({ row }) => (
-      <div className="text-sm">{getCurrentPhase(row.original)}</div>
-    ),
-  },
-  {
-    accessorKey: "timeInPhase",
-    header: "Tiempo en la fase",
-    cell: ({ row }) => (
-      <div className="text-sm">{calculateTimeInPhase(row.original)}</div>
-    ),
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Fecha y hora de gestión",
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {formatDateTimeUTC(row.original.track?.createdAt)}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "managementType",
-    header: "Tipo de Gestión",
-    cell: ({ row }) =>
-      getManagementTypeBadge(row.original.track?.managementType),
-  },
-  {
-    accessorKey: "executive",
-    header: "Nombre analista",
-    cell: ({ row }) => {
-      const track = row.original.track;
-      if (track?.executiveComment === "AUTOMATED_COMMUNICATION") {
-        return <div className="text-sm">Motor de collector</div>;
-      }
-      return (
+    {
+      accessorKey: "debtor_code",
+      header: "Código Deudor",
+      cell: ({ row }) => (
+        <div className="font-medium text-sm">
+          {row.original.debtor_code || "-"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "documentNumber",
+      header: "N° Documento",
+      cell: ({ row }) => (
+        <div className="font-medium text-sm">
+          {row.original.number || row.original.external_number || "-"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "order_code",
+      header: "N° Pedido",
+      cell: ({ row }) => (
+        <div className="font-medium text-sm">
+          {row.original.order_code || row.original.order_code || "-"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "number_of_installments",
+      header: "N° de cuotas",
+      cell: ({ row }) => (
+        <div className="font-medium text-sm">
+          {row.original.number_of_installments}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "daysOverdue",
+      header: "Días de atraso",
+      cell: ({ row }) => (
         <div className="text-sm">
-          {track?.executive
-            ? `${track.executive.first_name ?? ""} ${track.executive.last_name ?? ""}`.trim()
+          {calculateDaysOverdue(row.original.due_date)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "amount",
+      header: "Monto",
+      cell: ({ row }) => (
+        <div className="font-bold text-sm">
+          {row.original.balance
+            ? formatNumber(parseFloat(row.original.balance))
             : "-"}
         </div>
-      );
+      ),
     },
-  },
-  {
-    accessorKey: "contact",
-    header: "Contacto",
-    cell: ({ row }) => {
-      const contact = row.original.track?.contact;
-      // Mostrar el nombre si existe, sino el email/teléfono como fallback
-      const displayValue = contact?.name || contact?.value || "-";
-      return (
-        <div className="flex flex-col text-xs">
-          <span className="text-sm">{displayValue}</span>
+    {
+      accessorKey: "documentPhase",
+      header: "Fase del documento",
+      cell: ({ row }) => (
+        <div className="text-sm">{getCurrentPhase(row.original)}</div>
+      ),
+    },
+    {
+      accessorKey: "timeInPhase",
+      header: "Tiempo en la fase",
+      cell: ({ row }) => (
+        <div className="text-sm">{calculateTimeInPhase(row.original)}</div>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Fecha y hora de gestión",
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {formatDateTimeUTC(row.original.track?.createdAt)}
         </div>
-      );
+      ),
     },
-  },
-  {
-    accessorKey: "debtorComment",
-    header: "Comentario deudor",
-    cell: ({ row }) => (
-      <div className="text-xs max-w-[200px] truncate">
-        {getDebtorCommentLabel(row.original.track?.debtorComment)}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "executiveComment",
-    header: "Comentario Analista",
-    cell: ({ row }) => (
-      <div className="text-xs max-w-[200px] truncate">
-        {getExecutiveCommentLabel(row.original.track?.executiveComment)}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "paymentCommitmentDate",
-    header: "Fecha de compromiso de pago",
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {row.original.track?.caseData?.commitmentDate
-          ? formatDate(row.original.track.caseData.commitmentDate as string)
-          : "-"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "caseData",
-    header: "Litigio",
-    cell: ({ row }) => (
-      <div className="text-xs max-w-[150px] truncate">
-        {row.original.track?.caseData?.litigationIds &&
-        row.original.track.caseData.litigationIds.length > 0
-          ? `${row.original.track.caseData.litigationIds.length} litigio(s)`
-          : "-"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "observation",
-    header: "Observación",
-    size: 350,
-    cell: ({ row }) => (
-      <div className="text-xs w-[350px] whitespace-normal break-words">
-        {row.original.track?.observation || "-"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "nextManagementDate",
-    header: "Fecha de próxima gestión",
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {row.original.track?.nextManagementDate
-          ? formatDateTime(row.original.track.nextManagementDate)
-          : "-"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "collectorName",
-    header: "Collector",
-    cell: ({ row }) => {
-      if (row.original.track?.caseData?.debtorComment !== "AUTOMATED_COLLECTOR_SENT") {
-        return <div className="text-sm">-</div>;
-      }
-      const name = row.original.track?.caseData?.collector?.name;
-      return <div className="text-sm">{name || "-"}</div>;
+    {
+      accessorKey: "managementType",
+      header: "Tipo de Gestión",
+      cell: ({ row }) =>
+        getManagementTypeBadge(row.original.track?.managementType),
     },
-  },
-  {
-    accessorKey: "collectorChannel",
-    header: "Canal",
-    cell: ({ row }) => {
-      if (row.original.track?.caseData?.debtorComment !== "AUTOMATED_COLLECTOR_SENT") {
-        return <div className="text-sm">-</div>;
-      }
-      const CHANNEL_LABELS: Record<string, string> = {
-        EMAIL: "Email",
-        SMS: "Mensaje de texto",
-        WHATSAPP: "Whatsapp",
-      };
-      const channel = row.original.track?.caseData?.collector?.channel;
-      return <div className="text-sm">{channel ? (CHANNEL_LABELS[channel] ?? channel) : "-"}</div>;
+    {
+      accessorKey: "executive",
+      header: "Nombre analista",
+      cell: ({ row }) => {
+        const track = row.original.track;
+        if (track?.executiveComment === "AUTOMATED_COMMUNICATION") {
+          return <div className="text-sm">Motor de collector</div>;
+        }
+        return (
+          <div className="text-sm">
+            {track?.executive
+              ? `${track.executive.first_name ?? ""} ${track.executive.last_name ?? ""}`.trim()
+              : "-"}
+          </div>
+        );
+      },
     },
-  },
-  {
-    id: "actions",
-    header: "Acciones",
-    cell: ({ row }) => {
-      // Los correos entrantes solo tienen detalle de track si el backend
-      // logró vincularlos automáticamente a la gestión que los originó
-      // (ver PRD §17). Si no hay track_id, no hay nada que abrir.
-      if (row.original.type === "EMAIL_REPLY" && !row.original.track?.id) {
-        return null;
-      }
-      return (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onViewDetails?.(row.original)}
-          className="h-8 w-8 p-0"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      );
+    {
+      accessorKey: "contact",
+      header: "Contacto",
+      cell: ({ row }) => {
+        const contact = row.original.track?.contact;
+        // Mostrar el nombre si existe, sino el email/teléfono como fallback
+        const displayValue = contact?.name || contact?.value || "-";
+        return (
+          <div className="flex flex-col text-xs">
+            <span className="text-sm">{displayValue}</span>
+          </div>
+        );
+      },
     },
-  },
-];
+    {
+      accessorKey: "debtorComment",
+      header: "Comentario deudor",
+      cell: ({ row }) => (
+        <div className="text-xs max-w-[200px] truncate">
+          {getDebtorCommentLabel(row.original.track?.debtorComment)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "executiveComment",
+      header: "Comentario Analista",
+      cell: ({ row }) => (
+        <div className="text-xs max-w-[200px] truncate">
+          {getExecutiveCommentLabel(row.original.track?.executiveComment)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "paymentCommitmentDate",
+      header: "Fecha de compromiso de pago",
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {row.original.track?.caseData?.commitmentDate
+            ? formatDate(row.original.track.caseData.commitmentDate as string)
+            : "-"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "caseData",
+      header: "Litigio",
+      cell: ({ row }) => (
+        <div className="text-xs max-w-[150px] truncate">
+          {row.original.track?.caseData?.litigationIds &&
+            row.original.track.caseData.litigationIds.length > 0
+            ? `${row.original.track.caseData.litigationIds.length} litigio(s)`
+            : "-"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "observation",
+      header: "Observación",
+      size: 350,
+      cell: ({ row }) => {
+        const attachments = row.original.track?.attachments || [];
+        return (
+          <div className="text-xs w-[350px] whitespace-normal break-words space-y-1">
+            <div>
+              <ObservationText text={row.original.track?.observation || ""} />
+            </div>
+            {attachments.length > 0 && (
+              <div className="flex flex-col gap-0.5">
+                {attachments.map((attachment, index) => (
+                  <a
+                    key={`${attachment.storage_url}-${index}`}
+                    href={attachment.storage_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="text-blue-600 hover:underline break-all"
+                  >
+                    {attachment.filename}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "nextManagementDate",
+      header: "Fecha de próxima gestión",
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {row.original.track?.nextManagementDate
+            ? formatDateTime(row.original.track.nextManagementDate)
+            : "-"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "collectorName",
+      header: "Collector",
+      cell: ({ row }) => {
+        if (row.original.track?.caseData?.debtorComment !== "AUTOMATED_COLLECTOR_SENT") {
+          return <div className="text-sm">-</div>;
+        }
+        const name = row.original.track?.caseData?.collector?.name;
+        return <div className="text-sm">{name || "-"}</div>;
+      },
+    },
+    {
+      accessorKey: "collectorChannel",
+      header: "Canal",
+      cell: ({ row }) => {
+        if (row.original.track?.caseData?.debtorComment !== "AUTOMATED_COLLECTOR_SENT") {
+          return <div className="text-sm">-</div>;
+        }
+        const CHANNEL_LABELS: Record<string, string> = {
+          EMAIL: "Email",
+          SMS: "Mensaje de texto",
+          WHATSAPP: "Whatsapp",
+        };
+        const channel = row.original.track?.caseData?.collector?.channel;
+        return <div className="text-sm">{channel ? (CHANNEL_LABELS[channel] ?? channel) : "-"}</div>;
+      },
+    },
+    {
+      id: "actions",
+      header: "Acciones",
+      cell: ({ row }) => {
+        // Los correos entrantes solo tienen detalle de track si el backend
+        // logró vincularlos automáticamente a la gestión que los originó
+        // (ver PRD §17). Si no hay track_id, no hay nada que abrir.
+        if (row.original.type === "EMAIL_REPLY" && !row.original.track?.id) {
+          return null;
+        }
+        return (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onViewDetails?.(row.original)}
+            className="h-8 w-8 p-0"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+        );
+      },
+    },
+  ];
