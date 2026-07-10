@@ -2,7 +2,7 @@
 "use client";
 
 import { ManagementFormData } from "@/app/dashboard/debtor-management/components/tabs/add-management-tab";
-import { CONTACT_TYPE_OPTIONS } from "@/app/dashboard/debtor-management/config/management-types";
+import { CONTACT_TYPE_OPTIONS, getChannelTypeLabel, DEBTOR_COMMENTS, EXECUTIVE_COMMENTS } from "@/app/dashboard/debtor-management/config/management-types";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import { Invoice } from "@/app/dashboard/payment-plans/store";
@@ -690,17 +690,17 @@ export const StepThree = ({
                 <IconDescription
                   icon={<FileText className="w-6 h-6 text-blue-600" />}
                   description={t("managementType")}
-                  value={t("outboundCall")}
+                  value={getChannelTypeLabel(formData.managementType)}
                 />{" "}
                 <IconDescription
                   icon={<FileText className="w-6 h-6 text-blue-600" />}
                   description={t("debtorCommentLabel")}
-                  value={selectedConfig.description}
+                  value={DEBTOR_COMMENTS.find(c => c.value === formData.debtorComment)?.label || formData.debtorComment}
                 />
                 <IconDescription
                   icon={<FileText className="w-6 h-6 text-blue-600" />}
                   description={t("executiveCommentLabel")}
-                  value={selectedConfig.label}
+                  value={EXECUTIVE_COMMENTS.find(c => c.value === formData.executiveComment)?.label || formData.executiveComment}
                 />
               </div>
               <div className="flex flex-col gap-2 mt-5">
