@@ -374,7 +374,18 @@ const Content = () => {
   // frontend — no crea una gestión real en el backend.
   const emailReplyRows = useMemo<InvoiceWithTrack[]>(
     () =>
-      emailReplies.map((reply) => ({
+      emailReplies.map((reply) => {
+        const attachments: { filename: string; storage_url: string }[] =
+          Array.isArray(reply.attachments)
+            ? reply.attachments.map(
+                (a: { filename: string; storage_url: string }) => ({
+                  filename: a.filename,
+                  storage_url: a.storage_url,
+                }),
+              )
+            : [];
+
+        return {
         id: reply.id,
         type: "EMAIL_REPLY",
         number: reply.invoice?.number || "",
@@ -426,8 +437,10 @@ const Content = () => {
           invoices: [],
           createdAt: reply.created_at,
           updatedAt: reply.created_at,
+          attachments,
         },
-      })) as unknown as InvoiceWithTrack[],
+        };
+      }) as unknown as InvoiceWithTrack[],
     [emailReplies, dataDebtor?.client_id, debtorId],
   );
 
