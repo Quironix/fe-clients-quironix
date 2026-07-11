@@ -150,6 +150,8 @@ export interface InvoiceWithTrack {
     createdAt: string;
     updatedAt: string;
     attachments?: { filename: string; storage_url: string }[];
+    emailSubject?: string;
+    emailBody?: string;
   };
 }
 

@@ -3,12 +3,22 @@
 import { Button } from "@/components/ui/button";
 import { formatDate, formatDateTime, formatDateTimeUTC, formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye } from "lucide-react";
+import { ChevronDown, ChevronUp, Eye, Link2 } from "lucide-react";
 import { useState } from "react";
 import { DEBTOR_COMMENTS, getChannelTypeLabel, getExecutiveCommentLabel } from "../../../config/management-types";
 import { InvoiceWithTrack } from "../../../types/debtor-tracks";
 
-const OBSERVATION_TRUNCATE_LENGTH = 100;
+// Clases literales (no interpoladas) para que Tailwind las detecte en build.
+const THREAD_TAG_CLASSES: Record<string, string> = {
+  amber: "bg-amber-100 text-amber-700 hover:bg-amber-200",
+  purple: "bg-purple-100 text-purple-700 hover:bg-purple-200",
+  pink: "bg-pink-100 text-pink-700 hover:bg-pink-200",
+  cyan: "bg-cyan-100 text-cyan-700 hover:bg-cyan-200",
+  indigo: "bg-indigo-100 text-indigo-700 hover:bg-indigo-200",
+  rose: "bg-rose-100 text-rose-700 hover:bg-rose-200",
+};
+
+const OBSERVATION_TRUNCATE_LENGTH = 53;
 
 const ObservationText = ({ text }: { text: string }) => {
   const [expanded, setExpanded] = useState(false);
@@ -22,9 +32,14 @@ const ObservationText = ({ text }: { text: string }) => {
       <button
         type="button"
         onClick={() => setExpanded((prev) => !prev)}
-        className="text-blue-600 hover:underline font-medium"
+        title={expanded ? "Ver menos" : "Ver más"}
+        className="inline-flex items-center text-blue-600 hover:text-blue-700 align-text-bottom"
       >
-        {expanded ? "Ver menos" : "Ver más"}
+        {expanded ? (
+          <ChevronUp className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronDown className="h-3.5 w-3.5" />
+        )}
       </button>
     </>
   );
@@ -36,9 +51,27 @@ const getDebtorCommentLabel = (comment: string): string => {
   return found?.label || comment;
 };
 
+const INBOUND_TYPES = new Set(["MAIL_IN", "CALL_IN"]);
+const OUTBOUND_TYPES = new Set(["MAIL_OUT", "CALL_OUT"]);
+
+const getManagementTypeBadgeClass = (type: string) => {
+  if (INBOUND_TYPES.has(type)) {
+    return "border-emerald-600 text-emerald-600";
+  }
+  if (OUTBOUND_TYPES.has(type)) {
+    return "border-blue-600 text-blue-600";
+  }
+  if (type === "AUTOMATED_COLLECTOR" || type === "AUTOMATED_COLLECTOR_SENT") {
+    return "border-gray-400 text-gray-500";
+  }
+  return "border-blue-600 text-blue-600";
+};
+
 const getManagementTypeBadge = (type: string) => {
   return (
-    <div className="border border-blue-600 px-3 text-center text-blue-600 rounded-full text-xs">
+    <div
+      className={`border px-3 text-center rounded-full text-xs ${getManagementTypeBadgeClass(type)}`}
+    >
       {getChannelTypeLabel(type)}
     </div>
   );
@@ -74,6 +107,8 @@ const calculateTimeInPhase = (invoice: InvoiceWithTrack) => {
 
 export const createInvoiceColumns = (
   onViewDetails?: (invoice: InvoiceWithTrack) => void,
+  threadColorByTrackId?: Map<string, string>,
+  onOpenThread?: (trackId: string) => void,
 ): ColumnDef<InvoiceWithTrack>[] => [
     {
       accessorKey: "debtor_code",
@@ -157,8 +192,27 @@ export const createInvoiceColumns = (
     {
       accessorKey: "managementType",
       header: "Tipo de Gestión",
-      cell: ({ row }) =>
-        getManagementTypeBadge(row.original.track?.managementType),
+      cell: ({ row }) => {
+        const trackId = row.original.track?.id;
+        const threadColor = trackId
+          ? threadColorByTrackId?.get(trackId)
+          : undefined;
+        return (
+          <div className="flex items-center gap-1.5">
+            {getManagementTypeBadge(row.original.track?.managementType)}
+            {threadColor && trackId && (
+              <button
+                type="button"
+                onClick={() => onOpenThread?.(trackId)}
+                title="Ver hilo completo del correo"
+                className={`flex items-center justify-center h-5 w-5 rounded-full transition-colors ${THREAD_TAG_CLASSES[threadColor] ?? "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+              >
+                <Link2 className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "executive",
@@ -194,20 +248,30 @@ export const createInvoiceColumns = (
     {
       accessorKey: "debtorComment",
       header: "Comentario deudor",
-      cell: ({ row }) => (
-        <div className="text-xs max-w-[200px] truncate">
-          {getDebtorCommentLabel(row.original.track?.debtorComment)}
-        </div>
-      ),
+      cell: ({ row }) => {
+        if (row.original.track?.managementType === "MAIL_IN") {
+          return <div className="text-xs">-</div>;
+        }
+        return (
+          <div className="text-xs max-w-[200px] truncate">
+            {getDebtorCommentLabel(row.original.track?.debtorComment)}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "executiveComment",
       header: "Comentario Analista",
-      cell: ({ row }) => (
-        <div className="text-xs max-w-[200px] truncate">
-          {getExecutiveCommentLabel(row.original.track?.executiveComment)}
-        </div>
-      ),
+      cell: ({ row }) => {
+        if (row.original.track?.managementType === "MAIL_IN") {
+          return <div className="text-xs">-</div>;
+        }
+        return (
+          <div className="text-xs max-w-[200px] truncate">
+            {getExecutiveCommentLabel(row.original.track?.executiveComment)}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "paymentCommitmentDate",
@@ -237,28 +301,22 @@ export const createInvoiceColumns = (
       header: "Observación",
       size: 350,
       cell: ({ row }) => {
-        const attachments = row.original.track?.attachments || [];
+        const track = row.original.track;
+        const isEmailIn = track?.managementType === "MAIL_IN";
         return (
           <div className="text-xs w-[350px] whitespace-normal break-words space-y-1">
-            <div>
-              <ObservationText text={row.original.track?.observation || ""} />
-            </div>
-            {attachments.length > 0 && (
-              <div className="flex flex-col gap-0.5">
-                {attachments.map((attachment, index) => (
-                  <a
-                    key={`${attachment.storage_url}-${index}`}
-                    href={attachment.storage_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download
-                    className="text-blue-600 hover:underline break-all"
-                  >
-                    {attachment.filename}
-                  </a>
-                ))}
-              </div>
+            {isEmailIn && track?.emailSubject && (
+              <div className="font-semibold">{track.emailSubject}</div>
             )}
+            <div>
+              <ObservationText
+                text={
+                  isEmailIn
+                    ? track?.emailBody || ""
+                    : track?.observation || ""
+                }
+              />
+            </div>
           </div>
         );
       },

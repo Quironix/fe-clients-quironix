@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { getDebtorTracksByInvoices } from "../../services/tracks";
 import { InvoiceWithTrack } from "../../types/debtor-tracks";
 import { createInvoiceColumns } from "./components/columns-invoices";
+import { EmailThreadSheet } from "./components/email-thread-sheet";
 import { TrackDetailModal } from "./components/track-detail-modal";
 import { updateTableProfile } from "./services";
 
@@ -366,8 +367,6 @@ const Content = () => {
     setSelectedTrackId(null);
   };
 
-  const columns = useMemo(() => createInvoiceColumns(handleViewDetails), []);
-
   // Convierte cada correo entrante en una fila más de la tabla de gestiones,
   // con managementType "MAIL_IN" (ya mapeado a la etiqueta "Correo entrante"
   // en config/management-types.ts). Es puramente una vista unificada en el
@@ -427,9 +426,9 @@ const Content = () => {
           executiveId: "",
           executive: null,
           contact: { type: "EMAIL", value: reply.from_address },
-          debtorComment: reply.subject || "",
+          debtorComment: "",
           executiveComment: "",
-          observation: reply.body_text || "",
+          observation: "",
           nextManagementDate: "",
           caseData: {},
           metadata: {},
@@ -438,6 +437,8 @@ const Content = () => {
           createdAt: reply.created_at,
           updatedAt: reply.created_at,
           attachments,
+          emailSubject: reply.subject || "",
+          emailBody: reply.body_text || "",
         },
         };
       }) as unknown as InvoiceWithTrack[],
@@ -459,6 +460,94 @@ const Content = () => {
       return dateB - dateA;
     });
   }, [invoicesWithTracks, dataDebtor?.contacts, emailReplyRows]);
+
+  const THREAD_COLOR_PALETTE = [
+    "amber",
+    "purple",
+    "pink",
+    "cyan",
+    "indigo",
+    "rose",
+  ] as const;
+
+  // Agrupa correos salientes/entrantes que comparten el mismo track.id
+  // (el correo entrante siempre queda vinculado al track que lo originó,
+  // ver PRD respuesta_correos_deudores). Solo se considera "hilo" un grupo
+  // que efectivamente tenga al menos una respuesta (MAIL_IN); un correo
+  // saliente sin respuesta no se marca. Es una vista puramente visual, no
+  // reordena ni colapsa filas de la tabla cronológica.
+  const { threadGroups, threadColorByTrackId } = useMemo(() => {
+    const rowsByTrackId = new Map<string, InvoiceWithTrack[]>();
+
+    enrichedAndSortedInvoices.forEach((invoice) => {
+      const managementType = invoice.track?.managementType;
+      const trackId = invoice.track?.id;
+      if (
+        !trackId ||
+        (managementType !== "MAIL_OUT" && managementType !== "MAIL_IN")
+      ) {
+        return;
+      }
+      const existing = rowsByTrackId.get(trackId) || [];
+      if (!existing.find((r) => r.id === invoice.id)) {
+        existing.push(invoice);
+      }
+      rowsByTrackId.set(trackId, existing);
+    });
+
+    const groups = new Map<string, InvoiceWithTrack[]>();
+    rowsByTrackId.forEach((rows, trackId) => {
+      const hasReply = rows.some(
+        (r) => r.track?.managementType === "MAIL_IN",
+      );
+      if (hasReply && rows.length > 1) {
+        groups.set(
+          trackId,
+          [...rows].sort(
+            (a, b) =>
+              new Date(a.track?.createdAt ?? 0).getTime() -
+              new Date(b.track?.createdAt ?? 0).getTime(),
+          ),
+        );
+      }
+    });
+
+    const colorByTrackId = new Map<string, (typeof THREAD_COLOR_PALETTE)[number]>();
+    Array.from(groups.keys()).forEach((trackId, index) => {
+      colorByTrackId.set(
+        trackId,
+        THREAD_COLOR_PALETTE[index % THREAD_COLOR_PALETTE.length],
+      );
+    });
+
+    return { threadGroups: groups, threadColorByTrackId: colorByTrackId };
+  }, [enrichedAndSortedInvoices]);
+
+  const [selectedThreadKey, setSelectedThreadKey] = useState<string | null>(
+    null,
+  );
+
+  const handleOpenThread = (trackId: string) => {
+    setSelectedThreadKey(trackId);
+  };
+
+  const handleCloseThread = () => {
+    setSelectedThreadKey(null);
+  };
+
+  const columns = useMemo(
+    () =>
+      createInvoiceColumns(
+        handleViewDetails,
+        threadColorByTrackId,
+        handleOpenThread,
+      ),
+    [threadColorByTrackId],
+  );
+
+  const selectedThreadMessages = selectedThreadKey
+    ? threadGroups.get(selectedThreadKey) || []
+    : [];
 
   const TableSkeleton = () => (
     <>
@@ -669,6 +758,12 @@ const Content = () => {
           trackId={selectedTrackId}
           accessToken={session?.token || null}
           clientId={profile?.client?.id || null}
+        />
+
+        <EmailThreadSheet
+          isOpen={!!selectedThreadKey}
+          onClose={handleCloseThread}
+          messages={selectedThreadMessages}
         />
       </Main>
     </>
