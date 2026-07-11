@@ -370,7 +370,7 @@ export const StepTwo = ({
 
   const totalizeSelectedInvoices = useMemo(() => {
     const invoices = selectedInvoices || [];
-    return invoices.reduce((sum, inv) => sum + parseFloat(inv?.amount ?? 0), 0);
+    return invoices.reduce((sum, inv) => sum + parseFloat(inv?.amount ?? "0"), 0);
   }, [selectedInvoices]);
 
   const { data: session } = useSession();
