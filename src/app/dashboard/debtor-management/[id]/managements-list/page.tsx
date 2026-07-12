@@ -367,6 +367,28 @@ const Content = () => {
     setSelectedTrackId(null);
   };
 
+  // Facturas agrupadas por track.id, para que el correo entrante muestre el
+  // monto total del envío (puede cubrir varias facturas) y la lista de
+  // documentos involucrados, en vez de un monto/número elegido
+  // arbitrariamente entre las facturas del track.
+  const trackInvoicesByTrackId = useMemo(() => {
+    const map = new Map<
+      string,
+      { number: string; balance: string }[]
+    >();
+    invoicesWithTracks.forEach((invoice) => {
+      const trackId = invoice.track?.id;
+      if (!trackId) return;
+      const existing = map.get(trackId) || [];
+      existing.push({
+        number: invoice.number || invoice.external_number || "",
+        balance: invoice.balance || "",
+      });
+      map.set(trackId, existing);
+    });
+    return map;
+  }, [invoicesWithTracks]);
+
   // Convierte cada correo entrante en una fila más de la tabla de gestiones,
   // con managementType "MAIL_IN" (ya mapeado a la etiqueta "Correo entrante"
   // en config/management-types.ts). Es puramente una vista unificada en el
@@ -374,6 +396,16 @@ const Content = () => {
   const emailReplyRows = useMemo<InvoiceWithTrack[]>(
     () =>
       emailReplies.map((reply) => {
+        const trackInvoices = reply.track_id
+          ? trackInvoicesByTrackId.get(reply.track_id)
+          : undefined;
+        const totalAmount = trackInvoices
+          ? trackInvoices.reduce(
+              (sum, inv) => sum + (parseFloat(inv.balance || "0") || 0),
+              0,
+            )
+          : undefined;
+        const isMultiInvoice = (trackInvoices?.length ?? 0) > 1;
         const attachments: { filename: string; storage_url: string }[] =
           Array.isArray(reply.attachments)
             ? reply.attachments.map(
@@ -387,8 +419,11 @@ const Content = () => {
         return {
         id: reply.id,
         type: "EMAIL_REPLY",
-        number: reply.invoice?.number || "",
+        number: isMultiInvoice ? "" : reply.invoice?.number || "",
         external_number: reply.invoice?.external_number || "",
+        batchInvoiceNumbers: isMultiInvoice
+          ? trackInvoices!.map((inv) => inv.number).filter(Boolean)
+          : undefined,
         is_internal_document: false,
         amount: "",
         order_number: null,
@@ -401,7 +436,10 @@ const Content = () => {
         operation_date: null,
         reception_date: null,
         folio: "",
-        balance: reply.invoice?.balance || "",
+        balance:
+          totalAmount !== undefined
+            ? String(totalAmount)
+            : reply.invoice?.balance || "",
         litigation_balance: "",
         number_of_installments: reply.invoice?.number_of_installments || 0,
         observations: "",
@@ -442,7 +480,7 @@ const Content = () => {
         },
         };
       }) as unknown as InvoiceWithTrack[],
-    [emailReplies, dataDebtor?.client_id, debtorId],
+    [emailReplies, dataDebtor?.client_id, debtorId, trackInvoicesByTrackId],
   );
 
   // Enriquecer y ordenar los datos de forma reactiva
@@ -503,14 +541,36 @@ const Content = () => {
         (r) => r.track?.managementType === "MAIL_IN",
       );
       if (hasReply && rows.length > 1) {
-        groups.set(
-          trackId,
-          [...rows].sort(
-            (a, b) =>
-              new Date(a.track?.createdAt ?? 0).getTime() -
-              new Date(b.track?.createdAt ?? 0).getTime(),
-          ),
+        const sorted = [...rows].sort(
+          (a, b) =>
+            new Date(a.track?.createdAt ?? 0).getTime() -
+            new Date(b.track?.createdAt ?? 0).getTime(),
         );
+        // Un envío del collector puede generar varias filas (una por
+        // factura) para el mismo track. En el hilo solo debe verse un
+        // correo saliente por track (ahí se mostrará el correo real
+        // enviado), no una fila repetida por cada factura.
+        // Las filas salientes que se agrupan bajo la representante quedan
+        // en batchInvoices, para poder mostrar el N° de facturas y el
+        // monto total en vez de repetir una fila por factura.
+        let representative: InvoiceWithTrack | null = null;
+        const dedupedRows: InvoiceWithTrack[] = [];
+        sorted.forEach((r) => {
+          const isOutbound =
+            r.track?.managementType === "MAIL_OUT" ||
+            r.track?.managementType === "AUTOMATED_COLLECTOR";
+          if (!isOutbound) {
+            dedupedRows.push(r);
+            return;
+          }
+          if (!representative) {
+            representative = { ...r, batchInvoices: [r] };
+            dedupedRows.push(representative);
+          } else {
+            representative.batchInvoices!.push(r);
+          }
+        });
+        groups.set(trackId, dedupedRows);
       }
     });
 

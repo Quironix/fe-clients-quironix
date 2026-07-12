@@ -1,6 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { formatDate, formatDateTime, formatDateTimeUTC, formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { ChevronDown, ChevronUp, Eye, Link2 } from "lucide-react";
@@ -122,11 +127,28 @@ export const createInvoiceColumns = (
     {
       accessorKey: "documentNumber",
       header: "N° Documento",
-      cell: ({ row }) => (
-        <div className="font-medium text-sm">
-          {row.original.number || row.original.external_number || "-"}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const batchInvoiceNumbers = row.original.batchInvoiceNumbers;
+        if (batchInvoiceNumbers && batchInvoiceNumbers.length > 1) {
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="font-medium text-sm underline decoration-dotted cursor-default w-fit">
+                  {batchInvoiceNumbers.length} facturas asociadas
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {batchInvoiceNumbers.join(", ")}
+              </TooltipContent>
+            </Tooltip>
+          );
+        }
+        return (
+          <div className="font-medium text-sm">
+            {row.original.number || row.original.external_number || "-"}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "order_code",

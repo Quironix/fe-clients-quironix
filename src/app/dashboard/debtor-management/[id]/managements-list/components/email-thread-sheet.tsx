@@ -14,6 +14,7 @@ import {
   getExecutiveCommentLabel,
 } from "../../../config/management-types";
 import { InvoiceWithTrack } from "../../../types/debtor-tracks";
+import { formatNumber } from "@/lib/utils";
 
 interface EmailThreadSheetProps {
   isOpen: boolean;
@@ -107,6 +108,30 @@ export const EmailThreadSheet = ({
                     </>
                   ) : (
                     <div className="space-y-1 text-gray-700">
+                      {(() => {
+                        const batchInvoices = message.batchInvoices;
+                        const invoiceCount = batchInvoices?.length ?? 1;
+                        const totalAmount = batchInvoices
+                          ? batchInvoices.reduce(
+                              (sum, inv) =>
+                                sum + (parseFloat(inv.balance || "0") || 0),
+                              0,
+                            )
+                          : parseFloat(message.balance || "0") || 0;
+
+                        return (
+                          <p>
+                            <span className="text-gray-500">
+                              {invoiceCount > 1
+                                ? `N° Documento: ${invoiceCount} facturas`
+                                : `N° Documento: ${message.number || message.external_number || "-"}`}
+                            </span>
+                            {" · "}
+                            <span className="text-gray-500">Monto: </span>
+                            {formatNumber(totalAmount)}
+                          </p>
+                        );
+                      })()}
                       {getDebtorCommentLabel(track?.debtorComment) && (
                         <p>
                           <span className="text-gray-500">

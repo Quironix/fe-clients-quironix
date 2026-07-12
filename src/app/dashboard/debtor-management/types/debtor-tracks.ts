@@ -153,6 +153,14 @@ export interface InvoiceWithTrack {
     emailSubject?: string;
     emailBody?: string;
   };
+  // Cuando un mismo track agrupa varias facturas (envío batch del
+  // collector), acá quedan las filas por factura originales para poder
+  // sumar montos y contar documentos en el hilo de correo.
+  batchInvoices?: InvoiceWithTrack[];
+  // Números de documento de las facturas del track, cuando la fila
+  // (por ejemplo un correo entrante) agrupa más de una factura y por lo
+  // tanto no puede mostrar un único N° Documento.
+  batchInvoiceNumbers?: string[];
 }
 
 export interface InvoiceTracksParams {
