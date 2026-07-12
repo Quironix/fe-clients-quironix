@@ -484,7 +484,9 @@ const Content = () => {
       const trackId = invoice.track?.id;
       if (
         !trackId ||
-        (managementType !== "MAIL_OUT" && managementType !== "MAIL_IN")
+        (managementType !== "MAIL_OUT" &&
+          managementType !== "MAIL_IN" &&
+          managementType !== "AUTOMATED_COLLECTOR")
       ) {
         return;
       }
