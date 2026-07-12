@@ -3,7 +3,7 @@
  */
 
 import { CreateTrackPayload, CreateTrackResponse } from "../types/track";
-import { DebtorTracksResponse, DebtorTracksParams, InvoiceTracksResponse, InvoiceTracksParams } from "../types/debtor-tracks";
+import { DebtorTracksResponse, DebtorTracksParams, InvoiceTracksResponse, InvoiceTracksParams, TrackEmailMessage } from "../types/debtor-tracks";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -213,6 +213,41 @@ export async function getTrackById(
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
       errorData.message || `Error al obtener el track: ${response.statusText}`
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Obtiene el hilo de correo completo (ambas direcciones) de un track,
+ * ordenado cronológicamente. Ver PRD_canal_correo_bidireccional_multiturno.md §7.2.
+ *
+ * @param accessToken - Token de autenticación
+ * @param clientId - ID del cliente
+ * @param trackId - ID del track
+ */
+export async function getTrackEmailMessages(
+  accessToken: string,
+  clientId: string,
+  trackId: string
+): Promise<TrackEmailMessage[]> {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/managements/tracks/${trackId}/email-messages`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.message ||
+        `Error al obtener el hilo de correo: ${response.statusText}`
     );
   }
 

@@ -163,6 +163,31 @@ export interface InvoiceWithTrack {
   batchInvoiceNumbers?: string[];
 }
 
+export interface EmailMessageAttachment {
+  filename: string;
+  content_type: string;
+  size_bytes: number;
+  storage_path: string;
+  storage_url: string;
+}
+
+export interface TrackEmailMessage {
+  id: string;
+  direction: "IN" | "OUT";
+  client_id: string;
+  debtor_id: string;
+  from_address: string;
+  subject?: string | null;
+  body_text?: string | null;
+  body_html?: string | null;
+  track_id?: string | null;
+  attachments?: EmailMessageAttachment[];
+  to_addresses?: string[] | null;
+  template_id?: string | null;
+  sent_by_executive_id?: string | null;
+  created_at: string;
+}
+
 export interface InvoiceTracksParams {
   page: number;
   limit: number;

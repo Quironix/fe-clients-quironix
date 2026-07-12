@@ -37,7 +37,11 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { getDebtorTracksByInvoices } from "../../services/tracks";
+import {
+  getDebtorTracksByInvoices,
+  getTrackEmailMessages,
+} from "../../services/tracks";
+import { TrackEmailMessage } from "../../types/debtor-tracks";
 import { InvoiceWithTrack } from "../../types/debtor-tracks";
 import { createInvoiceColumns } from "./components/columns-invoices";
 import { EmailThreadSheet } from "./components/email-thread-sheet";
@@ -588,13 +592,37 @@ const Content = () => {
   const [selectedThreadKey, setSelectedThreadKey] = useState<string | null>(
     null,
   );
+  const [threadEmailMessages, setThreadEmailMessages] = useState<
+    TrackEmailMessage[]
+  >([]);
+  const [threadLoading, setThreadLoading] = useState(false);
+
+  const refreshThreadMessages = async (trackId: string) => {
+    if (!session?.token || !profile?.client?.id) return;
+    setThreadLoading(true);
+    try {
+      const messages = await getTrackEmailMessages(
+        session.token,
+        profile.client.id,
+        trackId,
+      );
+      setThreadEmailMessages(messages);
+    } catch (error) {
+      console.error("Error al obtener el hilo de correo:", error);
+      toast.error("No se pudo cargar el hilo de correo");
+    } finally {
+      setThreadLoading(false);
+    }
+  };
 
   const handleOpenThread = (trackId: string) => {
     setSelectedThreadKey(trackId);
+    refreshThreadMessages(trackId);
   };
 
   const handleCloseThread = () => {
     setSelectedThreadKey(null);
+    setThreadEmailMessages([]);
   };
 
   const columns = useMemo(
@@ -607,9 +635,6 @@ const Content = () => {
     [threadColorByTrackId],
   );
 
-  const selectedThreadMessages = selectedThreadKey
-    ? threadGroups.get(selectedThreadKey) || []
-    : [];
 
   const TableSkeleton = () => (
     <>
@@ -825,7 +850,14 @@ const Content = () => {
         <EmailThreadSheet
           isOpen={!!selectedThreadKey}
           onClose={handleCloseThread}
-          messages={selectedThreadMessages}
+          messages={threadEmailMessages}
+          loading={threadLoading}
+          trackId={selectedThreadKey}
+          accessToken={session?.token || ""}
+          clientId={profile?.client?.id || ""}
+          onMessageSent={() =>
+            selectedThreadKey && refreshThreadMessages(selectedThreadKey)
+          }
         />
       </Main>
     </>
