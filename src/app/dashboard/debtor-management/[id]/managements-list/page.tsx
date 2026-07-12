@@ -7,6 +7,7 @@ import TitleSection from "@/app/dashboard/components/title-section";
 import {
   getDebtorById,
   getDebtorEmailReplies,
+  getDebtorOutgoingEmailReplies,
 } from "@/app/dashboard/debtors/services";
 import {
   Breadcrumb,
@@ -80,6 +81,7 @@ const Content = () => {
   const [dataDebtor, setDataDebtor] = useState<any>(null);
   const [emailReplies, setEmailReplies] = useState<any[]>([]);
   const [isFetchingEmailReplies, setIsFetchingEmailReplies] = useState(true);
+  const [outgoingEmailReplies, setOutgoingEmailReplies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -230,6 +232,22 @@ const Content = () => {
     }
   };
 
+  const fetchOutgoingEmailReplies = async () => {
+    if (!session?.token || !profile?.client?.id || !debtorId) return;
+
+    try {
+      const replies = await getDebtorOutgoingEmailReplies(
+        session.token,
+        profile.client.id,
+        debtorId,
+      );
+      setOutgoingEmailReplies(Array.isArray(replies) ? replies : []);
+    } catch (err) {
+      console.error("Error fetching debtor outgoing email replies:", err);
+      setOutgoingEmailReplies([]);
+    }
+  };
+
   // Función helper para enriquecer el contacto con el nombre del deudor
   const enrichContactWithName = (
     invoices: InvoiceWithTrack[],
@@ -301,6 +319,7 @@ const Content = () => {
   useEffect(() => {
     fetchDebtor();
     fetchEmailReplies();
+    fetchOutgoingEmailReplies();
   }, [session, debtorId]);
 
   useEffect(() => {
@@ -487,6 +506,110 @@ const Content = () => {
     [emailReplies, dataDebtor?.client_id, debtorId, trackInvoicesByTrackId],
   );
 
+  // Igual que emailReplyRows, pero para correos salientes que son
+  // *respuestas* dentro de un hilo (enviadas desde el panel de hilo) — el
+  // primer envío de cada gestión ya se ve como la fila real del Track, así
+  // que el backend excluye ese primero y solo devuelve los siguientes.
+  // managementType "MAIL_OUT_REPLY" (distinto de "MAIL_OUT" real) para no
+  // pisar el render de comentarios de gestiones salientes reales.
+  const emailOutRows = useMemo<InvoiceWithTrack[]>(
+    () =>
+      outgoingEmailReplies.map((reply) => {
+        const trackInvoices = reply.track_id
+          ? trackInvoicesByTrackId.get(reply.track_id)
+          : undefined;
+        const totalAmount = trackInvoices
+          ? trackInvoices.reduce(
+              (sum, inv) => sum + (parseFloat(inv.balance || "0") || 0),
+              0,
+            )
+          : undefined;
+        const isMultiInvoice = (trackInvoices?.length ?? 0) > 1;
+        const attachments: { filename: string; storage_url: string }[] =
+          Array.isArray(reply.attachments)
+            ? reply.attachments.map(
+                (a: { filename: string; storage_url: string }) => ({
+                  filename: a.filename,
+                  storage_url: a.storage_url,
+                }),
+              )
+            : [];
+        const plainBody = (reply.body_html || "")
+          .replace(/<br\s*\/?>/gi, "\n")
+          .replace(/<[^>]+>/g, "");
+
+        return {
+          id: reply.id,
+          type: "EMAIL_REPLY_OUT",
+          number: isMultiInvoice ? "" : reply.invoice?.number || "",
+          external_number: reply.invoice?.external_number || "",
+          batchInvoiceNumbers: isMultiInvoice
+            ? trackInvoices!.map((inv) => inv.number).filter(Boolean)
+            : undefined,
+          is_internal_document: false,
+          amount: "",
+          order_number: null,
+          issue_date: "",
+          is_fictitious: false,
+          company_id: null,
+          reference: null,
+          file: "",
+          due_date: reply.invoice?.due_date || "",
+          operation_date: null,
+          reception_date: null,
+          folio: "",
+          balance:
+            totalAmount !== undefined
+              ? String(totalAmount)
+              : reply.invoice?.balance || "",
+          litigation_balance: "",
+          number_of_installments: reply.invoice?.number_of_installments || 0,
+          observations: "",
+          order_code: reply.invoice?.order_code || "",
+          ref_1: null,
+          ref_2: null,
+          ref_3: null,
+          ref_4: null,
+          client_id: dataDebtor?.client_id || "",
+          debtor_id: debtorId,
+          debtor_code: dataDebtor?.debtor_code || "",
+          status: "",
+          created_at: reply.created_at,
+          updated_at: reply.created_at,
+          payment_plan_id: null,
+          phases: [],
+          track: {
+            id: reply.track_id || null,
+            clientId: dataDebtor?.client_id || "",
+            debtorId: debtorId,
+            managementType: "MAIL_OUT_REPLY",
+            executiveId: "",
+            executive: null,
+            contact: { type: "EMAIL", value: reply.to_addresses?.[0] || "" },
+            debtorComment: "",
+            executiveComment: "",
+            observation: "",
+            nextManagementDate: "",
+            caseData: {},
+            metadata: {},
+            invoiceIds: [],
+            invoices: [],
+            createdAt: reply.created_at,
+            updatedAt: reply.created_at,
+            attachments,
+            emailSubject: reply.subject || "",
+            emailBody: plainBody,
+          },
+        };
+      }) as unknown as InvoiceWithTrack[],
+    [
+      outgoingEmailReplies,
+      dataDebtor?.client_id,
+      debtorId,
+      trackInvoicesByTrackId,
+    ],
+  );
+
   // Enriquecer y ordenar los datos de forma reactiva
   const enrichedAndSortedInvoices = useMemo(() => {
     // Primero enriquecemos con el nombre del contacto
@@ -495,13 +618,14 @@ const Content = () => {
       dataDebtor?.contacts || [],
     );
 
-    // Mezclar gestiones reales con los correos entrantes y ordenar por fecha
-    return [...enriched, ...emailReplyRows].sort((a, b) => {
+    // Mezclar gestiones reales con los correos entrantes/salientes-respuesta
+    // y ordenar por fecha
+    return [...enriched, ...emailReplyRows, ...emailOutRows].sort((a, b) => {
       const dateA = new Date(a.track?.createdAt ?? 0).getTime();
       const dateB = new Date(b.track?.createdAt ?? 0).getTime();
       return dateB - dateA;
     });
-  }, [invoicesWithTracks, dataDebtor?.contacts, emailReplyRows]);
+  }, [invoicesWithTracks, dataDebtor?.contacts, emailReplyRows, emailOutRows]);
 
   const THREAD_COLOR_PALETTE = [
     "amber",
@@ -527,6 +651,7 @@ const Content = () => {
       if (
         !trackId ||
         (managementType !== "MAIL_OUT" &&
+          managementType !== "MAIL_OUT_REPLY" &&
           managementType !== "MAIL_IN" &&
           managementType !== "AUTOMATED_COLLECTOR")
       ) {
@@ -855,9 +980,10 @@ const Content = () => {
           trackId={selectedThreadKey}
           accessToken={session?.token || ""}
           clientId={profile?.client?.id || ""}
-          onMessageSent={() =>
-            selectedThreadKey && refreshThreadMessages(selectedThreadKey)
-          }
+          onMessageSent={() => {
+            if (selectedThreadKey) refreshThreadMessages(selectedThreadKey);
+            fetchOutgoingEmailReplies();
+          }}
         />
       </Main>
     </>

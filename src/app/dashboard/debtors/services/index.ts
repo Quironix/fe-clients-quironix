@@ -222,6 +222,25 @@ export const getDebtorEmailReplies = async (
   return response.json();
 };
 
+// Correos salientes que son respuestas dentro de un hilo (enviados desde el
+// panel de hilo) — no el primer envío, que ya se ve como la gestión real.
+export const getDebtorOutgoingEmailReplies = async (
+  accessToken: string,
+  clientId: string,
+  debtorId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/debtors/${debtorId}/outgoing-email-replies`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+};
+
 export const getExecutives = async (
   accessToken: string,
   clientId: string

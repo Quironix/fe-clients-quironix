@@ -1347,6 +1347,7 @@ const CHANNEL_TYPE_LABELS: Record<string, string> = {
   CALL_OUT: "Llamada saliente",
   CALL_IN: "Llamada entrante",
   MAIL_OUT: "Correo saliente",
+  MAIL_OUT_REPLY: "Correo saliente",
   MAIL_IN: "Correo entrante",
   SUPPLIER_PORTAL: "Portal de proveedores",
   WHATSAPP: "Whatsapp",

@@ -57,7 +57,11 @@ const getDebtorCommentLabel = (comment: string): string => {
 };
 
 const INBOUND_TYPES = new Set(["MAIL_IN", "CALL_IN"]);
-const OUTBOUND_TYPES = new Set(["MAIL_OUT", "CALL_OUT"]);
+const OUTBOUND_TYPES = new Set(["MAIL_OUT", "MAIL_OUT_REPLY", "CALL_OUT"]);
+// Filas sintéticas de correo (armadas en frontend, sin gestión/Track propia):
+// entrante (MAIL_IN) y respuestas salientes dentro de un hilo (MAIL_OUT_REPLY).
+// Se tratan igual que MAIL_IN para comentarios vacíos y mostrar subject/body.
+const SYNTHETIC_EMAIL_TYPES = new Set(["MAIL_IN", "MAIL_OUT_REPLY"]);
 
 const getManagementTypeBadgeClass = (type: string) => {
   if (INBOUND_TYPES.has(type)) {
@@ -271,7 +275,7 @@ export const createInvoiceColumns = (
       accessorKey: "debtorComment",
       header: "Comentario deudor",
       cell: ({ row }) => {
-        if (row.original.track?.managementType === "MAIL_IN") {
+        if (SYNTHETIC_EMAIL_TYPES.has(row.original.track?.managementType || "")) {
           return <div className="text-xs">-</div>;
         }
         return (
@@ -285,7 +289,7 @@ export const createInvoiceColumns = (
       accessorKey: "executiveComment",
       header: "Comentario Analista",
       cell: ({ row }) => {
-        if (row.original.track?.managementType === "MAIL_IN") {
+        if (SYNTHETIC_EMAIL_TYPES.has(row.original.track?.managementType || "")) {
           return <div className="text-xs">-</div>;
         }
         return (
@@ -324,16 +328,18 @@ export const createInvoiceColumns = (
       size: 350,
       cell: ({ row }) => {
         const track = row.original.track;
-        const isEmailIn = track?.managementType === "MAIL_IN";
+        const isSyntheticEmail = SYNTHETIC_EMAIL_TYPES.has(
+          track?.managementType || "",
+        );
         return (
           <div className="text-xs w-[350px] whitespace-normal break-words space-y-1">
-            {isEmailIn && track?.emailSubject && (
+            {isSyntheticEmail && track?.emailSubject && (
               <div className="font-semibold">{track.emailSubject}</div>
             )}
             <div>
               <ObservationText
                 text={
-                  isEmailIn
+                  isSyntheticEmail
                     ? track?.emailBody || ""
                     : track?.observation || ""
                 }

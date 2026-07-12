@@ -70,6 +70,16 @@ export const EmailThreadSheet = ({
     lastOutboundMessage?.to_addresses?.[0] ||
     null;
 
+  // Asunto del hilo (el primer mensaje que tenga uno), prefijado con "Re: "
+  // si no lo tiene ya — así la respuesta se ve con el mismo formato que el
+  // resto del hilo (asunto en negrita) en el historial de gestiones.
+  const originalSubject = messages.find((m) => m.subject)?.subject;
+  const replySubject = originalSubject
+    ? originalSubject.trim().toLowerCase().startsWith("re:")
+      ? originalSubject
+      : `Re: ${originalSubject}`
+    : undefined;
+
   const handleSendReply = async () => {
     if (!replyText.trim() || !trackId || !accessToken || !clientId) return;
     if (!replyToAddress) {
@@ -85,6 +95,7 @@ export const EmailThreadSheet = ({
           to: replyToAddress,
           templateId: QUICK_REPLY_TEMPLATE_ID,
           trackId,
+          subject: replySubject,
           // PRD §4.6: template mínimo (logo + {{body_html}} + firma) — shape
           // deliberadamente distinto al de EmailDynamicTemplateData (pensado
           // para el template de gestión individual).
