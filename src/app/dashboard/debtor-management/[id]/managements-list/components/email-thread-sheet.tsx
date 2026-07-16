@@ -98,9 +98,12 @@ export const EmailThreadSheet = ({
           subject: replySubject,
           // PRD §4.6: template mínimo (logo + {{body_html}} + firma) — shape
           // deliberadamente distinto al de EmailDynamicTemplateData (pensado
-          // para el template de gestión individual).
+          // para el template de gestión individual). subject se manda también
+          // acá porque el Subject del template en SendGrid usa {{{subject}}},
+          // no el campo subject de la API.
           dynamicTemplateData: {
             body_html: bodyHtml,
+            subject: replySubject,
           } as EmailPayload["dynamicTemplateData"],
         },
         accessToken,
