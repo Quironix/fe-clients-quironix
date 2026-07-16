@@ -31,6 +31,15 @@ interface EmailThreadSheetProps {
   accessToken?: string;
   clientId?: string;
   onMessageSent?: () => void;
+  debtorName?: string;
+  executiveProfile?: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone_number?: string;
+    roles?: { name?: string }[];
+    client?: { name?: string };
+  } | null;
 }
 
 const formatDateTime = (dateString?: string) => {
@@ -55,6 +64,8 @@ export const EmailThreadSheet = ({
   accessToken,
   clientId,
   onMessageSent,
+  debtorName,
+  executiveProfile,
 }: EmailThreadSheetProps) => {
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
@@ -100,11 +111,27 @@ export const EmailThreadSheet = ({
           // deliberadamente distinto al de EmailDynamicTemplateData (pensado
           // para el template de gestión individual). subject se manda también
           // acá porque el Subject del template en SendGrid usa {{{subject}}},
-          // no el campo subject de la API.
+          // no el campo subject de la API. debtor_name/signature calcan los
+          // merge tags del template principal para dar la misma identidad
+          // visual (logo, saludo, firma del ejecutivo) a las respuestas.
           dynamicTemplateData: {
             body_html: bodyHtml,
+            main_message: bodyHtml,
             subject: replySubject,
-          } as EmailPayload["dynamicTemplateData"],
+            debtor_name: debtorName || "",
+            signature: {
+              executive_name: [
+                executiveProfile?.first_name,
+                executiveProfile?.last_name,
+              ]
+                .filter(Boolean)
+                .join(" "),
+              position: executiveProfile?.roles?.[0]?.name || "",
+              company_name: executiveProfile?.client?.name || "",
+              phone: executiveProfile?.phone_number || "",
+              email: executiveProfile?.email || "",
+            },
+          } as unknown as EmailPayload["dynamicTemplateData"],
         },
         accessToken,
         clientId,

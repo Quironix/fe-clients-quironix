@@ -980,6 +980,8 @@ const Content = () => {
           trackId={selectedThreadKey}
           accessToken={session?.token || ""}
           clientId={profile?.client?.id || ""}
+          debtorName={dataDebtor?.contacts?.[0]?.name || dataDebtor?.name}
+          executiveProfile={profile}
           onMessageSent={() => {
             if (selectedThreadKey) refreshThreadMessages(selectedThreadKey);
             fetchOutgoingEmailReplies();
