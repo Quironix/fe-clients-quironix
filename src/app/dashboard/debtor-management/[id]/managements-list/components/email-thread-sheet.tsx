@@ -38,7 +38,7 @@ interface EmailThreadSheetProps {
     email?: string;
     phone_number?: string;
     roles?: { name?: string }[];
-    client?: { name?: string };
+    client?: { name?: string; operational?: { logo_url?: string } };
   } | null;
 }
 
@@ -119,6 +119,7 @@ export const EmailThreadSheet = ({
             main_message: bodyHtml,
             subject: replySubject,
             debtor_name: debtorName || "",
+            company_logo: executiveProfile?.client?.operational?.logo_url || "",
             signature: {
               executive_name: [
                 executiveProfile?.first_name,
