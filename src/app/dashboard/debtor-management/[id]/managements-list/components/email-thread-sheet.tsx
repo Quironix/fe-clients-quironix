@@ -107,6 +107,10 @@ export const EmailThreadSheet = ({
           templateId: QUICK_REPLY_TEMPLATE_ID,
           trackId,
           subject: replySubject,
+          // Mismo criterio que el envío de collector (EmailChannelStrategy):
+          // el From visible es el nombre del cliente de Quironix (ej. "TRANSVE
+          // S.A."), no "Quironix" — así el hilo completo se ve consistente.
+          from: { name: executiveProfile?.client?.name },
           // PRD §4.6: template mínimo (logo + {{body_html}} + firma) — shape
           // deliberadamente distinto al de EmailDynamicTemplateData (pensado
           // para el template de gestión individual). subject se manda también
