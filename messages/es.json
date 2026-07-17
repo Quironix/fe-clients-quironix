@@ -324,6 +324,11 @@
       "settings": "Configuraciones",
       "logout": "Cerrar sesión"
     },
+    "notifications": {
+      "title": "Notificaciones",
+      "mark_all_as_read": "Marcar todas como leídas",
+      "empty": "No tienes notificaciones nuevas"
+    },
     "accessDenied": {
       "title": "Acceso Denegado",
       "description": "No tienes permisos suficientes para acceder a la página solicitada.",

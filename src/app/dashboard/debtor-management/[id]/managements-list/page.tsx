@@ -73,6 +73,8 @@ const Content = () => {
   const searchParams = useSearchParams();
   const fromManagementsList =
     searchParams.get("from") === "managements-list";
+  const threadIdFromUrl = searchParams.get("threadId");
+  const trackIdFromUrl = searchParams.get("trackId");
   const { profile, session } = useProfileContext();
 
   const [invoicesWithTracks, setInvoicesWithTracks] = useState<
@@ -749,6 +751,16 @@ const Content = () => {
     setSelectedThreadKey(null);
     setThreadEmailMessages([]);
   };
+
+  useEffect(() => {
+    if (threadIdFromUrl) {
+      handleOpenThread(threadIdFromUrl);
+    } else if (trackIdFromUrl) {
+      setSelectedTrackId(trackIdFromUrl);
+      setIsModalOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threadIdFromUrl, trackIdFromUrl]);
 
   const columns = useMemo(
     () =>

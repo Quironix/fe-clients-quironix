@@ -329,6 +329,11 @@
       "settings": "Settings",
       "logout": "Sign out"
     },
+    "notifications": {
+      "title": "Notifications",
+      "mark_all_as_read": "Mark all as read",
+      "empty": "You have no new notifications"
+    },
     "accessDenied": {
       "title": "Access Denied",
       "description": "You don't have sufficient permissions to access the requested page.",

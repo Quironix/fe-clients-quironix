@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { NotificationBell } from "./notification-bell";
 
 interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
   fixed?: boolean;
@@ -33,6 +34,7 @@ const Header = ({ className, fixed, children, ...props }: HeaderProps) => {
         variant="outline"
         className="bg-[#2F6EFF] text-white scale-120 hover:bg-[#2F6EFF]/90 hover:text-white border-none"
       />
+      <NotificationBell />
       <Separator orientation="vertical" className="h-6" />
       {children}
     </header>
