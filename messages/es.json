@@ -327,7 +327,8 @@
     "notifications": {
       "title": "Notificaciones",
       "mark_all_as_read": "Marcar todas como leídas",
-      "empty": "No tienes notificaciones nuevas"
+      "empty": "No tienes notificaciones nuevas",
+      "no_track_linked": "Esta notificación no tiene una gestión vinculada"
     },
     "accessDenied": {
       "title": "Acceso Denegado",

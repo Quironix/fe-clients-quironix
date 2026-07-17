@@ -332,7 +332,8 @@
     "notifications": {
       "title": "Notifications",
       "mark_all_as_read": "Mark all as read",
-      "empty": "You have no new notifications"
+      "empty": "You have no new notifications",
+      "no_track_linked": "This notification has no linked management"
     },
     "accessDenied": {
       "title": "Access Denied",

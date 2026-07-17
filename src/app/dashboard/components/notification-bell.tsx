@@ -20,6 +20,7 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
 const formatDuration = (seconds?: number | null) => {
   if (seconds === undefined || seconds === null) return null;
@@ -47,6 +48,10 @@ export const NotificationBell = () => {
 
   const handleClick = (notification: Notification) => {
     markAsRead.mutate({ type: notification.type, id: notification.id });
+
+    if (!notification.track_id) {
+      toast.info(t("no_track_linked"));
+    }
 
     const query = notification.track_id
       ? notification.type === "EMAIL_REPLY"
