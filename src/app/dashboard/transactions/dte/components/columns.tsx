@@ -11,12 +11,13 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import { formatDate } from "@/lib/utils";
 import { ColumnDef, Row } from "@tanstack/react-table";
-import { Edit, FileText, History, Trash2 } from "lucide-react";
+import { Edit, FileText, History, Paperclip, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useDTEStore } from "../store";
 import { DTE } from "../types";
 import { useState } from "react";
+import InvoiceAttachmentsModal from "./invoice-attachments-modal";
 import InvoiceHistoryModal from "./invoice-history-modal";
 
 const DocumentCellComponent = ({ row }: { row: Row<DTE> }) => {
@@ -74,6 +75,7 @@ const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
   const { deleteDTE } = useDTEStore();
   const { session, profile } = useProfileContext();
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isAttachmentsModalOpen, setIsAttachmentsModalOpen] = useState(false);
   const t = useTranslations("transactions.dte");
   const tCommon = useTranslations("common.buttons");
 
@@ -87,6 +89,15 @@ const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
         className="hover:bg-blue-500 hover:text-white text-primary"
       >
         <History />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setIsAttachmentsModalOpen(true)}
+        title="Comprobantes"
+        className="hover:bg-emerald-500 hover:text-white text-primary"
+      >
+        <Paperclip />
       </Button>
       <Button
         variant="ghost"
@@ -127,6 +138,11 @@ const AcctionsCellComponent = ({ row }: { row: Row<DTE> }) => {
         invoice={row.original}
         open={isHistoryModalOpen}
         onOpenChange={setIsHistoryModalOpen}
+      />
+      <InvoiceAttachmentsModal
+        invoice={row.original}
+        open={isAttachmentsModalOpen}
+        onOpenChange={setIsAttachmentsModalOpen}
       />
     </div>
   );

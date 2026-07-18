@@ -58,3 +58,20 @@ export interface BulkUploadResponse {
   success?: boolean;
   message?: string;
 }
+
+export interface InvoiceAttachment {
+  id: string;
+  invoice_id: string;
+  type: string;
+  filename: string;
+  storage_path: string;
+  storage_url: string;
+  uploaded_by: string | null;
+  created_at: string;
+}
+
+export interface BulkUploadAttachmentsResponse {
+  validCount: number;
+  invalidCount: number;
+  errors: string[];
+}

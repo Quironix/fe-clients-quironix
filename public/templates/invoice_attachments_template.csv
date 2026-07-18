@@ -1,0 +1,3 @@
+number,nombre_archivo,codigo_deudor,tipo_documento
+12345,comprobante_transferencia_12345.pdf,D-001,INVOICE
+12346,comprobante_transferencia_12346.pdf,D-002,INVOICE

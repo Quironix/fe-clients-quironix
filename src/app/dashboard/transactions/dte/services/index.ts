@@ -212,3 +212,100 @@ export const getInvoiceHistory = async ({
     };
   }
 };
+
+export const bulkUploadAttachments = async (
+  accessToken: string,
+  clientId: string,
+  csvFile: File,
+  pdfFiles: File[]
+) => {
+  const formData = new FormData();
+  formData.append("csv", csvFile);
+  pdfFiles.forEach((file) => formData.append("files", file));
+
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/invoices/attachments/bulk-upload`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: "POST",
+      body: formData,
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      JSON.stringify({
+        message: error.message || "Error al cargar los comprobantes",
+        code: "ERROR_BULK_INVOICE_ATTACHMENTS",
+      })
+    );
+  }
+  return response.json();
+};
+
+export const createInvoiceAttachment = async (
+  accessToken: string,
+  clientId: string,
+  invoiceId: string,
+  data: { file: string; filename: string; type?: string }
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/invoices/${invoiceId}/attachments`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Error al subir el comprobante");
+  }
+  return response.json();
+};
+
+export const getInvoiceAttachments = async (
+  accessToken: string,
+  clientId: string,
+  invoiceId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/invoices/${invoiceId}/attachments`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch invoice attachments");
+  }
+  return response.json();
+};
+
+export const deleteInvoiceAttachment = async (
+  accessToken: string,
+  clientId: string,
+  attachmentId: string
+) => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/invoices/attachments/${attachmentId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      method: "DELETE",
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to delete invoice attachment");
+  }
+  return response.json();
+};

@@ -17,6 +17,7 @@ import { ExportExcelModal } from "@/components/ui/export-excel-modal";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import { columns } from "./components/columns";
 import DTEUploadSection from "./components/dte-upload-section";
+import InvoiceAttachmentsUploadSection from "./components/invoice-attachments-upload-section";
 import { useDTEs } from "./hooks/useDTEs";
 import { updateTableProfile } from "./services/profile";
 import { DTE } from "./types";
@@ -205,6 +206,9 @@ const PageDTE = () => {
           subDescription="Transacciones"
         />
         <DTEUploadSection />
+        <div className="mt-5">
+          <InvoiceAttachmentsUploadSection />
+        </div>
         <div className="mt-5 border border-gray-200 rounded-md p-3">
           <DataTableDynamicColumns
             columns={columns}
