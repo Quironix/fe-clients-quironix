@@ -1481,7 +1481,40 @@
       "normalize": "Normalize",
       "saveError": "Error saving litigation",
       "fetchError": "Error fetching litigations"
-    }
+    },
+    "filter": {
+      "title": "Filters",
+      "reason": "Reason",
+      "selectReason": "Select a reason",
+      "allReasons": "All reasons",
+      "status": "Status",
+      "allStatuses": "All statuses"
+    },
+    "columns": {
+      "edit": "Edit litigation",
+      "normalize": "Normalize",
+      "detail": "Litigation detail",
+      "viewDetail": "View detail"
+    },
+    "detail": {
+      "invoiceAmount": "Invoice amount",
+      "litigationAmount": "Litigation amount",
+      "businessName": "Business name",
+      "reason": "Reason",
+      "subreason": "Subreason",
+      "date": "Date",
+      "contact": "Contact",
+      "comment": "Comment",
+      "noComments": "No comments",
+      "commentPlaceholder": "Write your comment here...",
+      "litigations": "Litigations",
+      "normalizationReason": "Normalization reason",
+      "normalizeLitigation": "Normalize litigation",
+      "client": "Client",
+      "debtor": "Debtor",
+      "invoice": "Invoice"
+    },
+    "emptyTitle": "Entered litigations"
   },
   "settings": {
     "title": "Settings",

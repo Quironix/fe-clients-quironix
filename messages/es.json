@@ -1476,7 +1476,40 @@
       "normalize": "Normalizar",
       "saveError": "Error al guardar litigio",
       "fetchError": "Error al obtener litigios"
-    }
+    },
+    "filter": {
+      "title": "Filtros",
+      "reason": "Motivo",
+      "selectReason": "Selecciona un estado",
+      "allReasons": "Todos los motivos",
+      "status": "Estado",
+      "allStatuses": "Todos los estados"
+    },
+    "columns": {
+      "edit": "Editar litigio",
+      "normalize": "Normalizar",
+      "detail": "Detalle del litigio",
+      "viewDetail": "Ver detalle"
+    },
+    "detail": {
+      "invoiceAmount": "Monto Factura",
+      "litigationAmount": "Monto litigio",
+      "businessName": "Razón social",
+      "reason": "Motivo",
+      "subreason": "Submotivo",
+      "date": "Fecha",
+      "contact": "Contacto",
+      "comment": "Comentario",
+      "noComments": "Sin comentarios",
+      "commentPlaceholder": "Escriba su comentario aquí...",
+      "litigations": "Litigios",
+      "normalizationReason": "Razón de Normalización",
+      "normalizeLitigation": "Normalizar litigio",
+      "client": "Cliente",
+      "debtor": "Deudor",
+      "invoice": "Factura"
+    },
+    "emptyTitle": "Litigios ingresados"
   },
   "settings": {
     "title": "Configuración",
