@@ -26,7 +26,6 @@ import {
   User2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
 import { format, parseISO } from "date-fns";
 import DialogForm from "../../components/dialog-form";
 import { getPaymentHistory } from "../services";
@@ -45,8 +44,6 @@ export default function ViewDetailsModal({
   open,
   onOpenChange,
 }: ViewDetailsModalProps) {
-  const tNetting = useTranslations("paymentNetting");
-  const tCommon = useTranslations("common");
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
 
@@ -157,14 +154,14 @@ export default function ViewDetailsModal({
             </h3>
             <div className="space-y-3">
               <div>
-                <span className="text-xs text-gray-600">{tNetting("modal.description")}</span>
+                <span className="text-xs text-gray-600">Descripción</span>
                 <div className="text-sm">
                   {row?.description || "Sin descripción"}
                 </div>
               </div>
               {row?.comment && (
                 <div>
-                  <span className="text-xs text-gray-600">{tCommon("labels.comment")}</span>
+                  <span className="text-xs text-gray-600">Comentario</span>
                   <div className="text-sm">{row.comment}</div>
                 </div>
               )}
@@ -175,7 +172,7 @@ export default function ViewDetailsModal({
           {row?.payment && (
             <div className="bg-green-50 p-4 rounded-lg border border-green-200">
               <h3 className="font-bold text-green-700 mb-3">
-                {tNetting("modal.paymentInfo")}
+                Información del pago
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 {row.payment.debtor && (
@@ -201,7 +198,7 @@ export default function ViewDetailsModal({
                       </div>
                     </div>
                     <div>
-                      <span className="text-xs text-green-600">{tCommon("labels.phone")}</span>
+                      <span className="text-xs text-green-600">Teléfono</span>
                       <div className="text-sm font-medium">
                         {row.payment.debtor.phone || "N/A"}
                       </div>
@@ -245,7 +242,7 @@ export default function ViewDetailsModal({
         {/* Header del Pago */}
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-blue-700">{tNetting("modal.paymentInfo")}</h3>
+            <h3 className="font-bold text-blue-700">Información del pago</h3>
             {/* <div className="text-xs text-blue-600">
               ID: {paymentHistory?.data?.payment?.id?.slice(-8)}
             </div> */}
@@ -337,7 +334,7 @@ export default function ViewDetailsModal({
             <div className="text-lg font-bold">
               {paymentHistory?.data?.summary?.total_applications || 0}
             </div>
-            <div className="text-xs text-gray-500 mt-1">{tNetting("modal.appliedInvoices")}</div>
+            <div className="text-xs text-gray-500 mt-1">Facturas Aplicadas</div>
           </div>
           <div className="bg-white p-3 rounded-lg border border-gray-100 text-center shadow-sm">
             <div className="text-lg font-bold">
@@ -346,7 +343,7 @@ export default function ViewDetailsModal({
                 paymentHistory?.data?.summary?.total_amount_applied || 0
               )}
             </div>
-            <div className="text-xs mt-1 text-gray-500">{tNetting("modal.appliedAmount")}</div>
+            <div className="text-xs mt-1 text-gray-500">Monto aplicado</div>
           </div>
           {/* <div className="bg-white p-3 rounded-lg border border-gray-100 text-center shadow-sm">
             <div className="text-lg font-bold">
@@ -452,13 +449,13 @@ export default function ViewDetailsModal({
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-xs text-orange-600">{tNetting("modal.bank")}</span>
+              <span className="text-xs text-orange-600">Banco</span>
               <div className="text-sm font-medium">
                 {paymentHistory?.data?.bank_movement?.bank_information?.bank}
               </div>
             </div>
             <div>
-              <span className="text-xs text-orange-600">{tNetting("modal.account")}</span>
+              <span className="text-xs text-orange-600">Cuenta</span>
               <div className="text-sm font-medium">
                 {
                   paymentHistory?.data?.bank_movement?.bank_information
@@ -467,7 +464,7 @@ export default function ViewDetailsModal({
               </div>
             </div>
             <div className="col-span-2">
-              <span className="text-xs text-orange-600">{tNetting("modal.description")}</span>
+              <span className="text-xs text-orange-600">Descripción</span>
               <div className="text-sm font-medium">
                 {paymentHistory?.data?.bank_movement?.description}
               </div>

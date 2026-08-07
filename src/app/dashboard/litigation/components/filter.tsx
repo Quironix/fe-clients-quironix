@@ -16,7 +16,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { disputes, LITIGATION_STATUS } from "../../data";
 import { LitigationFilters } from "../types";
@@ -32,8 +31,6 @@ const FilterInputs = React.forwardRef<
     initialFilters?: LitigationFilters;
   }
 >(({ onFilterChange, initialFilters }, ref) => {
-  const t = useTranslations("litigation");
-
   const filterSchema = z.object({
     motivo: z.string().optional(),
     status: z.string().optional(),
@@ -66,7 +63,7 @@ const FilterInputs = React.forwardRef<
   return (
     <>
       <div className="w-full border-b border-gray-200 mb-4 pb-1">
-        <span className="text-sm font-bold text-gray-500">{t("filter.title")}</span>
+        <span className="text-sm font-bold text-gray-500">Filtros</span>
       </div>
       <Form {...form}>
         <form className="w-full space-y-3" autoComplete="off">
@@ -75,7 +72,7 @@ const FilterInputs = React.forwardRef<
             name="motivo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("filter.reason")}</FormLabel>
+                <FormLabel>Motivo</FormLabel>
 
                 <FormControl>
                   <Select
@@ -83,10 +80,10 @@ const FilterInputs = React.forwardRef<
                     value={field.value || "ALL"}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t("filter.selectReason")} />
+                      <SelectValue placeholder="Selecciona un estado" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ALL">{t("filter.allReasons")}</SelectItem>
+                      <SelectItem value="ALL">Todos los motivos</SelectItem>
                       {disputes.map((item) => (
                         <SelectItem key={item.code} value={item.code}>
                           {item.label}
@@ -104,7 +101,7 @@ const FilterInputs = React.forwardRef<
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("filter.status")}</FormLabel>
+                <FormLabel>Estado</FormLabel>
 
                 <FormControl>
                   <Select
@@ -112,10 +109,10 @@ const FilterInputs = React.forwardRef<
                     value={field.value || "ALL"}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t("filter.selectReason")} />
+                      <SelectValue placeholder="Selecciona un estado" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ALL">{t("filter.allStatuses")}</SelectItem>
+                      <SelectItem value="ALL">Todos los estados</SelectItem>
                       {LITIGATION_STATUS.map((item) => (
                         <SelectItem key={item.code} value={item.code}>
                           {item.label}

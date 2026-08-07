@@ -22,7 +22,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Building, Calendar, Loader2, SquareUserRound } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -39,12 +38,12 @@ const litigationEditSchema = z.object({
 
 type LitigationEditForm = z.infer<typeof litigationEditSchema>;
 
-interface LitigationEditModalProps {
+type LitigationEditModalProps = {
   litigation: LitigationItem;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   onRefetch?: () => void;
-}
+};
 
 const NormalizationFormId = ({
   litigation,
@@ -54,8 +53,6 @@ const NormalizationFormId = ({
 }: LitigationEditModalProps) => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
-  const t = useTranslations("litigation");
-  const tCommon = useTranslations("common");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,7 +68,9 @@ const NormalizationFormId = ({
 
   const {
     control,
+    register,
     handleSubmit,
+    formState: { errors },
     reset,
   } = form;
 
@@ -102,6 +101,7 @@ const NormalizationFormId = ({
         toast.success(response.message);
         onOpenChange(false);
         reset();
+        // Refrescar los datos
         if (onRefetch) {
           onRefetch();
         }
@@ -121,7 +121,7 @@ const NormalizationFormId = ({
           <div className="grid grid-cols-2 gap-2 bg-[#EDF2F7] px-4 py-3 rounded-md">
             <div className="flex items-center">
               <div className="">
-                <span className="text-sm text-gray-600">{t("detail.invoiceAmount")}</span>
+                <span className="text-sm text-gray-600">Monto factura</span>
                 <p className="text-[#2F6EFF] font-bold text-2xl">
                   $
                   {new Intl.NumberFormat("es-CL").format(
@@ -132,7 +132,7 @@ const NormalizationFormId = ({
             </div>
             <div className="flex items-center">
               <div className="">
-                <span className="text-sm text-gray-600">{t("detail.litigationAmount")}</span>
+                <span className="text-sm text-gray-600">Monto litigio</span>
                 <p className="text-[#2F6EFF] font-bold text-2xl">
                   $
                   {new Intl.NumberFormat("es-CL").format(
@@ -155,7 +155,7 @@ const NormalizationFormId = ({
             <div className="flex items-center gap-2">
               <Building className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm">{t("detail.businessName")}</p>
+                <p className="text-sm">Razón social</p>
                 <p>{litigation?.debtor.name ?? "Sin Razón Social"}</p>
               </div>
             </div>
@@ -163,19 +163,19 @@ const NormalizationFormId = ({
             <div className="flex items-center gap-2 col-span-2">
               <Calendar className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm">{t("detail.date")}</p>
+                <p className="text-sm">Fecha</p>
                 <p className="font-semibold">
                   {format(litigation?.created_at, "dd/MM/yyyy HH:mm")}
                 </p>
               </div>
             </div>
-            <div className="col-span-2 font-bold -mb-3">{t("detail.litigations")}</div>
+            <div className="col-span-2 font-bold -mb-3">Litigios</div>
             <FormField
               control={control}
               name="normalization_reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("detail.normalizationReason")}</FormLabel>
+                  <FormLabel>Razón de Normalización</FormLabel>
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
@@ -207,7 +207,7 @@ const NormalizationFormId = ({
               name="normalization_by_contact"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("detail.contact")}</FormLabel>
+                  <FormLabel>Contacto</FormLabel>
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
@@ -240,7 +240,7 @@ const NormalizationFormId = ({
             name="comment"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("detail.comment")}</FormLabel>
+                <FormLabel>Comentario</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Ingresa un comentario"
@@ -262,10 +262,10 @@ const NormalizationFormId = ({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {tCommon("loading.saving")}
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...
                 </>
               ) : (
-                tCommon("buttons.save")
+                "Normalizar"
               )}
             </Button>
           </div>

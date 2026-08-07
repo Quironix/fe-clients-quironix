@@ -20,7 +20,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { useTranslations } from "next-intl";
 import DialogForm from "../../../components/dialog-form";
 import { getInvoiceHistory } from "../services";
 import { DTE } from "../types";
@@ -39,7 +38,6 @@ export default function InvoiceHistoryModal({
   onOpenChange,
 }: InvoiceHistoryModalProps) {
   const { session, profile } = useProfileContext();
-  const t = useTranslations("transactions.dte.invoiceHistory");
 
   const invoiceId = invoice?.id;
 
@@ -88,7 +86,7 @@ export default function InvoiceHistoryModal({
       <div className="space-y-6 max-h-[70vh] overflow-y-auto">
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-blue-700">{t("invoiceInfo")}</h3>
+            <h3 className="font-bold text-blue-700">Información de la factura</h3>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -102,21 +100,21 @@ export default function InvoiceHistoryModal({
             <div className="flex items-center gap-3">
               <DollarSign className="w-8 h-8 text-blue-600" />
               <div className="flex flex-col">
-                <span className="text-xs text-blue-600">{t("amount")}</span>
+                <span className="text-xs text-blue-600">Monto</span>
                 <span className="text-sm font-medium">{formatNumber(invoice.amount)}</span>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-blue-600" />
               <div className="flex flex-col">
-                <span className="text-xs text-blue-600">{t("balance")}</span>
+                <span className="text-xs text-blue-600">Balance</span>
                 <span className="text-sm font-medium">{formatNumber(invoice.balance)}</span>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Calendar className="w-8 h-8 text-blue-600" />
               <div className="flex flex-col">
-                <span className="text-xs text-blue-600">{t("issueDate")}</span>
+                <span className="text-xs text-blue-600">Fecha de emisión</span>
                 <span className="text-sm font-medium">
                   {invoice.issue_date ? format(parseISO(invoice.issue_date), "dd/MM/yyyy") : "N/A"}
                 </span>
@@ -134,7 +132,7 @@ export default function InvoiceHistoryModal({
               <div className="flex items-center gap-3">
                 <User2 className="w-8 h-8 text-gray-600" />
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-600">{t("name")}</span>
+                  <span className="text-xs text-gray-600">Nombre</span>
                   <span className="text-sm font-medium">{invoice.debtor.name || "N/A"}</span>
                 </div>
               </div>
@@ -147,7 +145,7 @@ export default function InvoiceHistoryModal({
             <div className="text-lg font-bold">
               {historyData?.summary?.total_applications || 0}
             </div>
-            <div className="text-xs text-gray-500 mt-1">{t("appliedPayments")}</div>
+            <div className="text-xs text-gray-500 mt-1">Pagos Aplicados</div>
           </div>
           <div className="bg-white p-3 rounded-lg border border-gray-100 text-center shadow-sm">
             <div className="text-lg font-bold">
@@ -156,7 +154,7 @@ export default function InvoiceHistoryModal({
                 historyData?.summary?.total_amount_applied || 0
               )}
             </div>
-            <div className="text-xs mt-1 text-gray-500">{t("appliedAmount")}</div>
+            <div className="text-xs mt-1 text-gray-500">Monto aplicado</div>
           </div>
         </div>
 

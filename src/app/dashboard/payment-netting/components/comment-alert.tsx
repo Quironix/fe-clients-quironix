@@ -1,5 +1,4 @@
 import { InfoIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
 import React from "react";
 
 const CommentAlert = ({
@@ -9,12 +8,11 @@ const CommentAlert = ({
   comment: React.ReactNode;
   cta?: React.ReactNode;
 }) => {
-  const t = useTranslations("common");
   return (
     <div className="border border-blue-300 bg-white rounded-lg p-4 w-full">
       <div className="flex items-center gap-2 mb-2">
         <InfoIcon className="w-4 h-4 text-blue-600" />
-        <span className="text-md font-bold text-blue-600">{t("labels.comment")}</span>
+        <span className="text-md font-bold text-blue-600">Comentario</span>
       </div>
       <div className="flex items-start justify-between gap-5 w-full">
         <span className="text-xs">{comment}</span>

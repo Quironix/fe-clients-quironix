@@ -75,9 +75,7 @@
       "maxLength": "Maximum {max} characters",
       "invalidPhone": "Invalid phone number",
       "fieldRequired": "Field required",
-      "selectAtLeastOne": "Must select at least one",
-      "emailRequiredForChannel": "Email is required for this contact channel",
-      "phoneRequiredForChannel": "Phone is required for this contact channel"
+      "selectAtLeastOne": "Must select at least one"
     },
     "labels": {
       "name": "Name",
@@ -110,12 +108,7 @@
       "low": "Low",
       "medium": "Medium",
       "high": "High",
-      "tax": "Tax",
-      "disconnect": "Disconnect",
-      "connectPbx": "Connect PBX",
-      "comment": "Comment",
-      "addComment": "Add comment",
-      "by": "by"
+      "tax": "Tax"
     },
     "placeholders": {
       "searchCompanies": "Search companies...",
@@ -198,14 +191,6 @@
     "authLayout": {
       "headline": "Your debt management application",
       "subheadline": "that allows you to manage your debts easily and quickly."
-    },
-    "commandMenu": {
-      "placeholder": "Type a command or search...",
-      "noResults": "No results found.",
-      "theme": "Theme",
-      "light": "Light",
-      "dark": "Dark",
-      "system": "System"
     }
   },
   "onboarding": {
@@ -412,9 +397,6 @@
     "of": "of {max}",
     "periods": "{count} periods",
     "previous": "Previous: {value}{unit}",
-    "noHistory": "No history available",
-    "historyPeriod": "Period",
-    "historyValue": "Value",
     "kpiAssistant": "KPI Assistant",
     "kpiAssistantWelcome": "Hello! I'm your KPI assistant. I can help you analyze your indicators, interpret trends and suggest improvements. How can I help you today?",
     "suggestedQuestions": "Suggested questions:",
@@ -1027,10 +1009,7 @@
       "mailOut": "Outbound email",
       "mailIn": "Inbound email",
       "supplierPortal": "Supplier portal",
-      "whatsapp": "Whatsapp",
-      "noEmailTitle": "Contact without assigned email",
-      "noEmailDesc": "The selected contact has no registered email. To send the management, edit the existing contact or create a new one with a valid email.",
-      "understood": "Understood"
+      "whatsapp": "Whatsapp"
     },
     "stepThree": {
       "preview": "Management preview",
@@ -1098,40 +1077,10 @@
       "sendEmailLabel": "Send summary by email after saving.",
       "normalizedLitigations": "Normalized litigations:"
     },
-    "managementsListPage": {
-      "title": "Management list",
-      "history": "Management history"
-    },
-    "trackDetail": {
-      "config": "Configuration",
-      "type": "Type",
-      "issueDate": "Issue date",
-      "amount": "Amount",
-      "balance": "Balance",
-      "delay": "Delay",
-      "phase": "Phase",
-      "contact": "Contact",
-      "dateTime": "Date/Time",
-      "recording": "Recording"
-    },
-    "invoiceCard": {
-      "phase": "Phase"
-    },
-    "litigationForm": {
-      "invoicesInManagement": "Invoices in management",
-      "selectReason": "Select reason",
-      "selectSubreason": "Select subreason"
-    },
-    "normalizationForm": {
-      "openLitigations": "Open litigations",
-      "selectReason": "Select reason",
-      "commentPlaceholder": "Enter a comment about the normalization"
-    },
     "managementsList": {
       "pageTitle": "Management History",
       "pageDescription": "Search and select a debtor to view their management history",
       "pageSubDescription": "Management History",
-      "collectorEngine": "Collector engine",
       "selectCompanyLabel": "Company",
       "tableTitle": "Select a debtor",
       "searchPlaceholder": "Search debtor...",
@@ -1149,9 +1098,6 @@
     "description": "In this section you can create and manage payment plans for your debtors.",
     "subDescription": "Payment plans",
     "introText": "Here you can manage and organize your debtors' payments simply and efficiently. Create your first payment plan to start better controlling your finances.",
-    "create": {
-      "selectDebtor": "Select debtor"
-    },
     "createPlan": "Create payment plan",
     "searchPlaceholder": "Search payment plans...",
     "emptyMessage": "No payment plans found",
@@ -1517,41 +1463,7 @@
       "normalize": "Normalize",
       "saveError": "Error saving litigation",
       "fetchError": "Error fetching litigations"
-    },
-    "filter": {
-      "title": "Filters",
-      "reason": "Reason",
-      "selectReason": "Select a reason",
-      "allReasons": "All reasons",
-      "status": "Status",
-      "allStatuses": "All statuses"
-    },
-    "columns": {
-      "edit": "Edit litigation",
-      "normalize": "Normalize",
-      "detail": "Litigation detail",
-      "viewDetail": "View detail"
-    },
-    "detail": {
-      "invoiceAmount": "Invoice amount",
-      "litigationAmount": "Litigation amount",
-      "businessName": "Business name",
-      "reason": "Reason",
-      "subreason": "Subreason",
-      "date": "Date",
-      "contact": "Contact",
-      "comment": "Comment",
-      "noComments": "No comments",
-      "commentPlaceholder": "Write your comment here...",
-      "litigations": "Litigations",
-      "normalizationReason": "Normalization reason",
-      "normalizeLitigation": "Normalize litigation",
-      "normalizeLitigationDesc": "Complete the required fields to normalize the litigation and mark it as resolved.",
-      "client": "Client",
-      "debtor": "Debtor",
-      "invoice": "Invoice"
-    },
-    "emptyTitle": "Entered litigations"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -1754,15 +1666,6 @@
           "installmentRequired": "Installment number is required",
           "debtorRequired": "Debtor is required"
         }
-      },
-      "invoiceHistory": {
-        "invoiceInfo": "Invoice information",
-        "amount": "Amount",
-        "balance": "Balance",
-        "issueDate": "Issue date",
-        "name": "Name",
-        "appliedPayments": "Applied payments",
-        "appliedAmount": "Applied amount"
       },
       "upload": {
         "manualTitle": "Upload {dte} via {manual} entry",
@@ -1990,34 +1893,6 @@
     "assignDebtor": "Assign debtor",
     "generatePayment": "Generate payment",
     "depositDetail": "Deposit detail",
-    "alerts": {
-      "reconciled": "Reconciled",
-      "pendingBalance": "Difference: pending balance",
-      "favorableBalance": "Difference: balance in favor"
-    },
-    "columns": {
-      "reversePayment": "Reverse payment",
-      "deleteMovement": "Delete movement"
-    },
-    "modal": {
-      "depositDetail": "Deposit detail",
-      "paymentInfo": "Payment information",
-      "appliedInvoices": "Applied invoices",
-      "appliedAmount": "Applied amount",
-      "appliedType": "Applied type",
-      "bank": "Bank",
-      "account": "Account",
-      "description": "Description"
-    },
-    "labels": {
-      "phase": "Phase",
-      "dueDate": "Due date"
-    },
-    "summary": {
-      "selectReceivable": "Select a receivable account",
-      "selectCredit": "Select a credit in favor",
-      "manualNetting": "Manual netting"
-    },
     "bankTransfer": "Bank transfer",
     "multipleBanks": "Multiple banks",
     "depositDate": "Deposit date",
@@ -2195,50 +2070,7 @@
       "downloadTemplate": "Download template",
       "uploadFile": "Upload file",
       "uploading": "Processing companies..."
-    },
-    "form": {
-      "nameRequired": "Name is required",
-      "positionRequired": "Position is required",
-      "cityRequired": "City is required",
-      "documentTypeRequired": "Document type is required",
-      "atLeastOneContact": "You must add at least one contact",
-      "companyInfo": "Company information",
-      "companyName": "Company name",
-      "clientCode": "Client code",
-      "addresses": "Company addresses",
-      "address": "Address",
-      "stateRegion": "State / Region",
-      "city": "City",
-      "postalCode": "Postal code",
-      "companyContacts": "Company contacts",
-      "addAddress": "Add address",
-      "addContact": "Add contact",
-      "contact": "Contact",
-      "createCompany": "Create company",
-      "updateCompany": "Update company"
-    },
-    "incomplete": {
-      "title": "Defective bulk upload",
-      "valid": "Valid",
-      "withErrors": "With errors",
-      "total": "Total",
-      "row": "Row",
-      "column": "Column",
-      "value": "Value",
-      "error": "Error",
-      "empty": "Empty"
     }
-  },
-  "bulkUpload": {
-    "title": "Defective bulk upload",
-    "valid": "Valid",
-    "withErrors": "With errors",
-    "total": "Total",
-    "row": "Row",
-    "column": "Column",
-    "value": "Value",
-    "error": "Error",
-    "empty": "Empty"
   },
   "webrtc": {
     "microphoneAccess": "You must allow microphone access",
@@ -2714,32 +2546,5 @@
       "passwordSent": "Password sent to your email",
       "passwordError": "Error requesting password change"
     }
-  },
-  "exportExcel": {
-    "title": "Export to Excel",
-    "period": "Period",
-    "periodHint": "Select between 1 and 3 consecutive months",
-    "status": "Status",
-    "all": "All",
-    "open": "Open",
-    "closed": "Closed",
-    "cancel": "Cancel",
-    "export": "Export",
-    "exporting": "Exporting...",
-    "month": "month",
-    "months": "months",
-    "current": "Current",
-    "range": "Range:",
-    "toastMonthsNotContiguous": "Months must be consecutive",
-    "toastMaxMonths": "Maximum {max} months",
-    "toastSelectMonth": "Select at least one month",
-    "toastExportSuccess": "File exported successfully",
-    "toastExportError": "Error exporting the file",
-    "schemaInvoices": "Invoices",
-    "schemaProjection": "Projection",
-    "schemaLitigation": "Litigations",
-    "schemaPaymentPlans": "Payment plans",
-    "schemaPayments": "Payments",
-    "schemaManagements": "Managements"
   }
 }

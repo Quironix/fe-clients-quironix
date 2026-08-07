@@ -26,7 +26,7 @@ import { DataTableDynamicColumns } from "../../components/data-table-dynamic-col
 import Header from "../../components/header";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
-import { useColumns } from "../components/columns";
+import { columns } from "../components/columns";
 import ListAccountReceivable from "../components/list-account-receivable";
 import ListCreditFavor from "../components/list-credit-favor";
 import StepperPN from "../components/stepper";
@@ -37,7 +37,6 @@ import { getPaymentNetting } from "../services";
 function GeneratePaymentContent() {
   const t = useTranslations("paymentNetting.generatePaymentPage");
   const tParent = useTranslations("paymentNetting");
-  const columns = useColumns();
   const { data: session }: any = useSession();
   const { profile } = useProfileContext();
   const { resetSelected } = usePaymentNettingStore();

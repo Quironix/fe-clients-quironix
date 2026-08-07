@@ -23,9 +23,8 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { E164Number } from "libphonenumber-js/core";
 import { Building2, Loader2, Mail, MapPin, Plus, Trash } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import CountriesSelectFormItem from "../../components/countries-select-form-item";
@@ -34,27 +33,67 @@ import TitleStep from "../../settings/components/title-step";
 import { useCompaniesStore } from "../store";
 import { Company } from "../types";
 
-type CompanyFormValues = {
-  id?: string;
-  name: string;
-  dni_type: string;
-  dni_number: string;
-  client_code: string;
-  category: string;
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    postalCode: string;
-  }[];
-  contacts: {
-    name: string;
-    email: string;
-    phone: string;
-    position: string;
-  }[];
-};
+// Schema de validación
+const contactSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Nombre es requerido")
+    .max(50, "Máximo 50 caracteres"),
+  email: z.string().email("Email inválido"),
+  phone: z
+    .string()
+    .min(8, "Teléfono es requerido")
+    .max(15, "Máximo 15 caracteres"),
+  position: z
+    .string()
+    .min(1, "Cargo es requerido")
+    .max(50, "Máximo 50 caracteres"),
+});
+
+const addressSchema = z.object({
+  street: z
+    .string()
+    .min(1, "Dirección es requerida")
+    .max(100, "Máximo 100 caracteres"),
+  city: z
+    .string()
+    .min(1, "Ciudad es requerida")
+    .max(50, "Máximo 50 caracteres"),
+  state: z
+    .string()
+    .min(1, "Estado/Región es requerido")
+    .max(50, "Máximo 50 caracteres"),
+  country: z
+    .string()
+    .min(1, "País es requerido")
+    .max(50, "Máximo 50 caracteres"),
+  postalCode: z
+    .string()
+    .min(1, "Código postal es requerido")
+    .max(10, "Máximo 10 caracteres"),
+});
+
+const companyFormSchema = z.object({
+  id: z.string().optional(),
+  name: z
+    .string()
+    .min(1, "Nombre es requerido")
+    .max(100, "Máximo 100 caracteres"),
+  dni_type: z.string().min(1, "Tipo de documento es requerido"),
+  dni_number: z
+    .string()
+    .min(1, "Número de documento es requerido")
+    .max(20, "Máximo 20 caracteres"),
+  client_code: z
+    .string()
+    .min(1, "Código de cliente es requerido")
+    .max(50, "Máximo 50 caracteres"),
+  category: z.string().min(1, "Categoría es requerida"),
+  address: z.array(addressSchema).min(1, "Debe agregar al menos una dirección"),
+  contacts: z.array(contactSchema).min(1, "Debe agregar al menos un contacto"),
+});
+
+type CompanyFormValues = z.infer<typeof companyFormSchema>;
 
 interface CompanyFormProps {
   defaultValues?: Partial<Company>;
@@ -69,83 +108,20 @@ const CompanyForm = ({
   setOpen,
   isLoading,
 }: CompanyFormProps) => {
-  const t = useTranslations("companies");
-  const tCommon = useTranslations("common");
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const { session, profile } = useProfileContext();
   const { getCompanyById, company, clearCompany } = useCompaniesStore();
-  const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
+  const [countries, setCountries] = useState<any[]>([]);
   const [activeAccordion, setActiveAccordion] = useState<string>("item-0");
   const [activeAddressAccordion, setActiveAddressAccordion] =
     useState<string>("address-item-0");
   const [isLoadingCompany, setIsLoadingCompany] = useState<boolean>(false);
 
-  const companyFormSchema = useMemo(() => {
-    const contactSchema = z.object({
-      name: z
-        .string()
-        .min(1, t("form.nameRequired"))
-        .max(50, tCommon("validation.maxLength", { max: 50 })),
-      email: z.string().email(tCommon("validation.invalidEmail")),
-      phone: z
-        .string()
-        .min(8, tCommon("validation.invalidPhone"))
-        .max(15, tCommon("validation.maxLength", { max: 15 })),
-      position: z
-        .string()
-        .min(1, t("form.positionRequired"))
-        .max(50, tCommon("validation.maxLength", { max: 50 })),
-    });
-
-    const addressSchema = z.object({
-      street: z
-        .string()
-        .min(1, tCommon("validation.required"))
-        .max(100, tCommon("validation.maxLength", { max: 100 })),
-      city: z
-        .string()
-        .min(1, t("form.cityRequired"))
-        .max(50, tCommon("validation.maxLength", { max: 50 })),
-      state: z
-        .string()
-        .min(1, tCommon("validation.required"))
-        .max(50, tCommon("validation.maxLength", { max: 50 })),
-      country: z
-        .string()
-        .min(1, tCommon("validation.required"))
-        .max(50, tCommon("validation.maxLength", { max: 50 })),
-      postalCode: z
-        .string()
-        .min(1, tCommon("validation.required"))
-        .max(10, tCommon("validation.maxLength", { max: 10 })),
-    });
-
-    return z.object({
-      id: z.string().optional(),
-      name: z
-        .string()
-        .min(1, t("form.nameRequired"))
-        .max(100, tCommon("validation.maxLength", { max: 100 })),
-      dni_type: z.string().min(1, t("form.documentTypeRequired")),
-      dni_number: z
-        .string()
-        .min(1, tCommon("validation.required"))
-        .max(20, tCommon("validation.maxLength", { max: 20 })),
-      client_code: z
-        .string()
-        .min(1, tCommon("validation.required"))
-        .max(50, tCommon("validation.maxLength", { max: 50 })),
-      category: z.string().min(1, tCommon("validation.required")),
-      address: z.array(addressSchema).min(1, tCommon("validation.required")),
-      contacts: z.array(contactSchema).min(1, t("form.atLeastOneContact")),
-    });
-  }, [t, tCommon]);
-
   useEffect(() => {
     if (session?.token) {
-      getCountries(session.token).then((data) => {
-        setCountries(data);
+      getCountries(session.token).then((countries) => {
+        setCountries(countries);
       });
     }
   }, [session?.token]);
@@ -158,13 +134,14 @@ const CompanyForm = ({
           setIsLoadingCompany(false);
         });
       } else {
+        // Limpiar el estado de company cuando no hay id (modo crear)
         clearCompany();
       }
     }
   }, [session?.token, profile?.client?.id, getCompanyById, id, clearCompany]);
 
   const form = useForm<CompanyFormValues>({
-    resolver: zodResolver(companyFormSchema),
+    resolver: zodResolver(companyFormSchema) as any,
     mode: "onChange",
     defaultValues: {
       name: defaultValues?.name || "",
@@ -249,7 +226,7 @@ const CompanyForm = ({
         }
       }
     } catch (error) {
-      console.error("Error saving company:", error);
+      console.error("Error al guardar la empresa:", error);
     }
   };
 
@@ -261,11 +238,13 @@ const CompanyForm = ({
       country: "",
       postalCode: "",
     });
+    // Abrir el nuevo accordion
     setActiveAddressAccordion(`address-item-${addressFields.length}`);
   };
 
   const removeAddressHandler = (index: number) => {
     removeAddress(index);
+    // Si se elimina el accordion activo, activar el primero
     if (
       activeAddressAccordion === `address-item-${index}` &&
       addressFields.length > 1
@@ -281,11 +260,13 @@ const CompanyForm = ({
       phone: "",
       position: "",
     });
+    // Abrir el nuevo accordion
     setActiveAccordion(`item-${contactFields.length}`);
   };
 
   const removeContactHandler = (index: number) => {
     removeContact(index);
+    // Si se elimina el accordion activo, activar el primero
     if (activeAccordion === `item-${index}` && contactFields.length > 1) {
       setActiveAccordion("item-0");
     }
@@ -301,8 +282,9 @@ const CompanyForm = ({
           className="w-full space-y-6"
           autoComplete="off"
         >
-          <TitleStep title={t("form.companyInfo")} icon={<Building2 />} />
+          <TitleStep title="Información de la empresa" icon={<Building2 />} />
           <div className="grid gap-6">
+            {/* Información básica */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -310,7 +292,7 @@ const CompanyForm = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t("form.companyName")}
+                      Nombre de la empresa
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -327,7 +309,7 @@ const CompanyForm = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t("form.clientCode")}
+                      Código de cliente
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -346,7 +328,7 @@ const CompanyForm = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {tCommon("labels.documentType")}
+                      Tipo de documento
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -359,7 +341,7 @@ const CompanyForm = ({
                           value: type,
                           label: type,
                         }))}
-                        placeholder={tCommon("placeholders.selectDocumentType")}
+                        placeholder="Selecciona un tipo de documento"
                       />
                     </FormControl>
                     <FormMessage />
@@ -373,7 +355,7 @@ const CompanyForm = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {tCommon("labels.documentNumber")}
+                      Número de documento
                       <span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -390,8 +372,7 @@ const CompanyForm = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {tCommon("labels.category")}
-                      <span className="text-orange-500">*</span>
+                      Categoría<span className="text-orange-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <SearchInput
@@ -403,7 +384,7 @@ const CompanyForm = ({
                           value: type,
                           label: type,
                         }))}
-                        placeholder={tCommon("placeholders.selectCategory")}
+                        placeholder="Selecciona una categoría"
                       />
                     </FormControl>
                     <FormMessage />
@@ -412,10 +393,11 @@ const CompanyForm = ({
               />
             </div>
 
+            {/* Direcciones */}
             <div className="space-y-3 w-full">
               <div className="flex justify-between items-center">
                 <TitleStep
-                  title={t("form.addresses")}
+                  title="Direcciones de la empresa"
                   icon={<MapPin className="w-5 h-5" />}
                 />
                 <Button
@@ -426,7 +408,7 @@ const CompanyForm = ({
                   className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white w-45 h-11 rounded-sm"
                 >
                   <Plus className="w-4 h-4 text-orange-500" />
-                  {t("form.addAddress")}
+                  Agregar dirección
                 </Button>
               </div>
               <Accordion
@@ -444,7 +426,7 @@ const CompanyForm = ({
                   >
                     <div className="grid grid-cols-[96%_4%] items-center gap-2 min-h-[48px]">
                       <AccordionTrigger className="flex items-center justify-between h-full">
-                        <span>{t("form.address")} {index + 1}</span>
+                        <span>Dirección {index + 1}</span>
                       </AccordionTrigger>
                       <Button
                         type="button"
@@ -468,7 +450,7 @@ const CompanyForm = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                {t("form.address")}
+                                Dirección
                                 <span className="text-orange-500">*</span>
                               </FormLabel>
                               <FormControl>
@@ -491,7 +473,7 @@ const CompanyForm = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                {t("form.stateRegion")}
+                                Estado/Región
                                 <span className="text-orange-500">*</span>
                               </FormLabel>
                               <FormControl>
@@ -515,7 +497,7 @@ const CompanyForm = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                {t("form.city")}<span className="text-orange-500">*</span>
+                                Ciudad<span className="text-orange-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -538,7 +520,7 @@ const CompanyForm = ({
                           render={({ field }) => (
                             <CountriesSelectFormItem
                               field={field}
-                              title={tCommon("labels.country")}
+                              title="País"
                               required
                             />
                           )}
@@ -550,7 +532,7 @@ const CompanyForm = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                {t("form.postalCode")}
+                                Código postal
                                 <span className="text-orange-500">*</span>
                               </FormLabel>
                               <FormControl>
@@ -574,10 +556,11 @@ const CompanyForm = ({
               </Accordion>
             </div>
 
+            {/* Contactos */}
             <div className="space-y-3 w-full">
               <div className="flex justify-between items-center">
                 <TitleStep
-                  title={t("form.companyContacts")}
+                  title="Contactos compañía"
                   icon={<Mail className="w-5 h-5" />}
                 />
                 <Button
@@ -588,7 +571,7 @@ const CompanyForm = ({
                   className="flex items-center gap-2 border-2 text-sm border-orange-500 hover:bg-orange-100 bg-white w-45 h-11 rounded-sm"
                 >
                   <Plus className="w-4 h-4 text-orange-500" />
-                  {t("form.addContact")}
+                  Agregar contacto
                 </Button>
               </div>
               <Accordion
@@ -606,7 +589,7 @@ const CompanyForm = ({
                   >
                     <div className="grid grid-cols-[96%_4%] items-center gap-2 min-h-[48px]">
                       <AccordionTrigger className="flex items-center justify-between h-full">
-                        <span>{t("form.contact")} {index + 1}</span>
+                        <span>Contacto {index + 1}</span>
                       </AccordionTrigger>
                       <Button
                         type="button"
@@ -630,7 +613,7 @@ const CompanyForm = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                {tCommon("labels.name")}<span className="text-orange-500">*</span>
+                                Nombre<span className="text-orange-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -654,7 +637,7 @@ const CompanyForm = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                {tCommon("labels.email")}<span className="text-orange-500">*</span>
+                                Email<span className="text-orange-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -678,7 +661,7 @@ const CompanyForm = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                {tCommon("labels.phone")}
+                                Teléfono
                                 <span className="text-orange-500">*</span>
                               </FormLabel>
                               <FormControl>
@@ -706,7 +689,7 @@ const CompanyForm = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                {tCommon("labels.position")}<span className="text-orange-500">*</span>
+                                Cargo<span className="text-orange-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -731,14 +714,20 @@ const CompanyForm = ({
             </div>
           </div>
 
+          {/* Botones de acción */}
           <div className="flex justify-end gap-3 pt-4">
+            {/* <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancelar
+              </Button>
+            </DialogClose> */}
             <Button
               type="submit"
               disabled={isLoading}
               className="w-45 h-11 rounded-sm"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {id ? t("form.updateCompany") : t("form.createCompany")}
+              {id ? "Actualizar" : "Crear"} empresa
             </Button>
           </div>
         </form>
@@ -747,14 +736,17 @@ const CompanyForm = ({
   );
 };
 
+// Componente Skeleton para el formulario
 const CompanyFormSkeleton = () => {
   return (
     <div className="w-full space-y-6">
+      {/* Título */}
       <div className="flex items-center gap-2 mb-4">
         <Skeleton className="h-6 w-6" />
         <Skeleton className="h-6 w-48" />
       </div>
 
+      {/* Información básica */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Skeleton className="h-4 w-32" />
@@ -781,6 +773,7 @@ const CompanyFormSkeleton = () => {
         </div>
       </div>
 
+      {/* Direcciones */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -802,6 +795,7 @@ const CompanyFormSkeleton = () => {
         </div>
       </div>
 
+      {/* Contactos */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -823,6 +817,7 @@ const CompanyFormSkeleton = () => {
         </div>
       </div>
 
+      {/* Botones de acción */}
       <div className="flex justify-end gap-3 pt-4">
         <Skeleton className="h-10 w-32" />
       </div>

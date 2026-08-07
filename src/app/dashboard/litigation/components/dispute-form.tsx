@@ -18,7 +18,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
 import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { DataTableDynamicColumns } from "../../components/data-table-dynamic-columns";
 import DebtorContactSelectFormItem from "../../components/debtor-contact-select-form-item";
@@ -95,8 +94,6 @@ const DisputeForm = ({
   const { data: session } = useSession();
   const [showDialog, setShowDialog] = useState(false);
   const { profile } = useProfileContext();
-  const t = useTranslations("litigation");
-  const tCommon = useTranslations("common");
   const [litigationsByDebtor, setLitigationsByDebtor] = useState([]);
   const [selectedDebtor, setSelectedDebtor] = useState<any>(null);
   const { fetchDebtorById, dataDebtor, isFetchingDebtor } = useDebtorsStore();
@@ -374,7 +371,7 @@ const DisputeForm = ({
             name="initial_comment"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("detail.comment")}</FormLabel>
+                <FormLabel>Comentario</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Ingresa un comentario"
@@ -396,10 +393,10 @@ const DisputeForm = ({
               {isSubmitting ? (
                 <>
                   <Loader2 className="animate-spin" />
-                  <span className="text-white">{tCommon("loading.saving")}</span>
+                  <span className="text-white">Guardando...</span>
                 </>
               ) : (
-                <span className="text-white">{tCommon("buttons.save")}</span>
+                <span className="text-white">Guardar</span>
               )}
             </Button>
           </div>

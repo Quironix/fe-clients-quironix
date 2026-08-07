@@ -23,7 +23,6 @@ interface DatePickerFormItemProps {
   required?: boolean;
   description?: string;
   onChange?: (field: any, value: any) => void;
-  placeholder?: string;
 }
 
 export default function DatePickerFormItem({
@@ -32,7 +31,6 @@ export default function DatePickerFormItem({
   required,
   description,
   onChange,
-  placeholder,
 }: DatePickerFormItemProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
@@ -54,7 +52,7 @@ export default function DatePickerFormItem({
               {field.value ? (
                 formatDate(field.value || (new Date() as unknown as string))
               ) : (
-                <span>{placeholder ?? "Select a date"}</span>
+                <span>Selecciona una fecha</span>
               )}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>

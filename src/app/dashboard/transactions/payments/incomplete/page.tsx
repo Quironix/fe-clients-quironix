@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useGetErrorMessage } from "../../hooks/use-get-error-message";
@@ -22,9 +21,9 @@ import { usePaymentStore } from "../store";
 const IncompletePage = () => {
   const { bulkUploadErrors, clearBulkUploadErrors } = usePaymentStore();
   const { getErrorMessage } = useGetErrorMessage();
-  const t = useTranslations("bulkUpload");
   const router = useRouter();
 
+  // Si no hay errores, redirigir de vuelta
   useEffect(() => {
     if (!bulkUploadErrors) {
       router.push("/dashboard/payments");
@@ -32,7 +31,7 @@ const IncompletePage = () => {
   }, [bulkUploadErrors, router]);
 
   if (!bulkUploadErrors) {
-    return null;
+    return null; // O un loading spinner
   }
 
   return (
@@ -48,27 +47,28 @@ const IncompletePage = () => {
 
           <div className="bg-white shadow-md rounded-md p-4">
             <span className="text-lg font-semibold text-black mb-2">
-              {t("title")}
+              Carga masiva defectuosa
             </span>
 
+            {/* Resumen estadístico */}
             <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-md mb-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
                   {bulkUploadErrors.validCount}
                 </div>
-                <div className="text-sm text-gray-600">{t("valid")}</div>
+                <div className="text-sm text-gray-600">Válidos</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">
                   {bulkUploadErrors.invalidCount}
                 </div>
-                <div className="text-sm text-gray-600">{t("withErrors")}</div>
+                <div className="text-sm text-gray-600">Con errores</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-600">
                   {bulkUploadErrors.totalCount}
                 </div>
-                <div className="text-sm text-gray-600">{t("total")}</div>
+                <div className="text-sm text-gray-600">Total</div>
               </div>
             </div>
 
@@ -76,10 +76,10 @@ const IncompletePage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("row")}</TableHead>
-                    <TableHead>{t("column")}</TableHead>
-                    <TableHead>{t("value")}</TableHead>
-                    <TableHead>{t("error")}</TableHead>
+                    <TableHead>Fila</TableHead>
+                    <TableHead>Columna</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Error</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -91,7 +91,7 @@ const IncompletePage = () => {
                       </TableCell>
                       <TableCell>
                         <span className="text-gray-500 italic">
-                          {error.value || t("empty")}
+                          {error.value || "Vacío"}
                         </span>
                       </TableCell>
                       <TableCell>{getErrorMessage(error.message)}</TableCell>

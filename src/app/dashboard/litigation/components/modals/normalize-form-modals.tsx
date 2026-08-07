@@ -9,7 +9,6 @@ import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useDisputeStore } from "../../store/disputeStore";
@@ -37,13 +36,12 @@ const litigationSchema = z.object({
 
 type LitigationForm = z.infer<typeof litigationSchema>;
 
-interface NormalizeFormModalsProps {
+type NormalizeFormModalsProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   litigation: LitigationItem;
   onRefetch?: () => void;
-}
-
+};
 const NormalizeFormModals = ({
   open,
   onOpenChange,
@@ -51,9 +49,8 @@ const NormalizeFormModals = ({
   onRefetch,
 }: NormalizeFormModalsProps) => {
   const { setField } = useDisputeStore();
-  const { litigiosIngresados } = useLitigationStore();
+  const { litigiosIngresados, addLitigio } = useLitigationStore();
   const [showDialog, setShowDialog] = useState(false);
-  const t = useTranslations("litigation");
 
   const form = useForm<LitigationForm>({
     resolver: zodResolver(litigationSchema) as any,
@@ -103,6 +100,7 @@ const NormalizeFormModals = ({
 
       if (!res.ok) throw new Error("Error al crear litigio");
 
+      // Éxito: ejecutar refetch, cerrar modal y mostrar confirmación
       toast.success("Litigio normalizado exitosamente");
       onOpenChange(false);
       reset();
@@ -126,29 +124,30 @@ const NormalizeFormModals = ({
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div>
-            <h2 className="text-lg font-semibold">{t("detail.normalizeLitigation")}</h2>
+            <h2 className="text-lg font-semibold">Normailizar litigio</h2>
             <p className="text-sm text-gray-500">
-              {t("detail.normalizeLitigationDesc")}
+              Completa los campos obligatorios para ingresar un litigio.
             </p>
           </div>
 
+          {/* Cliente y Deudor */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="font-semibold">{t("detail.client")}</label>
-              <Input placeholder={t("detail.client")} {...register("client")} />
+              <label className="font-semibold">Cliente</label>
+              <Input placeholder="Cliente" {...register("client")} />
               {errors.client && (
                 <p className="text-red-500 text-sm">{errors.client.message}</p>
               )}
             </div>
             <div>
-              <label className="font-semibold">{t("detail.debtor")}</label>
-              <Input placeholder={t("detail.debtor")} {...register("debtor")} />
+              <label className="font-semibold">Deudor</label>
+              <Input placeholder="Deudor" {...register("debtor")} />
               {errors.debtor && (
                 <p className="text-red-500 text-sm">{errors.debtor.message}</p>
               )}
             </div>
           </div>
-
+          {/* Tabla de litigios */}
           {litigiosIngresados.length === 0 ? (
             <div className="bg-gray-100 p-3 rounded text-sm text-gray-600 border">
               No hay litigios ingresados con anterioridad
@@ -156,7 +155,7 @@ const NormalizeFormModals = ({
           ) : (
             <div className="border bg-gray-50 p-4 rounded mt-4">
               <h3 className="text-sm font-semibold mb-2">
-                {t("detail.litigations")}
+                Litigios ingresados
               </h3>
               <table className="min-w-full border bg-white text-sm">
                 <thead className="bg-gray-100">
@@ -166,8 +165,8 @@ const NormalizeFormModals = ({
                     </th>
                     <th className="p-2 text-left">Número</th>
                     <th className="p-2 text-left">Documento</th>
-                    <th className="p-2 text-left">{t("detail.invoiceAmount")}</th>
-                    <th className="p-2 text-left">{t("detail.litigationAmount")}</th>
+                    <th className="p-2 text-left">Monto Factura</th>
+                    <th className="p-2 text-left">Monto Litigio</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -187,9 +186,10 @@ const NormalizeFormModals = ({
             </div>
           )}
 
+          {/* Motivo, submotivo, contacto */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="font-semibold">{t("detail.normalizationReason")}</label>
+              <label className="font-semibold">Razón de normalización</label>
               <select
                 className="w-full border border-gray-300 p-2 rounded-md"
                 {...register("reason")}
@@ -203,12 +203,14 @@ const NormalizeFormModals = ({
               )}
             </div>
             <div>
-              <label className="font-semibold">{t("detail.contact")}</label>
+              <label className="font-semibold">Contacto</label>
               <select
                 className="w-full border border-gray-300 p-2 rounded-md"
                 {...register("contact")}
               >
                 <option value="">Selecciona contacto</option>
+                <option value="Juan Pérez">Juan Pérez</option>
+                <option value="María González">María González</option>
               </select>
               {errors.contact && (
                 <p className="text-red-500 text-sm">{errors.contact.message}</p>
@@ -216,10 +218,11 @@ const NormalizeFormModals = ({
             </div>
           </div>
 
+          {/* Comentario */}
           <div>
-            <label className="font-semibold">{t("detail.comment")}</label>
+            <label className="font-semibold">Comentario</label>
             <Textarea
-              placeholder={t("detail.comment")}
+              placeholder="Comentario"
               {...register("comment")}
               className="min-h-[40px]"
             />
@@ -227,6 +230,7 @@ const NormalizeFormModals = ({
 
           <div className=" bg-[#FF8113] h-0.5 max-w-full"></div>
 
+          {/* Botón */}
           <div className="grid grid-cols-3 gap-4 items-center justify-center">
             <div className="col-span-2 bg-[#F1F5F9] mr-2 px-5 py-2 rounded w-full">
               <div className="flex items-center">
@@ -240,7 +244,7 @@ const NormalizeFormModals = ({
                   />
                 </div>
                 <div>
-                  <p>{t("detail.invoiceAmount")}</p>
+                  <p>Monto Factura</p>
                   <p className="text-[#2F6EFF] font-bold text-3xl">$ {"..."}</p>
                 </div>
               </div>
@@ -257,7 +261,7 @@ const NormalizeFormModals = ({
                     <Loader2 className="w-4 h-4 animate-spin" /> Guardando
                   </>
                 ) : (
-                  t("columns.normalize")
+                  "Normalizar"
                 )}
               </Button>
             </div>

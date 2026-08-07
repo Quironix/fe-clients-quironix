@@ -1,13 +1,7 @@
-"use client";
-
-import { useTranslations } from "next-intl";
-
 const EmptyLitigations = () => {
-  const t = useTranslations("litigation");
-
   return (
     <div className="mt-2 bg-slate-200 rounded-md py-4 px-3 flex flex-col items-start">
-      <span className="text-sm font-bold text-black">{t("emptyTitle")}</span>
+      <span className="text-sm font-bold text-black">Litigios ingresados</span>
       <span className="text-md text-black">
         No hay litigios ingresados con anterioridad
       </span>

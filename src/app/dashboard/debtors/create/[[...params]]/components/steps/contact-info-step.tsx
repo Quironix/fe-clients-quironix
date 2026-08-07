@@ -7,7 +7,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { TranslatedFormMessage } from "@/components/ui/translated-form-message";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
@@ -36,7 +35,6 @@ import { toast } from "sonner";
 import { useDebtorsStore } from "../../../../store";
 
 import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-buttons";
-import { contactSchema } from "@/app/dashboard/debtors/schemas/contact.schema";
 import {
   Accordion,
   AccordionContent,
@@ -44,9 +42,28 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-
 const debtorFormSchema = z.object({
-  contact_info: z.array(contactSchema),
+  contact_info: z.array(
+    z.object({
+      name: z.string().min(1, "Nombre es requerido"),
+      role: z.string().min(1, "Rol es requerido"),
+      function: z.string().min(1, "Función es requerida"),
+      email: z.string().email("Email inválido"),
+      phone: z
+        .string()
+        .min(8, "Campo requerido")
+        .max(15, "Máximo 15 caracteres")
+        .transform((value) => {
+          // Normalizar el número agregando + si no lo tiene
+          if (!value) return value;
+          return value.startsWith("+") ? value : `+${value}`;
+        })
+        .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
+          message: "Número de teléfono inválido",
+        }),
+      channel: z.string(),
+    })
+  ),
 });
 
 type DebtorFormValues = z.infer<typeof debtorFormSchema>;
@@ -98,7 +115,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
 
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema) as any,
-    mode: "onBlur",
+    mode: "onChange",
     defaultValues: {
       contact_info:
         dataDebtor?.contacts && dataDebtor.contacts.length > 0
@@ -314,29 +331,23 @@ const ContactInfoStep: React.FC<StepProps> = ({
                                 {t("channel")}
                               </FormLabel>
                               <FormControl>
-                                 <Select
-                                   onValueChange={(value) => {
-                                     field.onChange(value);
-                                     form.trigger([
-                                       `contact_info.${index}.email`,
-                                       `contact_info.${index}.phone`,
-                                     ] as const);
-                                   }}
-                                   value={field.value}
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
                                 >
-                                   <SelectTrigger className="w-full">
-                                     <SelectValue placeholder={t("selectChannel")} />
-                                   </SelectTrigger>
-                                   <SelectContent>
-                                     <SelectItem value="email">{t("channelEmail")}</SelectItem>
-                                     <SelectItem value="phone">
-                                       {t("channelPhone")}
-                                     </SelectItem>
-                                     <SelectItem value="whatsapp">
-                                       {t("channelWhatsapp")}
-                                     </SelectItem>
-                                   </SelectContent>
-                                 </Select>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={t("selectChannel")} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="email">{t("channelEmail")}</SelectItem>
+                                    <SelectItem value="phone">
+                                      {t("channelPhone")}
+                                    </SelectItem>
+                                    <SelectItem value="whatsapp">
+                                      {t("channelWhatsapp")}
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -351,7 +362,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                               <FormControl>
                                 <Input {...field} />
                               </FormControl>
-                              <TranslatedFormMessage />
+                              <FormMessage />
                             </FormItem>
                           )}
                         />
@@ -375,7 +386,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                                   }
                                 />
                               </FormControl>
-                              <TranslatedFormMessage />
+                              <FormMessage />
                             </FormItem>
                           )}
                         />

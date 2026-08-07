@@ -35,7 +35,6 @@ import {
   Phone,
   ThermometerSnowflake,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useMemo, useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -54,7 +53,6 @@ export const TrackDetailModal = ({
   accessToken,
   clientId,
 }: TrackDetailModalProps) => {
-  const t = useTranslations("debtorManagement.trackDetail");
   const [trackData, setTrackData] = useState<any>(null);
   const [litigationsData, setLitigationsData] = useState<any[]>([]);
   const [paymentPlanData, setPaymentPlanData] = useState<any>(null);
@@ -371,7 +369,7 @@ export const TrackDetailModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-blue-900 mb-3">{t("config")}</h4>
+                <h4 className="text-sm font-semibold text-blue-900 mb-3">Configuración</h4>
                 <div className="space-y-3">
                   <IconDescription
                     icon={<DollarSign className="w-5 h-5 text-blue-600" />}
@@ -544,13 +542,13 @@ export const TrackDetailModal = ({
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-xs">Nº Doc.</TableHead>
-                      <TableHead className="text-xs">{t("type")}</TableHead>
-                      <TableHead className="text-xs">{t("issueDate")}</TableHead>
+                      <TableHead className="text-xs">Tipo</TableHead>
+                      <TableHead className="text-xs">Emisión</TableHead>
                       <TableHead className="text-xs">Vto.</TableHead>
-                      <TableHead className="text-xs">{t("amount")}</TableHead>
-                      <TableHead className="text-xs">{t("balance")}</TableHead>
-                      <TableHead className="text-xs">{t("delay")}</TableHead>
-                      <TableHead className="text-xs">{t("phase")}</TableHead>
+                      <TableHead className="text-xs">Monto</TableHead>
+                      <TableHead className="text-xs">Saldo</TableHead>
+                      <TableHead className="text-xs">Atraso</TableHead>
+                      <TableHead className="text-xs">Fase</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -605,10 +603,10 @@ export const TrackDetailModal = ({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">{t("contact")}</TableHead>
-                      <TableHead className="text-xs">{t("type")}</TableHead>
-                      <TableHead className="text-xs">{t("dateTime")}</TableHead>
-                      <TableHead className="text-xs">{t("recording")}</TableHead>
+                      <TableHead className="text-xs">Contacto</TableHead>
+                      <TableHead className="text-xs">Tipo</TableHead>
+                      <TableHead className="text-xs">Fecha/Hora</TableHead>
+                      <TableHead className="text-xs">Grabación</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

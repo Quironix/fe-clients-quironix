@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, FileDown, FileSpreadsheet } from "lucide-react";
 import { subMonths, startOfMonth, format } from "date-fns";
@@ -26,6 +25,15 @@ interface ExportExcelModalProps {
 }
 
 const STATUS_SCHEMAS: ExportSchema[] = ["INVOICES", "LITIGATION"];
+
+const SCHEMA_LABELS: Record<ExportSchema, string> = {
+  INVOICES: "Facturas",
+  PROJECTION: "Proyección",
+  LITIGATION: "Litigios",
+  PAYMENT_PLANS: "Planes de pago",
+  PAYMENTS: "Pagos",
+  MANAGEMENTS: "Gestiones",
+};
 
 const MAX_SELECTION = 3;
 
@@ -95,19 +103,9 @@ function canAdd(key: string, selected: string[]): boolean {
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clientId }: ExportExcelModalProps) {
-  const t = useTranslations("exportExcel");
   const [selected, setSelected] = useState<string[]>([]);
   const [status, setStatus] = useState<ExportStatus>("all");
   const [isLoading, setIsLoading] = useState(false);
-
-  const SCHEMA_LABELS: Record<ExportSchema, string> = {
-    INVOICES: t("schemaInvoices"),
-    PROJECTION: t("schemaProjection"),
-    LITIGATION: t("schemaLitigation"),
-    PAYMENT_PLANS: t("schemaPaymentPlans"),
-    PAYMENTS: t("schemaPayments"),
-    MANAGEMENTS: t("schemaManagements"),
-  };
 
   const showStatus = STATUS_SCHEMAS.includes(schema);
   const options = useMemo(() => buildMonthOptions(), [open]);
@@ -123,11 +121,11 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
       if (prev.includes(key)) return prev.filter((k) => k !== key);
       const next = [...prev, key];
       if (!isContiguous(next)) {
-        toast.error(t("toastMonthsNotContiguous"));
+        toast.error("Los meses deben ser consecutivos");
         return prev;
       }
       if (next.length > MAX_SELECTION) {
-        toast.error(t("toastMaxMonths", { max: MAX_SELECTION }));
+        toast.error(`Máximo ${MAX_SELECTION} meses`);
         return prev;
       }
       return next;
@@ -135,7 +133,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
   };
 
   const handleExport = async () => {
-    if (selected.length === 0) { toast.error(t("toastSelectMonth")); return; }
+    if (selected.length === 0) { toast.error("Selecciona al menos un mes"); return; }
     setIsLoading(true);
     try {
       const { from, to } = getRangeFromSelection(selected, options);
@@ -149,10 +147,10 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
       const a = document.createElement("a");
       a.href = url; a.download = filename; a.click();
       URL.revokeObjectURL(url);
-      toast.success(t("toastExportSuccess"));
+      toast.success("Archivo exportado correctamente");
       onOpenChange(false);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("toastExportError"));
+      toast.error(error instanceof Error ? error.message : "Error al exportar el archivo");
     } finally {
       setIsLoading(false);
     }
@@ -177,7 +175,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
                 <FileSpreadsheet className="h-[18px] w-[18px] text-orange-500" />
               </div>
               <div>
-                <DialogTitle className="text-sm font-semibold leading-tight">{t("title")}</DialogTitle>
+                <DialogTitle className="text-sm font-semibold leading-tight">Exportar a Excel</DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">{SCHEMA_LABELS[schema]}</p>
               </div>
             </div>
@@ -189,9 +187,9 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
           {/* Selector de meses */}
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-semibold text-foreground">{t("period")}</span>
+              <span className="text-xs font-semibold text-foreground">Período</span>
               <span className="text-xs text-muted-foreground">
-                {t("periodHint")}
+                Selecciona entre 1 y 3 meses consecutivos
               </span>
             </div>
 
@@ -229,7 +227,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
 
                     {option.isCurrent && (
                       <span className="text-[10px] font-medium text-orange-500 bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded-full leading-none">
-                        {t("current")}
+                        En curso
                       </span>
                     )}
                   </button>
@@ -244,7 +242,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
                 ? "bg-muted/50 border border-border/50 text-muted-foreground"
                 : "opacity-0 pointer-events-none"
             )}>
-              <span className="font-medium text-foreground">{t("range")}</span>
+              <span className="font-medium text-foreground">Rango:</span>
               <span className="tabular-nums">{rangeLabel ?? "—"}</span>
             </div>
           </div>
@@ -252,7 +250,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
           {/* Estado (solo para INVOICES y LITIGATION) */}
           {showStatus && (
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-semibold text-foreground">{t("status")}</span>
+              <span className="text-xs font-semibold text-foreground">Estado</span>
               <div className="flex gap-1 p-1 rounded-lg bg-muted/50 border border-border/60">
                 {(["all", "open", "closed"] as ExportStatus[]).map((s) => (
                   <button
@@ -266,7 +264,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {s === "all" ? t("all") : s === "open" ? t("open") : t("closed")}
+                    {s === "all" ? "Todos" : s === "open" ? "Abiertos" : "Cerrados"}
                   </button>
                 ))}
               </div>
@@ -284,7 +282,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
             disabled={isLoading}
             className="text-muted-foreground hover:text-foreground"
           >
-            {t("cancel")}
+            Cancelar
           </Button>
           <Button
             size="sm"
@@ -295,15 +293,15 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
             {isLoading ? (
               <>
                 <div className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                {t("exporting")}
+                Exportando...
               </>
             ) : (
               <>
                 <FileDown className="h-3.5 w-3.5" />
-                {t("export")}
+                Exportar
                 {selected.length > 0 && (
                   <span className="ml-0.5 opacity-70">
-                    ({selected.length} {selected.length === 1 ? t("month") : t("months")})
+                    ({selected.length} {selected.length === 1 ? "mes" : "meses"})
                   </span>
                 )}
               </>

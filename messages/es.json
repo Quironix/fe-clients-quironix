@@ -75,9 +75,7 @@
       "maxLength": "Máximo {max} caracteres",
       "invalidPhone": "Número de teléfono inválido",
       "fieldRequired": "Campo requerido",
-      "selectAtLeastOne": "Debe seleccionar al menos uno",
-      "emailRequiredForChannel": "El email es obligatorio para este canal de contacto",
-      "phoneRequiredForChannel": "El teléfono es obligatorio para este canal de contacto"
+      "selectAtLeastOne": "Debe seleccionar al menos uno"
     },
     "labels": {
       "name": "Nombre",
@@ -110,12 +108,7 @@
       "low": "Bajo",
       "medium": "Medio",
       "high": "Alto",
-      "tax": "Impuesto",
-      "disconnect": "Desconectar",
-      "connectPbx": "Conectar Central",
-      "comment": "Comentario",
-      "addComment": "Agregar comentario",
-      "by": "por"
+      "tax": "Impuesto"
     },
     "placeholders": {
       "searchCompanies": "Buscar compañías...",
@@ -198,14 +191,6 @@
     "authLayout": {
       "headline": "Tu aplicación de administración de deudas",
       "subheadline": "que te permite gestionar tus deudas de manera fácil y rápida."
-    },
-    "commandMenu": {
-      "placeholder": "Escribí un comando o buscá...",
-      "noResults": "Sin resultados.",
-      "theme": "Tema",
-      "light": "Claro",
-      "dark": "Oscuro",
-      "system": "Sistema"
     }
   },
   "onboarding": {
@@ -407,9 +392,6 @@
     "of": "de {max}",
     "periods": "{count} períodos",
     "previous": "Anterior: {value}{unit}",
-    "noHistory": "Sin historial disponible",
-    "historyPeriod": "Período",
-    "historyValue": "Valor",
     "kpiAssistant": "Asistente de KPIs",
     "kpiAssistantWelcome": "¡Hola! Soy tu asistente de KPIs. Puedo ayudarte a analizar tus indicadores, interpretar tendencias y sugerir mejoras. ¿En qué puedo ayudarte hoy?",
     "suggestedQuestions": "Preguntas sugeridas:",
@@ -1022,10 +1004,7 @@
       "mailOut": "Correo saliente",
       "mailIn": "Correo entrante",
       "supplierPortal": "Portal de proveedores",
-      "whatsapp": "Whatsapp",
-      "noEmailTitle": "Contacto sin email asignado",
-      "noEmailDesc": "El contacto seleccionado no tiene un email registrado. Para poder enviar la gestión, editá el contacto existente o creá uno nuevo con un email válido.",
-      "understood": "Entendido"
+      "whatsapp": "Whatsapp"
     },
     "stepThree": {
       "preview": "Vista previa de la gestión",
@@ -1093,40 +1072,10 @@
       "sendEmailLabel": "Enviar resumen por email después de guardar.",
       "normalizedLitigations": "Litigios normalizados:"
     },
-    "managementsListPage": {
-      "title": "Lista de gestiones",
-      "history": "Historial de gestiones"
-    },
-    "trackDetail": {
-      "config": "Configuración",
-      "type": "Tipo",
-      "issueDate": "Emisión",
-      "amount": "Monto",
-      "balance": "Saldo",
-      "delay": "Atraso",
-      "phase": "Fase",
-      "contact": "Contacto",
-      "dateTime": "Fecha/Hora",
-      "recording": "Grabación"
-    },
-    "invoiceCard": {
-      "phase": "Fase"
-    },
-    "litigationForm": {
-      "invoicesInManagement": "Facturas en gestión",
-      "selectReason": "Selecciona motivo",
-      "selectSubreason": "Selecciona submotivo"
-    },
-    "normalizationForm": {
-      "openLitigations": "Litigios abiertos",
-      "selectReason": "Selecciona razón",
-      "commentPlaceholder": "Ingresa un comentario sobre la normalización"
-    },
     "managementsList": {
       "pageTitle": "Historial de gestiones",
       "pageDescription": "Busca y selecciona un deudor para ver su historial de gestiones",
       "pageSubDescription": "Historial de gestiones",
-      "collectorEngine": "Motor de collector",
       "selectCompanyLabel": "Empresa",
       "tableTitle": "Selecciona un deudor",
       "searchPlaceholder": "Buscar deudor...",
@@ -1144,9 +1093,6 @@
     "description": "En esta sección podrás crear y gestionar planes de pago para tus deudores.",
     "subDescription": "Planes de pago",
     "introText": "Aquí podrás gestionar y organizar los pagos de tus deudores de manera sencilla y eficiente. Crea tu primer plan de pago para comenzar a llevar un mejor control de tus finanzas.",
-    "create": {
-      "selectDebtor": "Seleccionar deudor"
-    },
     "createPlan": "Crear plan de pago",
     "searchPlaceholder": "Buscar planes de pago...",
     "emptyMessage": "No se encontraron planes de pago",
@@ -1512,41 +1458,7 @@
       "normalize": "Normalizar",
       "saveError": "Error al guardar litigio",
       "fetchError": "Error al obtener litigios"
-    },
-    "filter": {
-      "title": "Filtros",
-      "reason": "Motivo",
-      "selectReason": "Selecciona un estado",
-      "allReasons": "Todos los motivos",
-      "status": "Estado",
-      "allStatuses": "Todos los estados"
-    },
-    "columns": {
-      "edit": "Editar litigio",
-      "normalize": "Normalizar",
-      "detail": "Detalle del litigio",
-      "viewDetail": "Ver detalle"
-    },
-    "detail": {
-      "invoiceAmount": "Monto Factura",
-      "litigationAmount": "Monto litigio",
-      "businessName": "Razón social",
-      "reason": "Motivo",
-      "subreason": "Submotivo",
-      "date": "Fecha",
-      "contact": "Contacto",
-      "comment": "Comentario",
-      "noComments": "Sin comentarios",
-      "commentPlaceholder": "Escriba su comentario aquí...",
-      "litigations": "Litigios",
-      "normalizationReason": "Razón de Normalización",
-      "normalizeLitigation": "Normalizar litigio",
-      "normalizeLitigationDesc": "Completa los campos obligatorios para normalizar el litigio y marcarlo como resuelto.",
-      "client": "Cliente",
-      "debtor": "Deudor",
-      "invoice": "Factura"
-    },
-    "emptyTitle": "Litigios ingresados"
+    }
   },
   "settings": {
     "title": "Configuración",
@@ -1749,15 +1661,6 @@
           "installmentRequired": "El número de cuota es requerido",
           "debtorRequired": "El deudor es requerido"
         }
-      },
-      "invoiceHistory": {
-        "invoiceInfo": "Información de la factura",
-        "amount": "Monto",
-        "balance": "Balance",
-        "issueDate": "Fecha de emisión",
-        "name": "Nombre",
-        "appliedPayments": "Pagos Aplicados",
-        "appliedAmount": "Monto aplicado"
       },
       "upload": {
         "manualTitle": "Subir {dte} por carga {manual}",
@@ -1985,34 +1888,6 @@
     "assignDebtor": "Asignar deudor",
     "generatePayment": "Generar pago",
     "depositDetail": "Detalle del depósito",
-    "alerts": {
-      "reconciled": "Conciliado",
-      "pendingBalance": "Diferencia: saldo pendiente",
-      "favorableBalance": "Diferencia: saldo a favor"
-    },
-    "columns": {
-      "reversePayment": "Reversar pago",
-      "deleteMovement": "Eliminar movimiento"
-    },
-    "modal": {
-      "depositDetail": "Detalle del depósito",
-      "paymentInfo": "Información del pago",
-      "appliedInvoices": "Facturas Aplicadas",
-      "appliedAmount": "Monto aplicado",
-      "appliedType": "Tipo aplicado",
-      "bank": "Banco",
-      "account": "Cuenta",
-      "description": "Descripción"
-    },
-    "labels": {
-      "phase": "Fase",
-      "dueDate": "Vencimiento"
-    },
-    "summary": {
-      "selectReceivable": "Seleccione una cuenta por cobrar",
-      "selectCredit": "Seleccione un crédito a favor",
-      "manualNetting": "Compensar manualmente"
-    },
     "bankTransfer": "Transferencia bancaria",
     "multipleBanks": "Múltiples bancos",
     "depositDate": "Fecha de depósito",
@@ -2190,50 +2065,7 @@
       "downloadTemplate": "Descargar plantilla",
       "uploadFile": "Subir archivo",
       "uploading": "Procesando compañías..."
-    },
-    "form": {
-      "nameRequired": "Nombre es requerido",
-      "positionRequired": "Cargo es requerido",
-      "cityRequired": "Ciudad es requerida",
-      "documentTypeRequired": "Tipo de documento es requerido",
-      "atLeastOneContact": "Debe agregar al menos un contacto",
-      "companyInfo": "Información de la empresa",
-      "companyName": "Nombre de la empresa",
-      "clientCode": "Código de cliente",
-      "addresses": "Direcciones de la empresa",
-      "address": "Dirección",
-      "stateRegion": "Estado/Región",
-      "city": "Ciudad",
-      "postalCode": "Código postal",
-      "companyContacts": "Contactos compañía",
-      "addAddress": "Agregar dirección",
-      "addContact": "Agregar contacto",
-      "contact": "Contacto",
-      "createCompany": "Crear empresa",
-      "updateCompany": "Actualizar empresa"
-    },
-    "incomplete": {
-      "title": "Carga masiva defectuosa",
-      "valid": "Válidos",
-      "withErrors": "Con errores",
-      "total": "Total",
-      "row": "Fila",
-      "column": "Columna",
-      "value": "Valor",
-      "error": "Error",
-      "empty": "Vacío"
     }
-  },
-  "bulkUpload": {
-    "title": "Carga masiva defectuosa",
-    "valid": "Válidos",
-    "withErrors": "Con errores",
-    "total": "Total",
-    "row": "Fila",
-    "column": "Columna",
-    "value": "Valor",
-    "error": "Error",
-    "empty": "Vacío"
   },
   "webrtc": {
     "microphoneAccess": "Debes permitir acceso al micrófono",
@@ -2709,32 +2541,5 @@
       "passwordSent": "Se le envió la clave por email",
       "passwordError": "Error al solicitar cambio de contraseña"
     }
-  },
-  "exportExcel": {
-    "title": "Exportar a Excel",
-    "period": "Período",
-    "periodHint": "Selecciona entre 1 y 3 meses consecutivos",
-    "status": "Estado",
-    "all": "Todos",
-    "open": "Abiertos",
-    "closed": "Cerrados",
-    "cancel": "Cancelar",
-    "export": "Exportar",
-    "exporting": "Exportando...",
-    "month": "mes",
-    "months": "meses",
-    "current": "En curso",
-    "range": "Rango:",
-    "toastMonthsNotContiguous": "Los meses deben ser consecutivos",
-    "toastMaxMonths": "Máximo {max} meses",
-    "toastSelectMonth": "Selecciona al menos un mes",
-    "toastExportSuccess": "Archivo exportado correctamente",
-    "toastExportError": "Error al exportar el archivo",
-    "schemaInvoices": "Facturas",
-    "schemaProjection": "Proyección",
-    "schemaLitigation": "Litigios",
-    "schemaPaymentPlans": "Planes de pago",
-    "schemaPayments": "Pagos",
-    "schemaManagements": "Gestiones"
   }
 }

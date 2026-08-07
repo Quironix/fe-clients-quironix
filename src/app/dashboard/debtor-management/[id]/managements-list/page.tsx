@@ -34,7 +34,6 @@ import {
   Phone,
   User,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -69,8 +68,6 @@ const IconDescription = ({
 );
 
 const Content = () => {
-  const t = useTranslations("debtorManagement.managementsListPage");
-  const tList = useTranslations("debtorManagement.managementsList");
   const params = useParams();
   const debtorId = params?.id as string;
   const searchParams = useSearchParams();
@@ -771,9 +768,8 @@ const Content = () => {
         handleViewDetails,
         threadColorByTrackId,
         handleOpenThread,
-        tList("collectorEngine"),
       ),
-    [threadColorByTrackId, tList],
+    [threadColorByTrackId],
   );
 
 
@@ -823,10 +819,10 @@ const Content = () => {
       </Header>
       <Main>
         <TitleSection
-          title={t("title")}
+          title="Lista de gestiones"
           description="Visualiza y gestiona todas las interacciones registradas"
           icon={<History color="white" />}
-          subDescription={t("history")}
+          subDescription={`Historial de gestiones`}
         />
         <div className="flex justify-between items-center mb-5">
           <Breadcrumb>
@@ -839,7 +835,7 @@ const Content = () => {
                         href="/dashboard/debtor-management/managements-list"
                         className="text-blue-600"
                       >
-                        {t("title")}
+                        Lista de gestiones
                       </Link>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
@@ -878,7 +874,7 @@ const Content = () => {
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
-                  <BreadcrumbItem>{t("title")}</BreadcrumbItem>
+                  <BreadcrumbItem>Lista de gestiones</BreadcrumbItem>
                 </>
               )}
             </BreadcrumbList>
@@ -900,7 +896,7 @@ const Content = () => {
 
         <Card>
           <CardContent className="space-y-3">
-            <h2 className="text-lg font-bold">{t("history")}</h2>
+            <h2 className="text-lg font-bold">Historial de gestiones</h2>
             <div className="bg-blue-100/30 p-4 rounded-lg">
               <h3 className="text-sm font-medium mb-3 text-blue-800">
                 Datos del deudor

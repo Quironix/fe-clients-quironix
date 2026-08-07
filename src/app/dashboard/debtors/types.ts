@@ -30,9 +30,9 @@ interface CompanyDebtor {
 export interface Contact {
   name: string;
   role: string;
-  email?: string;
-  phone?: string;
-  channel: string;
+  email: string;
+  phone: string;
+  channel?: string;
   function?: string;
 }
 

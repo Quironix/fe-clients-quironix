@@ -9,7 +9,6 @@ import BulletMenu, { BulletMenuItem } from "../../components/bullet-menu";
 
 import { format } from "date-fns";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
 import DialogForm from "../../components/dialog-form";
 import { TruncatedTextTooltip } from "../../components/truncated-text-tooltip";
 import { disputes } from "../../data";
@@ -18,6 +17,7 @@ import LitigationDetail from "./modals/litigation-detail";
 import LitigationEditModal from "./modals/litigation-edit";
 import NormalizationFormId from "./modals/normalization-id-form";
 
+// Funciones helper para mapear códigos a etiquetas
 export const getMotivoLabel = (code: string) => {
   switch (code) {
     case "COMMERCIAL_INVOICE":
@@ -79,6 +79,7 @@ export const getSubmotivoLabel = (
   return submotivoCode || "-";
 };
 
+// Componente wrapper para manejar el estado del modal de edición
 const EditModalWrapper = ({
   row,
   onRefetch,
@@ -87,11 +88,10 @@ const EditModalWrapper = ({
   onRefetch?: () => void;
 }) => {
   const [open, setOpen] = useState(false);
-  const t = useTranslations("litigation");
 
   return (
     <DialogForm
-      title={t("columns.edit")}
+      title="Editar litigio"
       description={
         <>
           Factura N° <span className="font-bold">{row?.invoice.number}</span>
@@ -102,7 +102,7 @@ const EditModalWrapper = ({
       trigger={
         <div className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
           <Edit className="h-4 w-4 text-blue-600 shrink-0" />
-          <span className="whitespace-nowrap">{t("columns.edit")}</span>
+          <span className="whitespace-nowrap">Editar litigio</span>
         </div>
       }
     >
@@ -124,11 +124,10 @@ const NormalizeModalWrapper = ({
   onRefetch?: () => void;
 }) => {
   const [open, setOpen] = useState(false);
-  const t = useTranslations("litigation");
 
   return (
     <DialogForm
-      title={t("columns.detail")}
+      title="Normalizar litigio"
       description={
         <>
           Litigio N° <span className="font-bold">{row?.invoice.number}</span>
@@ -139,7 +138,7 @@ const NormalizeModalWrapper = ({
       trigger={
         <div className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
           <Flag className="h-4 w-4 text-blue-600 shrink-0" />
-          <span className="whitespace-nowrap">{t("columns.normalize")}</span>
+          <span className="whitespace-nowrap">Normalizar</span>
         </div>
       }
     >
@@ -153,44 +152,6 @@ const NormalizeModalWrapper = ({
   );
 };
 
-const DetailModalWrapper = ({
-  row,
-}: {
-  row: LitigationItem;
-}) => {
-  const t = useTranslations("litigation");
-
-  return (
-    <DropdownMenuItem
-      asChild
-      key={row.id + "detail"}
-      disabled={false}
-      className={cn(
-        "flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm",
-        "text-black focus:text-black focus:bg-primary/10 dark:focus:bg-primary/20"
-      )}
-    >
-      <DialogForm
-        title={t("columns.detail")}
-        description={
-          <>
-            Factura N°{" "}
-            <span className="font-bold">{row?.invoice.number}</span>
-          </>
-        }
-        trigger={
-          <div className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
-            <Eye className="h-4 w-4 text-blue-600 shrink-0" />
-            <span className="whitespace-nowrap">{t("columns.viewDetail")}</span>
-          </div>
-        }
-      >
-        <LitigationDetail litigation={row} />
-      </DialogForm>
-    </DropdownMenuItem>
-  );
-};
-
 const createMenuItems = (
   row: LitigationItem,
   onRefetch?: () => void
@@ -198,13 +159,41 @@ const createMenuItems = (
   const items: BulletMenuItem[] = [
     {
       id: "detail",
-      label: "detail",
+      label: "Ver detalle",
       icon: Eye,
-      component: <DetailModalWrapper row={row} />,
+      component: (
+        <DropdownMenuItem
+          asChild
+          key={row.id + "edit"}
+          disabled={false}
+          className={cn(
+            "flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm",
+            "text-black focus:text-black focus:bg-primary/10 dark:focus:bg-primary/20"
+          )}
+        >
+          <DialogForm
+            title="Detalle del litigio"
+            description={
+              <>
+                Factura N°{" "}
+                <span className="font-bold">{row?.invoice.number}</span>
+              </>
+            }
+            trigger={
+              <div className="flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm">
+                <Eye className="h-4 w-4 text-blue-600 shrink-0" />
+                <span className="whitespace-nowrap">Ver detalle</span>
+              </div>
+            }
+          >
+            <LitigationDetail litigation={row} />
+          </DialogForm>
+        </DropdownMenuItem>
+      ),
     },
     {
       id: "edit",
-      label: "edit",
+      label: "Editar litigio",
       icon: Edit,
       component: (
         <DropdownMenuItem
@@ -222,12 +211,12 @@ const createMenuItems = (
     },
     {
       id: "normalize",
-      label: "normalize",
+      label: "Normalizar",
       icon: Flag,
       component: (
         <DropdownMenuItem
           asChild
-          key={row.id + "normalize"}
+          key={row.id + "edit"}
           disabled={false}
           className={cn(
             "flex items-center gap-3 cursor-pointer px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm",
@@ -243,6 +232,7 @@ const createMenuItems = (
   return items;
 };
 
+// Columnas de la tabla
 export const getColumns = (
   onRefetch?: () => void
 ): ColumnDef<LitigationItem>[] => [
@@ -277,10 +267,12 @@ export const getColumns = (
     accessorKey: "client_code",
     header: "Días de disputa",
     cell: ({ row }) => {
+      // Función para calcular los días desde created_at hasta hoy
       const calcularDiasDesde = (fecha: string) => {
         if (!fecha) return "-";
         const fechaCreacion = new Date(fecha);
         const hoy = new Date();
+        // Limpiar horas para comparar solo fechas
         fechaCreacion.setHours(0, 0, 0, 0);
         hoy.setHours(0, 0, 0, 0);
         const diferenciaMs = hoy.getTime() - fechaCreacion.getTime();
@@ -327,6 +319,7 @@ export const getColumns = (
     accessorKey: "approver",
     header: "Aprobador",
     cell: ({ row }) => {
+      const value = row.getValue("approver");
       return (
         <div className="truncate text-center">
           {row.original?.approver ? (
@@ -375,4 +368,5 @@ export const getColumns = (
   },
 ];
 
+// Exportar también las columnas sin refetch para compatibilidad hacia atrás
 export const columns: ColumnDef<LitigationItem>[] = getColumns();

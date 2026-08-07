@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText, Plus, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -63,7 +62,6 @@ const ManagementLitigationForm = ({
   onChange,
   selectedInvoices = [],
 }: ManagementLitigationFormProps) => {
-  const t = useTranslations("debtorManagement.litigationForm");
   const [litigations, setLitigations] = useState<SingleLitigation[]>(
     value?.litigations || [
       {
@@ -248,7 +246,7 @@ const ManagementLitigationForm = ({
           {/* Facturas en gestión - Información general */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">{t("invoicesInManagement")}</span>
+              <span className="text-sm font-medium">Facturas en gestión</span>
               <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
                 {selectedInvoices.length} disponible
                 {selectedInvoices.length !== 1 ? "s" : ""}
@@ -405,7 +403,7 @@ const ManagementLitigationForm = ({
                           }}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder={t("selectReason")} />
+                            <SelectValue placeholder="Selecciona motivo" />
                           </SelectTrigger>
                           <SelectContent>
                             {disputes.map((item) => (
@@ -429,7 +427,7 @@ const ManagementLitigationForm = ({
                           disabled={!litigation.reason}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder={t("selectSubreason")} />
+                            <SelectValue placeholder="Selecciona submotivo" />
                           </SelectTrigger>
                           <SelectContent>
                             {disputes

@@ -25,7 +25,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Building, Calendar, Loader2, SquareUserRound } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -43,12 +42,12 @@ const litigationEditSchema = z.object({
 
 type LitigationEditForm = z.infer<typeof litigationEditSchema>;
 
-interface LitigationEditModalProps {
+type LitigationEditModalProps = {
   litigation: LitigationItem;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   onRefetch?: () => void;
-}
+};
 
 const LitigationEditModal = ({
   litigation,
@@ -58,8 +57,6 @@ const LitigationEditModal = ({
 }: LitigationEditModalProps) => {
   const { data: session } = useSession();
   const { profile } = useProfileContext();
-  const t = useTranslations("litigation");
-  const tCommon = useTranslations("common");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [displayValue, setDisplayValue] = useState("");
@@ -73,7 +70,6 @@ const LitigationEditModal = ({
       contact: litigation?.contact ?? "",
     },
   });
-
   useEffect(() => {
     if (litigation) {
       const amount = Number(litigation.litigation_amount ?? 0);
@@ -83,6 +79,7 @@ const LitigationEditModal = ({
         submotivo: litigation.submotivo ?? "",
         contact: litigation.contact ?? "",
       });
+      // Format the initial display value
       setDisplayValue(
         amount.toLocaleString("es-CL", {
           maximumFractionDigits: 0,
@@ -94,7 +91,9 @@ const LitigationEditModal = ({
 
   const {
     control,
+    register,
     handleSubmit,
+    formState: { errors },
     reset,
   } = form;
 
@@ -137,6 +136,7 @@ const LitigationEditModal = ({
         toast.success(response.message);
         onOpenChange(false);
         reset();
+        // Refrescar los datos
         if (onRefetch) {
           onRefetch();
         }
@@ -156,7 +156,7 @@ const LitigationEditModal = ({
           <div className="grid grid-cols-2 gap-2 bg-[#EDF2F7] px-4 py-3 rounded-md">
             <div className="flex items-center">
               <div className="">
-                <span className="text-sm text-gray-600">{t("detail.invoiceAmount")}</span>
+                <span className="text-sm text-gray-600">Monto factura</span>
                 <p className="text-[#2F6EFF] font-bold text-2xl">
                   $
                   {new Intl.NumberFormat("es-CL").format(
@@ -170,18 +170,24 @@ const LitigationEditModal = ({
               name="litigation_amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("detail.litigationAmount")}</FormLabel>
+                  <FormLabel>Monto litigio</FormLabel>
                   <Input
                     type="text"
                     className="bg-white border-2"
                     value={displayValue}
                     onChange={(e) => {
+                      // Remove non-numeric characters except dots
                       const rawValue = e.target.value.replace(/[^0-9]/g, "");
                       const numericValue = parseInt(rawValue) || 0;
+
+                      // Update form value
                       field.onChange(numericValue);
+
+                      // Update display value
                       setDisplayValue(e.target.value);
                     }}
                     onBlur={() => {
+                      // Format value on blur
                       const value = field.value || 0;
                       setDisplayValue(
                         value.toLocaleString("es-CL", {
@@ -191,6 +197,7 @@ const LitigationEditModal = ({
                       );
                     }}
                     onFocus={() => {
+                      // Show raw number on focus for easier editing
                       const value = field.value || 0;
                       setDisplayValue(value.toString());
                     }}
@@ -213,7 +220,7 @@ const LitigationEditModal = ({
             <div className="flex items-center gap-2">
               <Building className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm">{t("detail.businessName")}</p>
+                <p className="text-sm">Razón social</p>
                 <p>{litigation?.debtor.name ?? "Sin Razón Social"}</p>
               </div>
             </div>
@@ -223,10 +230,11 @@ const LitigationEditModal = ({
               name="motivo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("detail.reason")}</FormLabel>
+                  <FormLabel>Motivo litigio</FormLabel>
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
+                      // Resetear el submotivo cuando cambie el motivo
                       form.setValue("submotivo", "");
                     }}
                     value={field.value}
@@ -263,7 +271,7 @@ const LitigationEditModal = ({
 
                 return (
                   <FormItem>
-                    <FormLabel>{t("detail.subreason")}</FormLabel>
+                    <FormLabel>Submotivo</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
@@ -294,7 +302,7 @@ const LitigationEditModal = ({
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm">{t("detail.date")}</p>
+                <p className="text-sm">Fecha</p>
                 <p className="font-semibold">
                   {format(litigation?.created_at, "dd/MM/yyyy HH:mm")}
                 </p>
@@ -314,6 +322,7 @@ const LitigationEditModal = ({
               )}
             />
           </div>
+          {/* Comments Section */}
 
           <FormField
             control={form.control}
@@ -321,7 +330,7 @@ const LitigationEditModal = ({
             render={({ field }) => (
               <CommentHistory
                 comments={litigation?.comments ?? []}
-                placeholder={t("detail.commentPlaceholder")}
+                placeholder="Escriba su comentario aquí..."
                 field={field}
               />
             )}
@@ -337,10 +346,10 @@ const LitigationEditModal = ({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {tCommon("loading.saving")}
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...
                 </>
               ) : (
-                tCommon("buttons.save")
+                "Guardar cambios"
               )}
             </Button>
           </div>

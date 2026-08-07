@@ -4,7 +4,6 @@ import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { CheckCircle2 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 interface InvoiceCardLitigationProps {
@@ -30,8 +29,6 @@ const InvoiceCardLitigation = ({
   disabledReason,
   litigationNumber,
 }: InvoiceCardLitigationProps) => {
-  const tLabels = useTranslations("common.labels");
-  const tCard = useTranslations("debtorManagement.invoiceCard");
   const [displayAmount, setDisplayAmount] = useState(litigationAmount);
 
   useEffect(() => {
@@ -87,7 +84,7 @@ const InvoiceCardLitigation = ({
           )}
 
           <div className="flex items-start gap-1 mt-1">
-            <span className="font-bold text-xs">{tCard("phase")}</span>
+            <span className="font-bold text-xs">Fase</span>
             <span className="text-xs text-gray-500 truncate">
               {invoice?.phases?.length > 0
                 ? invoice?.phases[0]?.phase || "Sin fase"
@@ -96,7 +93,7 @@ const InvoiceCardLitigation = ({
           </div>
 
           <div className="flex items-start gap-1">
-            <span className="font-bold text-xs">{tLabels("dueDate")}</span>
+            <span className="font-bold text-xs">Vencimiento</span>
             <span className="text-xs text-gray-500">
               {invoice?.due_date
                 ? format(new Date(invoice.due_date), "dd/MM/yyyy")
@@ -105,17 +102,28 @@ const InvoiceCardLitigation = ({
           </div>
         </div>
 
+        {/* Mensaje de factura sin litigio */}
+        {/* {isDisabled && disabledReason && (
+          <div className="w-full mt-2">
+            <p className="text-[10px] text-red-600 font-medium text-center bg-red-50 rounded border border-red-200">
+              {disabledReason}
+            </p>
+          </div>
+        )} */}
+
+        {/* Separador */}
         <div className="w-full border-t border-orange-400 my-2"></div>
 
+        {/* Monto y Saldo al final */}
         <div className="flex items-center justify-between gap-1 w-full">
-          <span className="text-xs text-gray-500">{tLabels("amount")}</span>
+          <span className="text-xs text-gray-500">Monto</span>
           <span className="text-xs font-bold text-gray-500">
             $
             {new Intl.NumberFormat("es-CL").format(Number(invoice.amount || 0))}
           </span>
         </div>
         <div className="flex items-center justify-between gap-1 w-full">
-          <span className="text-xs text-gray-500">{tLabels("balance")}</span>
+          <span className="text-xs text-gray-500">Saldo</span>
           <span className="text-xs font-bold text-gray-500">
             $
             {new Intl.NumberFormat("es-CL").format(

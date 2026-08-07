@@ -29,7 +29,7 @@ import DialogForm from "../components/dialog-form";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
-import { useColumns } from "./components/columns";
+import { createColumns } from "./components/columns";
 import FilterInputs, { FilterInputsRef } from "./components/filter";
 import FormAssignDebtor from "./components/form-assign-debtor";
 import IconDescription from "./components/icon-description";
@@ -249,7 +249,10 @@ export default function PaymentNettingPage() {
     }
   };
 
-  const columns = useColumns(handleOpenTransactionDetail, handleReversePayment, handleEliminatePayment);
+  const columns = useMemo(
+    () => createColumns(handleOpenTransactionDetail, handleReversePayment, handleEliminatePayment),
+    [handleOpenTransactionDetail, handleReversePayment, handleEliminatePayment]
+  );
 
   const handleResetFilters = () => {
     if (filterInputsRef.current) {

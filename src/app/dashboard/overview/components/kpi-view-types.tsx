@@ -228,14 +228,13 @@ export const DetailedView: React.FC<ViewProps> = ({ kpi }) => (
 );
 
 export const HistoryView: React.FC<ViewProps> = ({ kpi, status }) => {
-  const t = useTranslations("overview");
   const history = kpi.history ?? [];
 
   if (history.length === 0) {
     return (
       <div className="p-6 flex flex-col items-center justify-center gap-2 text-gray-400">
         <History size={24} />
-        <p className="text-xs">{t("noHistory")}</p>
+        <p className="text-xs">Sin historial disponible</p>
       </div>
     );
   }
@@ -266,8 +265,8 @@ export const HistoryView: React.FC<ViewProps> = ({ kpi, status }) => {
       <table className="w-full text-xs">
         <thead>
           <tr className="text-gray-400 border-b border-gray-100">
-            <th className="text-left pb-2 font-medium">{t("historyPeriod")}</th>
-            <th className="text-right pb-2 font-medium">{t("historyValue")}</th>
+            <th className="text-left pb-2 font-medium">Período</th>
+            <th className="text-right pb-2 font-medium">Valor</th>
           </tr>
         </thead>
         <tbody>
