@@ -3,16 +3,19 @@ import TitleStep from "../settings/components/title-step";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { TranslatedFormMessage } from "@/components/ui/translated-form-message";
 import { FormProvider, useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  contactSchema,
+  type ContactFormValues,
+} from "@/app/dashboard/debtors/schemas/contact.schema";
 import { useDebtorsStore } from "../debtors/store";
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { E164Number } from "libphonenumber-js/core";
@@ -38,45 +41,10 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
   const { dataDebtor, updateDebtor, setDataDebtor } = useDebtorsStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const tCommon = useTranslations("common");
-  // Schema para un solo contacto
-  const contactFormSchema = z.object({
-    name: z.string().min(1, tCommon("validation.required")),
-    role: z.string().min(1, tCommon("validation.required")),
-    function: z.string().min(1, tCommon("validation.required")),
-    email: z.string().email(tCommon("validation.invalidEmail")),
-    phone: z
-      .string()
-      .min(8, tCommon("validation.fieldRequired"))
-      .max(15, tCommon("validation.maxLength", { max: "15" }))
-      .transform((value) => {
-        // Normalizar el número agregando + si no lo tiene
-        if (!value) return value;
-        return value.startsWith("+") ? value : `+${value}`;
-      })
-      .refine((value) => /^\+?[1-9]\d{1,14}$/.test(value), {
-        message: tCommon("validation.invalidPhone"),
-      }),
-    channel: z.string().min(1, tCommon("validation.required")),
-  });
-
-  type ContactFormValues = z.infer<typeof contactFormSchema>;
-
-  // Función para normalizar el número de teléfono
-  const normalizePhoneNumber = (phone: string): string => {
-    if (!phone) return "";
-
-    // Si el teléfono ya tiene el símbolo +, lo dejamos tal como está
-    if (phone.startsWith("+")) {
-      return phone;
-    }
-
-    // Si no tiene el símbolo +, se lo agregamos
-    return `+${phone}`;
-  };
 
   const form = useForm<ContactFormValues>({
-    resolver: zodResolver(contactFormSchema) as any,
-    mode: "onChange",
+    resolver: zodResolver(contactSchema) as any,
+    mode: "onBlur",
     defaultValues: {
       name: "",
       role: "",
@@ -95,13 +63,12 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
 
     setIsSubmitting(true);
     try {
-      // Normalizar el teléfono del nuevo contacto
       const newContact = {
         name: data.name,
         role: data.role,
         function: data.function,
         email: data.email,
-        phone: normalizePhoneNumber(data.phone),
+        phone: data.phone,
         channel: data.channel,
       };
 
@@ -215,7 +182,10 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                       <FormLabel>{tCommon("labels.channelPreferred")}</FormLabel>
                       <FormControl>
                         <Select
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.trigger(["email", "phone"]);
+                          }}
                           value={field.value}
                         >
                           <SelectTrigger className="w-full">
@@ -241,7 +211,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
-                      <FormMessage />
+                      <TranslatedFormMessage />
                     </FormItem>
                   )}
                 />
@@ -262,7 +232,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                           error={!!form.formState.errors.phone}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <TranslatedFormMessage />
                     </FormItem>
                   )}
                 />

@@ -75,7 +75,9 @@
       "maxLength": "Maximum {max} characters",
       "invalidPhone": "Invalid phone number",
       "fieldRequired": "Field required",
-      "selectAtLeastOne": "Must select at least one"
+      "selectAtLeastOne": "Must select at least one",
+      "emailRequiredForChannel": "Email is required for this contact channel",
+      "phoneRequiredForChannel": "Phone is required for this contact channel"
     },
     "labels": {
       "name": "Name",
