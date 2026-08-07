@@ -198,6 +198,14 @@
     "authLayout": {
       "headline": "Tu aplicación de administración de deudas",
       "subheadline": "que te permite gestionar tus deudas de manera fácil y rápida."
+    },
+    "commandMenu": {
+      "placeholder": "Escribí un comando o buscá...",
+      "noResults": "Sin resultados.",
+      "theme": "Tema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
     }
   },
   "onboarding": {

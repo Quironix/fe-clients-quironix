@@ -198,6 +198,14 @@
     "authLayout": {
       "headline": "Your debt management application",
       "subheadline": "that allows you to manage your debts easily and quickly."
+    },
+    "commandMenu": {
+      "placeholder": "Type a command or search...",
+      "noResults": "No results found.",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
     }
   },
   "onboarding": {
