@@ -1,14 +1,16 @@
 import { ArrowUpCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { usePaymentNettingStore } from "../store";
 import CommentAlert from "./comment-alert";
 
 const DiferenceAlert = () => {
+  const t = useTranslations("paymentNetting");
   const { totalInvoices, totalPayments } = usePaymentNettingStore();
   return (
     <div className="border border-blue-400 bg-blue-50 rounded-lg p-4">
       <div className="flex items-center gap-2 mb-2">
         <ArrowUpCircle className="w-6 h-6" />
-        <span className="text-lg font-bold">Diferencia: saldo a favor</span>
+        <span className="text-lg font-bold">{t("alerts.favorableBalance")}</span>
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-5">

@@ -1,17 +1,19 @@
 "use client";
 import { ArrowUpCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import CreateLitigation from "../../litigation/components/create-litigation";
 import { usePaymentNettingStore } from "../store";
 import CommentAlert from "./comment-alert";
 
 const PendingAlert = () => {
+  const t = useTranslations("paymentNetting");
   const { totalInvoices, totalPayments } = usePaymentNettingStore();
 
   return (
     <div className="border border-red-400 bg-red-50 rounded-lg p-4">
       <div className="flex items-center gap-2 mb-2">
         <ArrowUpCircle className="w-6 h-6" />
-        <span className="text-lg font-bold">Diferencia: saldo pendiente</span>
+        <span className="text-lg font-bold">{t("alerts.pendingBalance")}</span>
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-5">

@@ -3,6 +3,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Clock2, DollarSign, HeartHandshake } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { createConciliation } from "../services";
@@ -19,6 +20,7 @@ const SummaryPaymentNetting = ({
   selectedRows: any[];
   debtorId: string | null;
 }) => {
+  const t = useTranslations("paymentNetting");
   const {
     selectedInvoices,
     selectedPayments,
@@ -105,7 +107,7 @@ const SummaryPaymentNetting = ({
             <span className="border-dashed border-2 border-orange-400 rounded-md p-2 text-center text-sm text-gray-500 h-40 flex items-center justify-center">
               <div className="flex flex-col items-center justify-center gap-2">
                 <Clock2 className="w-6 h-6 text-orange-400" />
-                <span>Seleccione una cuenta por cobrar</span>
+                <span>{t("summary.selectReceivable")}</span>
               </div>
             </span>
           )}
@@ -128,7 +130,7 @@ const SummaryPaymentNetting = ({
               <span className="border-dashed border-2 border-blue-400 rounded-md p-2 text-center text-sm text-gray-500 h-40 flex items-center justify-center">
                 <div className="flex flex-col items-center justify-center gap-2">
                   <DollarSign className="w-6 h-6 text-blue-400" />
-                  <span>Seleccione un crédito a favor</span>
+                  <span>{t("summary.selectCredit")}</span>
                 </div>
               </span>
             )}
@@ -168,7 +170,7 @@ const SummaryPaymentNetting = ({
           onClick={handleCompensate}
         >
           <HeartHandshake className="w-4 h-4 text-white" />
-          <span className="text-md font-bold">Compensar manualmente</span>
+          <span className="text-md font-bold">{t("summary.manualNetting")}</span>
         </Button>
       </div>
     </div>

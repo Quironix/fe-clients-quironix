@@ -1,13 +1,15 @@
 import { CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { usePaymentNettingStore } from "../store";
 
 const SuccessAlert = () => {
+  const t = useTranslations("paymentNetting");
   const { totalPayments, totalInvoices } = usePaymentNettingStore();
   return (
     <div className="border border-green-400 bg-green-50 rounded-lg p-4">
       <div className="flex items-center gap-2 mb-2">
         <CheckCircle className="w-6 h-6" />
-        <span className="text-lg font-bold">Conciliado</span>
+        <span className="text-lg font-bold">{t("alerts.reconciled")}</span>
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-5">

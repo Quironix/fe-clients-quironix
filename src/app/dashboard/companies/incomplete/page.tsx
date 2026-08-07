@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useGetErrorMessage } from "../../transactions/hooks/use-get-error-message";
@@ -19,6 +20,7 @@ import CompaniesUploadSection from "../components/companies-upload-section";
 import { useCompaniesStore } from "../store";
 
 const IncompletePage = () => {
+  const t = useTranslations("companies");
   const { bulkUploadErrors, clearBulkUploadErrors } = useCompaniesStore();
   const { getErrorMessage } = useGetErrorMessage();
   const router = useRouter();
@@ -46,7 +48,7 @@ const IncompletePage = () => {
 
           <div className="bg-white shadow-md rounded-md p-4">
             <span className="text-lg font-semibold text-black mb-2">
-              Carga masiva defectuosa
+              {t("incomplete.title")}
             </span>
 
             <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-md mb-4">
@@ -54,19 +56,19 @@ const IncompletePage = () => {
                 <div className="text-2xl font-bold text-green-600">
                   {bulkUploadErrors.validCount}
                 </div>
-                <div className="text-sm text-gray-600">Válidos</div>
+                <div className="text-sm text-gray-600">{t("incomplete.valid")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">
                   {bulkUploadErrors.invalidCount}
                 </div>
-                <div className="text-sm text-gray-600">Con errores</div>
+                <div className="text-sm text-gray-600">{t("incomplete.withErrors")}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-600">
                   {bulkUploadErrors.totalCount}
                 </div>
-                <div className="text-sm text-gray-600">Total</div>
+                <div className="text-sm text-gray-600">{t("incomplete.total")}</div>
               </div>
             </div>
 
@@ -74,10 +76,10 @@ const IncompletePage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Fila</TableHead>
-                    <TableHead>Columna</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Error</TableHead>
+                    <TableHead>{t("incomplete.row")}</TableHead>
+                    <TableHead>{t("incomplete.column")}</TableHead>
+                    <TableHead>{t("incomplete.value")}</TableHead>
+                    <TableHead>{t("incomplete.error")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -89,7 +91,7 @@ const IncompletePage = () => {
                       </TableCell>
                       <TableCell>
                         <span className="text-gray-500 italic">
-                          {error.value || "Vacío"}
+                          {error.value || t("incomplete.empty")}
                         </span>
                       </TableCell>
                       <TableCell>{getErrorMessage(error.message)}</TableCell>
