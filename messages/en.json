@@ -2088,6 +2088,38 @@
       "downloadTemplate": "Download template",
       "uploadFile": "Upload file",
       "uploading": "Processing companies..."
+    },
+    "form": {
+      "nameRequired": "Name is required",
+      "positionRequired": "Position is required",
+      "cityRequired": "City is required",
+      "documentTypeRequired": "Document type is required",
+      "atLeastOneContact": "You must add at least one contact",
+      "companyInfo": "Company information",
+      "companyName": "Company name",
+      "clientCode": "Client code",
+      "addresses": "Company addresses",
+      "address": "Address",
+      "stateRegion": "State / Region",
+      "city": "City",
+      "postalCode": "Postal code",
+      "companyContacts": "Company contacts",
+      "addAddress": "Add address",
+      "addContact": "Add contact",
+      "contact": "Contact",
+      "createCompany": "Create company",
+      "updateCompany": "Update company"
+    },
+    "incomplete": {
+      "title": "Defective bulk upload",
+      "valid": "Valid",
+      "withErrors": "With errors",
+      "total": "Total",
+      "row": "Row",
+      "column": "Column",
+      "value": "Value",
+      "error": "Error",
+      "empty": "Empty"
     }
   },
   "webrtc": {

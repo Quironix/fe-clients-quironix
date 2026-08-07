@@ -2083,6 +2083,38 @@
       "downloadTemplate": "Descargar plantilla",
       "uploadFile": "Subir archivo",
       "uploading": "Procesando compañías..."
+    },
+    "form": {
+      "nameRequired": "Nombre es requerido",
+      "positionRequired": "Cargo es requerido",
+      "cityRequired": "Ciudad es requerida",
+      "documentTypeRequired": "Tipo de documento es requerido",
+      "atLeastOneContact": "Debe agregar al menos un contacto",
+      "companyInfo": "Información de la empresa",
+      "companyName": "Nombre de la empresa",
+      "clientCode": "Código de cliente",
+      "addresses": "Direcciones de la empresa",
+      "address": "Dirección",
+      "stateRegion": "Estado/Región",
+      "city": "Ciudad",
+      "postalCode": "Código postal",
+      "companyContacts": "Contactos compañía",
+      "addAddress": "Agregar dirección",
+      "addContact": "Agregar contacto",
+      "contact": "Contacto",
+      "createCompany": "Crear empresa",
+      "updateCompany": "Actualizar empresa"
+    },
+    "incomplete": {
+      "title": "Carga masiva defectuosa",
+      "valid": "Válidos",
+      "withErrors": "Con errores",
+      "total": "Total",
+      "row": "Fila",
+      "column": "Columna",
+      "value": "Valor",
+      "error": "Error",
+      "empty": "Vacío"
     }
   },
   "webrtc": {
