@@ -13,6 +13,7 @@ import {
   InfoIcon,
   Trash,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { usePaymentNettingStore } from "../store";
 import DocumentTypeBadge, { DocumentType } from "./document-type-badge";
@@ -48,6 +49,8 @@ const ItemListPayment = ({
   isSelected = false,
   isDisabled = false,
 }: ItemListPaymentProps) => {
+  const tCommon = useTranslations("common");
+  const tNetting = useTranslations("paymentNetting");
   const {
     setSelectedInvoices,
     setSelectedPayments,
@@ -169,13 +172,13 @@ const ItemListPayment = ({
                       {row.debtor?.name}
                     </p>
                     <p>
-                      <span className="font-medium">Monto:</span> $
+                      <span className="font-medium">{tCommon("labels.amount")}:</span> $
                       {new Intl.NumberFormat("es-CL").format(
                         Number(row.amount)
                       )}
                     </p>
                     <p>
-                      <span className="font-medium">Saldo:</span> $
+                      <span className="font-medium">{tCommon("labels.balance")}:</span> $
                       {new Intl.NumberFormat("es-CL").format(
                         Number(row.balance || 0)
                       )}
@@ -221,7 +224,7 @@ const ItemListPayment = ({
 
           {type === "account-receivable" ? (
             <div className="flex items-start gap-1">
-              <span className="font-bold text-xs">Fase</span>
+              <span className="font-bold text-xs">{tNetting("labels.phase")}</span>
               <span className="text-xs text-gray-500 truncate">
                 {row?.phases?.length > 0
                   ? row?.phases[0]?.phase || "Sin fase"
@@ -242,7 +245,7 @@ const ItemListPayment = ({
             </div>
           )}
           <div className="flex items-start gap-1">
-            <span className="font-bold text-xs">Vencimiento</span>
+            <span className="font-bold text-xs">{tNetting("labels.dueDate")}</span>
             <span className="text-xs text-gray-500">
               {row?.due_date
                 ? format(
@@ -254,13 +257,13 @@ const ItemListPayment = ({
           </div>
         </div>
         <div className="flex items-center justify-between gap-1 mt-1 w-full">
-          <span className="text-xs text-gray-500">Monto</span>
+          <span className="text-xs text-gray-500">{tCommon("labels.amount")}</span>
           <span className="text-xs font-bold text-gray-500">
             ${new Intl.NumberFormat("es-CL").format(Number(row.amount || 0))}
           </span>
         </div>
         <div className="flex items-center justify-between gap-1 mt-1 w-full">
-          <span className="text-xs text-gray-500">Saldo</span>
+          <span className="text-xs text-gray-500">{tCommon("labels.balance")}</span>
           <span className="text-xs font-bold text-gray-500">
             ${new Intl.NumberFormat("es-CL").format(Number(row.balance || 0))}
           </span>

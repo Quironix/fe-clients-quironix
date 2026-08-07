@@ -9,6 +9,7 @@ import {
   IdCard,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { useTranslations } from "next-intl";
 import DialogForm from "../../components/dialog-form";
 import { PaymentNetting } from "../types";
 import IconDescription from "./icon-description";
@@ -84,11 +85,13 @@ export default function TransactionDetailModal({
   onOpenChange,
   transaction,
 }: TransactionDetailModalProps) {
+  const tNetting = useTranslations("paymentNetting");
+  const tCommon = useTranslations("common");
   if (!transaction) return null;
 
   return (
     <DialogForm
-      title="Detalle del depósito"
+      title={tNetting("modal.depositDetail")}
       description=""
       open={open}
       onOpenChange={onOpenChange}
@@ -117,7 +120,7 @@ export default function TransactionDetailModal({
         <div className="flex items-center gap-1">
           <DollarSign className="w-6 h-6 text-gray-400" />
           <div className="flex flex-col gap-0">
-            <span className="text-xs">Monto</span>
+            <span className="text-xs">{tCommon("labels.amount")}</span>
             <span className="font-bold text-blue-500 -mt-1">{`$ ${new Intl.NumberFormat(
               "es-ES",
               {}

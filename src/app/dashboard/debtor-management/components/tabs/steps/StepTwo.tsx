@@ -623,16 +623,14 @@ export const StepTwo = ({
       <AlertDialog open={showNoEmailAlert} onOpenChange={setShowNoEmailAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Contacto sin email asignado</AlertDialogTitle>
+            <AlertDialogTitle>{t("noEmailTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              El contacto seleccionado no tiene un email registrado. Para poder
-              enviar la gestión, editá el contacto existente o creá uno nuevo con
-              un email válido.
+              {t("noEmailDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setShowNoEmailAlert(false)}>
-              Entendido
+              {t("understood")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

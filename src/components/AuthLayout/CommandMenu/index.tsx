@@ -16,12 +16,14 @@ import useGetSidebarElements from "@/hooks/useGetSidebarElements";
 import { useSearch } from "@/stores/dashboard/searchStore";
 import { useTheme } from "@/stores/dashboard/themeStore";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function CommandMenu() {
   const navigate = useRouter();
   const { setTheme } = useTheme();
   const { open, setOpen } = useSearch();
   const { sidebarElements } = useGetSidebarElements();
+  const t = useTranslations("auth.commandMenu");
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {
@@ -33,10 +35,10 @@ export function CommandMenu() {
 
   return (
     <CommandDialog modal open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Type a command or search..." />
+      <CommandInput placeholder={t("placeholder")} />
       <CommandList>
         <ScrollArea type="hover" className="h-72 pr-1">
-          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandEmpty>{t("noResults")}</CommandEmpty>
           {sidebarElements.navGroups.map((group: any) => (
             <CommandGroup key={group.title} heading={group.title}>
               {group.items.map((navItem: any, i: number) => {
@@ -74,17 +76,17 @@ export function CommandMenu() {
             </CommandGroup>
           ))}
           <CommandSeparator />
-          <CommandGroup heading="Theme">
+          <CommandGroup heading={t("theme")}>
             <CommandItem onSelect={() => runCommand(() => setTheme("light"))}>
-              <IconSun /> <span>Light</span>
+              <IconSun /> <span>{t("light")}</span>
             </CommandItem>
             <CommandItem onSelect={() => runCommand(() => setTheme("dark"))}>
               <IconMoon className="scale-90" />
-              <span>Dark</span>
+              <span>{t("dark")}</span>
             </CommandItem>
             <CommandItem onSelect={() => runCommand(() => setTheme("system"))}>
               <IconDeviceLaptop />
-              <span>System</span>
+              <span>{t("system")}</span>
             </CommandItem>
           </CommandGroup>
         </ScrollArea>

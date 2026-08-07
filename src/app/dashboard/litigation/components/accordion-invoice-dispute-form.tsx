@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Control, useFieldArray, UseFormReturn } from "react-hook-form";
 import DteSelectFormItem from "../../components/dte-select-form-item";
 import { disputes, INVOICE_TYPES } from "../../data";
@@ -48,7 +49,7 @@ const AccordionInvoiceDisputeForm = ({
   profile,
   dataToAdd,
 }: AccordionInvoiceDisputeFormProps) => {
-  // State management
+  const t = useTranslations("litigation");
   const [activeAccordion, setActiveAccordion] = useState<string>("invoice-0");
   const [litigationAmountDisplays, setLitigationAmountDisplays] = useState<{
     [key: number]: string;
@@ -270,7 +271,7 @@ const AccordionInvoiceDisputeForm = ({
   return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <p className="font-semibold">Factura</p>
+        <p className="font-semibold">{t("detail.invoice")}</p>
         {!dataToAdd && (
           <Button
             type="button"
@@ -380,7 +381,7 @@ const AccordionInvoiceDisputeForm = ({
                   name={`invoices.${index}.invoiceAmount`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Monto de factura</FormLabel>
+                      <FormLabel>{t("detail.invoiceAmount")}</FormLabel>
                       <FormControl>
                         <Input
                           type="text"
@@ -554,9 +555,9 @@ const AccordionInvoiceDisputeForm = ({
                       (item) => item.code === selectedReason
                     );
 
-                    return (
+                      return (
                       <FormItem>
-                        <FormLabel>Submotivo</FormLabel>
+                        <FormLabel>{t("detail.subreason")}</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
