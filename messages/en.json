@@ -1546,6 +1546,7 @@
       "litigations": "Litigations",
       "normalizationReason": "Normalization reason",
       "normalizeLitigation": "Normalize litigation",
+      "normalizeLitigationDesc": "Complete the required fields to normalize the litigation and mark it as resolved.",
       "client": "Client",
       "debtor": "Debtor",
       "invoice": "Invoice"

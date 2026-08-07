@@ -128,7 +128,7 @@ const NormalizeFormModals = ({
           <div>
             <h2 className="text-lg font-semibold">{t("detail.normalizeLitigation")}</h2>
             <p className="text-sm text-gray-500">
-              Completa los campos obligatorios para ingresar un litigio.
+              {t("detail.normalizeLitigationDesc")}
             </p>
           </div>
 

@@ -1541,6 +1541,7 @@
       "litigations": "Litigios",
       "normalizationReason": "Razón de Normalización",
       "normalizeLitigation": "Normalizar litigio",
+      "normalizeLitigationDesc": "Completa los campos obligatorios para normalizar el litigio y marcarlo como resuelto.",
       "client": "Cliente",
       "debtor": "Deudor",
       "invoice": "Factura"
