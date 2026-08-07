@@ -1144,6 +1144,9 @@
     "description": "En esta sección podrás crear y gestionar planes de pago para tus deudores.",
     "subDescription": "Planes de pago",
     "introText": "Aquí podrás gestionar y organizar los pagos de tus deudores de manera sencilla y eficiente. Crea tu primer plan de pago para comenzar a llevar un mejor control de tus finanzas.",
+    "create": {
+      "selectDebtor": "Seleccionar deudor"
+    },
     "createPlan": "Crear plan de pago",
     "searchPlaceholder": "Buscar planes de pago...",
     "emptyMessage": "No se encontraron planes de pago",

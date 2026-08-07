@@ -1149,6 +1149,9 @@
     "description": "In this section you can create and manage payment plans for your debtors.",
     "subDescription": "Payment plans",
     "introText": "Here you can manage and organize your debtors' payments simply and efficiently. Create your first payment plan to start better controlling your finances.",
+    "create": {
+      "selectDebtor": "Select debtor"
+    },
     "createPlan": "Create payment plan",
     "searchPlaceholder": "Search payment plans...",
     "emptyMessage": "No payment plans found",
