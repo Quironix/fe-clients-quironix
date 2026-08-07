@@ -110,7 +110,12 @@
       "low": "Bajo",
       "medium": "Medio",
       "high": "Alto",
-      "tax": "Impuesto"
+      "tax": "Impuesto",
+      "disconnect": "Desconectar",
+      "connectPbx": "Conectar Central",
+      "comment": "Comentario",
+      "addComment": "Agregar comentario",
+      "by": "por"
     },
     "placeholders": {
       "searchCompanies": "Buscar compañías...",
@@ -2543,5 +2548,32 @@
       "passwordSent": "Se le envió la clave por email",
       "passwordError": "Error al solicitar cambio de contraseña"
     }
+  },
+  "exportExcel": {
+    "title": "Exportar a Excel",
+    "period": "Período",
+    "periodHint": "Selecciona entre 1 y 3 meses consecutivos",
+    "status": "Estado",
+    "all": "Todos",
+    "open": "Abiertos",
+    "closed": "Cerrados",
+    "cancel": "Cancelar",
+    "export": "Exportar",
+    "exporting": "Exportando...",
+    "month": "mes",
+    "months": "meses",
+    "current": "En curso",
+    "range": "Rango:",
+    "toastMonthsNotContiguous": "Los meses deben ser consecutivos",
+    "toastMaxMonths": "Máximo {max} meses",
+    "toastSelectMonth": "Selecciona al menos un mes",
+    "toastExportSuccess": "Archivo exportado correctamente",
+    "toastExportError": "Error al exportar el archivo",
+    "schemaInvoices": "Facturas",
+    "schemaProjection": "Proyección",
+    "schemaLitigation": "Litigios",
+    "schemaPaymentPlans": "Planes de pago",
+    "schemaPayments": "Pagos",
+    "schemaManagements": "Gestiones"
   }
 }

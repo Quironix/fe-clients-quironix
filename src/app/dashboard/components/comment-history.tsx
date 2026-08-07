@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -9,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Plus } from "lucide-react";
 import { useState } from "react";
 import { Comment } from "../litigation/types";
+import { useTranslations } from "next-intl";
 
 export interface CommentHistoryProps {
   comments: Comment[];
@@ -22,6 +25,7 @@ export default function CommentHistory({
   field,
 }: CommentHistoryProps) {
   const [isAddingComment, setIsAddingComment] = useState(false);
+  const tCommon = useTranslations("common");
 
   const handleCancel = () => {
     setIsAddingComment(false);
@@ -43,7 +47,7 @@ export default function CommentHistory({
       <div className="flex items-center gap-2">
         <MessageCircle className="w-4 h-4 text-muted-foreground" />
         <label className="text-sm font-medium text-foreground">
-          Comentario
+          {tCommon("labels.comment")}
         </label>
       </div>
 
@@ -65,7 +69,7 @@ export default function CommentHistory({
               </div>
               {comment.user && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  por {comment.user.first_name} {comment.user.last_name}
+                  {tCommon("labels.by")} {comment.user.first_name} {comment.user.last_name}
                 </p>
               )}
             </div>
@@ -82,12 +86,12 @@ export default function CommentHistory({
           className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground border-dashed"
         >
           <Plus className="w-4 h-4" />
-          Agregar comentario
+          {tCommon("labels.addComment")}
         </Button>
       ) : (
         <div className="space-y-3">
           <FormItem>
-            <FormLabel>Comentario</FormLabel>
+            <FormLabel>{tCommon("labels.comment")}</FormLabel>
             <FormControl>
               <Textarea
                 placeholder={placeholder}
@@ -101,7 +105,7 @@ export default function CommentHistory({
 
           <div className="flex gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={handleCancel}>
-              Cancelar
+              {tCommon("buttons.cancel")}
             </Button>
           </div>
         </div>

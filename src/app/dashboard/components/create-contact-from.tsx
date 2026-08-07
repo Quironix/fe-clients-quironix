@@ -193,7 +193,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="phone">Teléfono</SelectItem>
+                            <SelectItem value="phone">{tCommon("labels.phone")}</SelectItem>
                             <SelectItem value="whatsapp">Whatsapp</SelectItem>
                           </SelectContent>
                         </Select>
