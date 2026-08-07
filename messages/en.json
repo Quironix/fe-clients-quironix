@@ -1027,7 +1027,10 @@
       "mailOut": "Outbound email",
       "mailIn": "Inbound email",
       "supplierPortal": "Supplier portal",
-      "whatsapp": "Whatsapp"
+      "whatsapp": "Whatsapp",
+      "noEmailTitle": "Contact without assigned email",
+      "noEmailDesc": "The selected contact has no registered email. To send the management, edit the existing contact or create a new one with a valid email.",
+      "understood": "Understood"
     },
     "stepThree": {
       "preview": "Management preview",
@@ -1095,10 +1098,40 @@
       "sendEmailLabel": "Send summary by email after saving.",
       "normalizedLitigations": "Normalized litigations:"
     },
+    "managementsListPage": {
+      "title": "Management list",
+      "history": "Management history"
+    },
+    "trackDetail": {
+      "config": "Configuration",
+      "type": "Type",
+      "issueDate": "Issue date",
+      "amount": "Amount",
+      "balance": "Balance",
+      "delay": "Delay",
+      "phase": "Phase",
+      "contact": "Contact",
+      "dateTime": "Date/Time",
+      "recording": "Recording"
+    },
+    "invoiceCard": {
+      "phase": "Phase"
+    },
+    "litigationForm": {
+      "invoicesInManagement": "Invoices in management",
+      "selectReason": "Select reason",
+      "selectSubreason": "Select subreason"
+    },
+    "normalizationForm": {
+      "openLitigations": "Open litigations",
+      "selectReason": "Select reason",
+      "commentPlaceholder": "Enter a comment about the normalization"
+    },
     "managementsList": {
       "pageTitle": "Management History",
       "pageDescription": "Search and select a debtor to view their management history",
       "pageSubDescription": "Management History",
+      "collectorEngine": "Collector engine",
       "selectCompanyLabel": "Company",
       "tableTitle": "Select a debtor",
       "searchPlaceholder": "Search debtor...",
@@ -1718,6 +1751,15 @@
           "debtorRequired": "Debtor is required"
         }
       },
+      "invoiceHistory": {
+        "invoiceInfo": "Invoice information",
+        "amount": "Amount",
+        "balance": "Balance",
+        "issueDate": "Issue date",
+        "name": "Name",
+        "appliedPayments": "Applied payments",
+        "appliedAmount": "Applied amount"
+      },
       "upload": {
         "manualTitle": "Upload {dte} via {manual} entry",
         "manualDescription": "Fill in the form with the DTE data you want to add. This option is ideal if you are uploading a single record and don't have a file to import.",
@@ -1944,6 +1986,34 @@
     "assignDebtor": "Assign debtor",
     "generatePayment": "Generate payment",
     "depositDetail": "Deposit detail",
+    "alerts": {
+      "reconciled": "Reconciled",
+      "pendingBalance": "Difference: pending balance",
+      "favorableBalance": "Difference: balance in favor"
+    },
+    "columns": {
+      "reversePayment": "Reverse payment",
+      "deleteMovement": "Delete movement"
+    },
+    "modal": {
+      "depositDetail": "Deposit detail",
+      "paymentInfo": "Payment information",
+      "appliedInvoices": "Applied invoices",
+      "appliedAmount": "Applied amount",
+      "appliedType": "Applied type",
+      "bank": "Bank",
+      "account": "Account",
+      "description": "Description"
+    },
+    "labels": {
+      "phase": "Phase",
+      "dueDate": "Due date"
+    },
+    "summary": {
+      "selectReceivable": "Select a receivable account",
+      "selectCredit": "Select a credit in favor",
+      "manualNetting": "Manual netting"
+    },
     "bankTransfer": "Bank transfer",
     "multipleBanks": "Multiple banks",
     "depositDate": "Deposit date",
@@ -2154,6 +2224,17 @@
       "error": "Error",
       "empty": "Empty"
     }
+  },
+  "bulkUpload": {
+    "title": "Defective bulk upload",
+    "valid": "Valid",
+    "withErrors": "With errors",
+    "total": "Total",
+    "row": "Row",
+    "column": "Column",
+    "value": "Value",
+    "error": "Error",
+    "empty": "Empty"
   },
   "webrtc": {
     "microphoneAccess": "You must allow microphone access",

@@ -1022,7 +1022,10 @@
       "mailOut": "Correo saliente",
       "mailIn": "Correo entrante",
       "supplierPortal": "Portal de proveedores",
-      "whatsapp": "Whatsapp"
+      "whatsapp": "Whatsapp",
+      "noEmailTitle": "Contacto sin email asignado",
+      "noEmailDesc": "El contacto seleccionado no tiene un email registrado. Para poder enviar la gestión, editá el contacto existente o creá uno nuevo con un email válido.",
+      "understood": "Entendido"
     },
     "stepThree": {
       "preview": "Vista previa de la gestión",
@@ -1090,10 +1093,40 @@
       "sendEmailLabel": "Enviar resumen por email después de guardar.",
       "normalizedLitigations": "Litigios normalizados:"
     },
+    "managementsListPage": {
+      "title": "Lista de gestiones",
+      "history": "Historial de gestiones"
+    },
+    "trackDetail": {
+      "config": "Configuración",
+      "type": "Tipo",
+      "issueDate": "Emisión",
+      "amount": "Monto",
+      "balance": "Saldo",
+      "delay": "Atraso",
+      "phase": "Fase",
+      "contact": "Contacto",
+      "dateTime": "Fecha/Hora",
+      "recording": "Grabación"
+    },
+    "invoiceCard": {
+      "phase": "Fase"
+    },
+    "litigationForm": {
+      "invoicesInManagement": "Facturas en gestión",
+      "selectReason": "Selecciona motivo",
+      "selectSubreason": "Selecciona submotivo"
+    },
+    "normalizationForm": {
+      "openLitigations": "Litigios abiertos",
+      "selectReason": "Selecciona razón",
+      "commentPlaceholder": "Ingresa un comentario sobre la normalización"
+    },
     "managementsList": {
       "pageTitle": "Historial de gestiones",
       "pageDescription": "Busca y selecciona un deudor para ver su historial de gestiones",
       "pageSubDescription": "Historial de gestiones",
+      "collectorEngine": "Motor de collector",
       "selectCompanyLabel": "Empresa",
       "tableTitle": "Selecciona un deudor",
       "searchPlaceholder": "Buscar deudor...",
@@ -1713,6 +1746,15 @@
           "debtorRequired": "El deudor es requerido"
         }
       },
+      "invoiceHistory": {
+        "invoiceInfo": "Información de la factura",
+        "amount": "Monto",
+        "balance": "Balance",
+        "issueDate": "Fecha de emisión",
+        "name": "Nombre",
+        "appliedPayments": "Pagos Aplicados",
+        "appliedAmount": "Monto aplicado"
+      },
       "upload": {
         "manualTitle": "Subir {dte} por carga {manual}",
         "manualDescription": "Completa el formulario con los datos del DTE que quieres agregar. Esta opción es ideal si vas a cargar un único registro y no cunstas con un archivo para importar.",
@@ -1939,6 +1981,34 @@
     "assignDebtor": "Asignar deudor",
     "generatePayment": "Generar pago",
     "depositDetail": "Detalle del depósito",
+    "alerts": {
+      "reconciled": "Conciliado",
+      "pendingBalance": "Diferencia: saldo pendiente",
+      "favorableBalance": "Diferencia: saldo a favor"
+    },
+    "columns": {
+      "reversePayment": "Reversar pago",
+      "deleteMovement": "Eliminar movimiento"
+    },
+    "modal": {
+      "depositDetail": "Detalle del depósito",
+      "paymentInfo": "Información del pago",
+      "appliedInvoices": "Facturas Aplicadas",
+      "appliedAmount": "Monto aplicado",
+      "appliedType": "Tipo aplicado",
+      "bank": "Banco",
+      "account": "Cuenta",
+      "description": "Descripción"
+    },
+    "labels": {
+      "phase": "Fase",
+      "dueDate": "Vencimiento"
+    },
+    "summary": {
+      "selectReceivable": "Seleccione una cuenta por cobrar",
+      "selectCredit": "Seleccione un crédito a favor",
+      "manualNetting": "Compensar manualmente"
+    },
     "bankTransfer": "Transferencia bancaria",
     "multipleBanks": "Múltiples bancos",
     "depositDate": "Fecha de depósito",
@@ -2149,6 +2219,17 @@
       "error": "Error",
       "empty": "Vacío"
     }
+  },
+  "bulkUpload": {
+    "title": "Carga masiva defectuosa",
+    "valid": "Válidos",
+    "withErrors": "Con errores",
+    "total": "Total",
+    "row": "Fila",
+    "column": "Columna",
+    "value": "Valor",
+    "error": "Error",
+    "empty": "Vacío"
   },
   "webrtc": {
     "microphoneAccess": "Debes permitir acceso al micrófono",

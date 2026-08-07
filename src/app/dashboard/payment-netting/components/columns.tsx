@@ -23,6 +23,7 @@ import {
   MoreVertical,
   Trash,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import DialogConfirm from "../../components/dialog-confirm";
 import { PaymentNetting } from "../types";
 
@@ -111,7 +112,14 @@ const getStatusBadge = (status: PaymentNetting["status"]) => {
   );
 };
 
+interface ColumnTranslations {
+  actions: string;
+  reversePayment: string;
+  deleteMovement: string;
+}
+
 export const createColumns = (
+  translations: ColumnTranslations,
   onViewDetails?: (transaction: PaymentNetting) => void,
   onReversePayment?: (transaction: PaymentNetting) => void,
   onEliminatePayment?: (transaction: PaymentNetting) => void,
@@ -205,7 +213,7 @@ export const createColumns = (
   },
   {
     id: "actions",
-    header: "Acción",
+    header: translations.actions,
     cell: ({ row }) => {
       return (
         <DropdownMenu>
@@ -215,7 +223,7 @@ export const createColumns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            <DropdownMenuLabel>{translations.actions}</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => onViewDetails?.(row.original)}>
               <Eye className="mr-2 h-4 w-4" />
               Ver detalles
@@ -226,7 +234,7 @@ export const createColumns = (
                 onSelect={(e) => e.preventDefault()}
               >
                 <DialogConfirm
-                  title="Reversar pago"
+                  title={translations.reversePayment}
                   description="¿Estás seguro de querer reversar el pago?"
                   onConfirm={() => {
                     onReversePayment?.(row.original);
@@ -248,7 +256,7 @@ export const createColumns = (
                 onSelect={(e) => e.preventDefault()}
               >
                 <DialogConfirm
-                  title="Eliminar movimiento"
+                  title={translations.deleteMovement}
                   description="¿Estás seguro de querer eliminar este movimiento?"
                   onConfirm={() => {
                     onEliminatePayment?.(row.original);
@@ -271,4 +279,17 @@ export const createColumns = (
   },
 ];
 
-export const columns = createColumns();
+export const useColumns = (
+  onViewDetails?: (transaction: PaymentNetting) => void,
+  onReversePayment?: (transaction: PaymentNetting) => void,
+  onEliminatePayment?: (transaction: PaymentNetting) => void,
+) => {
+  const tCommon = useTranslations("common");
+  const tNetting = useTranslations("paymentNetting");
+  const translations: ColumnTranslations = {
+    actions: tCommon("table.actions"),
+    reversePayment: tNetting("columns.reversePayment"),
+    deleteMovement: tNetting("columns.deleteMovement"),
+  };
+  return createColumns(translations, onViewDetails, onReversePayment, onEliminatePayment);
+};
