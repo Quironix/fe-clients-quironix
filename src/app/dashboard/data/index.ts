@@ -107,7 +107,9 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
               {
                 title: t("managementsListNav"),
                 url: "/dashboard/debtor-management/managements-list",
-                scope: "client.debtor_management",
+                scope: isFactoringClient
+                  ? "client.onboarding.companies"
+                  : "client.debtor_management",
               },
               {
                 title: t("litigation"),
@@ -165,7 +167,7 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
           {
             title: t("portfolioAdmin"),
             icon: IconAdjustments,
-            scope: "client.payment_projection.settings",
+            scope: "client.settings_account",
             items: [
               {
                 title: t("cashFlowParams"),

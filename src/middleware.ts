@@ -7,22 +7,51 @@ const DASHBOARD_PATHS = ["/dashboard"];
 
 // Mapeo de rutas a scopes requeridos
 const ROUTE_SCOPE_MAP: Record<string, string> = {
+  // Dashboard
   "/dashboard/overview": "client.dashboard",
+  "/dashboard/kpi": "client.dashboard.kpis",
+  "/dashboard/kpi_2": "client.dashboard.kpis",
+
+  // Onboarding
   "/dashboard/companies": "client.onboarding.companies",
   "/dashboard/settings": "client.onboarding.settings",
   "/dashboard/integrations": "client.onboarding.integrations",
   "/dashboard/banks": "client.onboarding.banks",
+
+  // Users
   "/dashboard/users": "client.users.users",
   "/dashboard/roles": "client.users.roles",
   "/dashboard/actions-history": "client.users.actions_history",
+
+  // Settings account
   "/dashboard/debtors": "client.settings_account.debtors",
   "/dashboard/monthly-period": "client.settings_account.monthly_period",
   "/dashboard/cash-flow": "client.settings_account.cash_flow",
   "/dashboard/communications": "client.settings_account.communications",
   "/dashboard/indicators": "client.settings_account.indicators",
+
+  // Transactions
   "/dashboard/transactions/dte": "client.transactions.dte",
   "/dashboard/transactions/payments": "client.transactions.payments",
   "/dashboard/transactions/movements": "client.transactions.movements",
+
+  // Debtor management
+  "/dashboard/debtor-management": "client.debtor_management",
+
+  // Collectors
+  "/dashboard/collectors": "client.collectors",
+
+  // Litigation
+  "/dashboard/litigation": "client.litigations",
+
+  // Payment netting
+  "/dashboard/payment-netting": "client.payment_netting",
+
+  // Payment plans
+  "/dashboard/payment-plans": "client.payment_plans",
+  "/dashboard/payment-plans/approval": "client.payment_plans.approval",
+
+  // Payment projection
   "/dashboard/payment-projection": "client.payment_projection",
   "/dashboard/payment-projection/settings": "client.payment_projection.settings",
 };
