@@ -3,6 +3,15 @@ import { Company } from "../types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+export class HttpError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "HttpError";
+    this.status = status;
+  }
+}
+
 export const bulkData = async (
   accessToken: string,
   clientId: string,
@@ -43,7 +52,17 @@ export const getCompanies = async (accessToken: string, clientId: string) => {
       },
     }
   );
-  return response.json();
+
+  const data = await response.json();
+
+  // The BFF proxy may return HTTP 200 with an error body containing the real statusCode
+  const effectiveStatus = !response.ok ? response.status : (data?.statusCode ?? response.status);
+
+  if (effectiveStatus >= 400) {
+    throw new HttpError(effectiveStatus, data?.message ?? `Error ${effectiveStatus}`);
+  }
+
+  return data;
 };
 
 export const getCompanyById = async (
