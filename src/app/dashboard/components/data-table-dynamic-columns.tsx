@@ -4,49 +4,49 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  RowSelectionState,
-  useReactTable,
-  VisibilityState,
+    ColumnDef,
+    flexRender,
+    getCoreRowModel,
+    RowSelectionState,
+    useReactTable,
+    VisibilityState,
 } from "@tanstack/react-table";
 import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Columns,
-  Menu,
-  Search,
-  X,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+    Columns,
+    Menu,
+    Search,
+    X,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import React, { useEffect, useState } from "react";
 
 interface DataTableDynamicColumnsProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -648,26 +648,28 @@ export function DataTableDynamicColumns<TData, TValue>({
                 <p className="text-sm font-medium">
                   {tPagination("rowsPerPage")}
                 </p>
-                <Select
-                  value={`${paginationInfo.pageSize}`}
-                  onValueChange={(value) => {
-                    onPaginationChange(
-                      paginationInfo.currentPage,
-                      Number(value),
-                    );
-                  }}
-                >
-                  <SelectTrigger className="h-8 w-[70px]">
-                    <SelectValue placeholder={paginationInfo.pageSize} />
-                  </SelectTrigger>
-                  <SelectContent side="top">
-                    {pageSizeOptions.map((size) => (
-                      <SelectItem key={size} value={`${size}`}>
-                        {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {mounted && (
+                  <Select
+                    value={`${paginationInfo.pageSize}`}
+                    onValueChange={(value) => {
+                      onPaginationChange(
+                        paginationInfo.currentPage,
+                        Number(value),
+                      );
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-[70px]">
+                      <SelectValue placeholder={paginationInfo.pageSize} />
+                    </SelectTrigger>
+                    <SelectContent side="top">
+                      {pageSizeOptions.map((size) => (
+                        <SelectItem key={size} value={`${size}`}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
               <div className="flex w-[100px] items-center justify-center text-sm font-medium">
                 {tPagination("page", {
