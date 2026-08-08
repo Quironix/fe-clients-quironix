@@ -1490,6 +1490,7 @@
       "sectionTitle": "litigio",
       "dialogTitle": "Normalizar litigio",
       "dialogDescription": "Completa los campos obligatorios para normalizar un litigio.",
+      "sectionDescription": "Selecciona los litigios abiertos del deudor, indica la razón de normalización y resuelve los casos de compensación pendientes.",
       "normalizeButton": "Normalizar"
     },
     "normalizeForm": {

@@ -1495,6 +1495,7 @@
       "sectionTitle": "litigation",
       "dialogTitle": "Normalize litigation",
       "dialogDescription": "Complete the required fields to normalize a litigation.",
+      "sectionDescription": "Select the debtor's open litigations, indicate the normalization reason and resolve pending compensation cases.",
       "normalizeButton": "Normalize"
     },
     "normalizeForm": {
