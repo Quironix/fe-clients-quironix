@@ -2144,7 +2144,8 @@
           "dte": "DTEs",
           "payments": "Pagos",
           "movements": "Movimientos",
-          "companies": "Empresas"
+          "companies": "Empresas",
+          "applicationsHistory": "Historial de aplicaciones"
         },
         "actions": {
           "read": "Leer",

@@ -2149,7 +2149,8 @@
           "dte": "DTEs",
           "payments": "Payments",
           "movements": "Movements",
-          "companies": "Companies"
+          "companies": "Companies",
+          "applicationsHistory": "Application history"
         },
         "actions": {
           "read": "Read",

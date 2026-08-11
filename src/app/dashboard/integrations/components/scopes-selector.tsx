@@ -3,15 +3,28 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useTranslations } from "next-intl";
 
+export const API_KEY_ACTIONS = ["read", "edit", "delete"] as const;
+
+type ApiKeyAction = (typeof API_KEY_ACTIONS)[number];
+
+interface ApiKeyResource {
+  id: string;
+  labelKey: string;
+  actions?: readonly ApiKeyAction[];
+}
+
 export const API_KEY_RESOURCES = [
   { id: "client.settings_account.debtors", labelKey: "debtors" },
   { id: "client.transactions.dte", labelKey: "dte" },
   { id: "client.transactions.payments", labelKey: "payments" },
   { id: "client.transactions.movements", labelKey: "movements" },
   { id: "client.onboarding.companies", labelKey: "companies" },
-] as const;
-
-export const API_KEY_ACTIONS = ["read", "edit", "delete"] as const;
+  {
+    id: "client.accounting_interface_api",
+    labelKey: "applicationsHistory",
+    actions: ["read"],
+  },
+] satisfies readonly ApiKeyResource[];
 
 interface ScopesSelectorProps {
   value: string[];
@@ -52,27 +65,30 @@ const ScopesSelector = ({ value, onChange }: ScopesSelectorProps) => {
           </tr>
         </thead>
         <tbody>
-          {API_KEY_RESOURCES.map((resource) => (
-            <tr key={resource.id} className="border-t">
-              <td className="py-2 pr-4 text-sm font-normal">
-                {t(`apiKeys.scopes.resourceLabels.${resource.labelKey}`)}
-              </td>
-              {API_KEY_ACTIONS.map((action) => {
-                const scope = `${resource.id}:${action}`;
-                const isChecked = value.includes(scope);
-                return (
-                  <td key={action} className="text-center py-2 px-2">
-                    <Checkbox
-                      checked={isChecked}
-                      onCheckedChange={(checked) =>
-                        handleChange(resource.id, action, checked as boolean)
-                      }
-                    />
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+          {API_KEY_RESOURCES.map((resource) => {
+            const actions = resource.actions ?? API_KEY_ACTIONS;
+            return (
+              <tr key={resource.id} className="border-t">
+                <td className="py-2 pr-4 text-sm font-normal">
+                  {t(`apiKeys.scopes.resourceLabels.${resource.labelKey}`)}
+                </td>
+                {actions.map((action) => {
+                  const scope = `${resource.id}:${action}`;
+                  const isChecked = value.includes(scope);
+                  return (
+                    <td key={action} className="text-center py-2 px-2">
+                      <Checkbox
+                        checked={isChecked}
+                        onCheckedChange={(checked) =>
+                          handleChange(resource.id, action, checked as boolean)
+                        }
+                      />
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
