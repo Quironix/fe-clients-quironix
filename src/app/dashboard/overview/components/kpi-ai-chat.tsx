@@ -65,7 +65,15 @@ export const KPIAIChat = () => {
           `- ${kpi.name}: ${kpi.value}${kpi.unit} (meta: ${kpi.target}${kpi.unit}, estado: ${kpi.status}, definición: ${kpi.definition})`,
       )
       .join("\n");
-    return `Estos son los KPIs actuales:\n${kpiList}`;
+    return `Estos son los KPIs actuales:\n${kpiList}
+
+Cuando el usuario pida una lista de KPIs (en alerta, en rojo, en verde, óptimos, críticos, o una lista general de varios indicadores), no los describas en un párrafo ni en una tabla markdown. En su lugar, respondé únicamente con un bloque de código de lenguaje kpi-alert cuyo contenido sea un array JSON con esos KPIs, usando este formato exacto:
+
+\`\`\`kpi-alert
+[{"title": "Nombre del KPI", "value": "valor actual con unidad", "target": "meta con unidad", "status": "success"}]
+\`\`\`
+
+El campo "status" debe ser "success" si el KPI está cumpliendo su meta (verde/óptimo), "warning" si está cerca pero no la cumple, o "error" si está lejos de la meta (rojo/crítico) — usá el mismo estado que tiene cada KPI en la lista de arriba. No agregues texto antes ni después del bloque salvo una frase muy breve de introducción si es necesario. Si el usuario pregunta por un solo KPI puntual (por ejemplo "explícame el DSO"), respondé en texto normal, no uses este formato.`;
   }, [kpis]);
 
   const runtime = useChatRuntime({
@@ -132,13 +140,13 @@ export const KPIAIChat = () => {
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <Card className="">
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <CardTitle>{t("kpiAssistant")}</CardTitle>
         </CardHeader>
 
-        <CardContent className="flex-1 flex flex-col p-0">
-          <div className="h-[500px] w-full flex flex-col">
+        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+          <div className="h-full w-full flex flex-col">
             <KPIThread />
           </div>
         </CardContent>

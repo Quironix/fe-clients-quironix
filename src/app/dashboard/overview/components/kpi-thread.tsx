@@ -13,9 +13,9 @@ import type { FC } from "react";
 
 export const KPIThread: FC = () => {
   return (
-    <ThreadPrimitive.Root className="flex h-full flex-col">
-      <ThreadPrimitive.Viewport className="flex h-full flex-col overflow-y-scroll scroll-smooth p-4">
-        <div className="space-y-4">
+    <ThreadPrimitive.Root className="flex h-full min-h-0 flex-col">
+      <ThreadPrimitive.Viewport className="flex-1 min-h-0 overflow-y-auto scroll-smooth p-3">
+        <div className="space-y-3">
           <ThreadPrimitive.Messages
             components={{
               UserMessage: UserMessage,
@@ -25,14 +25,14 @@ export const KPIThread: FC = () => {
         </div>
 
         <ThreadPrimitive.If empty={false}>
-          <div className="min-h-8 flex-grow" />
+          <div className="min-h-4" />
         </ThreadPrimitive.If>
-
-        <div className="sticky bottom-0 mt-3 flex flex-col">
-          <SuggestedQuestions />
-          <Composer />
-        </div>
       </ThreadPrimitive.Viewport>
+
+      <div className="flex-shrink-0">
+        <SuggestedQuestions />
+        <Composer />
+      </div>
     </ThreadPrimitive.Root>
   );
 };
@@ -94,7 +94,7 @@ const AssistantMessage: FC = () => {
         <BotIcon className="h-4 w-4 text-white" />
       </div>
       <div className="max-w-[80%] rounded-lg p-3 bg-gray-100 text-gray-900">
-        <div className="text-xs">
+        <div className="text-xs leading-snug">
           <MessagePrimitive.Content components={{ Text: MarkdownText }} />
         </div>
         <span className="text-[10px] text-gray-500">
@@ -133,7 +133,7 @@ const SuggestedQuestions: FC = () => {
             key={index}
             prompt={question}
             clearComposer
-            send={false}
+            send
             asChild
           >
             <button className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full transition-colors">
@@ -150,11 +150,12 @@ const Composer: FC = () => {
   const t = useTranslations("overview");
   return (
     <div className="p-4 border-t border-gray-200 bg-white">
-      <ComposerPrimitive.Root className="flex gap-2">
+      <ComposerPrimitive.Root className="flex gap-2 items-end">
         <ComposerPrimitive.Input
           autoFocus
+          rows={1}
           placeholder={t("composerPlaceholder")}
-          className="flex-1 flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex-1 flex max-h-32 min-h-10 w-full resize-none overflow-y-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
         />
         <ThreadPrimitive.If running={false}>
           <ComposerPrimitive.Send asChild>
