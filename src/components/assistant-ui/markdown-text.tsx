@@ -4,6 +4,7 @@ import "@assistant-ui/react-markdown/styles/dot.css";
 
 import {
   type CodeHeaderProps,
+  type SyntaxHighlighterProps,
   MarkdownTextPrimitive,
   unstable_memoizeMarkdownComponents as memoizeMarkdownComponents,
   useIsMarkdownCodeBlock,
@@ -13,14 +14,90 @@ import { type FC, memo, useState } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
+import { KPIAlertMiniCardList } from "@/components/assistant-ui/kpi-alert-mini-card";
 import { cn } from "@/lib/utils";
+
+const findJsonArray = (
+  text: string,
+): { json: string; start: number; end: number } | null => {
+  const start = text.indexOf("[");
+  if (start === -1) return null;
+
+  let depth = 0;
+  for (let i = start; i < text.length; i++) {
+    const char = text[i];
+    if (char === "[") depth++;
+    else if (char === "]") {
+      depth--;
+      if (depth === 0) {
+        return { json: text.slice(start, i + 1), start, end: i + 1 };
+      }
+    }
+  }
+  return null;
+};
+
+const isKpiAlertArray = (raw: string): boolean => {
+  try {
+    const parsed = JSON.parse(raw);
+    return (
+      Array.isArray(parsed) &&
+      parsed.length > 0 &&
+      parsed.every(
+        (item) =>
+          item &&
+          typeof item === "object" &&
+          "title" in item &&
+          "value" in item &&
+          "target" in item,
+      )
+    );
+  } catch {
+    return false;
+  }
+};
+
+const preprocessKpiAlerts = (text: string): string => {
+  if (/```kpi\w*/i.test(text)) return text;
+
+  const found = findJsonArray(text);
+  if (!found || !isKpiAlertArray(found.json)) return text;
+
+  return (
+    text.slice(0, found.start) +
+    "\n\n```kpi-alert\n" +
+    found.json +
+    "\n```\n\n" +
+    text.slice(found.end)
+  );
+};
+
+const KPIAwareSyntaxHighlighter: FC<SyntaxHighlighterProps> = ({
+  language,
+  code,
+  components: { Pre, Code },
+}) => {
+  const trimmed = code.trim();
+  if (language.toLowerCase().startsWith("kpi")) {
+    return <KPIAlertMiniCardList raw={trimmed} />;
+  }
+  return (
+    <Pre>
+      <Code>{code}</Code>
+    </Pre>
+  );
+};
 
 const MarkdownTextImpl = () => {
   return (
     <MarkdownTextPrimitive
       remarkPlugins={[remarkGfm]}
       className="aui-md"
-      components={defaultComponents}
+      components={{
+        ...defaultComponents,
+        SyntaxHighlighter: KPIAwareSyntaxHighlighter,
+      }}
+      preprocess={preprocessKpiAlerts}
     />
   );
 };
@@ -33,6 +110,10 @@ const CodeHeader: FC<CodeHeaderProps> = ({ language, code }) => {
     if (!code || isCopied) return;
     copyToClipboard(code);
   };
+
+  if (language?.toLowerCase().startsWith("kpi")) {
+    return null;
+  }
 
   return (
     <div className="mt-4 flex items-center justify-between gap-4 rounded-t-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white">
@@ -68,7 +149,7 @@ const defaultComponents = memoizeMarkdownComponents({
   h1: ({ className, ...props }) => (
     <h1
       className={cn(
-        "mb-8 scroll-m-20 text-4xl font-extrabold tracking-tight last:mb-0",
+        "mb-2 mt-3 scroll-m-20 text-sm font-semibold tracking-tight first:mt-0 last:mb-0",
         className,
       )}
       {...props}
@@ -77,7 +158,7 @@ const defaultComponents = memoizeMarkdownComponents({
   h2: ({ className, ...props }) => (
     <h2
       className={cn(
-        "mb-4 mt-8 scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0 last:mb-0",
+        "mb-2 mt-3 scroll-m-20 text-sm font-semibold tracking-tight first:mt-0 last:mb-0",
         className,
       )}
       {...props}
@@ -86,7 +167,7 @@ const defaultComponents = memoizeMarkdownComponents({
   h3: ({ className, ...props }) => (
     <h3
       className={cn(
-        "mb-4 mt-6 scroll-m-20 text-2xl font-semibold tracking-tight first:mt-0 last:mb-0",
+        "mb-1.5 mt-2 scroll-m-20 text-sm font-semibold tracking-tight first:mt-0 last:mb-0",
         className,
       )}
       {...props}
@@ -95,7 +176,7 @@ const defaultComponents = memoizeMarkdownComponents({
   h4: ({ className, ...props }) => (
     <h4
       className={cn(
-        "mb-4 mt-6 scroll-m-20 text-xl font-semibold tracking-tight first:mt-0 last:mb-0",
+        "mb-1.5 mt-2 scroll-m-20 text-xs font-semibold tracking-tight first:mt-0 last:mb-0",
         className,
       )}
       {...props}
@@ -104,7 +185,7 @@ const defaultComponents = memoizeMarkdownComponents({
   h5: ({ className, ...props }) => (
     <h5
       className={cn(
-        "my-4 text-lg font-semibold first:mt-0 last:mb-0",
+        "my-1.5 text-xs font-semibold first:mt-0 last:mb-0",
         className,
       )}
       {...props}
@@ -112,15 +193,18 @@ const defaultComponents = memoizeMarkdownComponents({
   ),
   h6: ({ className, ...props }) => (
     <h6
-      className={cn("my-4 font-semibold first:mt-0 last:mb-0", className)}
+      className={cn("my-1.5 text-xs font-semibold first:mt-0 last:mb-0", className)}
       {...props}
     />
   ),
   p: ({ className, ...props }) => (
     <p
-      className={cn("mb-5 mt-5 leading-7 first:mt-0 last:mb-0", className)}
+      className={cn("mb-2 mt-2 leading-snug first:mt-0 last:mb-0", className)}
       {...props}
     />
+  ),
+  strong: ({ className, ...props }) => (
+    <strong className={cn("text-sm font-semibold", className)} {...props} />
   ),
   a: ({ className, ...props }) => (
     <a
@@ -133,24 +217,24 @@ const defaultComponents = memoizeMarkdownComponents({
   ),
   blockquote: ({ className, ...props }) => (
     <blockquote
-      className={cn("border-l-2 pl-6 italic", className)}
+      className={cn("border-l-2 pl-3 italic", className)}
       {...props}
     />
   ),
   ul: ({ className, ...props }) => (
     <ul
-      className={cn("my-5 ml-6 list-disc [&>li]:mt-2", className)}
+      className={cn("my-2 ml-4 list-disc [&>li]:mt-1", className)}
       {...props}
     />
   ),
   ol: ({ className, ...props }) => (
     <ol
-      className={cn("my-5 ml-6 list-decimal [&>li]:mt-2", className)}
+      className={cn("my-2 ml-4 list-decimal [&>li]:mt-1", className)}
       {...props}
     />
   ),
   hr: ({ className, ...props }) => (
-    <hr className={cn("my-5 border-b", className)} {...props} />
+    <hr className={cn("my-2 border-b", className)} {...props} />
   ),
   table: ({ className, ...props }) => (
     <table
@@ -197,7 +281,7 @@ const defaultComponents = memoizeMarkdownComponents({
   pre: ({ className, ...props }) => (
     <pre
       className={cn(
-        "overflow-x-auto !rounded-t-none rounded-b-lg bg-black p-4 text-white",
+        "overflow-x-auto !rounded-t-none rounded-b-lg bg-black p-3 text-xs text-white",
         className,
       )}
       {...props}
