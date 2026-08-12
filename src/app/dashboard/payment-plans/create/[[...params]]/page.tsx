@@ -42,6 +42,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfileContext } from "@/context/ProfileContext";
 import { format } from "date-fns";
+import { useTranslations } from "next-intl";
 import { es } from "date-fns/locale";
 import {
   Building2,
@@ -97,6 +98,7 @@ const steps: Step[] = [
 ];
 
 const CreatePaymentPlanPage = () => {
+  const t = useTranslations("paymentPlans");
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsState, setStepsState] = useState<Step[]>(steps);
   const [isDebtorInfoExpanded, setIsDebtorInfoExpanded] = useState(true);
@@ -413,7 +415,7 @@ const CreatePaymentPlanPage = () => {
                               render={({ field }) => (
                                 <DebtorsSelectFormItem
                                   field={field}
-                                  title="Seleccionar deudor"
+                                  title={t("create.selectDebtor")}
                                   required
                                 />
                               )}
@@ -522,8 +524,8 @@ const CreatePaymentPlanPage = () => {
                                 name="totalAmount"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>
-                                      Colocación total{" "}
+                                     <FormLabel>
+                                      {t("configForm.totalAmount")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormControl>
@@ -550,7 +552,7 @@ const CreatePaymentPlanPage = () => {
                                 name="downPayment"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Pago contado ($)</FormLabel>
+                                    <FormLabel>{t("configForm.downPayment")}</FormLabel>
                                     <FormControl>
                                       <Input
                                         placeholder="Ingresa un monto"
@@ -584,7 +586,7 @@ const CreatePaymentPlanPage = () => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      N° de cuotas{" "}
+                                      {t("configForm.installments")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormControl>
@@ -619,7 +621,7 @@ const CreatePaymentPlanPage = () => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      Tasa de interés anual (%){" "}
+                                      {t("pendingModal.annualInterestRate")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <FormControl>
@@ -655,7 +657,7 @@ const CreatePaymentPlanPage = () => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      Forma de pago{" "}
+                                      {t("configForm.paymentMethod")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <Select
@@ -664,7 +666,7 @@ const CreatePaymentPlanPage = () => {
                                     >
                                       <FormControl>
                                         <SelectTrigger className="w-full">
-                                          <SelectValue placeholder="Selecciona" />
+                                          <SelectValue placeholder={t("configForm.selectPlaceholder")} />
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
@@ -690,7 +692,7 @@ const CreatePaymentPlanPage = () => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>
-                                      Frecuencia de pago{" "}
+                                      {t("configForm.paymentFrequency")}{" "}
                                       <span className="text-red-500">*</span>
                                     </FormLabel>
                                     <Select
@@ -699,7 +701,7 @@ const CreatePaymentPlanPage = () => {
                                     >
                                       <FormControl>
                                         <SelectTrigger className="w-full">
-                                          <SelectValue placeholder="Selecciona" />
+                                          <SelectValue placeholder={t("configForm.selectPlaceholder")} />
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
@@ -773,7 +775,7 @@ const CreatePaymentPlanPage = () => {
                               name="comments"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Comentario</FormLabel>
+                                  <FormLabel>{t("configForm.comment")}</FormLabel>
                                   <FormControl>
                                     <Textarea
                                       placeholder="Completa"

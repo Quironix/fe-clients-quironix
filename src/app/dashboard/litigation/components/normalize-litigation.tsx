@@ -18,10 +18,7 @@ const NormalizeLitigation = ({ onOpenForm }: { onOpenForm: () => void }) => {
       </h2>
       <div className="flex flex-col items-center justify-center w-full">
         <span className="text-sm text-gray-500 mb-5">
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Maxime,
-          ipsa. Numquam non ab accusantium tenetur nobis aperiam quaerat quos
-          natus beatae unde! Quo vitae sapiente ad voluptatum, porro adipisci
-          ab.
+          {t("sectionDescription")}
         </span>
         {/* <Button
           className="mt-4 px-10 bg-[#1249C7] text-white hover:bg-[#1249C7]/90"

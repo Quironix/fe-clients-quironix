@@ -42,20 +42,26 @@ const ContractSignStep: React.FC<OnboardingStepProps> = ({
   };
 
   const handleSignContract = async () => {
-    if (profile?.client?.id) {
-      setIsSigningContract(true);
-      const success = await signContract(
-        session?.token as string,
-        profile?.client?.id as string
-      );
-      if (!success.error) {
-        await fetch("/api/auth/clear-cache", { method: "POST" });
-        setIsSigningContract(false);
-        onNext();
-      } else {
-        setIsSigningContract(false);
-        toast.error(success.error);
-      }
+    if (!session?.token) {
+      toast.error("Session not available. Please refresh the page and try again.");
+      return;
+    }
+
+    if (!profile?.client?.id) {
+      toast.error("Client profile not loaded. Please refresh the page and try again.");
+      return;
+    }
+
+    setIsSigningContract(true);
+    const result = await signContract(session.token, profile.client.id);
+
+    if (!result.error) {
+      await fetch("/api/auth/clear-cache", { method: "POST" });
+      setIsSigningContract(false);
+      onNext();
+    } else {
+      setIsSigningContract(false);
+      toast.error(result.error);
     }
   };
 

@@ -3,6 +3,15 @@ import { PaginatedResponse, PaginationParams } from "../types/pagination";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+export class HttpError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "HttpError";
+    this.status = status;
+  }
+}
+
 export const getDebtors = async (
   accessToken: string,
   clientId: string,
@@ -26,7 +35,7 @@ export const getDebtors = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      throw new HttpError(response.status, `Error ${response.status}: ${response.statusText}`);
     }
 
     const data = await response.json();

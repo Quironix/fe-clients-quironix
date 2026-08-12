@@ -14,6 +14,11 @@ interface Props {
 
 export function SearchProvider({ children }: Props) {
   const [open, setOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -29,7 +34,7 @@ export function SearchProvider({ children }: Props) {
   return (
     <SearchContext.Provider value={{ open, setOpen }}>
       {children}
-      <CommandMenu />
+      {mounted && <CommandMenu />}
     </SearchContext.Provider>
   );
 }

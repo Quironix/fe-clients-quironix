@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { useWebRTCAutoConnect } from "@/hooks/useWebRTCAutoConnect";
 import { Phone, PhoneOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export const WebRTCLogin = () => {
   const { isConnected, connect, disconnect } = useWebRTCAutoConnect();
+  const tCommon = useTranslations("common");
 
   if (isConnected) {
     return (
@@ -17,7 +19,7 @@ export const WebRTCLogin = () => {
           className="gap-2"
         >
           <PhoneOff className="w-4 h-4" />
-          <span className="hidden sm:inline">Desconectar</span>
+          <span className="hidden sm:inline">{tCommon("labels.disconnect")}</span>
         </Button>
       </div>
     );
@@ -26,7 +28,7 @@ export const WebRTCLogin = () => {
   return (
     <Button size="sm" className="gap-2" onClick={connect}>
       <Phone className="w-4 h-4" />
-      <span className="hidden sm:inline">Conectar Central</span>
+      <span className="hidden sm:inline">{tCommon("labels.connectPbx")}</span>
     </Button>
   );
 };

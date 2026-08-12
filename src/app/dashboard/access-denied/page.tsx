@@ -1,21 +1,21 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import Language from "@/components/ui/language";
 import {
-  AlertCircle,
-  AlertTriangle,
-  ArrowLeft,
-  Home,
-  Lock,
-  ShieldX,
-  User,
+    AlertCircle,
+    AlertTriangle,
+    ArrowLeft,
+    Home,
+    Lock,
+    ShieldX,
+    User,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -214,7 +214,7 @@ const AccessDeniedPage = () => {
   const t = useTranslations("accessDenied");
   return (
     <>
-      <Header fixed>
+      <Header>
         <Language />
       </Header>
       <Main>

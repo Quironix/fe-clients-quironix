@@ -1,16 +1,16 @@
 "use client";
 
+import { useCompaniesStore } from "@/app/dashboard/companies/store";
+import { DataTableDynamicColumns } from "@/app/dashboard/components/data-table-dynamic-columns";
+import { getDebtors, HttpError } from "@/app/dashboard/debtors/services";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { DataTableDynamicColumns } from "@/app/dashboard/components/data-table-dynamic-columns";
 import { useProfileContext } from "@/context/ProfileContext";
 import { ColumnDef } from "@tanstack/react-table";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import { getDebtors } from "@/app/dashboard/debtors/services";
-import { useCompaniesStore } from "@/app/dashboard/companies/store";
 
 interface DebtorRow {
   id: string;
@@ -31,10 +31,10 @@ const DebtorsTable = ({ isFactoring }: DebtorsTableProps) => {
   const router = useRouter();
   const { data: session } = useSession();
   const { profile } = useProfileContext();
-  const { companies, getCompanies } = useCompaniesStore();
+  const { companies, getCompanies, loading: companiesLoading, hasFetched: companiesHasFetched, permissionDenied } = useCompaniesStore();
 
   const [data, setData] = useState<DebtorRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isServerSideLoading, setIsServerSideLoading] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -47,23 +47,41 @@ const DebtorsTable = ({ isFactoring }: DebtorsTableProps) => {
   const [search, setSearch] = useState("");
   const hasInitialized = useRef(false);
 
+  // Cargar companies si es factoring y aún no se han cargado
   useEffect(() => {
-    if (isFactoring && session?.token && profile?.client?.id && companies.length === 0) {
+    if (isFactoring && session?.token && profile?.client?.id && !companiesHasFetched && !companiesLoading) {
       getCompanies(session.token, profile.client.id);
     }
-  }, [isFactoring, session?.token, profile?.client?.id, companies.length, getCompanies]);
+  }, [isFactoring, session?.token, profile?.client?.id, companiesHasFetched, companiesLoading, getCompanies]);
 
-  const companyIds = isFactoring ? companies.map((c) => c.id).filter(Boolean) as string[] : [];
+  // Redirigir si no hay permisos para acceder a companies
+  useEffect(() => {
+    if (permissionDenied) {
+      router.push("/dashboard/access-denied?route=/dashboard/debtor-management/managements-list");
+    }
+  }, [permissionDenied, router]);
+
+  const companyIds = useMemo(() => {
+    if (!isFactoring || !Array.isArray(companies)) return [];
+    return companies.map((c) => c.id).filter(Boolean) as string[];
+  }, [isFactoring, companies]);
+
+  // Determinar si todas las dependencias están listas para el fetch inicial
+  const isReady = useMemo(() => {
+    if (!session?.token || !profile?.client?.id) return false;
+    if (isFactoring) return companiesHasFetched && !companiesLoading;
+    return true;
+  }, [session?.token, profile?.client?.id, isFactoring, companiesHasFetched, companiesLoading]);
 
   const fetchDebtors = useCallback(
     async (page: number = 1, limit: number = 15, searchTerm: string = "") => {
-      if (!session?.token || !profile?.client_id) return;
+      if (!session?.token || !profile?.client?.id) return;
       if (isFactoring && companyIds.length === 0) return;
       setIsServerSideLoading(true);
       try {
         const response = await getDebtors(
           session.token,
-          profile.client_id,
+          profile.client.id,
           {
             page,
             limit,
@@ -82,24 +100,26 @@ const DebtorsTable = ({ isFactoring }: DebtorsTableProps) => {
           hasNext: page < totalPages,
           hasPrevious: page > 1,
         });
-      } catch {
+      } catch (error) {
+        if (error instanceof HttpError && error.status === 403) {
+          router.push("/dashboard/access-denied?route=/dashboard/debtor-management/managements-list");
+          return;
+        }
         setData([]);
       } finally {
         setIsServerSideLoading(false);
       }
     },
-    [session?.token, profile?.client_id, isFactoring, companyIds]
+    [session?.token, profile?.client?.id, isFactoring, companyIds]
   );
 
+  // Fetch inicial: solo se ejecuta una vez cuando todas las dependencias están listas
   useEffect(() => {
-    if (!session?.token || !profile?.client_id) return;
-    if (isFactoring && companyIds.length === 0) return;
-    if (!hasInitialized.current) {
-      hasInitialized.current = true;
-      setIsLoading(true);
-      fetchDebtors(1, 15, "").finally(() => setIsLoading(false));
-    }
-  }, [session?.token, profile?.client_id, isFactoring, companyIds, fetchDebtors]);
+    if (!isReady || hasInitialized.current) return;
+    hasInitialized.current = true;
+    setIsLoading(true);
+    fetchDebtors(1, 15, "").finally(() => setIsLoading(false));
+  }, [isReady, fetchDebtors]);
 
   const handlePaginationChange = useCallback(
     (page: number, pageSize: number) => {

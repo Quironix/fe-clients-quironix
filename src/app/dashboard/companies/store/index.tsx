@@ -1,11 +1,12 @@
 import { create } from "zustand";
 
 import {
-  createCompany,
-  deleteCompany,
-  getCompanies,
-  getCompanyById,
-  updateCompany,
+    createCompany,
+    deleteCompany,
+    getCompanies,
+    getCompanyById,
+    HttpError,
+    updateCompany,
 } from "../services";
 import { BulkUploadResponse, Company } from "../types";
 
@@ -13,6 +14,8 @@ interface CompaniesStore {
   companies: Company[];
   company: Company;
   loading: boolean;
+  hasFetched: boolean;
+  permissionDenied: boolean;
   error: string | null;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -50,6 +53,8 @@ export const useCompaniesStore = create<CompaniesStore>((set, get) => ({
   companies: [],
   company: {} as Company,
   loading: false,
+  hasFetched: false,
+  permissionDenied: false,
   setLoading: (loading: boolean) => set({ loading }),
   error: null,
   setError: (error: string | null) => set({ error }),
@@ -60,9 +65,11 @@ export const useCompaniesStore = create<CompaniesStore>((set, get) => ({
     set({ loading: true, error: null, companies: [], company: {} as Company });
     try {
       const response = await getCompanies(accessToken, clientId);
-      set({ companies: response });
+      const companies = Array.isArray(response) ? response : (response?.data ?? []);
+      set({ companies, hasFetched: true });
     } catch (error: any) {
-      set({ error });
+      const isDenied = error instanceof HttpError && error.status === 403;
+      set({ error, companies: [], hasFetched: true, permissionDenied: isDenied });
     } finally {
       set({ loading: false });
     }

@@ -118,6 +118,7 @@ export const createInvoiceColumns = (
   onViewDetails?: (invoice: InvoiceWithTrack) => void,
   threadColorByTrackId?: Map<string, string>,
   onOpenThread?: (trackId: string) => void,
+  collectorEngineLabel?: string,
 ): ColumnDef<InvoiceWithTrack>[] => [
     {
       accessorKey: "debtor_code",
@@ -246,7 +247,7 @@ export const createInvoiceColumns = (
       cell: ({ row }) => {
         const track = row.original.track;
         if (track?.executiveComment === "AUTOMATED_COMMUNICATION") {
-          return <div className="text-sm">Motor de collector</div>;
+          return <div className="text-sm">{collectorEngineLabel ?? "Collector engine"}</div>;
         }
         return (
           <div className="text-sm">

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -50,6 +51,7 @@ const ManagementNormalizedLitigationForm = ({
   selectedInvoices = [],
   litigations = [],
 }: ManagementNormalizedLitigationFormProps) => {
+  const t = useTranslations("debtorManagement.normalizationForm");
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<string[]>(
     value?.selectedInvoiceIds || []
   );
@@ -150,7 +152,7 @@ const ManagementNormalizedLitigationForm = ({
         <div className="space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Litigios abiertos</span>
+              <span className="text-sm font-medium">{t("openLitigations")}</span>
               <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
                 {selectedInvoices.length} disponible
                 {selectedInvoices.length !== 1 ? "s" : ""}
@@ -211,7 +213,7 @@ const ManagementNormalizedLitigationForm = ({
               </label>
               <Select value={reason} onValueChange={setReason}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecciona razón" />
+                  <SelectValue placeholder={t("selectReason")} />
                 </SelectTrigger>
                 <SelectContent>
                   {NORMALIZATION_REASONS.map((item) => (
@@ -228,7 +230,7 @@ const ManagementNormalizedLitigationForm = ({
                 Comentario <Required />
               </label>
               <Textarea
-                placeholder="Ingresa un comentario sobre la normalización"
+                placeholder={t("commentPlaceholder")}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 className="min-h-[80px] resize-none"
