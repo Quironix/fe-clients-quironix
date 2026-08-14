@@ -164,16 +164,29 @@ const DebtorsTable = ({ isFactoring }: DebtorsTableProps) => {
         id: "actions",
         header: "",
         cell: ({ row }) => (
-          <Button
-            size="sm"
-            onClick={() =>
-              router.push(
-                `/dashboard/debtor-management/${row.original.id}/managements-list?from=managements-list`
-              )
-            }
-          >
-            {t("viewHistory")}
-          </Button>
+          <div className="flex gap-2 justify-end">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                router.push(
+                  `/dashboard/transactions/current-account?debtorId=${row.original.id}`
+                )
+              }
+            >
+              {t("viewCurrentAccount")}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() =>
+                router.push(
+                  `/dashboard/debtor-management/${row.original.id}/managements-list?from=managements-list`
+                )
+              }
+            >
+              {t("viewHistory")}
+            </Button>
+          </div>
         ),
       },
     ],

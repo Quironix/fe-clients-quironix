@@ -1,14 +1,17 @@
 import { CardCollapsible } from "@/app/dashboard/components/card-collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  ArrowRight,
   CreditCard,
   FileX2,
   History,
   Scale,
   ShieldCheck,
   TriangleAlert,
+  Wallet,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { CollectionProfile } from "../../types";
 import CreditRisk from "../credit-risk";
 import { DebtorChatbot } from "../debtor-chatbot";
@@ -36,6 +39,8 @@ export const KeyReasonsTab = ({
 }: KeyReasonsTabProps) => {
   const t = useTranslations("debtorManagement.keyReasonsTab");
   const tDetail = useTranslations("debtorManagement.detail");
+  const tLastManagements = useTranslations("debtorManagement.lastManagementsCard");
+  const router = useRouter();
   if (isFetchingCollectionProfile) {
     return (
       <div className="flex gap-5 h-full w-full mt-5">
@@ -154,6 +159,24 @@ export const KeyReasonsTab = ({
               debtorId={debtorId}
             />
           </CardCollapsible>
+
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                `/dashboard/transactions/current-account?debtorId=${debtorId}`,
+              )
+            }
+            className="bg-white p-2 rounded-md w-full h-full border border-gray-400 flex justify-between items-center gap-1 text-blue-700 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex justify-start items-center gap-1">
+              <Wallet className="shrink-0" size={18} />
+              <span className="text-sm font-semibold">
+                {tLastManagements("viewCurrentAccount")}
+              </span>
+            </div>
+            <ArrowRight size={18} />
+          </button>
         </div>
       </div>
     </div>
