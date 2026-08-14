@@ -1432,8 +1432,8 @@
     }
   },
   "litigation": {
-    "title": "Compensación de pagos",
-    "subDescription": "Compensación de pagos",
+    "title": "Litigios",
+    "subDescription": "Crea, normaliza y consulta el historial de litigios de tu cartera.",
     "searchPlaceholder": "Buscar",
     "historyTitle": "Historial de litigios",
     "emptyMessage": "No se encontraron litigios",
