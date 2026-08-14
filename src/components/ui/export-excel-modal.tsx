@@ -38,7 +38,7 @@ interface MonthOption {
 
 function buildMonthOptions(): MonthOption[] {
   const now = new Date();
-  const includeCurrentMonth = now.getDate() > 15;
+  const includeCurrentMonth = true;
   const startOffset = includeCurrentMonth ? 0 : 1;
   const options: MonthOption[] = [];
 
