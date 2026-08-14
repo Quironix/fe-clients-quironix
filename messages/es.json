@@ -1435,7 +1435,8 @@
   },
   "litigation": {
     "title": "Litigios",
-    "subDescription": "Crea, normaliza y consulta el historial de litigios de tu cartera.",
+    "description": "Crea, normaliza y consulta el historial de litigios de tu cartera.",
+    "subDescription": "Litigios",
     "searchPlaceholder": "Buscar",
     "historyTitle": "Historial de litigios",
     "emptyMessage": "No se encontraron litigios",

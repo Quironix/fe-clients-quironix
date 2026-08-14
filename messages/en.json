@@ -1440,6 +1440,7 @@
   },
   "litigation": {
     "title": "Litigation",
+    "description": "Create, normalize, and review your portfolio's litigation history.",
     "subDescription": "Litigation",
     "searchPlaceholder": "Search",
     "historyTitle": "Litigation history",
