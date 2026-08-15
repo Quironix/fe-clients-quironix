@@ -19,27 +19,27 @@ const SECTION_STYLES: Record<
   SectionKey,
   {
     icon: typeof TriangleAlert;
-    border: string;
-    header: string;
+    accent: string;
+    headerColor: string;
     labelColor: string;
   }
 > = {
   situation: {
     icon: TriangleAlert,
-    border: "border-red-300",
-    header: "bg-red-500 text-white",
+    accent: "border-l-red-400",
+    headerColor: "text-red-600",
     labelColor: "text-red-600",
   },
   focus: {
     icon: Target,
-    border: "border-orange-300",
-    header: "bg-orange-500 text-white",
+    accent: "border-l-orange-400",
+    headerColor: "text-orange-600",
     labelColor: "text-orange-600",
   },
   negotiation: {
     icon: Handshake,
-    border: "border-green-300",
-    header: "bg-green-600 text-white",
+    accent: "border-l-green-500",
+    headerColor: "text-green-700",
     labelColor: "text-green-700",
   },
 };
@@ -101,9 +101,9 @@ function parseCallBrief(
 
 function CallBriefSkeleton() {
   return (
-    <div className="flex flex-col gap-3">
+    <div>
       {[0, 1, 2].map((i) => (
-        <div key={i} className="bg-white rounded-md border p-4">
+        <div key={i} className="p-4 border-b border-gray-100">
           <Skeleton className="h-5 w-40 mb-3" />
           <div className="space-y-2">
             <Skeleton className="h-3 w-full" />
@@ -134,14 +134,14 @@ export function CallBriefCards({
 
   if (!parsed) {
     return (
-      <div className="bg-white rounded-md border p-4 mb-3 whitespace-pre-wrap text-sm text-gray-700">
+      <div className="p-4 border-b border-gray-100 whitespace-pre-wrap text-sm text-gray-700">
         {stripMarkdownSyntax(callBrief)}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 mb-3">
+    <div>
       {SECTION_KEYS.map((key) => {
         const section = parsed[key];
         if (!section) return null;
@@ -151,15 +151,15 @@ export function CallBriefCards({
         return (
           <div
             key={key}
-            className={`bg-white rounded-md border-2 ${style.border} overflow-hidden`}
+            className={`p-4 border-b border-gray-100 border-l-4 ${style.accent}`}
           >
             <h3
-              className={`text-sm font-semibold p-2 px-4 flex items-center gap-2 ${style.header}`}
+              className={`text-sm font-semibold mb-2 flex items-center gap-2 ${style.headerColor}`}
             >
               <Icon size={15} />
               {t(`sections.${key}`)}
             </h3>
-            <div className="p-4 space-y-2">
+            <div className="space-y-2">
               {section.fields.map((field, idx) => (
                 <div key={idx} className="text-xs">
                   <span

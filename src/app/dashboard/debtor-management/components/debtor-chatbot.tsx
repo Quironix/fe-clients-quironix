@@ -9,14 +9,21 @@ import {
 } from "@assistant-ui/react-ai-sdk";
 import { useEffect, useMemo, useRef } from "react";
 import { useDebtorsStore } from "../../debtors/store";
+import { CallBriefCards } from "./call-brief-cards";
 
 interface DebtorChatbotProps {
   debtorId: string;
+  callBrief: string | null;
+  isFetchingCallBrief: boolean;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-function DebtorChatbotRuntime({ debtorId }: { debtorId: string }) {
+function DebtorChatbotRuntime({
+  debtorId,
+  callBrief,
+  isFetchingCallBrief,
+}: DebtorChatbotProps) {
   const { profile, session } = useProfileContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const { getChatThreadId, setChatThreadId, getChatMessages, setChatMessages } = useDebtorsStore();
@@ -57,6 +64,7 @@ function DebtorChatbotRuntime({ debtorId }: { debtorId: string }) {
           trigger,
           messageId,
           metadata: requestMetadata,
+          context: callBrief ?? undefined,
         },
       }),
     }),
@@ -92,14 +100,32 @@ function DebtorChatbotRuntime({ debtorId }: { debtorId: string }) {
     <AssistantRuntimeProvider runtime={runtime}>
       <div
         ref={containerRef}
-        className="h-[600px] w-full flex flex-col bg-[#f9fcff] rounded-md border p-2 overflow-y-auto"
+        className="h-[650px] w-full flex flex-col bg-[#f9fcff]"
       >
-        <Thread />
+        <Thread
+          leading={
+            <CallBriefCards
+              callBrief={callBrief}
+              isFetchingCallBrief={isFetchingCallBrief}
+            />
+          }
+          hideWelcome={!!callBrief || isFetchingCallBrief}
+        />
       </div>
     </AssistantRuntimeProvider>
   );
 }
 
-export function DebtorChatbot({ debtorId }: DebtorChatbotProps) {
-  return <DebtorChatbotRuntime debtorId={debtorId} />;
+export function DebtorChatbot({
+  debtorId,
+  callBrief,
+  isFetchingCallBrief,
+}: DebtorChatbotProps) {
+  return (
+    <DebtorChatbotRuntime
+      debtorId={debtorId}
+      callBrief={callBrief}
+      isFetchingCallBrief={isFetchingCallBrief}
+    />
+  );
 }

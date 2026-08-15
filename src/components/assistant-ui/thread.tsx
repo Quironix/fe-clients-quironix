@@ -19,13 +19,18 @@ import {
   SendHorizontalIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
 
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { Button } from "@/components/ui/button";
 
-export const Thread: FC = () => {
+interface ThreadProps {
+  leading?: ReactNode;
+  hideWelcome?: boolean;
+}
+
+export const Thread: FC<ThreadProps> = ({ leading, hideWelcome }) => {
   return (
     <ThreadPrimitive.Root
       className="bg-background text-foreground box-border flex h-full flex-col overflow-hidden"
@@ -34,10 +39,15 @@ export const Thread: FC = () => {
       }}
     >
       <ThreadPrimitive.Viewport
-        turnAnchor="top"
         className="flex h-full flex-col items-center overflow-y-scroll scroll-smooth bg-inherit px-4 pt-8"
       >
-        <ThreadWelcome />
+        {leading && (
+          <div className="w-full max-w-[var(--thread-max-width)]">
+            {leading}
+          </div>
+        )}
+
+        {!hideWelcome && <ThreadWelcome />}
 
         <ThreadPrimitive.Messages
           components={{
@@ -46,10 +56,6 @@ export const Thread: FC = () => {
             AssistantMessage: AssistantMessage,
           }}
         />
-
-        <ThreadPrimitive.If empty={false}>
-          <div className="min-h-8 flex-grow" />
-        </ThreadPrimitive.If>
 
         <div className="sticky bottom-0 mt-3 flex w-full max-w-[var(--thread-max-width)] flex-col items-center justify-end rounded-t-lg bg-inherit pb-4">
           <ThreadScrollToBottom />
