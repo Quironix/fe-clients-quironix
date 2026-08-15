@@ -824,6 +824,13 @@
       "litigations": "Litigios",
       "lastManagements": "Últimas gestiones"
     },
+    "callBrief": {
+      "sections": {
+        "situation": "Lectura en 5 segundos",
+        "focus": "Foco de ejecución",
+        "negotiation": "Control de negociación"
+      }
+    },
     "creditRisk": {
       "currentCredit": "Crédito actual",
       "availableCredit": "Crédito disponible",

@@ -13,6 +13,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { CollectionProfile } from "../../types";
+import { CallBriefCards } from "../call-brief-cards";
 import CreditRisk from "../credit-risk";
 import { DebtorChatbot } from "../debtor-chatbot";
 import { KeyReasons } from "../key-reasons";
@@ -95,12 +96,12 @@ export const KeyReasonsTab = ({
 
   return (
     <div className="flex gap-5 h-full w-full mt-5">
-      <div className="h-full w-full">
-        <DebtorChatbot
-          debtorId={debtorId}
+      <div className="h-full w-full overflow-y-auto">
+        <CallBriefCards
           callBrief={callBrief}
           isFetchingCallBrief={isFetchingCallBrief}
         />
+        <DebtorChatbot debtorId={debtorId} />
       </div>
       <div className="h-full w-2xl overflow-y-auto">
         <div className="flex flex-col gap-3">
