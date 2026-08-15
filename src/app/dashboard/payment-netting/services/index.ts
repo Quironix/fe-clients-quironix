@@ -9,6 +9,7 @@ export const getPaymentNetting = async ({
   createdAtTo,
   amount,
   description,
+  signal,
 }: {
   accessToken: string;
   clientId: string;
@@ -19,6 +20,7 @@ export const getPaymentNetting = async ({
   createdAtTo?: string;
   amount?: string;
   description?: string;
+  signal?: AbortSignal;
 }) => {
   try {
     // Convertir fechas a formato ISO
@@ -63,6 +65,7 @@ export const getPaymentNetting = async ({
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        signal,
       }
     );
     const data = await response.json();
