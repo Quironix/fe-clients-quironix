@@ -636,7 +636,8 @@
       "minOneContact": "Must keep at least one contact",
       "requiredFields": "Please complete all required fields",
       "saveSuccess": "Debtor saved successfully",
-      "saveError": "Error saving debtor"
+      "saveError": "Error saving debtor",
+      "defaultContact": "Default contact"
     },
     "attentionStep": {
       "title": "Attention",

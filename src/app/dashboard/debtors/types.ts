@@ -34,6 +34,7 @@ export interface Contact {
   phone?: string;
   channel: string;
   function?: string;
+  default?: boolean;
 }
 
 export interface Metadatum {

@@ -55,7 +55,7 @@ const FilterInputs = React.forwardRef<
     mode: "onChange",
     defaultValues: {
       search: initialFilters?.search || "",
-      status: initialFilters?.status || "PENDING",
+      status: initialFilters?.status || "ALL",
       dateFrom: initialFilters?.dateFrom || "",
       dateTo: initialFilters?.dateTo || "",
     },

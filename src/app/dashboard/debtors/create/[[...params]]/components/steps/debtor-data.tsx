@@ -381,7 +381,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           formData.payment_method !== null &&
           formData.payment_method !== undefined
         ) {
-          form.setValue("payment_method", formData.payment_method);
+          form.setValue("payment_method", formData.payment_method, {
+            shouldValidate: true,
+          });
         }
 
         // Establecer valores de metadata manualmente

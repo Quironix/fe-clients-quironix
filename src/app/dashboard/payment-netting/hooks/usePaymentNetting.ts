@@ -79,11 +79,12 @@ export function usePaymentNetting(
     hasPrevious: false,
   });
   const [filters, setFilters] = useState<PaymentNettingFilters>({
-    status: "PENDING",
+    status: "ALL",
   });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isHydrated, setIsHydrated] = useState(false);
   const hasInitialFetchRun = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Cargar datos de localStorage después de la hidratación
   useEffect(() => {
@@ -107,6 +108,12 @@ export function usePaymentNetting(
       limit: number = 15,
       searchFilters: PaymentNettingFilters = {},
     ) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       setIsServerSideLoading(true);
 
       try {
@@ -122,6 +129,7 @@ export function usePaymentNetting(
             createdAtTo: searchFilters.dateTo || searchFilters.createdAtTo,
             amount: searchFilters.amount,
             description: searchFilters.description,
+            signal: controller.signal,
           });
 
           if (apiResponse.data.length > 0) {
@@ -154,6 +162,9 @@ export function usePaymentNetting(
           }
         }
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         setData([]);
         setPagination({
           page: 1,
@@ -265,7 +276,13 @@ export function usePaymentNetting(
 
     hasInitialFetchRun.current = true;
     setIsLoading(true);
-    fetchPaymentNettings().finally(() => setIsLoading(false));
+    fetchPaymentNettings(1, pagination.limit, filters).finally(() => setIsLoading(false));
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken, clientId]);
 
