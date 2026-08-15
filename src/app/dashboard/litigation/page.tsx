@@ -35,6 +35,7 @@ const Litigation = () => {
       <Main>
         <TitleSection
           title={t("title")}
+          description={t("description")}
           icon={<FileCog color="white" />}
           subDescription={t("subDescription")}
         />

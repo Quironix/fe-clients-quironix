@@ -313,13 +313,13 @@
       "controlCenter": "Centro de Control",
       "collectorHistory": "Histórico de collector",
       "collectionCopilot": "Copiloto de cobranza",
-      "managementHistory": "Historial de gestiones",
+      "managementHistory": "Listado de Deudores",
       "paymentReconciliation": "Conciliación de pagos",
       "reconciliation": "Conciliación",
       "payments": "Pagos",
       "bankStatements": "Cartolas bancarias",
       "portfolioAdmin": "Adm. de cartera",
-      "managementsListNav": "Historial de gestiones",
+      "managementsListNav": "Listado de Deudores",
       "cashFlowParams": "Parámetros flujo de caja",
       "debtorsLoad": "Deudores",
       "dteLoad": "Documentos (DTE)",
@@ -855,6 +855,7 @@
       "noManagements": "No hay últimas gestiones registradas",
       "allPrevious": "Todas las gestiones anteriores ({count})",
       "allManagements": "Todas las gestiones",
+      "viewCurrentAccount": "Cuenta Corriente",
       "callOut": "Llamada telefónica",
       "email": "Correo electrónico",
       "visit": "Visita",
@@ -1123,9 +1124,9 @@
       "commentPlaceholder": "Ingresa un comentario sobre la normalización"
     },
     "managementsList": {
-      "pageTitle": "Historial de gestiones",
-      "pageDescription": "Busca y selecciona un deudor para ver su historial de gestiones",
-      "pageSubDescription": "Historial de gestiones",
+      "pageTitle": "Listado de Deudores",
+      "pageDescription": "Busca y selecciona un deudor para ver su historial de gestiones o su cuenta corriente",
+      "pageSubDescription": "Listado de Deudores",
       "collectorEngine": "Motor de collector",
       "selectCompanyLabel": "Empresa",
       "tableTitle": "Selecciona un deudor",
@@ -1136,7 +1137,8 @@
       "emptyState": "No se encontraron deudores",
       "rowsPerPage": "Filas por página:",
       "page": "Página {current} de {total}",
-      "viewHistory": "Ver historial"
+      "viewHistory": "Ver historial",
+      "viewCurrentAccount": "Cuenta Corriente"
     }
   },
   "paymentPlans": {
@@ -1433,7 +1435,8 @@
   },
   "litigation": {
     "title": "Litigios",
-    "subDescription": "Crea, normaliza y consulta el historial de litigios de tu cartera.",
+    "description": "Crea, normaliza y consulta el historial de litigios de tu cartera.",
+    "subDescription": "Litigios",
     "searchPlaceholder": "Buscar",
     "historyTitle": "Historial de litigios",
     "emptyMessage": "No se encontraron litigios",

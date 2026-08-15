@@ -313,13 +313,13 @@
       "controlCenter": "Control Center",
       "collectorHistory": "Collector History",
       "collectionCopilot": "Collection Copilot",
-      "managementHistory": "Management History",
+      "managementHistory": "Debtors List",
       "paymentReconciliation": "Payment Reconciliation",
       "reconciliation": "Reconciliation",
       "payments": "Payments",
       "bankStatements": "Bank Statements",
       "portfolioAdmin": "Portfolio Administration",
-      "managementsListNav": "Mgmt. History",
+      "managementsListNav": "Debtor List",
       "cashFlowParams": "Cash Flow Parameters",
       "debtorsLoad": "Debtor Load & Maintenance",
       "dteLoad": "Document Load & Maintenance (DTE)",
@@ -860,6 +860,7 @@
       "noManagements": "No recent managements recorded",
       "allPrevious": "All previous managements ({count})",
       "allManagements": "All managements",
+      "viewCurrentAccount": "Current Account",
       "callOut": "Phone call",
       "email": "Email",
       "visit": "Visit",
@@ -1128,9 +1129,9 @@
       "commentPlaceholder": "Enter a comment about the normalization"
     },
     "managementsList": {
-      "pageTitle": "Management History",
-      "pageDescription": "Search and select a debtor to view their management history",
-      "pageSubDescription": "Management History",
+      "pageTitle": "Debtor List",
+      "pageDescription": "Search and select a debtor to view their management history or current account",
+      "pageSubDescription": "Debtor List",
       "collectorEngine": "Collector engine",
       "selectCompanyLabel": "Company",
       "tableTitle": "Select a debtor",
@@ -1141,7 +1142,8 @@
       "emptyState": "No debtors found",
       "rowsPerPage": "Rows per page:",
       "page": "Page {current} of {total}",
-      "viewHistory": "View history"
+      "viewHistory": "View history",
+      "viewCurrentAccount": "Current Account"
     }
   },
   "paymentPlans": {
@@ -1437,8 +1439,9 @@
     }
   },
   "litigation": {
-    "title": "Payment compensation",
-    "subDescription": "Payment compensation",
+    "title": "Litigation",
+    "description": "Create, normalize, and review your portfolio's litigation history.",
+    "subDescription": "Litigation",
     "searchPlaceholder": "Search",
     "historyTitle": "Litigation history",
     "emptyMessage": "No litigation found",

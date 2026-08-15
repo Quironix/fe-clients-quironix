@@ -23,9 +23,17 @@ interface ExportExcelModalProps {
   schema: ExportSchema;
   accessToken: string;
   clientId: string;
+  /** Required when schema is CURRENT_ACCOUNT — ignored by every other schema. */
+  debtorId?: string;
 }
 
-const STATUS_SCHEMAS: ExportSchema[] = ["INVOICES", "LITIGATION"];
+const STATUS_SCHEMAS: ExportSchema[] = ["INVOICES", "LITIGATION", "CURRENT_ACCOUNT"];
+
+// CURRENT_ACCOUNT exports the debtor's full history regardless of date —
+// the period picker below doesn't apply to it (PRD_consulta_cuenta_corriente.md §8.9.6).
+// The shared export endpoint still requires a valid from/to pair, so a
+// harmless (and always-valid) 3-month window is sent and ignored server-side.
+const SCHEMAS_WITHOUT_PERIOD: ExportSchema[] = ["CURRENT_ACCOUNT"];
 
 const MAX_SELECTION = 3;
 
@@ -94,7 +102,7 @@ function canAdd(key: string, selected: string[]): boolean {
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clientId }: ExportExcelModalProps) {
+export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clientId, debtorId }: ExportExcelModalProps) {
   const t = useTranslations("exportExcel");
   const [selected, setSelected] = useState<string[]>([]);
   const [status, setStatus] = useState<ExportStatus>("all");
@@ -107,9 +115,11 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
     PAYMENT_PLANS: t("schemaPaymentPlans"),
     PAYMENTS: t("schemaPayments"),
     MANAGEMENTS: t("schemaManagements"),
+    CURRENT_ACCOUNT: "Cuenta Corriente",
   };
 
   const showStatus = STATUS_SCHEMAS.includes(schema);
+  const showPeriod = !SCHEMAS_WITHOUT_PERIOD.includes(schema);
   const options = useMemo(() => buildMonthOptions(), [open]);
 
   const rangeLabel = useMemo(() => {
@@ -135,15 +145,18 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
   };
 
   const handleExport = async () => {
-    if (selected.length === 0) { toast.error(t("toastSelectMonth")); return; }
+    if (showPeriod && selected.length === 0) { toast.error(t("toastSelectMonth")); return; }
     setIsLoading(true);
     try {
-      const { from, to } = getRangeFromSelection(selected, options);
+      const { from, to } = showPeriod
+        ? getRangeFromSelection(selected, options)
+        : { from: startOfMonth(subMonths(new Date(), 2)), to: new Date() };
       const { blob, filename } = await exportExcel({
         accessToken, clientId, schema,
         from: from.toISOString(),
         to: to.toISOString(),
         status: showStatus ? status : undefined,
+        debtorId,
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -187,6 +200,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
         <div className="px-5 py-4 flex flex-col gap-4">
 
           {/* Selector de meses */}
+          {showPeriod && (
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-0.5">
               <span className="text-xs font-semibold text-foreground">{t("period")}</span>
@@ -248,8 +262,9 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
               <span className="tabular-nums">{rangeLabel ?? "—"}</span>
             </div>
           </div>
+          )}
 
-          {/* Estado (solo para INVOICES y LITIGATION) */}
+          {/* Estado (solo para INVOICES, LITIGATION y CURRENT_ACCOUNT) */}
           {showStatus && (
             <div className="flex flex-col gap-2">
               <span className="text-xs font-semibold text-foreground">{t("status")}</span>
@@ -289,7 +304,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
           <Button
             size="sm"
             onClick={handleExport}
-            disabled={isLoading || selected.length === 0}
+            disabled={isLoading || (showPeriod && selected.length === 0)}
             className="gap-1.5"
           >
             {isLoading ? (
