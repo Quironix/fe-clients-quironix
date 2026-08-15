@@ -19,6 +19,7 @@ export interface ApplicationStatementRow {
   id: string;
   invoice_id: string;
   payment_id: string | null;
+  payment_number: string | null;
   applied_at: string;
   amount_applied: number;
 }
