@@ -41,7 +41,11 @@ const DocumentCell = ({ row }: { row: Row<AccountStatementRow> }) => {
   if (original.row_type === "PAYMENT_REMAINDER") {
     return <div className="text-muted-foreground">Pago</div>;
   }
-  return <div className="pl-6 text-muted-foreground">—</div>;
+  return (
+    <div className="pl-6 text-muted-foreground">
+      {original.payment_number ? `Pago ${original.payment_number}` : "—"}
+    </div>
+  );
 };
 
 const DateCell = ({ row }: { row: Row<AccountStatementRow> }) => {
