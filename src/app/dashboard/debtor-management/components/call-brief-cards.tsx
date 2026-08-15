@@ -60,22 +60,25 @@ function parseCallBrief(
     .replace(/```/g, "")
     .replace(/\*\*/g, "");
 
-  const sectionMatches = [...text.matchAll(/^##\s*.*?\[(.+?)\]\s*$/gm)];
+  const sectionMatches = [
+    ...text.matchAll(/^(?!-)[^\n]*?\b(LECTURA|FOCO|CONTROL)\b[^\n]*$/gim),
+  ];
   if (sectionMatches.length === 0) return null;
 
   const result: Partial<Record<SectionKey, CallBriefSection>> = {};
 
   for (let i = 0; i < sectionMatches.length; i++) {
     const match = sectionMatches[i];
-    const heading = match[1].toUpperCase();
+    const heading = match[0].toUpperCase();
+    const keyword = match[1].toUpperCase();
     const start = (match.index ?? 0) + match[0].length;
     const end = sectionMatches[i + 1]?.index ?? text.length;
     const body = text.slice(start, end);
 
     let key: SectionKey | null = null;
-    if (heading.includes("LECTURA")) key = "situation";
-    else if (heading.includes("FOCO")) key = "focus";
-    else if (heading.includes("CONTROL")) key = "negotiation";
+    if (keyword === "LECTURA") key = "situation";
+    else if (keyword === "FOCO") key = "focus";
+    else if (keyword === "CONTROL") key = "negotiation";
     if (!key) continue;
 
     const fields: CallBriefField[] = [];
