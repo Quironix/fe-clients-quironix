@@ -10,6 +10,7 @@ export const contactSchema = z
     email: z.string().email().optional().or(z.literal("")),
     phone: z.string().optional(),
     channel: z.string().min(1),
+    default: z.boolean().optional().default(false),
   })
   .superRefine((data, ctx) => {
     const channel = data.channel.toLowerCase().trim();

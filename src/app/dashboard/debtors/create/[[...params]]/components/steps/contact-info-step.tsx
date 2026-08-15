@@ -30,6 +30,7 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import type { E164Number } from "libphonenumber-js/core";
 import { Mail, Plus, Trash } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -93,6 +94,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
       email: contact?.email || "",
       phone: normalizePhoneNumber(contact?.phone || ""),
       channel: contact?.channel || "",
+      default: contact?.default ?? false,
     }));
   };
 
@@ -111,6 +113,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                 email: "",
                 phone: "",
                 channel: "",
+                default: false,
               },
             ],
     },
@@ -130,6 +133,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
       email: "",
       phone: "",
       channel: "",
+      default: false,
     });
     // Abrir automáticamente el accordion del nuevo contacto
     setActiveAccordion(`item-${newIndex}`);
@@ -169,6 +173,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
           phone: normalizePhoneNumber(contact.phone),
           channel: contact.channel,
           function: contact.function,
+          default: contact.default ?? false,
         }));
 
         dataDebtor.contacts = normalizedContacts;
@@ -376,6 +381,34 @@ const ContactInfoStep: React.FC<StepProps> = ({
                                 />
                               </FormControl>
                               <TranslatedFormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.default`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
+                                <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("defaultContact")}</FormLabel>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value ?? false}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        // Si se activa, desactivar todos los demás
+                                        fields.forEach((_, i) => {
+                                          if (i !== index) {
+                                            form.setValue(`contact_info.${i}.default`, false);
+                                          }
+                                        });
+                                      }
+                                      field.onChange(checked);
+                                    }}
+                                    className="data-[state=checked]:bg-orange-500"
+                                  />
+                                </FormControl>
+                              </div>
                             </FormItem>
                           )}
                         />

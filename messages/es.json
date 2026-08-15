@@ -631,7 +631,8 @@
       "minOneContact": "Debe mantener al menos un contacto",
       "requiredFields": "Por favor, completa todos los campos requeridos",
       "saveSuccess": "Deudor guardado correctamente",
-      "saveError": "Error al guardar el deudor"
+      "saveError": "Error al guardar el deudor",
+      "defaultContact": "Contacto por defecto"
     },
     "attentionStep": {
       "title": "Atención",
