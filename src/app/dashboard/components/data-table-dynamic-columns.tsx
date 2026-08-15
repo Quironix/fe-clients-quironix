@@ -46,7 +46,7 @@ import {
     X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface DataTableDynamicColumnsProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -148,6 +148,11 @@ export function DataTableDynamicColumns<TData, TValue>({
   const resolvedDescription = description ?? tTable("filtersDescription");
   const [searchValue, setSearchValue] = useState(initialSearchValue);
 
+  const onSearchChangeRef = useRef(onSearchChange);
+  useEffect(() => {
+    onSearchChangeRef.current = onSearchChange;
+  }, [onSearchChange]);
+
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     initialColumnVisibility || {},
   );
@@ -195,11 +200,11 @@ export function DataTableDynamicColumns<TData, TValue>({
     setIsInitialMount(false);
 
     const timer = setTimeout(() => {
-      onSearchChange?.(searchValue);
+      onSearchChangeRef.current?.(searchValue);
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  }, [searchValue, debounceMs, onSearchChange]);
+  }, [searchValue, debounceMs]);
 
   useEffect(() => {
     onRowSelectionChange?.(rowSelection);
