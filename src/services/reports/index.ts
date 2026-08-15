@@ -6,7 +6,8 @@ export type ExportSchema =
   | "LITIGATION"
   | "PAYMENT_PLANS"
   | "PAYMENTS"
-  | "MANAGEMENTS";
+  | "MANAGEMENTS"
+  | "CURRENT_ACCOUNT";
 
 export type ExportStatus = "open" | "closed" | "all";
 
@@ -17,6 +18,7 @@ interface ExportExcelParams {
   from: string;
   to: string;
   status?: ExportStatus;
+  debtorId?: string;
 }
 
 export async function exportExcel({
@@ -26,10 +28,14 @@ export async function exportExcel({
   from,
   to,
   status,
+  debtorId,
 }: ExportExcelParams): Promise<{ blob: Blob; filename: string }> {
   const params = new URLSearchParams({ schema, from, to });
   if (status && status !== "all") {
     params.set("status", status);
+  }
+  if (debtorId) {
+    params.set("debtorId", debtorId);
   }
 
   const response = await fetch(

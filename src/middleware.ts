@@ -34,6 +34,7 @@ const ROUTE_SCOPE_MAP: Record<string, string> = {
   "/dashboard/transactions/dte": "client.transactions.dte",
   "/dashboard/transactions/payments": "client.transactions.payments",
   "/dashboard/transactions/movements": "client.transactions.movements",
+  "/dashboard/transactions/current-account": "client.transactions.current_account",
 
   // Debtor management
   "/dashboard/debtor-management": "client.debtor_management",
