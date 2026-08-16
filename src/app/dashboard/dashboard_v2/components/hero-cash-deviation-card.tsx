@@ -9,6 +9,7 @@ import {
   MOCK_HERO_CASH_DEVIATION,
 } from "../constants/mock-extras";
 import { useCashDeviationByPhase } from "../hooks/useDashboardAggregates";
+import { CashDeviationData } from "../types";
 
 const PERIODS: HeroPeriod[] = ["dia", "semana", "mes"];
 
@@ -24,20 +25,33 @@ const formatAmount = (amount: number): string => {
   return `$${Math.round(amount).toLocaleString("es-CL")}`;
 };
 
-const EstimatedVsCollectedChart: React.FC<{ period: HeroPeriod }> = ({ period }) => {
+const EstimatedVsCollectedChart: React.FC<{
+  period: HeroPeriod;
+  chartData?: CashDeviationData["chart"];
+}> = ({ period, chartData }) => {
   const d = MOCK_ESTIMATED_VS_COLLECTED[period];
+  const estimated =
+    chartData && chartData.estimated.length > 0
+      ? chartData.estimated
+      : d.estimated;
+  const collected =
+    chartData && chartData.collected.length > 0
+      ? chartData.collected
+      : d.collected;
+  const chartLabel = chartData?.label || d.label;
+
   const w = 680;
   const h = 120;
   const pad = 8;
-  const n = d.estimated.length;
-  const all = [...d.estimated, ...d.collected];
+  const n = estimated.length;
+  const all = [...estimated, ...collected];
   const min = Math.min(...all) * 0.92;
   const max = Math.max(...all) * 1.02;
   const rg = max - min || 1;
   const x = (i: number) => pad + i * ((w - pad * 2) / (n - 1 || 1));
   const y = (v: number) => h - pad - ((v - min) / rg) * (h - pad * 2);
-  const est = d.estimated.map((v, i) => [x(i), y(v)] as const);
-  const rec = d.collected.map((v, i) => [x(i), y(v)] as const);
+  const est = estimated.map((v, i) => [x(i), y(v)] as const);
+  const rec = collected.map((v, i) => [x(i), y(v)] as const);
   const estLine = est.map((p) => p.join(",")).join(" ");
   const recLine = rec.map((p) => p.join(",")).join(" ");
   const gap = `${estLine} ${rec
@@ -45,12 +59,12 @@ const EstimatedVsCollectedChart: React.FC<{ period: HeroPeriod }> = ({ period })
     .reverse()
     .map((p) => p.join(","))
     .join(" ")}`;
-  const fmt = (v: number) => `$${String(v).replace(".", ",")}${d.unit}`;
+  const fmt = (v: number) => formatAmount(v);
 
   return (
     <div className="qxv2-body" style={{ paddingTop: 4 }}>
       <div className="qxv2-card-h" style={{ padding: "0 0 4px" }}>
-        <h3 style={{ fontSize: 13.5 }}>Estimado vs recaudado — {d.label}</h3>
+        <h3 style={{ fontSize: 13.5 }}>Estimado vs recaudado — {chartLabel}</h3>
       </div>
       <div className="qxv2-mline-legend">
         <span className="qxv2-lg">
@@ -94,8 +108,8 @@ const EstimatedVsCollectedChart: React.FC<{ period: HeroPeriod }> = ({ period })
         </svg>
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 18, marginTop: 6, fontSize: 11.5, fontWeight: 800 }}>
-        <span style={{ color: "#667085" }}>Estimado {fmt(d.estimated[n - 1])}</span>
-        <span style={{ color: "var(--qx-bad-tx)" }}>Recaudado {fmt(d.collected[n - 1])}</span>
+        <span style={{ color: "#667085" }}>Estimado {fmt(estimated[n - 1])}</span>
+        <span style={{ color: "var(--qx-bad-tx)" }}>Recaudado {fmt(collected[n - 1])}</span>
       </div>
     </div>
   );
@@ -144,11 +158,11 @@ export const HeroCashDeviationCard: React.FC = () => {
         amountStr: mock.segAmounts[i] || "",
       }));
 
-  const insightLabel = realData?.insight?.topSegmentLabel || "Litigio sin resolver";
+  const insightLabel = realData?.insight?.topSegmentLabel || "Fase 1 vencida sin gestión";
   const insightAmountStr = realData?.insight?.topSegmentAmount
     ? formatAmount(realData.insight.topSegmentAmount)
     : mock.insightAmount;
-  const insightDebtors = realData?.insight?.topSegmentDebtorsCount ?? 4;
+  const insightDebtors = realData?.insight?.topSegmentDebtorsCount ?? 3;
 
   return (
     <div className="qxv2-card qxv2-hero">
@@ -215,7 +229,7 @@ export const HeroCashDeviationCard: React.FC = () => {
         </p>
         <button className="qxv2-btn-orange">Enviar a gestión →</button>
       </div>
-      <EstimatedVsCollectedChart period={period} />
+      <EstimatedVsCollectedChart period={period} chartData={realData?.chart} />
     </div>
   );
 };
