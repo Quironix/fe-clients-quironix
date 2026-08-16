@@ -57,3 +57,5 @@ skill-registry.md
 .atl/
 .plans/*
 openspec/*
+worktrees/
+.worktrees/

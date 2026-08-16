@@ -496,6 +496,7 @@
     "deleteConfirmDescription": "This action cannot be undone.",
     "table": {
       "name": "Name",
+      "dashboardType": "Dashboard",
       "actions": "Actions"
     },
     "form": {
@@ -503,6 +504,12 @@
       "namePlaceholder": "E.g.: Admin",
       "description": "Description",
       "descriptionPlaceholder": "E.g.: Resource administrator",
+      "dashboardType": "Dashboard type",
+      "dashboardTypeDescription": "Select which dashboard view users with this role will see",
+      "dashboardTypeNone": "No dashboard assigned",
+      "dashboardTypeManager": "Manager",
+      "dashboardTypeCollectionManager": "Collection Manager",
+      "dashboardTypeExecutive": "Collection Executive",
       "sections": "Sections",
       "sectionsDescription": "Select what type of permission the role will have in each section",
       "sectionsHeader": "Sections",
