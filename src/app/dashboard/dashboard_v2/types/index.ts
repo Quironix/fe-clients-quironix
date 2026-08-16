@@ -19,6 +19,8 @@ export interface TeamMemberRow {
   commitmentsFulfilledPercent: number;
   cashGenerated: number;
   contactPercent?: number;
+  trend?: number[];
+  ranking?: number;
 }
 
 export interface AgingBucket {
@@ -35,8 +37,88 @@ export interface DebtorConcentrationItem {
 
 export interface TodayPriorityTask {
   id: string;
+  debtorId?: string;
   debtorName: string;
   description: string;
   amount: number;
   priority: number;
+}
+
+export interface TaskProgressData {
+  completed: number;
+  pending: number;
+  total: number;
+  progress_percent: number;
+}
+
+export interface CommitmentsSummaryData {
+  totalCommitments: number;
+  brokenCount: number;
+  keptCount: number;
+  futureCount: number;
+  noInvoicesCount: number;
+  brokenPercentage: number;
+  fulfilledPercentage: number;
+}
+
+export interface ContactEffectivenessData {
+  totalContacts: number;
+  effectiveContacts: number;
+  unreachableContacts: number;
+  effectivenessPercent: number;
+  todayTotal: number;
+  todayEffective: number;
+  todayEffectivenessPercent: number;
+}
+
+export interface PhaseBreakdown {
+  phase: number;
+  count: number;
+  amount: number;
+  countPercent: number;
+  amountPercent: number;
+}
+
+export interface InvoicePhaseDistributionData {
+  targetPhase: number;
+  targetPhaseCount: number;
+  targetPhaseAmount: number;
+  totalOverdueCount: number;
+  totalOverdueAmount: number;
+  targetPhaseCountPercent: number;
+  targetPhaseAmountPercent: number;
+  distribution: PhaseBreakdown[];
+}
+
+export interface DsoProjectionData {
+  currentDso: number;
+  projectedDso: number;
+  dsoReduction: number;
+  targetDso: number;
+  litigatedAmount: number;
+  litigatedInvoicesCount: number;
+  note: string;
+}
+
+export interface UpcomingCommitmentItem {
+  debtorId: string;
+  debtorName: string;
+  amount: number;
+  note: string;
+}
+
+export interface UpcomingCommitmentDay {
+  date: string;
+  when: string;
+  totalAmount: number;
+  count: number;
+  items: UpcomingCommitmentItem[];
+}
+
+export interface WeeklyCashTrendItem {
+  weekIndex: number;
+  weekLabel: string;
+  amount: number;
+  startDate: string;
+  endDate: string;
 }

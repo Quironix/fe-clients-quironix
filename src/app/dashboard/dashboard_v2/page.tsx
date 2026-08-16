@@ -3,7 +3,7 @@ import "./dashboard-v2.css";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { LayoutGrid } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
@@ -17,10 +17,18 @@ import { useActiveDashboardType } from "./hooks/useActiveDashboardType";
 import { useAvailableDashboardTypes } from "./hooks/useAvailableDashboardTypes";
 import {
   useAgingBuckets,
+  useCashTrendWeekly,
+  useCommitmentsSummary,
+  useContactEffectiveness,
   useDebtorConcentration,
+  useDsoProjection,
+  useInvoicePhaseDistribution,
+  useTaskProgress,
   useTeamOverview,
   useTodayPriorities,
+  useUpcomingCommitments,
 } from "./hooks/useDashboardAggregates";
+import { Level2KpiData } from "./utils/kpi-adapter";
 
 const DashboardV2Content = () => {
   const { profile, session } = useProfileContext();
@@ -31,6 +39,8 @@ const DashboardV2Content = () => {
   const availableTypes = useAvailableDashboardTypes(profile);
   const [activeType, setActiveType] = useActiveDashboardType(availableTypes);
 
+  const isManager = activeType === "MANAGER";
+  const isJefe = activeType === "COLLECTION_MANAGER";
   const isExecutive = activeType === "EXECUTIVE";
 
   const {
@@ -47,20 +57,26 @@ const DashboardV2Content = () => {
   const { data: agingBuckets, isLoading: agingLoading } = useAgingBuckets({
     accessToken,
     clientId,
-    enabled: activeType === "MANAGER",
+    enabled: isManager,
   });
 
   const { data: debtorConcentration, isLoading: concentrationLoading } =
     useDebtorConcentration({
       accessToken,
       clientId,
-      enabled: activeType === "MANAGER" || activeType === "COLLECTION_MANAGER",
+      enabled: isManager || isJefe,
     });
+
+  const { data: dsoProjection, isLoading: dsoLoading } = useDsoProjection({
+    accessToken,
+    clientId,
+    enabled: isManager,
+  });
 
   const { data: team, isLoading: teamLoading } = useTeamOverview({
     accessToken,
     clientId,
-    enabled: activeType === "COLLECTION_MANAGER" || isExecutive,
+    enabled: isJefe || isExecutive,
   });
 
   const { data: priorities, isLoading: prioritiesLoading } =
@@ -70,6 +86,65 @@ const DashboardV2Content = () => {
       executiveId: currentUserId,
       enabled: isExecutive,
     });
+
+  // Level 2 hooks
+  const { data: taskProgress } = useTaskProgress({
+    accessToken,
+    clientId,
+    executiveId: isExecutive ? currentUserId : undefined,
+    teamWide: isJefe,
+    enabled: isJefe || isExecutive,
+  });
+
+  const { data: commitmentsSummary } = useCommitmentsSummary({
+    accessToken,
+    clientId,
+    executiveId: isExecutive ? currentUserId : undefined,
+    enabled: isJefe || isExecutive,
+  });
+
+  const { data: contactEffectiveness } = useContactEffectiveness({
+    accessToken,
+    clientId,
+    executiveId: isExecutive ? currentUserId : undefined,
+    period: isExecutive ? "day" : "month",
+    enabled: isJefe || isExecutive,
+  });
+
+  const { data: invoicePhase } = useInvoicePhaseDistribution({
+    accessToken,
+    clientId,
+    executiveId: isExecutive ? currentUserId : undefined,
+    phase: 1,
+    enabled: isExecutive,
+  });
+
+  const { data: upcomingCommitments, isLoading: upcomingLoading } =
+    useUpcomingCommitments({
+      accessToken,
+      clientId,
+      executiveId: isExecutive ? currentUserId : undefined,
+      days: 7,
+      enabled: isExecutive,
+    });
+
+  const { data: weeklyTrend, isLoading: trendLoading } = useCashTrendWeekly({
+    accessToken,
+    clientId,
+    executiveId: isExecutive ? currentUserId : undefined,
+    weeks: 8,
+    enabled: isExecutive,
+  });
+
+  const level2Data: Level2KpiData = useMemo(
+    () => ({
+      taskProgress,
+      commitmentsSummary,
+      contactEffectiveness,
+      invoicePhase,
+    }),
+    [taskProgress, commitmentsSummary, contactEffectiveness, invoicePhase],
+  );
 
   const kpis = kpiData?.data || [];
   const indicators = kpiData?.indicators;
@@ -112,23 +187,27 @@ const DashboardV2Content = () => {
               </p>
               <p className="text-sm text-gray-500">{error.message}</p>
             </div>
-          ) : activeType === "MANAGER" ? (
+          ) : isManager ? (
             <ManagerView
               agingBuckets={agingBuckets}
               agingBucketsLoading={agingLoading}
               debtorConcentration={debtorConcentration}
               debtorConcentrationLoading={concentrationLoading}
+              dsoProjection={dsoProjection}
+              dsoProjectionLoading={dsoLoading}
               realKpis={kpis}
+              level2Data={level2Data}
             />
-          ) : activeType === "COLLECTION_MANAGER" ? (
+          ) : isJefe ? (
             <CollectionManagerView
               team={team}
               teamLoading={teamLoading}
               debtorConcentration={debtorConcentration}
               debtorConcentrationLoading={concentrationLoading}
               realKpis={kpis}
+              level2Data={level2Data}
             />
-          ) : activeType === "EXECUTIVE" ? (
+          ) : isExecutive ? (
             <ExecutiveView
               priorities={priorities}
               prioritiesLoading={prioritiesLoading}
@@ -136,6 +215,13 @@ const DashboardV2Content = () => {
               rankingLoading={teamLoading}
               currentExecutiveId={currentUserId}
               realKpis={kpis}
+              taskProgress={taskProgress}
+              contactEffectiveness={contactEffectiveness}
+              upcomingCommitments={upcomingCommitments}
+              upcomingCommitmentsLoading={upcomingLoading}
+              weeklyTrend={weeklyTrend}
+              weeklyTrendLoading={trendLoading}
+              level2Data={level2Data}
             />
           ) : (
             <GenericView kpis={kpis} indicators={indicators} />

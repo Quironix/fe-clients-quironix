@@ -6,8 +6,15 @@ import { PipelineCard } from "../pipeline-card";
 import { TodayPriorities } from "../today-priorities";
 import { TodayStatsGrid } from "../today-stats-grid";
 import { MOCK_KPIS_EJECUTIVO } from "../../constants/mock-kpis";
-import { TeamMemberRow, TodayPriorityTask } from "../../types";
-import { buildKpiGridItems } from "../../utils/kpi-adapter";
+import {
+  ContactEffectivenessData,
+  TaskProgressData,
+  TeamMemberRow,
+  TodayPriorityTask,
+  UpcomingCommitmentDay,
+  WeeklyCashTrendItem,
+} from "../../types";
+import { buildKpiGridItems, Level2KpiData } from "../../utils/kpi-adapter";
 import { KPI } from "../../../overview/services/types";
 
 interface ExecutiveViewProps {
@@ -17,6 +24,13 @@ interface ExecutiveViewProps {
   rankingLoading?: boolean;
   currentExecutiveId?: string;
   realKpis?: KPI[];
+  taskProgress?: TaskProgressData;
+  contactEffectiveness?: ContactEffectivenessData;
+  upcomingCommitments?: UpcomingCommitmentDay[];
+  upcomingCommitmentsLoading?: boolean;
+  weeklyTrend?: WeeklyCashTrendItem[];
+  weeklyTrendLoading?: boolean;
+  level2Data?: Level2KpiData;
 }
 
 export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
@@ -25,20 +39,34 @@ export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
   ranking,
   currentExecutiveId,
   realKpis,
+  taskProgress,
+  contactEffectiveness,
+  upcomingCommitments,
+  upcomingCommitmentsLoading,
+  weeklyTrend,
+  weeklyTrendLoading,
+  level2Data,
 }) => {
   return (
     <div className="qxv2" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <TodayStatsGrid />
+      <TodayStatsGrid
+        taskProgress={taskProgress}
+        contactEffectiveness={contactEffectiveness}
+        upcomingCommitments={upcomingCommitments}
+      />
       <TodayPriorities data={priorities} isLoading={prioritiesLoading} />
       <div className="qxv2-fwd-grid">
-        <PipelineCard />
+        <PipelineCard
+          data={upcomingCommitments}
+          isLoading={upcomingCommitmentsLoading}
+        />
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <MyProgressCard />
           <MyRankingCard team={ranking} currentExecutiveId={currentExecutiveId} />
         </div>
       </div>
-      <MyTrendCard />
-      <KpiGridMock items={buildKpiGridItems(MOCK_KPIS_EJECUTIVO, realKpis)} />
+      <MyTrendCard data={weeklyTrend} isLoading={weeklyTrendLoading} />
+      <KpiGridMock items={buildKpiGridItems(MOCK_KPIS_EJECUTIVO, realKpis, level2Data)} />
     </div>
   );
 };

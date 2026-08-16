@@ -58,7 +58,26 @@ const TrendSpark = ({ points, color }: { points: number[]; color: string }) => {
   );
 };
 
-const RankingMove = ({ move }: { move?: "up" | "down" | "flat" }) => {
+const RankingDisplay = ({
+  ranking,
+  move,
+}: {
+  ranking?: number;
+  move?: "up" | "down" | "flat";
+}) => {
+  if (ranking !== undefined && ranking > 0) {
+    return (
+      <span
+        style={{
+          fontSize: 12.5,
+          fontWeight: 800,
+          color: ranking === 1 ? "var(--qx-good-tx)" : "#475467",
+        }}
+      >
+        #{ranking} {ranking === 1 ? "🏆" : ""}
+      </span>
+    );
+  }
   if (!move) return <span className="qxv2-t-rank-mv flat">—</span>;
   if (move === "up") return <span className="qxv2-t-rank-mv up">▲ sube</span>;
   if (move === "down") return <span className="qxv2-t-rank-mv down">▼ baja</span>;
@@ -84,7 +103,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({
       </div>
       <div className="qxv2-team-rows">
         {isLoading ? (
-          <div className="qxv2-h-sub">Cargando...</div>
+          <div className="qxv2-h-sub" style={{ padding: "16px" }}>Cargando datos del equipo...</div>
         ) : (
           <>
             <div className="qxv2-team-head v2" style={gridCols}>
@@ -97,10 +116,14 @@ export const TeamTable: React.FC<TeamTableProps> = ({
               <span>Caja</span>
             </div>
             {data.map((row) => {
-              const trendEntry = MOCK_TEAM_TREND[row.executiveId];
-              const trendColor = trendEntry
-                ? toneColor(trendEntry.trend[trendEntry.trend.length - 1])
+              const trendPoints =
+                row.trend && row.trend.length > 0
+                  ? row.trend
+                  : MOCK_TEAM_TREND[row.executiveId]?.trend;
+              const trendColor = trendPoints
+                ? toneColor(trendPoints[trendPoints.length - 1])
                 : "#98A2B3";
+
               return (
                 <div
                   className="qxv2-team-row v2"
@@ -123,13 +146,16 @@ export const TeamTable: React.FC<TeamTableProps> = ({
                   <Metric value={row.contactPercent} />
                   <Metric value={row.commitmentsFulfilledPercent} />
                   <span className="qxv2-t-trend">
-                    {trendEntry ? (
-                      <TrendSpark points={trendEntry.trend} color={trendColor} />
+                    {trendPoints ? (
+                      <TrendSpark points={trendPoints} color={trendColor} />
                     ) : (
                       "—"
                     )}
                   </span>
-                  <RankingMove move={trendEntry?.move} />
+                  <RankingDisplay
+                    ranking={row.ranking}
+                    move={MOCK_TEAM_TREND[row.executiveId]?.move}
+                  />
                   <span className="qxv2-t-caja">
                     {formatNumber(row.cashGenerated)}
                   </span>
