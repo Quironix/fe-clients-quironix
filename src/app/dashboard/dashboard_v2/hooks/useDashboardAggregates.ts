@@ -7,6 +7,7 @@ import {
   getContactEffectiveness,
   getDebtorConcentration,
   getDsoProjection,
+  getExecutiveSummary,
   getInvoicePhaseDistribution,
   getTaskProgress,
   getTeamOverview,
@@ -173,6 +174,18 @@ export const useCashDeviationByPhase = ({
   useQuery({
     queryKey: ["dashboard_v2", "cash-deviation-by-phase", clientId, period],
     queryFn: () => getCashDeviationByPhase(accessToken, clientId, period),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+export const useExecutiveSummary = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "executive-summary", clientId],
+    queryFn: () => getExecutiveSummary(accessToken, clientId),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
   });

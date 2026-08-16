@@ -152,3 +152,13 @@ export interface CashDeviationData {
     unit: string;
   };
 }
+
+export interface ExecutiveSummaryAction {
+  label: string;
+  amount: string;
+}
+
+export interface ExecutiveSummaryData {
+  text: string;
+  actions: ExecutiveSummaryAction[];
+}

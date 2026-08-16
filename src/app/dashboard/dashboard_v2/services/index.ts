@@ -5,6 +5,7 @@ import {
   ContactEffectivenessData,
   DebtorConcentrationItem,
   DsoProjectionData,
+  ExecutiveSummaryData,
   InvoicePhaseDistributionData,
   TaskProgressData,
   TeamMemberRow,
@@ -282,6 +283,14 @@ export const getCashDeviationByPhase = (
 ) => {
   return safeFetch<CashDeviationData | null>(
     `${API_URL}/v2/clients/${clientId}/reports/dashboard/cash-deviation-by-phase?period=${period}`,
+    accessToken,
+    null,
+  );
+};
+
+export const getExecutiveSummary = (accessToken: string, clientId: string) => {
+  return safeFetch<ExecutiveSummaryData | null>(
+    `${API_URL}/v2/clients/${clientId}/reports/dashboard/executive-summary`,
     accessToken,
     null,
   );

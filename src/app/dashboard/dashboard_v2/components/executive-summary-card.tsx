@@ -1,7 +1,19 @@
+"use client";
+import React from "react";
+import { useProfileContext } from "@/context/ProfileContext";
 import { MOCK_EXECUTIVE_SUMMARY } from "../constants/mock-extras";
+import { useExecutiveSummary } from "../hooks/useDashboardAggregates";
 
 export const ExecutiveSummaryCard: React.FC = () => {
-  const s = MOCK_EXECUTIVE_SUMMARY;
+  const { session, profile } = useProfileContext();
+
+  const { data: realData } = useExecutiveSummary({
+    accessToken: session?.token || "",
+    clientId: profile?.client?.id || "",
+    enabled: !!session?.token && !!profile?.client?.id,
+  });
+
+  const s = realData || MOCK_EXECUTIVE_SUMMARY;
 
   return (
     <div className="qxv2-card qxv2-summary">
