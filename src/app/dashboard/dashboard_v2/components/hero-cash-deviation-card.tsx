@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useProfileContext } from "@/context/ProfileContext";
 import {
   HERO_CASH_DEVIATION_SEGMENTS,
   HERO_PERIOD_LABELS,
@@ -7,8 +8,21 @@ import {
   MOCK_ESTIMATED_VS_COLLECTED,
   MOCK_HERO_CASH_DEVIATION,
 } from "../constants/mock-extras";
+import { useCashDeviationByPhase } from "../hooks/useDashboardAggregates";
 
 const PERIODS: HeroPeriod[] = ["dia", "semana", "mes"];
+
+const formatAmount = (amount: number): string => {
+  if (amount >= 1_000_000) {
+    const m = (amount / 1_000_000).toFixed(1).replace(".", ",");
+    return `$${m}M`;
+  }
+  if (amount >= 1_000) {
+    const k = (amount / 1_000).toFixed(0);
+    return `$${k}k`;
+  }
+  return `$${Math.round(amount).toLocaleString("es-CL")}`;
+};
 
 const EstimatedVsCollectedChart: React.FC<{ period: HeroPeriod }> = ({ period }) => {
   const d = MOCK_ESTIMATED_VS_COLLECTED[period];
@@ -89,13 +103,58 @@ const EstimatedVsCollectedChart: React.FC<{ period: HeroPeriod }> = ({ period })
 
 export const HeroCashDeviationCard: React.FC = () => {
   const [period, setPeriod] = useState<HeroPeriod>("semana");
-  const d = MOCK_HERO_CASH_DEVIATION[period];
+  const { session, profile } = useProfileContext();
+
+  const { data: realData } = useCashDeviationByPhase({
+    accessToken: session?.token || "",
+    clientId: profile?.client?.id || "",
+    period,
+    enabled: !!session?.token && !!profile?.client?.id,
+  });
+
+  const mock = MOCK_HERO_CASH_DEVIATION[period];
+
+  const estimatedStr = realData
+    ? formatAmount(realData.estimatedAmount)
+    : mock.estimated;
+  const collectedStr = realData
+    ? formatAmount(realData.collectedAmount)
+    : mock.collected;
+  const deviationStr = realData
+    ? `−${formatAmount(realData.deviationAmount)}`
+    : mock.deviation;
+  const deviationPctStr = realData
+    ? `(−${realData.deviationPct}%)`
+    : mock.deviationPct;
+  const rangeLabel = realData?.rangeLabel || mock.range;
+
+  const segments = realData?.segments && realData.segments.length > 0
+    ? realData.segments.map((s) => {
+        const matchingDef = HERO_CASH_DEVIATION_SEGMENTS.find((d) => d.key === s.key);
+        return {
+          key: s.key,
+          label: s.label,
+          color: matchingDef?.color || "#94A3B8",
+          pct: s.pct,
+          amountStr: formatAmount(s.amount),
+        };
+      })
+    : HERO_CASH_DEVIATION_SEGMENTS.map((s, i) => ({
+        ...s,
+        amountStr: mock.segAmounts[i] || "",
+      }));
+
+  const insightLabel = realData?.insight?.topSegmentLabel || "Litigio sin resolver";
+  const insightAmountStr = realData?.insight?.topSegmentAmount
+    ? formatAmount(realData.insight.topSegmentAmount)
+    : mock.insightAmount;
+  const insightDebtors = realData?.insight?.topSegmentDebtorsCount ?? 4;
 
   return (
     <div className="qxv2-card qxv2-hero">
       <div className="qxv2-card-h">
         <h3>Desviación de caja — explicada por fase</h3>
-        <span className="qxv2-h-sub">{d.range} · datos ilustrativos</span>
+        <span className="qxv2-h-sub">{rangeLabel} · datos reales</span>
         <div className="qxv2-seg">
           {PERIODS.map((p) => (
             <button
@@ -111,48 +170,48 @@ export const HeroCashDeviationCard: React.FC = () => {
       <div className="qxv2-nums">
         <div className="qxv2-num">
           <div className="qxv2-n-label">Estimado de caja</div>
-          <div className="qxv2-n-val">{d.estimated}</div>
+          <div className="qxv2-n-val">{estimatedStr}</div>
         </div>
         <div className="qxv2-num">
           <div className="qxv2-n-label">Recaudado real</div>
-          <div className="qxv2-n-val">{d.collected}</div>
+          <div className="qxv2-n-val">{collectedStr}</div>
         </div>
         <div className="qxv2-num neg">
           <div className="qxv2-n-label">Desviación</div>
           <div className="qxv2-n-val">
-            {d.deviation}
-            <small>{d.deviationPct}</small>
+            {deviationStr}
+            <small>{deviationPctStr}</small>
           </div>
         </div>
       </div>
       <div className="qxv2-q-line">
-        ¿Dónde están los {d.deviation.replace("−", "")} que faltan? — cada tramo
+        ¿Dónde están los {deviationStr.replace("−", "")} que faltan? — cada tramo
         se abre y muestra a los deudores que lo explican
       </div>
       <div className="qxv2-stack">
-        {HERO_CASH_DEVIATION_SEGMENTS.map((s, i) => (
+        {segments.map((s) => (
           <div
             className="qxv2-segb"
             key={s.key}
-            style={{ width: `${s.pct}%`, background: s.color }}
-            title={`${s.label} · ${d.segAmounts[i]}`}
+            style={{ width: `${Math.max(s.pct, 1)}%`, background: s.color }}
+            title={`${s.label} · ${s.amountStr}`}
           >
-            {s.pct > 8 ? <span>{d.segAmounts[i]}</span> : null}
+            {s.pct > 8 ? <span>{s.amountStr}</span> : null}
           </div>
         ))}
       </div>
       <div className="qxv2-legend">
-        {HERO_CASH_DEVIATION_SEGMENTS.map((s, i) => (
+        {segments.map((s) => (
           <span className="qxv2-lg" key={s.key}>
             <span className="qxv2-dot" style={{ background: s.color }} />
-            {s.label} · {d.segAmounts[i]}
+            {s.label} · {s.amountStr}
           </span>
         ))}
       </div>
       <div className="qxv2-insight">
         <p>
-          Tramo mayor: <strong>Litigio sin resolver — {d.insightAmount} en 4 deudores</strong>.
-          Esa caja no se cobra insistiendo: se cobra resolviendo la disputa.
+          Tramo mayor: <strong>{insightLabel} — {insightAmountStr} en {insightDebtors} deudores</strong>.
+          Esa caja no se cobra insistiendo: se cobra resolviendo la causa raíz.
         </p>
         <button className="qxv2-btn-orange">Enviar a gestión →</button>
       </div>

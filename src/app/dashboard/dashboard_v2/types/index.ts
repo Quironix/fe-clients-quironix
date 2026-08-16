@@ -122,3 +122,33 @@ export interface WeeklyCashTrendItem {
   startDate: string;
   endDate: string;
 }
+
+export interface CashDeviationSegment {
+  key: string;
+  label: string;
+  amount: number;
+  pct: number;
+  debtorsCount: number;
+}
+
+export interface CashDeviationData {
+  period: "dia" | "semana" | "mes";
+  rangeLabel: string;
+  estimatedAmount: number;
+  collectedAmount: number;
+  deviationAmount: number;
+  deviationPct: number;
+  segments: CashDeviationSegment[];
+  insight: {
+    topSegmentKey: string;
+    topSegmentLabel: string;
+    topSegmentAmount: number;
+    topSegmentDebtorsCount: number;
+  };
+  chart: {
+    labels: string[];
+    estimated: number[];
+    collected: number[];
+    unit: string;
+  };
+}

@@ -1,5 +1,6 @@
 import {
   AgingBucket,
+  CashDeviationData,
   CommitmentsSummaryData,
   ContactEffectivenessData,
   DebtorConcentrationItem,
@@ -271,5 +272,17 @@ export const getCashTrendWeekly = (
     `${API_URL}/v2/clients/${clientId}/reports/dashboard/cash-trend-weekly${qs}`,
     accessToken,
     MOCK_WEEKLY_CASH_TREND,
+  );
+};
+
+export const getCashDeviationByPhase = (
+  accessToken: string,
+  clientId: string,
+  period: "dia" | "semana" | "mes" = "semana",
+) => {
+  return safeFetch<CashDeviationData | null>(
+    `${API_URL}/v2/clients/${clientId}/reports/dashboard/cash-deviation-by-phase?period=${period}`,
+    accessToken,
+    null,
   );
 };

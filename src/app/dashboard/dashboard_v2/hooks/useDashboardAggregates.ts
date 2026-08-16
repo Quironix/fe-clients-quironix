@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   getAgingBuckets,
+  getCashDeviationByPhase,
   getCashTrendWeekly,
   getCommitmentsSummary,
   getContactEffectiveness,
@@ -159,6 +160,19 @@ export const useCashTrendWeekly = ({
   useQuery({
     queryKey: ["dashboard_v2", "cash-trend-weekly", clientId, executiveId, weeks],
     queryFn: () => getCashTrendWeekly(accessToken, clientId, { executiveId, weeks }),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+export const useCashDeviationByPhase = ({
+  accessToken,
+  clientId,
+  period = "semana",
+  enabled = true,
+}: BaseParams & { period?: "dia" | "semana" | "mes" }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "cash-deviation-by-phase", clientId, period],
+    queryFn: () => getCashDeviationByPhase(accessToken, clientId, period),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
   });
