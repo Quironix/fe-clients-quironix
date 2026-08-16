@@ -237,12 +237,20 @@ export const getInvoicePhaseDistribution = (
   );
 };
 
-export const getDsoProjection = (accessToken: string, clientId: string) =>
-  safeFetch<DsoProjectionData>(
-    `${API_URL}/v2/clients/${clientId}/reports/dashboard/dso-projection`,
+export const getDsoProjection = (
+  accessToken: string,
+  clientId: string,
+  params?: { executiveId?: string },
+) => {
+  const query = new URLSearchParams();
+  if (params?.executiveId) query.set("executiveId", params.executiveId);
+  const qs = query.toString() ? `?${query.toString()}` : "";
+  return safeFetch<DsoProjectionData>(
+    `${API_URL}/v2/clients/${clientId}/reports/dashboard/dso-projection${qs}`,
     accessToken,
     MOCK_DSO_PROJECTION,
   );
+};
 
 export const getUpcomingCommitments = (
   accessToken: string,

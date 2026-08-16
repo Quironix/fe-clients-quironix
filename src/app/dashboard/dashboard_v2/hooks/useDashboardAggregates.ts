@@ -128,11 +128,12 @@ export const useInvoicePhaseDistribution = ({
 export const useDsoProjection = ({
   accessToken,
   clientId,
+  executiveId,
   enabled = true,
-}: BaseParams) =>
+}: BaseParams & { executiveId?: string }) =>
   useQuery({
-    queryKey: ["dashboard_v2", "dso-projection", clientId],
-    queryFn: () => getDsoProjection(accessToken, clientId),
+    queryKey: ["dashboard_v2", "dso-projection", clientId, executiveId],
+    queryFn: () => getDsoProjection(accessToken, clientId, { executiveId }),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
   });
