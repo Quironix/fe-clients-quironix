@@ -96,6 +96,8 @@ describe("kpi-adapter (Dashboard V2)", () => {
     expect(callsItem).toBeDefined();
     expect(callsItem?.value).toBe("18");
     expect(callsItem?.status).toBe("good");
+    expect(callsItem?.done).toBe(18);
+    expect(callsItem?.total).toBe(25);
   });
 
   it("does not fall back to the mock trend line when a real trend KPI has under 2 history points", () => {

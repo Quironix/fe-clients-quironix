@@ -140,13 +140,16 @@ const mapLevel2Kpi = (
 
   if (item.name === "Llamadas Efectivas" && level2Data.contactEffectiveness) {
     const count = level2Data.contactEffectiveness.todayEffective;
+    const total = item.total ?? 25;
     const tone: KpiTone = count >= 15 ? "good" : count >= 10 ? "warn" : "bad";
     return {
       ...item,
       value: `${count}`,
+      done: Math.min(count, total),
+      total,
       status: tone,
       badge: { tx: count >= 15 ? "En meta diaria" : "En progreso", tone },
-      meta: `Meta: 25 llamadas · ${count} efectivas hoy`,
+      meta: `Meta: ${total} llamadas · ${count} efectivas hoy`,
     };
   }
 
