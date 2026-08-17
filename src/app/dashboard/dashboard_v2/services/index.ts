@@ -8,7 +8,9 @@ import {
   DsoProjectionData,
   ExecutiveSummaryData,
   InvoicePhaseDistributionData,
+  MyProgressData,
   TaskProgressData,
+  TeamCapacityMember,
   TeamMemberRow,
   TodayPriorityTask,
   UpcomingCommitmentDay,
@@ -313,6 +315,22 @@ export const getCashDeviationSegmentDebtors = (
 export const getExecutiveSummary = (accessToken: string, clientId: string) => {
   return safeFetch<ExecutiveSummaryData | null>(
     `${API_URL}/v2/clients/${clientId}/reports/dashboard/executive-summary`,
+    accessToken,
+    null,
+  );
+};
+
+export const getMyProgress = (accessToken: string, clientId: string) => {
+  return safeFetch<MyProgressData | null>(
+    `${API_URL}/v2/clients/${clientId}/managements/indicators`,
+    accessToken,
+    null,
+  );
+};
+
+export const getTeamCapacity = (accessToken: string, clientId: string) => {
+  return safeFetch<TeamCapacityMember[] | null>(
+    `${API_URL}/v2/clients/${clientId}/reports/dashboard/team-capacity`,
     accessToken,
     null,
   );

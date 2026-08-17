@@ -4,7 +4,11 @@ import { KpiGridMock } from "../kpi-card-mock";
 import { TeamCapacityCard } from "../team-capacity-card";
 import { TeamTable } from "../team-table";
 import { MOCK_KPIS_JEFE } from "../../constants/mock-kpis";
-import { DebtorConcentrationItem, TeamMemberRow } from "../../types";
+import {
+  DebtorConcentrationItem,
+  TeamCapacityMember,
+  TeamMemberRow,
+} from "../../types";
 import { buildKpiGridItems, Level2KpiData } from "../../utils/kpi-adapter";
 import { KPI } from "../../../overview/services/types";
 
@@ -15,6 +19,8 @@ interface CollectionManagerViewProps {
   debtorConcentrationLoading?: boolean;
   realKpis?: KPI[];
   level2Data?: Level2KpiData;
+  teamCapacity?: TeamCapacityMember[] | null;
+  teamCapacityLoading?: boolean;
 }
 
 export const CollectionManagerView: React.FC<CollectionManagerViewProps> = ({
@@ -24,6 +30,8 @@ export const CollectionManagerView: React.FC<CollectionManagerViewProps> = ({
   debtorConcentrationLoading,
   realKpis,
   level2Data,
+  teamCapacity,
+  teamCapacityLoading,
 }) => {
   return (
     <div className="qxv2" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -35,7 +43,7 @@ export const CollectionManagerView: React.FC<CollectionManagerViewProps> = ({
           data={debtorConcentration}
           isLoading={debtorConcentrationLoading}
         />
-        <TeamCapacityCard />
+        <TeamCapacityCard data={teamCapacity} isLoading={teamCapacityLoading} />
       </div>
     </div>
   );

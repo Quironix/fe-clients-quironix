@@ -8,6 +8,7 @@ import { TodayStatsGrid } from "../today-stats-grid";
 import { MOCK_KPIS_EJECUTIVO } from "../../constants/mock-kpis";
 import {
   ContactEffectivenessData,
+  MyProgressData,
   TaskProgressData,
   TeamMemberRow,
   TodayPriorityTask,
@@ -32,6 +33,8 @@ interface ExecutiveViewProps {
   weeklyTrend?: WeeklyCashTrendItem[];
   weeklyTrendLoading?: boolean;
   level2Data?: Level2KpiData;
+  myProgress?: MyProgressData | null;
+  myProgressLoading?: boolean;
 }
 
 export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
@@ -48,6 +51,8 @@ export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
   weeklyTrend,
   weeklyTrendLoading,
   level2Data,
+  myProgress,
+  myProgressLoading,
 }) => {
   return (
     <div className="qxv2" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -64,7 +69,12 @@ export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
           isLoading={upcomingCommitmentsLoading}
         />
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <MyProgressCard />
+          <MyProgressCard
+            dailyGoal={myProgress?.daily_goal}
+            weeklyGoal={myProgress?.weekly_goal}
+            monthlyGoal={myProgress?.monthly_goal}
+            isLoading={myProgressLoading}
+          />
           <MyRankingCard
             team={ranking}
             currentExecutiveId={currentExecutiveId}

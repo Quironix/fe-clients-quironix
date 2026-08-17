@@ -10,7 +10,9 @@ import {
   getDsoProjection,
   getExecutiveSummary,
   getInvoicePhaseDistribution,
+  getMyProgress,
   getTaskProgress,
+  getTeamCapacity,
   getTeamOverview,
   getTodayPriorities,
   getUpcomingCommitments,
@@ -225,6 +227,32 @@ export const useExecutiveSummary = ({
   useQuery({
     queryKey: ["dashboard_v2", "executive-summary", clientId],
     queryFn: () => getExecutiveSummary(accessToken, clientId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useTeamCapacity = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "team-capacity", clientId],
+    queryFn: () => getTeamCapacity(accessToken, clientId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useMyProgress = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "my-progress", clientId],
+    queryFn: () => getMyProgress(accessToken, clientId),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
     placeholderData: keepPreviousData,

@@ -170,3 +170,22 @@ export interface ExecutiveSummaryData {
   text: string;
   actions: ExecutiveSummaryAction[];
 }
+
+export interface GoalMetric {
+  current_amount: number;
+  target_amount: number;
+  percentage: number;
+}
+
+export interface MyProgressData {
+  daily_goal: GoalMetric;
+  weekly_goal: GoalMetric;
+  monthly_goal: GoalMetric;
+}
+
+export interface TeamCapacityMember {
+  executiveId: string;
+  executiveName: string;
+  assigned: number;
+  capacity: number | null;
+}

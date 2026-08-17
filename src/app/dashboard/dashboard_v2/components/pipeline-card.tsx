@@ -1,3 +1,4 @@
+import { useRouter } from "next/navigation";
 import React from "react";
 import { MOCK_PIPELINE } from "../constants/mock-extras";
 import { UpcomingCommitmentDay } from "../types";
@@ -16,7 +17,11 @@ export const PipelineCard: React.FC<PipelineCardProps> = ({
   data,
   isLoading,
 }) => {
+  const router = useRouter();
   const hasRealData = data && data.length > 0;
+
+  const goToAddManagement = (debtorId: string) =>
+    router.push(`/dashboard/debtor-management/${debtorId}?tab=add-management`);
 
   return (
     <div className="qxv2-card">
@@ -47,7 +52,11 @@ export const PipelineCard: React.FC<PipelineCardProps> = ({
                   <small>{item.note}</small>
                 </span>
                 <span className="qxv2-pi-mo">{formatCurrency(item.amount)}</span>
-                <button className="qxv2-btn-ghost" style={{ padding: "5px 10px" }}>
+                <button
+                  className="qxv2-btn-ghost"
+                  style={{ padding: "5px 10px" }}
+                  onClick={() => goToAddManagement(item.debtorId)}
+                >
                   Preparar →
                 </button>
               </div>

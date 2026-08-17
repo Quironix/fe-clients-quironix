@@ -23,7 +23,9 @@ import {
   useDebtorConcentration,
   useDsoProjection,
   useInvoicePhaseDistribution,
+  useMyProgress,
   useTaskProgress,
+  useTeamCapacity,
   useTeamOverview,
   useTodayPriorities,
   useUpcomingCommitments,
@@ -137,6 +139,19 @@ const DashboardV2Content = () => {
     enabled: isExecutive,
   });
 
+  const { data: myProgress, isLoading: myProgressLoading } = useMyProgress({
+    accessToken,
+    clientId,
+    enabled: isExecutive,
+  });
+
+  const { data: teamCapacity, isLoading: teamCapacityLoading } =
+    useTeamCapacity({
+      accessToken,
+      clientId,
+      enabled: isJefe,
+    });
+
   const todayStatsLoading =
     taskProgressLoading || contactEffectivenessLoading || upcomingLoading;
 
@@ -210,6 +225,8 @@ const DashboardV2Content = () => {
               debtorConcentrationLoading={concentrationLoading}
               realKpis={kpis}
               level2Data={level2Data}
+              teamCapacity={teamCapacity}
+              teamCapacityLoading={teamCapacityLoading}
             />
           ) : isExecutive ? (
             <ExecutiveView
@@ -227,6 +244,8 @@ const DashboardV2Content = () => {
               weeklyTrend={weeklyTrend}
               weeklyTrendLoading={trendLoading}
               level2Data={level2Data}
+              myProgress={myProgress}
+              myProgressLoading={myProgressLoading}
             />
           ) : (
             <GenericView kpis={kpis} indicators={indicators} />

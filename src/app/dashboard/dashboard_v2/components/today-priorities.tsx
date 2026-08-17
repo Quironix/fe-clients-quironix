@@ -1,4 +1,5 @@
 import { formatNumber } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import { TodayPriorityTask } from "../types";
 
 interface TodayPrioritiesProps {
@@ -10,6 +11,7 @@ export const TodayPriorities: React.FC<TodayPrioritiesProps> = ({
   data = [],
   isLoading,
 }) => {
+  const router = useRouter();
   const sorted = data.slice().sort((a, b) => a.priority - b.priority);
 
   return (
@@ -32,7 +34,18 @@ export const TodayPriorities: React.FC<TodayPrioritiesProps> = ({
                 <div className="qxv2-t-sug">{task.description}</div>
               </div>
               <span className="qxv2-t-monto">{formatNumber(task.amount)}</span>
-              <button className="qxv2-btn-ghost">Gestionar →</button>
+              <button
+                className="qxv2-btn-ghost"
+                disabled={!task.debtorId}
+                onClick={() =>
+                  task.debtorId &&
+                  router.push(
+                    `/dashboard/debtor-management/${task.debtorId}?tab=add-management`,
+                  )
+                }
+              >
+                Gestionar →
+              </button>
             </div>
           ))
         )}
