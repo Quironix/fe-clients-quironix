@@ -8,6 +8,8 @@ import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import { useKPIData } from "../overview/hooks/useKPIData";
+import { QuironProvider } from "./components/ai/quiron-context";
+import { QuironWidget } from "./components/ai/quiron-widget";
 import { DashboardViewSwitcher } from "./components/dashboard-view-switcher";
 import { CollectionManagerView } from "./components/views/collection-manager-view";
 import { ExecutiveView } from "./components/views/executive-view";
@@ -169,14 +171,14 @@ const DashboardV2Content = () => {
   const indicators = kpiData?.indicators;
 
   return (
-    <>
+    <QuironProvider enabled={!isExecutive}>
       <Header fixed>
         <Language />
       </Header>
       <Main className="peer-[.header-fixed]/header:mt-20 pr-2 p-10 py-4">
         <TitleSection
           title="Dashboard"
-          description="Vista por rol — Manager, Jefe de Cobranza y Ejecutivo"
+          description="Revisa tus indicadores clave de rendimiento"
           icon={<LayoutGrid color="white" />}
           subDescription="Dashboard V2"
         />
@@ -252,7 +254,8 @@ const DashboardV2Content = () => {
           )}
         </div>
       </Main>
-    </>
+      <QuironWidget />
+    </QuironProvider>
   );
 };
 

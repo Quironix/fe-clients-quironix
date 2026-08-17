@@ -1,5 +1,6 @@
 import { formatNumber } from "@/lib/utils";
 import { AgingBucket } from "../types";
+import { QuironAiButton } from "./ai/quiron-buttons";
 
 interface AgingBucketsCardProps {
   data?: AgingBucket[];
@@ -27,6 +28,12 @@ export const AgingBucketsCard: React.FC<AgingBucketsCardProps> = ({
         <span className="qxv2-h-sub">
           Distribución del saldo · total {formatNumber(total)}
         </span>
+        <QuironAiButton
+          topic="aging-buckets"
+          variant="ghost"
+          size="sm"
+          style={{ marginLeft: "auto" }}
+        />
       </div>
       <div className="qxv2-body">
         {isLoading ? (

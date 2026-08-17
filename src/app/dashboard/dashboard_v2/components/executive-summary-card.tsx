@@ -3,6 +3,7 @@ import React from "react";
 import { useProfileContext } from "@/context/ProfileContext";
 import { MOCK_EXECUTIVE_SUMMARY } from "../constants/mock-extras";
 import { useExecutiveSummary } from "../hooks/useDashboardAggregates";
+import { QuironAiButton } from "./ai/quiron-buttons";
 
 export const ExecutiveSummaryCard: React.FC = () => {
   const { session, profile } = useProfileContext();
@@ -34,6 +35,12 @@ export const ExecutiveSummaryCard: React.FC = () => {
             {a.amount && <span className="qxv2-qa-amt">{a.amount}</span>}
           </div>
         ))}
+      </div>
+      <div className="qxv2-sm-actions">
+        <QuironAiButton topic="resumen" label="Analizar estos datos con Quirón" />
+        <span className="qxv2-sm-hint">
+          Quirón podrá explicar el resumen y sugerir próximos pasos.
+        </span>
       </div>
     </div>
   );

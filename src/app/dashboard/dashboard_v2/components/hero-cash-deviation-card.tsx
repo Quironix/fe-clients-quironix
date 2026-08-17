@@ -13,6 +13,7 @@ import {
   useCashDeviationSegmentDebtors,
 } from "../hooks/useDashboardAggregates";
 import { CashDeviationData } from "../types";
+import { QuironAiButton } from "./ai/quiron-buttons";
 
 const PERIODS: HeroPeriod[] = ["dia", "semana", "mes"];
 
@@ -235,6 +236,12 @@ export const HeroCashDeviationCard: React.FC = () => {
             </button>
           ))}
         </div>
+        <QuironAiButton
+          topic="cash-deviation"
+          variant="ghost"
+          size="sm"
+          style={{ marginLeft: "auto" }}
+        />
       </div>
       <div className="qxv2-nums">
         <div className="qxv2-num">

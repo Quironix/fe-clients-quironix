@@ -1,5 +1,6 @@
 import { formatNumber } from "@/lib/utils";
 import { DebtorConcentrationItem } from "../types";
+import { QuironAiButton } from "./ai/quiron-buttons";
 
 interface DebtorConcentrationCardProps {
   data?: DebtorConcentrationItem[];
@@ -19,6 +20,12 @@ export const DebtorConcentrationCard: React.FC<
         <span className="qxv2-h-sub">
           {data.length} deudores · {formatNumber(total)}
         </span>
+        <QuironAiButton
+          topic="debtor-concentration"
+          variant="ghost"
+          size="sm"
+          style={{ marginLeft: "auto" }}
+        />
       </div>
       <div className="qxv2-body">
         {isLoading ? (

@@ -1,4 +1,5 @@
 import { MockKpiDef } from "../constants/mock-kpis";
+import { QuironMiniButton } from "./ai/quiron-buttons";
 
 const STATUS_HEX: Record<string, string> = {
   good: "#1FA35C",
@@ -194,6 +195,7 @@ export const KpiCardMock: React.FC<{ k: MockKpiDef }> = ({ k }) => {
         ) : null}
         <span className="qxv2-k-dot" style={{ background: c }} />
       </div>
+      <QuironMiniButton topic={`kpi::${k.name}`} />
       <div className="qxv2-k-q">{k.q}</div>
       <Body k={k} c={c} />
       <div className="qxv2-k-foot">

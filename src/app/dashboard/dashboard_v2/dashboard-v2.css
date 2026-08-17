@@ -1733,3 +1733,317 @@
   font-weight: 600;
   padding-top: 8px;
 }
+
+/* ============ Quirón · botones de IA ============ */
+.qxv2-sm-actions {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #e7edfb;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.qxv2-sm-hint {
+  font-size: 11.5px;
+  color: #8794ae;
+  font-weight: 600;
+  max-width: 210px;
+  line-height: 1.4;
+}
+.qxv2-btn-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--qx-blue-bright), var(--qx-blue));
+  border: none;
+  border-radius: 9px;
+  padding: 9px 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(32, 64, 166, 0.26);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.qxv2-btn-ai:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 9px 22px rgba(32, 64, 166, 0.4);
+}
+.qxv2-btn-ai.ghost {
+  background: none;
+  color: var(--qx-blue-bright);
+  border: 1.5px solid #c9d6fa;
+  box-shadow: none;
+}
+.qxv2-btn-ai.ghost:hover {
+  background: var(--qx-blue-soft);
+  transform: none;
+  box-shadow: none;
+}
+.qxv2-btn-ai.sm {
+  font-size: 11.5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+.qxv2-k-ai {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  background: var(--qx-blue-soft);
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  color: var(--qx-blue-bright);
+}
+.qxv2-kpi:hover .qxv2-k-ai {
+  opacity: 1;
+}
+.qxv2-k-ai:hover {
+  background: #dce6fe;
+}
+
+/* ============ Quirón · widget flotante ============ */
+.qxv2-quiron-fab {
+  position: fixed;
+  right: 26px;
+  bottom: 26px;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 20px 0 17px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--qx-blue-bright), var(--qx-blue));
+  box-shadow: 0 10px 26px rgba(32, 64, 166, 0.42);
+  transition: transform 0.18s, box-shadow 0.18s, opacity 0.2s;
+}
+.qxv2-quiron-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(32, 64, 166, 0.5);
+}
+.qxv2-quiron-fab .qxv2-fab-tx {
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.qxv2-quiron-fab .qxv2-fab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.35);
+}
+.qxv2-quiron-fab.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(14px) scale(0.9);
+}
+
+.qxv2-quiron-widget {
+  position: fixed;
+  right: 26px;
+  bottom: 26px;
+  z-index: 71;
+  width: 392px;
+  max-width: calc(100vw - 32px);
+  background: #fff;
+  border: 1px solid var(--qx-line);
+  border-radius: 18px;
+  box-shadow: var(--qx-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform-origin: bottom right;
+  opacity: 0;
+  transform: translateY(16px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.qxv2-quiron-widget.open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.qxv2-qr-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #f1f3f9;
+}
+.qxv2-qr-head .qxv2-q-tile {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--qx-blue-bright), var(--qx-blue));
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.qxv2-qr-head h3 {
+  font-size: 15.5px;
+  font-weight: 900;
+}
+.qxv2-qr-head .qxv2-q-sub {
+  font-size: 11px;
+  color: var(--qx-muted);
+  font-weight: 700;
+}
+.qxv2-q-live {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--qx-good-tx);
+  background: var(--qx-good-bg);
+  padding: 3px 9px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.qxv2-q-sug {
+  padding: 2px 16px 10px;
+}
+.qxv2-q-sug .qxv2-qs-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #98a2b3;
+  margin-bottom: 7px;
+}
+.qxv2-q-sug .qxv2-qs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.qxv2-qs-chip {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--qx-blue-bright);
+  border: 1px solid #d7e0f8;
+  border-radius: 999px;
+  padding: 6px 11px;
+  background: #fff;
+  text-align: left;
+  transition: background 0.15s;
+}
+.qxv2-qs-chip:hover:not(:disabled) {
+  background: var(--qx-blue-soft);
+}
+.qxv2-qs-chip:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.qxv2-qr-close {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #98a2b3;
+  flex: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.qxv2-qr-close:hover {
+  background: #f2f4f8;
+  color: var(--qx-ink);
+}
+.qxv2-chat {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(46vh, 384px);
+  overflow-y: auto;
+}
+.qxv2-bub {
+  border-radius: 12px;
+  padding: 11px 13px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  max-width: 100%;
+}
+.qxv2-bub.ai {
+  background: #f5f7fe;
+  border: 1px solid #e6ebfb;
+  border-top-left-radius: 4px;
+  color: #344054;
+}
+.qxv2-bub.user {
+  background: var(--qx-blue-bright);
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+  max-width: 88%;
+}
+.qxv2-q-action .qxv2-qa-btn {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--qx-orange-dark);
+  background: var(--qx-orange-soft);
+  border: 1px solid #f8d9bc;
+  border-radius: 999px;
+  padding: 4px 9px;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+.qxv2-q-action .qxv2-qa-btn:hover {
+  background: #ffe8d2;
+}
+.qxv2-q-input {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid #f1f3f9;
+}
+.qxv2-q-input input {
+  flex: 1;
+  border: 1.5px solid #e1e5f2;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+}
+.qxv2-q-input input:disabled {
+  background: #f8f9fd;
+  color: #98a2b3;
+}
+.qxv2-q-input .qxv2-q-send {
+  width: 41px;
+  height: 41px;
+  flex: none;
+  background: var(--qx-orange);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+.qxv2-q-input .qxv2-q-send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+@media (max-width: 640px) {
+  .qxv2-quiron-widget {
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+    width: auto;
+    max-width: none;
+  }
+  .qxv2-quiron-fab {
+    right: 16px;
+    bottom: 16px;
+  }
+}

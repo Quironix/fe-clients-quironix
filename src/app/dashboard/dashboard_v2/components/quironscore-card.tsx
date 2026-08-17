@@ -1,3 +1,5 @@
+import { QuironAiButton } from "./ai/quiron-buttons";
+
 const MOCK_SCORE = 78;
 const MOCK_DELTA = "+3 pts vs semana anterior";
 const MOCK_BAND = "Cartera en rango saludable";
@@ -67,6 +69,12 @@ export const QuironscoreCard: React.FC = () => {
         >
           En validación
         </span>
+        <QuironAiButton
+          topic="quironscore"
+          variant="ghost"
+          size="sm"
+          style={{ marginLeft: "auto" }}
+        />
       </div>
       <div className="qxv2-sc-top">
         <div className="qxv2-donut">
