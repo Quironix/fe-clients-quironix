@@ -1,6 +1,7 @@
 import {
   AgingBucket,
   CashDeviationData,
+  CashDeviationSegmentDebtor,
   CommitmentsSummaryData,
   ContactEffectivenessData,
   DebtorConcentrationItem,
@@ -293,6 +294,19 @@ export const getCashDeviationByPhase = (
     `${API_URL}/v2/clients/${clientId}/reports/dashboard/cash-deviation-by-phase?period=${period}`,
     accessToken,
     null,
+  );
+};
+
+export const getCashDeviationSegmentDebtors = (
+  accessToken: string,
+  clientId: string,
+  segment: string,
+  period: "dia" | "semana" | "mes" = "semana",
+) => {
+  return safeFetch<CashDeviationSegmentDebtor[]>(
+    `${API_URL}/v2/clients/${clientId}/reports/dashboard/cash-deviation-by-phase/${segment}/debtors?period=${period}`,
+    accessToken,
+    [],
   );
 };
 

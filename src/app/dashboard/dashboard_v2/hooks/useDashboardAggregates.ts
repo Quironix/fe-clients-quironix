@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
   getAgingBuckets,
   getCashDeviationByPhase,
+  getCashDeviationSegmentDebtors,
   getCashTrendWeekly,
   getCommitmentsSummary,
   getContactEffectiveness,
@@ -31,6 +32,7 @@ export const useAgingBuckets = ({
     queryFn: () => getAgingBuckets(accessToken, clientId),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useDebtorConcentration = ({
@@ -43,6 +45,7 @@ export const useDebtorConcentration = ({
     queryFn: () => getDebtorConcentration(accessToken, clientId),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useTeamOverview = ({
@@ -55,6 +58,7 @@ export const useTeamOverview = ({
     queryFn: () => getTeamOverview(accessToken, clientId),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useTodayPriorities = ({
@@ -68,6 +72,7 @@ export const useTodayPriorities = ({
     queryFn: () => getTodayPriorities(accessToken, clientId, executiveId),
     enabled: enabled && !!accessToken && !!clientId && !!executiveId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useTaskProgress = ({
@@ -82,6 +87,7 @@ export const useTaskProgress = ({
     queryFn: () => getTaskProgress(accessToken, clientId, { executiveId, teamWide }),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useCommitmentsSummary = ({
@@ -95,6 +101,7 @@ export const useCommitmentsSummary = ({
     queryFn: () => getCommitmentsSummary(accessToken, clientId, executiveId),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useContactEffectiveness = ({
@@ -109,6 +116,7 @@ export const useContactEffectiveness = ({
     queryFn: () => getContactEffectiveness(accessToken, clientId, { executiveId, period }),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useInvoicePhaseDistribution = ({
@@ -123,6 +131,7 @@ export const useInvoicePhaseDistribution = ({
     queryFn: () => getInvoicePhaseDistribution(accessToken, clientId, { executiveId, phase }),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useDsoProjection = ({
@@ -136,6 +145,7 @@ export const useDsoProjection = ({
     queryFn: () => getDsoProjection(accessToken, clientId, { executiveId }),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useUpcomingCommitments = ({
@@ -150,6 +160,7 @@ export const useUpcomingCommitments = ({
     queryFn: () => getUpcomingCommitments(accessToken, clientId, { executiveId, days }),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useCashTrendWeekly = ({
@@ -164,6 +175,7 @@ export const useCashTrendWeekly = ({
     queryFn: () => getCashTrendWeekly(accessToken, clientId, { executiveId, weeks }),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useCashDeviationByPhase = ({
@@ -177,6 +189,32 @@ export const useCashDeviationByPhase = ({
     queryFn: () => getCashDeviationByPhase(accessToken, clientId, period),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useCashDeviationSegmentDebtors = ({
+  accessToken,
+  clientId,
+  segment,
+  period = "semana",
+  enabled = true,
+}: BaseParams & {
+  segment: string;
+  period?: "dia" | "semana" | "mes";
+}) =>
+  useQuery({
+    queryKey: [
+      "dashboard_v2",
+      "cash-deviation-segment-debtors",
+      clientId,
+      segment,
+      period,
+    ],
+    queryFn: () =>
+      getCashDeviationSegmentDebtors(accessToken, clientId, segment, period),
+    enabled: enabled && !!accessToken && !!clientId && !!segment,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
 export const useExecutiveSummary = ({
@@ -189,4 +227,5 @@ export const useExecutiveSummary = ({
     queryFn: () => getExecutiveSummary(accessToken, clientId),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });

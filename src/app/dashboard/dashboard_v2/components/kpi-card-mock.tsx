@@ -113,6 +113,9 @@ const BodyGauge = ({ k, c }: { k: MockKpiDef; c: string }) => {
 const BodyShare = ({ k, c }: { k: MockKpiDef; c: string }) => {
   const val = Math.max(0, Math.min(100, k.num ?? 0));
   const target = k.target ?? 0;
+  // La marca vertical en la barra queda en la posición exacta del umbral, pero el texto
+  // "Umbral X%" se separa de los extremos para que no tape las etiquetas "0%"/"100%".
+  const labelPos = Math.min(88, Math.max(12, target));
   return (
     <>
       <ValRow k={k} />
@@ -126,7 +129,7 @@ const BodyShare = ({ k, c }: { k: MockKpiDef; c: string }) => {
       </div>
       <div className="qxv2-share-scale">
         <span>0%</span>
-        <span className="qxv2-share-tlbl" style={{ left: `${target}%` }}>
+        <span className="qxv2-share-tlbl" style={{ left: `${labelPos}%` }}>
           {k.targetLabel}
         </span>
         <span>100%</span>
@@ -174,6 +177,21 @@ export const KpiCardMock: React.FC<{ k: MockKpiDef }> = ({ k }) => {
     <article className="qxv2-kpi">
       <div className="qxv2-k-head">
         <h4>{k.name}</h4>
+        {k._isMock ? (
+          <span
+            className="qxv2-h-sub"
+            style={{
+              fontSize: 10.5,
+              background: "var(--qx-blue-soft)",
+              color: "var(--qx-blue-bright)",
+              fontWeight: 800,
+              padding: "3px 9px",
+              borderRadius: 999,
+            }}
+          >
+            Ilustrativo
+          </span>
+        ) : null}
         <span className="qxv2-k-dot" style={{ background: c }} />
       </div>
       <div className="qxv2-k-q">{k.q}</div>

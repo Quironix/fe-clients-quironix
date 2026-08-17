@@ -65,7 +65,11 @@ const mapRealKpiToMockShape = (kpi: KPI, template: MockKpiDef): MockKpiDef => {
     case "trend":
       merged.metaVal = kpi.target;
       merged.metaLabel = `Meta ${kpi.target}`;
-      merged.trend = history.length >= 2 ? history : template.trend;
+      // Si no hay al menos 2 puntos de historial real, no se debe sustituir por la
+      // tendencia mock (inventada y desconectada del valor real) — eso hacía que, p. ej.,
+      // un KPI real en 0% se viera con una línea ficticia subiendo por sobre la meta.
+      // En su lugar se dibuja una línea plana en el valor real.
+      merged.trend = history.length >= 2 ? history : [kpi.value, kpi.value];
       break;
     case "fill":
       merged.pct = getProgressPercentage(kpi.value, kpi.target, kpi.thresholds.direction);
@@ -178,7 +182,13 @@ export const buildKpiGridItems = (
     const level2Item = mapLevel2Kpi(item, level2Data);
     if (level2Item !== item) return level2Item;
 
-    // 3. Fallback to mock item
-    return item;
+    // 3. Fallback to mock item — se marca explícitamente como ilustrativo (§3.8) para que
+    // el card correspondiente no sea indistinguible de uno con dato real.
+    if (typeof console !== "undefined") {
+      console.warn(
+        `[dashboard_v2] KPI "${item.name}" no tiene dato real (Nivel 1/2) disponible, mostrando mock`,
+      );
+    }
+    return { ...item, _isMock: true };
   });
 };

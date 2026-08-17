@@ -26,6 +26,7 @@ interface ExecutiveViewProps {
   realKpis?: KPI[];
   taskProgress?: TaskProgressData;
   contactEffectiveness?: ContactEffectivenessData;
+  todayStatsLoading?: boolean;
   upcomingCommitments?: UpcomingCommitmentDay[];
   upcomingCommitmentsLoading?: boolean;
   weeklyTrend?: WeeklyCashTrendItem[];
@@ -41,6 +42,7 @@ export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
   realKpis,
   taskProgress,
   contactEffectiveness,
+  todayStatsLoading,
   upcomingCommitments,
   upcomingCommitmentsLoading,
   weeklyTrend,
@@ -53,6 +55,7 @@ export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
         taskProgress={taskProgress}
         contactEffectiveness={contactEffectiveness}
         upcomingCommitments={upcomingCommitments}
+        isLoading={todayStatsLoading}
       />
       <TodayPriorities data={priorities} isLoading={prioritiesLoading} />
       <div className="qxv2-fwd-grid">
@@ -62,7 +65,11 @@ export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
         />
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <MyProgressCard />
-          <MyRankingCard team={ranking} currentExecutiveId={currentExecutiveId} />
+          <MyRankingCard
+            team={ranking}
+            currentExecutiveId={currentExecutiveId}
+            upcomingCommitments={upcomingCommitments}
+          />
         </div>
       </div>
       <MyTrendCard data={weeklyTrend} isLoading={weeklyTrendLoading} />

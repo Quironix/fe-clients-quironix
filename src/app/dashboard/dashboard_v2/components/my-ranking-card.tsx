@@ -1,20 +1,20 @@
 import { formatNumber } from "@/lib/utils";
-import { MOCK_TODAY_STATS } from "../constants/mock-extras";
-import { TeamMemberRow } from "../types";
-
-const commitmentsToday = MOCK_TODAY_STATS.find(
-  (s) => s.label === "Compromisos que vencen hoy"
-);
+import { TeamMemberRow, UpcomingCommitmentDay } from "../types";
 
 interface MyRankingCardProps {
   team?: TeamMemberRow[];
   currentExecutiveId?: string;
+  upcomingCommitments?: UpcomingCommitmentDay[];
 }
 
 export const MyRankingCard: React.FC<MyRankingCardProps> = ({
   team = [],
   currentExecutiveId,
+  upcomingCommitments,
 }) => {
+  const commitmentsToday = upcomingCommitments?.find((u) =>
+    u.when.startsWith("Hoy"),
+  );
   const ranked = [...team].sort((a, b) => b.cashGenerated - a.cashGenerated);
   const matchIndex = ranked.findIndex((r) => r.executiveId === currentExecutiveId);
   // Falls back to the 2nd row when the logged-in user isn't one of the
@@ -48,8 +48,8 @@ export const MyRankingCard: React.FC<MyRankingCardProps> = ({
                   {commitmentsToday && (
                     <>
                       {" "}
-                      Los {commitmentsToday.value} compromisos de hoy (
-                      {commitmentsToday.note.replace(" en juego", "")}) te acercan.
+                      Los {commitmentsToday.count} compromisos de hoy (
+                      {formatNumber(commitmentsToday.totalAmount)}) te acercan.
                     </>
                   )}
                 </>

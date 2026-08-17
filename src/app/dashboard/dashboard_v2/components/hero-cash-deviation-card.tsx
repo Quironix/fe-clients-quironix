@@ -8,7 +8,10 @@ import {
   MOCK_ESTIMATED_VS_COLLECTED,
   MOCK_HERO_CASH_DEVIATION,
 } from "../constants/mock-extras";
-import { useCashDeviationByPhase } from "../hooks/useDashboardAggregates";
+import {
+  useCashDeviationByPhase,
+  useCashDeviationSegmentDebtors,
+} from "../hooks/useDashboardAggregates";
 import { CashDeviationData } from "../types";
 
 const PERIODS: HeroPeriod[] = ["dia", "semana", "mes"];
@@ -115,11 +118,58 @@ const EstimatedVsCollectedChart: React.FC<{
   );
 };
 
+const SegmentDebtorsPanel: React.FC<{
+  clientId: string;
+  accessToken: string;
+  segment: string;
+  period: HeroPeriod;
+}> = ({ clientId, accessToken, segment, period }) => {
+  const { data: debtors, isLoading } = useCashDeviationSegmentDebtors({
+    accessToken,
+    clientId,
+    segment,
+    period,
+    enabled: !!accessToken && !!clientId,
+  });
+
+  return (
+    <div className="qxv2-seg-debtors">
+      {isLoading ? (
+        <div className="qxv2-seg-debtors-empty">Cargando deudores…</div>
+      ) : !debtors || debtors.length === 0 ? (
+        <div className="qxv2-seg-debtors-empty">
+          No hay deudores para este tramo en el período seleccionado.
+        </div>
+      ) : (
+        <table className="qxv2-seg-debtors-table">
+          <thead>
+            <tr>
+              <th>Deudor</th>
+              <th>Facturas</th>
+              <th>Monto</th>
+            </tr>
+          </thead>
+          <tbody>
+            {debtors.map((d) => (
+              <tr key={d.debtorId}>
+                <td>{d.debtorName}</td>
+                <td>{d.invoicesCount}</td>
+                <td>{formatAmount(d.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
 export const HeroCashDeviationCard: React.FC = () => {
   const [period, setPeriod] = useState<HeroPeriod>("semana");
+  const [expandedSegment, setExpandedSegment] = useState<string | null>(null);
   const { session, profile } = useProfileContext();
 
-  const { data: realData } = useCashDeviationByPhase({
+  const { data: realData, isLoading } = useCashDeviationByPhase({
     accessToken: session?.token || "",
     clientId: profile?.client?.id || "",
     period,
@@ -168,13 +218,18 @@ export const HeroCashDeviationCard: React.FC = () => {
     <div className="qxv2-card qxv2-hero">
       <div className="qxv2-card-h">
         <h3>Desviación de caja — explicada por fase</h3>
-        <span className="qxv2-h-sub">{rangeLabel} · datos reales</span>
+        <span className="qxv2-h-sub">
+          {rangeLabel} · {realData ? "datos reales" : isLoading ? "cargando…" : "datos ilustrativos"}
+        </span>
         <div className="qxv2-seg">
           {PERIODS.map((p) => (
             <button
               key={p}
               className={p === period ? "on" : ""}
-              onClick={() => setPeriod(p)}
+              onClick={() => {
+                setPeriod(p);
+                setExpandedSegment(null);
+              }}
             >
               {HERO_PERIOD_LABELS[p]}
             </button>
@@ -203,25 +258,46 @@ export const HeroCashDeviationCard: React.FC = () => {
         se abre y muestra a los deudores que lo explican
       </div>
       <div className="qxv2-stack">
-        {segments.map((s) => (
-          <div
-            className="qxv2-segb"
-            key={s.key}
-            style={{ width: `${Math.max(s.pct, 1)}%`, background: s.color }}
-            title={`${s.label} · ${s.amountStr}`}
-          >
-            {s.pct > 8 ? <span>{s.amountStr}</span> : null}
-          </div>
-        ))}
+        {segments
+          .filter((s) => s.pct > 0)
+          .map((s) => (
+            <button
+              type="button"
+              className={`qxv2-segb${expandedSegment === s.key ? " qxv2-segb-active" : ""}`}
+              key={s.key}
+              style={{ width: `${Math.max(s.pct, 1)}%`, background: s.color }}
+              title={`${s.label} · ${s.amountStr}`}
+              onClick={() =>
+                setExpandedSegment(expandedSegment === s.key ? null : s.key)
+              }
+            >
+              {s.pct > 8 ? <span>{s.amountStr}</span> : null}
+            </button>
+          ))}
       </div>
       <div className="qxv2-legend">
         {segments.map((s) => (
-          <span className="qxv2-lg" key={s.key}>
+          <button
+            type="button"
+            className={`qxv2-lg qxv2-lg-btn${expandedSegment === s.key ? " qxv2-lg-active" : ""}${s.pct === 0 ? " qxv2-lg-empty" : ""}`}
+            key={s.key}
+            onClick={() =>
+              setExpandedSegment(expandedSegment === s.key ? null : s.key)
+            }
+          >
             <span className="qxv2-dot" style={{ background: s.color }} />
             {s.label} · {s.amountStr}
-          </span>
+          </button>
         ))}
       </div>
+      {expandedSegment ? (
+        <SegmentDebtorsPanel
+          clientId={profile?.client?.id || ""}
+          accessToken={session?.token || ""}
+          segment={expandedSegment}
+          period={period}
+        />
+      ) : null}
       <div className="qxv2-insight">
         <p>
           Tramo mayor: <strong>{insightLabel} — {insightAmountStr} en {insightDebtors} deudores</strong>.

@@ -8,9 +8,12 @@ import { buildKpiGridItems } from "../utils/kpi-adapter";
 import { KPI } from "../../overview/services/types";
 
 describe("kpi-adapter (Dashboard V2)", () => {
-  it("should return mock items unchanged when real KPIs and level 2 data are undefined", () => {
+  it("should return mock items flagged as _isMock when real KPIs and level 2 data are undefined (§3.8)", () => {
     const items = buildKpiGridItems(MOCK_KPIS_MANAGER, undefined, undefined);
-    expect(items).toEqual(MOCK_KPIS_MANAGER);
+    expect(items).toEqual(
+      MOCK_KPIS_MANAGER.map((item) => ({ ...item, _isMock: true })),
+    );
+    expect(items.every((item) => item._isMock === true)).toBe(true);
   });
 
   it("should adapt Level 1 real KPIs into MockKpiDef shape", () => {
@@ -93,6 +96,37 @@ describe("kpi-adapter (Dashboard V2)", () => {
     expect(callsItem).toBeDefined();
     expect(callsItem?.value).toBe("18");
     expect(callsItem?.status).toBe("good");
+  });
+
+  it("does not fall back to the mock trend line when a real trend KPI has under 2 history points", () => {
+    const realKpis: KPI[] = [
+      {
+        id: "credibility-id",
+        name: "Índice credibilidad",
+        value: 0,
+        target: 60,
+        unit: "%",
+        status: "error",
+        category: "produced-quality",
+        description: "Índice de credibilidad",
+        formula: "CREDIBILITY_INDEX",
+        thresholds: { good: 60, warning: 40, direction: "up" },
+        history: [],
+        drillDown: { byCustomer: [], byProduct: [], byRegion: [] },
+      },
+    ];
+
+    const items = buildKpiGridItems(MOCK_KPIS_MANAGER, realKpis);
+    const credibilityItem = items.find(
+      (i) => i.name === "Índice de Credibilidad",
+    );
+
+    expect(credibilityItem).toBeDefined();
+    expect(credibilityItem?.value).toBe("0");
+    // Antes de este fix, con menos de 2 puntos de historial se usaba la tendencia mock
+    // ([55, 58, 61, 60, 66, 69, 71]), mostrando una línea ficticia por sobre la meta
+    // aunque el valor real fuera 0%.
+    expect(credibilityItem?.trend).toEqual([0, 0]);
   });
 
   it("should adapt Level 2 InvoicePhaseDistributionData into % Facturas en Fase 1", () => {

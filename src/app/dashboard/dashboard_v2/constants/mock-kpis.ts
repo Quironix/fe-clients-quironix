@@ -26,6 +26,7 @@ export interface MockKpiDef {
   trend?: number[];
   done?: number;
   total?: number;
+  _isMock?: boolean;
 }
 
 export const MOCK_KPIS_MANAGER: MockKpiDef[] = [

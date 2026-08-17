@@ -19,43 +19,60 @@ export const TodayStatsGrid: React.FC<TodayStatsGridProps> = ({
   contactEffectiveness,
   upcomingCommitments,
   todayCash,
+  isLoading,
 }) => {
-  // If we have real data, build the real tiles
-  if (taskProgress || contactEffectiveness || upcomingCommitments) {
-    const todayCommitmentsCount =
-      upcomingCommitments?.find((u) => u.when.startsWith("Hoy"))?.count ??
-      (upcomingCommitments?.[0]?.count || 5);
+  const hasRealData = !!(taskProgress || contactEffectiveness || upcomingCommitments);
 
-    const pendingTasks = taskProgress?.pending ?? 6;
-    const completedTasks = taskProgress?.completed ?? 24;
-    const totalTasks = taskProgress?.total ?? 30;
+  if (isLoading && !hasRealData) {
+    return (
+      <div className="qxv2-today-grid">
+        <div className="qxv2-h-sub" style={{ padding: "16px" }}>
+          Cargando estadísticas de hoy...
+        </div>
+      </div>
+    );
+  }
 
-    const effectiveCalls = contactEffectiveness?.todayEffective ?? 12;
-    const totalCalls = contactEffectiveness?.todayTotal ?? 25;
+  if (hasRealData) {
+    const todayCommitmentsCount = upcomingCommitments?.find((u) =>
+      u.when.startsWith("Hoy"),
+    )?.count;
 
+    const pendingTasks = taskProgress?.pending;
+    const completedTasks = taskProgress?.completed;
+    const totalTasks = taskProgress?.total;
+
+    const effectiveCalls = contactEffectiveness?.todayEffective;
+    const totalCalls = contactEffectiveness?.todayTotal;
+
+    // No hay endpoint que entregue caja recuperada "de hoy" en este view — en vez de
+    // mostrar un monto inventado junto a métricas reales, se marca como sin dato.
     const formattedCash =
       todayCash !== undefined && todayCash > 0
         ? `$${(todayCash / 1000000).toFixed(1)}M`
-        : "$1,8M";
+        : "—";
 
     const stats = [
       {
         label: "Tareas pendientes hoy",
-        value: `${pendingTasks}`,
-        tone: pendingTasks <= 5 ? "qxv2-td-good" : "qxv2-td-warn",
-        note: `${completedTasks} de ${totalTasks} completadas`,
+        value: pendingTasks !== undefined ? `${pendingTasks}` : "—",
+        tone: pendingTasks !== undefined && pendingTasks <= 5 ? "qxv2-td-good" : "qxv2-td-warn",
+        note:
+          completedTasks !== undefined && totalTasks !== undefined
+            ? `${completedTasks} de ${totalTasks} completadas`
+            : "Sin dato",
       },
       {
         label: "Compromisos que vencen hoy",
-        value: `${todayCommitmentsCount}`,
+        value: todayCommitmentsCount !== undefined ? `${todayCommitmentsCount}` : "—",
         tone: "qxv2-td-warn",
         note: "Revisar transferencias",
       },
       {
         label: "Llamadas efectivas hoy",
-        value: `${effectiveCalls}`,
-        tone: effectiveCalls >= 15 ? "qxv2-td-good" : "qxv2-td-warn",
-        note: `de ${totalCalls} meta diaria`,
+        value: effectiveCalls !== undefined ? `${effectiveCalls}` : "—",
+        tone: effectiveCalls !== undefined && effectiveCalls >= 15 ? "qxv2-td-good" : "qxv2-td-warn",
+        note: totalCalls !== undefined ? `de ${totalCalls} meta diaria` : "Sin dato",
       },
       {
         label: "Caja recuperada hoy",

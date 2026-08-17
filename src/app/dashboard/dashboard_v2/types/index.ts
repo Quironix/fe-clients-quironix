@@ -146,11 +146,19 @@ export interface CashDeviationData {
     topSegmentDebtorsCount: number;
   };
   chart: {
+    label: string;
     labels: string[];
     estimated: number[];
     collected: number[];
     unit: string;
   };
+}
+
+export interface CashDeviationSegmentDebtor {
+  debtorId: string;
+  debtorName: string;
+  invoicesCount: number;
+  amount: number;
 }
 
 export interface ExecutiveSummaryAction {

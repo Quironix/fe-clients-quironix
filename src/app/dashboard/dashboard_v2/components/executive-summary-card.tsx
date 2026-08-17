@@ -7,7 +7,7 @@ import { useExecutiveSummary } from "../hooks/useDashboardAggregates";
 export const ExecutiveSummaryCard: React.FC = () => {
   const { session, profile } = useProfileContext();
 
-  const { data: realData } = useExecutiveSummary({
+  const { data: realData, isLoading } = useExecutiveSummary({
     accessToken: session?.token || "",
     clientId: profile?.client?.id || "",
     enabled: !!session?.token && !!profile?.client?.id,
@@ -17,7 +17,14 @@ export const ExecutiveSummaryCard: React.FC = () => {
 
   return (
     <div className="qxv2-card qxv2-summary">
-      <div className="qxv2-sm-label">Resumen ejecutivo · Quirón</div>
+      <div className="qxv2-sm-label">
+        Resumen ejecutivo · Quirón
+        {!realData && (
+          <span style={{ marginLeft: 8, fontWeight: 700, opacity: 0.7 }}>
+            {isLoading ? "· cargando…" : "· datos ilustrativos"}
+          </span>
+        )}
+      </div>
       <p>{s.text}</p>
       <div className="qxv2-sm-acts-title">Acciones recomendadas</div>
       <div className="qxv2-q-actions">

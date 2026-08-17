@@ -88,7 +88,7 @@ const DashboardV2Content = () => {
     });
 
   // Level 2 hooks
-  const { data: taskProgress } = useTaskProgress({
+  const { data: taskProgress, isLoading: taskProgressLoading } = useTaskProgress({
     accessToken,
     clientId,
     executiveId: isExecutive ? currentUserId : undefined,
@@ -103,13 +103,14 @@ const DashboardV2Content = () => {
     enabled: isJefe || isExecutive,
   });
 
-  const { data: contactEffectiveness } = useContactEffectiveness({
-    accessToken,
-    clientId,
-    executiveId: isExecutive ? currentUserId : undefined,
-    period: isExecutive ? "day" : "month",
-    enabled: isJefe || isExecutive,
-  });
+  const { data: contactEffectiveness, isLoading: contactEffectivenessLoading } =
+    useContactEffectiveness({
+      accessToken,
+      clientId,
+      executiveId: isExecutive ? currentUserId : undefined,
+      period: isExecutive ? "day" : "month",
+      enabled: isJefe || isExecutive,
+    });
 
   const { data: invoicePhase } = useInvoicePhaseDistribution({
     accessToken,
@@ -135,6 +136,9 @@ const DashboardV2Content = () => {
     weeks: 8,
     enabled: isExecutive,
   });
+
+  const todayStatsLoading =
+    taskProgressLoading || contactEffectivenessLoading || upcomingLoading;
 
   const level2Data: Level2KpiData = useMemo(
     () => ({
@@ -217,6 +221,7 @@ const DashboardV2Content = () => {
               realKpis={kpis}
               taskProgress={taskProgress}
               contactEffectiveness={contactEffectiveness}
+              todayStatsLoading={todayStatsLoading}
               upcomingCommitments={upcomingCommitments}
               upcomingCommitmentsLoading={upcomingLoading}
               weeklyTrend={weeklyTrend}
