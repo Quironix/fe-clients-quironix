@@ -254,7 +254,7 @@ const DashboardV2Content = () => {
           )}
         </div>
       </Main>
-      <QuironWidget />
+      <QuironWidget dashboardType={activeType} kpis={kpis} />
     </QuironProvider>
   );
 };
