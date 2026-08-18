@@ -42,6 +42,34 @@ export const getUserProfile = async (token: string) => {
   return response.json();
 };
 
+// Función para que el usuario autenticado defina su propia contraseña
+// (cambio obligatorio de primer ingreso / post-recuperación)
+export const changeOwnPassword = async (
+  newPassword: string,
+  token: string
+) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/auth/change-password`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ new_password: newPassword }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const errorMessage = data?.data || data?.message || "PASSWORD_CHANGE_FAILED";
+    throw new Error(errorMessage);
+  }
+
+  return data;
+};
+
 // Función para solicitar recuperación de contraseña
 export const requestPasswordReset = async (email: string) => {
   try {

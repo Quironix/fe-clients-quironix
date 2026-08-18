@@ -195,6 +195,23 @@
       "emailRequired": "Please enter your email",
       "emailInvalid": "Invalid email"
     },
+    "changePassword": {
+      "title": "Set your new password",
+      "subtitle": "For your security, you must replace the password we sent you before continuing.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm your new password",
+      "submit": "Save and continue",
+      "submitting": "Saving...",
+      "successTitle": "Password updated",
+      "successDescription": "Your new password has been saved",
+      "errorTitle": "We couldn't update your password",
+      "errorDescription": "Please try again",
+      "passwordRequired": "Please enter your new password",
+      "passwordFormat": "Must be at least 8 characters, with an uppercase letter, lowercase letter, number and symbol",
+      "confirmPasswordRequired": "Confirm your new password",
+      "passwordMismatch": "Passwords do not match",
+      "samePassword": "Choose a password different from the one we sent you"
+    },
     "authLayout": {
       "headline": "Your debt management application",
       "subheadline": "that allows you to manage your debts easily and quickly."

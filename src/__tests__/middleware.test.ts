@@ -49,6 +49,63 @@ describe("root route redirect", () => {
   });
 });
 
+describe("must_change_password gate (PRD_cambio_obligatorio_clave_primer_ingreso.md §4)", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Promise.resolve({
+          ok: true,
+          json: async () => ({
+            id: "user-1",
+            must_change_password: true,
+            client: { status: "VALIDATED" },
+          }),
+        })
+      )
+    );
+  });
+
+  it("redirects a direct deep-link to a protected dashboard route to /change-password", async () => {
+    const middleware = (await import("@/middleware")).default;
+    const { NextResponse } = await import("next/server");
+
+    const req = {
+      auth: { token: "valid-token" },
+      nextUrl: {
+        pathname: "/dashboard/overview",
+        origin: "http://localhost:3000",
+      },
+    };
+
+    await middleware(req as any);
+
+    expect(NextResponse.redirect).toHaveBeenCalledWith(
+      new URL("/change-password", "http://localhost:3000")
+    );
+  });
+
+  it("lets the request through once it is already on /change-password", async () => {
+    const middleware = (await import("@/middleware")).default;
+    const { NextResponse } = await import("next/server");
+
+    const req = {
+      auth: { token: "valid-token" },
+      nextUrl: {
+        pathname: "/change-password",
+        origin: "http://localhost:3000",
+      },
+    };
+
+    await middleware(req as any);
+
+    expect(NextResponse.redirect).not.toHaveBeenCalled();
+    expect(NextResponse.next).toHaveBeenCalled();
+  });
+});
+
 describe("clearProfileCache", () => {
   beforeEach(() => {
     vi.resetModules();

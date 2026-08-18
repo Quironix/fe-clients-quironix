@@ -181,6 +181,17 @@ export default auth(async (req) => {
       }
     }
 
+    // Si la clave actual la puso el sistema (invitación o recuperación),
+    // el cliente debe reemplazarla antes de acceder a cualquier otra ruta.
+    if (profile?.must_change_password) {
+      if (!currentPath.startsWith("/change-password")) {
+        return NextResponse.redirect(
+          new URL("/change-password", req.nextUrl.origin)
+        );
+      }
+      return NextResponse.next();
+    }
+
     const clientStatus = profile?.client?.status;
 
     // Si el estado es INVITED

@@ -27,6 +27,7 @@ export interface UserProfile {
   email: string;
   phone_number: string;
   client: Client;
+  must_change_password: boolean;
   created_at: string;
   updated_at: string;
 }

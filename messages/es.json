@@ -195,6 +195,23 @@
       "emailRequired": "Por favor ingresa tu email",
       "emailInvalid": "Email inválido"
     },
+    "changePassword": {
+      "title": "Define tu nueva clave",
+      "subtitle": "Por tu seguridad, debes reemplazar la clave que te enviamos antes de continuar.",
+      "newPassword": "Nueva contraseña",
+      "confirmPassword": "Confirma tu nueva contraseña",
+      "submit": "Guardar y continuar",
+      "submitting": "Guardando...",
+      "successTitle": "Contraseña actualizada",
+      "successDescription": "Tu nueva contraseña quedó guardada",
+      "errorTitle": "No pudimos actualizar tu contraseña",
+      "errorDescription": "Intenta nuevamente",
+      "passwordRequired": "Por favor ingresa tu nueva contraseña",
+      "passwordFormat": "Debe tener al menos 8 caracteres, con mayúscula, minúscula, número y símbolo",
+      "confirmPasswordRequired": "Confirma tu nueva contraseña",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "samePassword": "Elige una contraseña distinta a la que te enviamos"
+    },
     "authLayout": {
       "headline": "Tu aplicación de administración de deudas",
       "subheadline": "que te permite gestionar tus deudas de manera fácil y rápida."
