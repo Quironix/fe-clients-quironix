@@ -1851,8 +1851,9 @@
   right: 26px;
   bottom: 26px;
   z-index: 71;
-  width: 392px;
+  width: 436px;
   max-width: calc(100vw - 32px);
+  max-height: min(680px, calc(100vh - 52px));
   background: #fff;
   border: 1px solid var(--qx-line);
   border-radius: 18px;
@@ -1872,10 +1873,11 @@
   pointer-events: auto;
 }
 .qxv2-qr-head {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 16px 18px 12px;
+  padding: 18px 20px 14px;
   border-bottom: 1px solid #f1f3f9;
 }
 .qxv2-qr-head .qxv2-q-tile {
@@ -1907,27 +1909,36 @@
   letter-spacing: 0.04em;
   white-space: nowrap;
 }
+/* Body: everything between header and composer scrolls as one region, so the
+   header (with the close button) and the composer always stay reachable. */
+.qxv2-qr-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .qxv2-q-sug {
-  padding: 2px 16px 10px;
+  flex: none;
+  padding: 4px 20px 14px;
 }
 .qxv2-q-sug .qxv2-qs-label {
   font-size: 11px;
   font-weight: 800;
   color: #98a2b3;
-  margin-bottom: 7px;
+  margin-bottom: 8px;
 }
 .qxv2-q-sug .qxv2-qs-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 .qxv2-qs-chip {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--qx-blue-bright);
   border: 1px solid #d7e0f8;
   border-radius: 999px;
-  padding: 6px 11px;
+  padding: 7px 13px;
   background: #fff;
   text-align: left;
   transition: background 0.15s;
@@ -1957,32 +1968,85 @@
   color: var(--qx-ink);
 }
 .qxv2-chat {
-  padding: 14px 16px;
+  flex: 1 1 auto;
+  min-height: 220px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: min(46vh, 384px);
+  gap: 16px;
   overflow-y: auto;
 }
-.qxv2-bub {
-  border-radius: 12px;
-  padding: 11px 13px;
-  font-size: 12.5px;
-  line-height: 1.55;
+.qxv2-msg-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
   max-width: 100%;
+}
+.qxv2-msg-row.user {
+  justify-content: flex-end;
+}
+.qxv2-avatar {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.qxv2-avatar.ai {
+  background: linear-gradient(135deg, var(--qx-blue-bright), var(--qx-blue));
+  color: #fff;
+}
+.qxv2-avatar.user {
+  background: #e6ebfb;
+  color: var(--qx-blue-bright);
+}
+.qxv2-bub {
+  border-radius: 14px;
+  padding: 12px 15px;
+  font-size: 13px;
+  line-height: 1.62;
+  max-width: 82%;
 }
 .qxv2-bub.ai {
   background: #f5f7fe;
   border: 1px solid #e6ebfb;
-  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
   color: #344054;
 }
 .qxv2-bub.user {
   background: var(--qx-blue-bright);
   color: #fff;
-  align-self: flex-end;
   border-bottom-right-radius: 4px;
-  max-width: 88%;
+}
+.qxv2-bub-typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 16px;
+}
+.qxv2-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b8c0d9;
+  animation: qxv2-dot-bounce 1.2s infinite ease-in-out;
+}
+.qxv2-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.qxv2-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes qxv2-dot-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
 }
 .qxv2-q-action .qxv2-qa-btn {
   font-size: 10px;
@@ -1999,22 +2063,27 @@
   background: #ffe8d2;
 }
 .qxv2-q-input {
+  flex: none;
   display: flex;
-  gap: 8px;
-  padding: 12px 16px 16px;
+  gap: 10px;
+  padding: 16px 20px 20px;
   border-top: 1px solid #f1f3f9;
 }
 .qxv2-q-input input,
 .qxv2-q-input textarea {
   flex: 1;
   border: 1.5px solid #e1e5f2;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 13px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13.5px;
   font-family: inherit;
   outline: none;
   min-width: 0;
   resize: none;
+}
+.qxv2-q-input input:focus,
+.qxv2-q-input textarea:focus {
+  border-color: var(--qx-blue-bright);
 }
 .qxv2-q-input input:disabled,
 .qxv2-q-input textarea:disabled {
@@ -2022,11 +2091,11 @@
   color: #98a2b3;
 }
 .qxv2-q-input .qxv2-q-send {
-  width: 41px;
-  height: 41px;
+  width: 44px;
+  height: 44px;
   flex: none;
   background: var(--qx-orange);
-  border-radius: 10px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
   border: none;
@@ -2044,6 +2113,7 @@
     bottom: 12px;
     width: auto;
     max-width: none;
+    max-height: min(620px, calc(100vh - 24px));
   }
   .qxv2-quiron-fab {
     right: 16px;

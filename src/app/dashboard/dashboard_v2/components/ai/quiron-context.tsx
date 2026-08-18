@@ -5,6 +5,10 @@ interface QuironContextValue {
   enabled: boolean;
   isOpen: boolean;
   topic: string | null;
+  /** Increments on every openWithTopic() call, even if the topic is unchanged.
+   * Consumers use it to know a fresh "analyze this" request was just made and
+   * should auto-ask a question, as opposed to just reopening an existing chat. */
+  askToken: number;
   open: () => void;
   close: () => void;
   openWithTopic: (topic: string) => void;
@@ -21,17 +25,19 @@ export const QuironProvider = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [topic, setTopic] = useState<string | null>(null);
+  const [askToken, setAskToken] = useState(0);
 
   const open = () => setIsOpen(true);
   const close = () => setIsOpen(false);
   const openWithTopic = (t: string) => {
     setTopic(t);
     setIsOpen(true);
+    setAskToken((n) => n + 1);
   };
 
   return (
     <QuironContext.Provider
-      value={{ enabled, isOpen, topic, open, close, openWithTopic }}
+      value={{ enabled, isOpen, topic, askToken, open, close, openWithTopic }}
     >
       {children}
     </QuironContext.Provider>

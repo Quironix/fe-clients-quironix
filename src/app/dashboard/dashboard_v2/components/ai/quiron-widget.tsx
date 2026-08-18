@@ -11,7 +11,7 @@ import {
   AssistantChatTransport,
   useChatRuntime,
 } from "@assistant-ui/react-ai-sdk";
-import { BotIcon, Send, Sparkles, X } from "lucide-react";
+import { Bot, Send, Sparkles, User, X } from "lucide-react";
 import { FC, useEffect, useMemo, useRef } from "react";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { KPI } from "../../../overview/services/types";
@@ -67,6 +67,25 @@ function introMessage(topic: string): string {
   return `Puedo ayudarte a analizar ${topicLabel(topic)}. Pregúntame lo que quieras.`;
 }
 
+function autoQuestionForTopic(topic: string): string {
+  if (topic.startsWith("kpi::")) {
+    return `Analiza el indicador "${topic.slice(5)}" y dime qué significa para la gestión.`;
+  }
+  switch (topic) {
+    case "cash-deviation":
+      return "Analiza la desviación de caja por fase y dime qué la está explicando.";
+    case "aging-buckets":
+      return "Analiza el envejecimiento de cartera y dime qué bucket requiere más atención.";
+    case "debtor-concentration":
+      return "Analiza la concentración de la mora y dime qué deudores explican el mayor riesgo.";
+    case "quironscore":
+      return "Analiza el Quironscore actual y dime qué lo está impulsando.";
+    case "resumen":
+    default:
+      return "Dame un resumen ejecutivo de la cartera con las acciones prioritarias de hoy.";
+  }
+}
+
 const MOCK_QUIRONSCORE_CONTEXT = {
   score: 78,
   band: "Cartera en rango saludable",
@@ -113,12 +132,18 @@ interface QuironWidgetProps {
 }
 
 export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
-  const { enabled, isOpen, topic, open, close } = useQuiron();
+  const { enabled, isOpen, topic, askToken, open, close } = useQuiron();
   const { session, profile } = useProfileContext();
   const accessToken = session?.token || "";
   const clientId = profile?.client?.id || "";
 
   const effectiveTopic = topic || "resumen";
+
+  const lastAutoAskedTokenRef = useRef(0);
+  const shouldAutoAsk = askToken > 0 && askToken !== lastAutoAskedTokenRef.current;
+  const markAutoAsked = () => {
+    lastAutoAskedTokenRef.current = askToken;
+  };
 
   const { data: executiveSummary } = useExecutiveSummary({
     accessToken,
@@ -192,27 +217,6 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
           </button>
         </div>
 
-        {effectiveTopic === "resumen" && executiveSummary && (
-          <div className="qxv2-chat" style={{ maxHeight: "none", paddingBottom: 0 }}>
-            <div className="qxv2-bub ai">
-              {executiveSummary.text}
-              {executiveSummary.actions.length > 0 && (
-                <div className="qxv2-q-actions">
-                  {executiveSummary.actions.map((a) => (
-                    <div className="qxv2-q-action" key={a.label}>
-                      <span className="qxv2-qa-tx">{a.label}</span>
-                      {a.amount ? <span className="qxv2-qa-amt">{a.amount}</span> : null}
-                      <button type="button" className="qxv2-qa-btn">
-                        Enviar a gestión
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {isOpen && (
           <QuironChat
             key={effectiveTopic}
@@ -221,6 +225,8 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
             context={context}
             accessToken={accessToken}
             clientId={clientId}
+            shouldAutoAsk={shouldAutoAsk}
+            onAutoAsked={markAutoAsked}
           />
         )}
       </div>
@@ -234,6 +240,8 @@ interface QuironChatProps {
   context: unknown;
   accessToken: string;
   clientId: string;
+  shouldAutoAsk: boolean;
+  onAutoAsked: () => void;
 }
 
 const QuironChat: FC<QuironChatProps> = ({
@@ -242,6 +250,8 @@ const QuironChat: FC<QuironChatProps> = ({
   context,
   accessToken,
   clientId,
+  shouldAutoAsk,
+  onAutoAsked,
 }) => {
   const { getChatThreadId, setChatThreadId, getChatMessages, setChatMessages } =
     useQuironChatStore();
@@ -319,6 +329,13 @@ const QuironChat: FC<QuironChatProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!shouldAutoAsk) return;
+    runtimeRef.current.thread.append(autoQuestionForTopic(topic));
+    onAutoAsked();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldAutoAsk]);
+
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <QuironThread topic={topic} />
@@ -328,7 +345,7 @@ const QuironChat: FC<QuironChatProps> = ({
 
 const QuironThread: FC<{ topic: string }> = ({ topic }) => {
   return (
-    <ThreadPrimitive.Root>
+    <ThreadPrimitive.Root className="qxv2-qr-body">
       <ThreadPrimitive.Viewport className="qxv2-chat">
         <ThreadPrimitive.Messages
           components={{
@@ -346,9 +363,12 @@ const QuironThread: FC<{ topic: string }> = ({ topic }) => {
 
 const QuironUserMessage: FC = () => {
   return (
-    <MessagePrimitive.Root>
+    <MessagePrimitive.Root className="qxv2-msg-row user">
       <div className="qxv2-bub user">
         <MessagePrimitive.Content />
+      </div>
+      <div className="qxv2-avatar user">
+        <User size={13} />
       </div>
     </MessagePrimitive.Root>
   );
@@ -363,24 +383,24 @@ const QuironAssistantMessage: FC = () => {
 
   if (isRunning && !hasContent) {
     return (
-      <div className="qxv2-bub ai">
-        <div className="flex gap-1">
-          <div className="h-1.5 w-1.5 bg-gray-400 rounded-full animate-bounce" />
-          <div
-            className="h-1.5 w-1.5 bg-gray-400 rounded-full animate-bounce"
-            style={{ animationDelay: "0.2s" }}
-          />
-          <div
-            className="h-1.5 w-1.5 bg-gray-400 rounded-full animate-bounce"
-            style={{ animationDelay: "0.4s" }}
-          />
+      <div className="qxv2-msg-row ai">
+        <div className="qxv2-avatar ai">
+          <Bot size={13} />
+        </div>
+        <div className="qxv2-bub ai qxv2-bub-typing">
+          <span className="qxv2-dot" />
+          <span className="qxv2-dot" />
+          <span className="qxv2-dot" />
         </div>
       </div>
     );
   }
 
   return (
-    <MessagePrimitive.Root>
+    <MessagePrimitive.Root className="qxv2-msg-row ai">
+      <div className="qxv2-avatar ai">
+        <Bot size={13} />
+      </div>
       <div className="qxv2-bub ai">
         <MessagePrimitive.Content components={{ Text: MarkdownText }} />
       </div>
@@ -427,7 +447,7 @@ const QuironComposer: FC = () => {
       </ThreadPrimitive.If>
       <ThreadPrimitive.If running>
         <button type="button" disabled className="qxv2-q-send" aria-label="Enviar">
-          <BotIcon size={16} />
+          <Bot size={16} />
         </button>
       </ThreadPrimitive.If>
     </ComposerPrimitive.Root>
