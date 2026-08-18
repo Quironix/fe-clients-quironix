@@ -491,6 +491,7 @@
     "deleteConfirmDescription": "Esta acción no se puede deshacer.",
     "table": {
       "name": "Nombre",
+      "dashboardType": "Dashboard",
       "actions": "Acciones"
     },
     "form": {
@@ -498,6 +499,12 @@
       "namePlaceholder": "Ej: Juan",
       "description": "Descripción",
       "descriptionPlaceholder": "Ej: Administrador de recursos",
+      "dashboardType": "Tipo de dashboard",
+      "dashboardTypeDescription": "Selecciona qué vista de dashboard verán los usuarios con este rol",
+      "dashboardTypeNone": "Sin dashboard asignado",
+      "dashboardTypeManager": "Manager",
+      "dashboardTypeCollectionManager": "Jefe de Cobranza",
+      "dashboardTypeExecutive": "Ejecutivo de Cobranza",
       "sections": "Secciones",
       "sectionsDescription": "Selecciona qué tipo de permiso tendrá el rol en cada sección",
       "sectionsHeader": "Secciones",

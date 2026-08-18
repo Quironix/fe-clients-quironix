@@ -7,6 +7,7 @@ interface UseKPIDataParams {
   clientId: string;
   filters?: { from?: string; to?: string };
   period?: string | null;
+  executiveId?: string | null;
   enabled?: boolean;
 }
 
@@ -15,11 +16,12 @@ export const useKPIData = ({
   clientId,
   filters,
   period,
+  executiveId,
   enabled = true,
 }: UseKPIDataParams) => {
   return useQuery<KPIResponse, Error>({
-    queryKey: ["kpis", clientId, accessToken, filters, period],
-    queryFn: () => getAll(accessToken, clientId, filters, period),
+    queryKey: ["kpis", clientId, accessToken, filters, period, executiveId],
+    queryFn: () => getAll(accessToken, clientId, filters, period, executiveId),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

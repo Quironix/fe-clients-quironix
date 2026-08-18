@@ -1,0 +1,259 @@
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  getAgingBuckets,
+  getCashDeviationByPhase,
+  getCashDeviationSegmentDebtors,
+  getCashTrendWeekly,
+  getCommitmentsSummary,
+  getContactEffectiveness,
+  getDebtorConcentration,
+  getDsoProjection,
+  getExecutiveSummary,
+  getInvoicePhaseDistribution,
+  getMyProgress,
+  getTaskProgress,
+  getTeamCapacity,
+  getTeamOverview,
+  getTodayPriorities,
+  getUpcomingCommitments,
+} from "../services";
+
+interface BaseParams {
+  accessToken: string;
+  clientId: string;
+  enabled?: boolean;
+}
+
+export const useAgingBuckets = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "aging-buckets", clientId],
+    queryFn: () => getAgingBuckets(accessToken, clientId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useDebtorConcentration = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "debtor-concentration", clientId],
+    queryFn: () => getDebtorConcentration(accessToken, clientId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useTeamOverview = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "team-overview", clientId],
+    queryFn: () => getTeamOverview(accessToken, clientId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useTodayPriorities = ({
+  accessToken,
+  clientId,
+  executiveId,
+  enabled = true,
+}: BaseParams & { executiveId: string }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "today-priorities", clientId, executiveId],
+    queryFn: () => getTodayPriorities(accessToken, clientId, executiveId),
+    enabled: enabled && !!accessToken && !!clientId && !!executiveId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useTaskProgress = ({
+  accessToken,
+  clientId,
+  executiveId,
+  teamWide,
+  enabled = true,
+}: BaseParams & { executiveId?: string; teamWide?: boolean }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "task-progress", clientId, executiveId, teamWide],
+    queryFn: () => getTaskProgress(accessToken, clientId, { executiveId, teamWide }),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useCommitmentsSummary = ({
+  accessToken,
+  clientId,
+  executiveId,
+  enabled = true,
+}: BaseParams & { executiveId?: string }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "commitments-summary", clientId, executiveId],
+    queryFn: () => getCommitmentsSummary(accessToken, clientId, executiveId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useContactEffectiveness = ({
+  accessToken,
+  clientId,
+  executiveId,
+  period,
+  enabled = true,
+}: BaseParams & { executiveId?: string; period?: string }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "contact-effectiveness", clientId, executiveId, period],
+    queryFn: () => getContactEffectiveness(accessToken, clientId, { executiveId, period }),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useInvoicePhaseDistribution = ({
+  accessToken,
+  clientId,
+  executiveId,
+  phase = 1,
+  enabled = true,
+}: BaseParams & { executiveId?: string; phase?: number }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "invoice-phase-distribution", clientId, executiveId, phase],
+    queryFn: () => getInvoicePhaseDistribution(accessToken, clientId, { executiveId, phase }),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useDsoProjection = ({
+  accessToken,
+  clientId,
+  executiveId,
+  enabled = true,
+}: BaseParams & { executiveId?: string }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "dso-projection", clientId, executiveId],
+    queryFn: () => getDsoProjection(accessToken, clientId, { executiveId }),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useUpcomingCommitments = ({
+  accessToken,
+  clientId,
+  executiveId,
+  days = 7,
+  enabled = true,
+}: BaseParams & { executiveId?: string; days?: number }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "upcoming-commitments", clientId, executiveId, days],
+    queryFn: () => getUpcomingCommitments(accessToken, clientId, { executiveId, days }),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useCashTrendWeekly = ({
+  accessToken,
+  clientId,
+  executiveId,
+  weeks = 8,
+  enabled = true,
+}: BaseParams & { executiveId?: string; weeks?: number }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "cash-trend-weekly", clientId, executiveId, weeks],
+    queryFn: () => getCashTrendWeekly(accessToken, clientId, { executiveId, weeks }),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useCashDeviationByPhase = ({
+  accessToken,
+  clientId,
+  period = "semana",
+  enabled = true,
+}: BaseParams & { period?: "dia" | "semana" | "mes" }) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "cash-deviation-by-phase", clientId, period],
+    queryFn: () => getCashDeviationByPhase(accessToken, clientId, period),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useCashDeviationSegmentDebtors = ({
+  accessToken,
+  clientId,
+  segment,
+  period = "semana",
+  enabled = true,
+}: BaseParams & {
+  segment: string;
+  period?: "dia" | "semana" | "mes";
+}) =>
+  useQuery({
+    queryKey: [
+      "dashboard_v2",
+      "cash-deviation-segment-debtors",
+      clientId,
+      segment,
+      period,
+    ],
+    queryFn: () =>
+      getCashDeviationSegmentDebtors(accessToken, clientId, segment, period),
+    enabled: enabled && !!accessToken && !!clientId && !!segment,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useExecutiveSummary = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "executive-summary", clientId],
+    queryFn: () => getExecutiveSummary(accessToken, clientId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useTeamCapacity = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "team-capacity", clientId],
+    queryFn: () => getTeamCapacity(accessToken, clientId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useMyProgress = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "my-progress", clientId],
+    queryFn: () => getMyProgress(accessToken, clientId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });

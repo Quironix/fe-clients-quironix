@@ -9,6 +9,7 @@ const DASHBOARD_PATHS = ["/dashboard"];
 const ROUTE_SCOPE_MAP: Record<string, string> = {
   // Dashboard
   "/dashboard/overview": "client.dashboard",
+  "/dashboard/dashboard_v2": "client.dashboard",
   "/dashboard/kpi": "client.dashboard.kpis",
   "/dashboard/kpi_2": "client.dashboard.kpis",
 

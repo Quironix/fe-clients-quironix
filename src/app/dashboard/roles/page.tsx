@@ -145,6 +145,9 @@ const RolesContent = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="text-primary">{t("table.name")}</TableHead>
+                          <TableHead className="text-primary">
+                            {t("table.dashboardType")}
+                          </TableHead>
                           <TableHead className="text-primary text-right">
                             {t("table.actions")}
                           </TableHead>
@@ -153,17 +156,26 @@ const RolesContent = () => {
                       <TableBody>
                         {filteredRoles.length === 0 && (
                           <TableRow>
-                            <TableCell colSpan={2} className="text-center">
+                            <TableCell colSpan={3} className="text-center">
                               {t("noRolesFound")}
                             </TableCell>
                           </TableRow>
                         )}
                         {isLoading ? (
-                          <LoaderTable cols={2} />
+                          <LoaderTable cols={3} />
                         ) : (
                           filteredRoles.map((role) => (
                             <TableRow key={role.id}>
                               <TableCell>{role.name}</TableCell>
+                              <TableCell>
+                                {role.dashboard_type === "MANAGER"
+                                  ? t("form.dashboardTypeManager")
+                                  : role.dashboard_type === "COLLECTION_MANAGER"
+                                    ? t("form.dashboardTypeCollectionManager")
+                                    : role.dashboard_type === "EXECUTIVE"
+                                      ? t("form.dashboardTypeExecutive")
+                                      : "—"}
+                              </TableCell>
                               <TableCell className="flex justify-end gap-2">
                                 <DialogForm
                                   title={t("editRole")}

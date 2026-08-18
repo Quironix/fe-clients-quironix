@@ -1,8 +1,11 @@
+export type DashboardType = "MANAGER" | "COLLECTION_MANAGER" | "EXECUTIVE";
+
 export interface Role {
   id?: string;
   name: string;
   description: string;
   scopes: Scope[] | string[];
+  dashboard_type?: DashboardType | null;
   created_at?: string;
   updated_at?: string;
 }
