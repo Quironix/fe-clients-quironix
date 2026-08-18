@@ -1,3 +1,4 @@
+import { posthog } from "@/lib/posthog";
 import { signOut } from "next-auth/react";
 
 const STORAGE_KEYS_TO_CLEAR = [
@@ -15,6 +16,7 @@ export function clearClientStorage() {
 
 export async function logout() {
   clearClientStorage();
+  posthog.reset();
   await signOut({ callbackUrl: "/sign-in" });
 }
 

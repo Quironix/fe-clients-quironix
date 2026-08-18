@@ -1,5 +1,6 @@
 "use client";
 
+import { posthog } from "@/lib/posthog";
 import { useSession } from "next-auth/react";
 import {
   createContext,
@@ -49,6 +50,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       setProfile(data);
       if (typeof window !== "undefined") {
         localStorage.setItem("profile", JSON.stringify(data));
+      }
+      if (data?.id) {
+        posthog.identify(data.id, {
+          email: data.email,
+          client_id: data.client?.id,
+        });
       }
     } catch (err: any) {
       setError(err.message);
