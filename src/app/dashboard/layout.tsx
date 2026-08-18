@@ -19,7 +19,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 "peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-icon)-1rem)]",
                 "peer-data-[state=expanded]:w-[calc(100%-var(--sidebar-width))]",
                 "sm:transition-[width] sm:duration-200 sm:ease-linear",
-                "min-h-screen overflow-y-auto"
+                "min-h-screen overflow-y-auto overflow-x-hidden"
               )}
             >
               {children}
