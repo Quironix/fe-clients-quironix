@@ -67,7 +67,7 @@ const LayoutSettings = ({ children }: { children: React.ReactNode }) => {
       currentStep,
       steps: stepsState,
       onStepChange: handleStepChange,
-      profile,
+      profile: profile as any,
     };
 
     switch (currentStep) {

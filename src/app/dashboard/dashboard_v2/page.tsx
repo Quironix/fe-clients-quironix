@@ -40,7 +40,7 @@ const DashboardV2Content = () => {
   const clientId = profile?.client?.id || "";
   const currentUserId = profile?.id || "";
 
-  const availableTypes = useAvailableDashboardTypes(profile);
+  const availableTypes = useAvailableDashboardTypes(profile as { roles?: { dashboard_type?: "MANAGER" | "COLLECTION_MANAGER" | "EXECUTIVE" | null }[] } | null);
   const [activeType, setActiveType] = useActiveDashboardType(availableTypes);
 
   const isManager = activeType === "MANAGER";

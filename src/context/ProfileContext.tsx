@@ -10,7 +10,64 @@ import {
   useState,
 } from "react";
 
-type ProfileType = any; // Puedes tipar mejor según tu modelo
+export interface ProfileSubscriptionPlan {
+  system_resources?: Array<{ name: string; is_enabled: boolean }>;
+  id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface ProfileSubscription {
+  id?: string;
+  plan: ProfileSubscriptionPlan;
+  [key: string]: unknown;
+}
+
+export interface ProfileClient {
+  id: string;
+  name?: string;
+  type?: string;
+  subscriptions?: ProfileSubscription[];
+  [key: string]: unknown;
+}
+
+export interface ProfileSettings {
+  reconciliation_table?: Array<{ name: string; is_visible: boolean }>;
+  current_account_table?: Array<{ name: string; is_visible: boolean }>;
+  tracks_table?: Array<{ name: string; is_visible: boolean }>;
+  litigations_table?: Array<{ name: string; is_visible: boolean }>;
+  invoices_table?: Array<{ name: string; is_visible: boolean }>;
+}
+
+export interface ProfileRole {
+  id?: string;
+  name?: string;
+  scopes?: string[];
+  [key: string]: unknown;
+}
+
+export interface ProfileType {
+  id: string;
+  client: ProfileClient;
+  client_id?: string;
+  clientId?: string;
+  profile?: ProfileSettings;
+  email?: string;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  role?: string;
+  roles?: ProfileRole[];
+  type?: string;
+  sip_code?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export const getClientId = (profile: ProfileType | null | undefined): string =>
+  profile?.client?.id ?? profile?.client_id ?? "";
+
 type SessionType = any;
 
 interface ProfileContextProps {

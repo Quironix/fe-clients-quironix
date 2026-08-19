@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { useProfileContext } from "@/context/ProfileContext";
+import { getClientId, useProfileContext } from "@/context/ProfileContext";
 import { VisibilityState } from "@tanstack/react-table";
 import { FileDown, Wallet } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -90,7 +90,7 @@ const CurrentAccountPage = () => {
     currentLimit,
   } = useAccountStatement({
     accessToken: session?.token || "",
-    clientId: profile?.client?.id || "",
+    clientId: getClientId(profile) || "",
     debtorId,
     initialPage: 1,
     initialLimit: 15,
@@ -108,7 +108,7 @@ const CurrentAccountPage = () => {
 
       const response = await updateCurrentAccountTableProfile({
         accessToken: session?.token,
-        clientId: profile?.client_id,
+        clientId: getClientId(profile),
         userId: profile?.id,
         currentAccountTable: configToSave,
       });
@@ -295,7 +295,7 @@ const CurrentAccountPage = () => {
           onOpenChange={setExportOpen}
           schema="CURRENT_ACCOUNT"
           accessToken={session?.token || ""}
-          clientId={profile?.client?.id || ""}
+          clientId={getClientId(profile) || ""}
           debtorId={debtorId}
         />
       </Main>

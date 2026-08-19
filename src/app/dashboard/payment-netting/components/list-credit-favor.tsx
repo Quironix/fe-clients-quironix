@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProfileContext } from "@/context/ProfileContext";
+import { getClientId, useProfileContext } from "@/context/ProfileContext";
 import { useQuery } from "@tanstack/react-query";
 import { DollarSign } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -19,10 +19,10 @@ function ListCreditFavorContent() {
   const canFetchInvoices = useMemo(() => {
     return !!(
       session?.token &&
-      profile?.client_id &&
+      getClientId(profile) &&
       debtorId
     );
-  }, [session?.token, profile?.client_id, debtorId]);
+  }, [session?.token, profile, debtorId]);
 
   const {
     data: payments,
@@ -33,7 +33,7 @@ function ListCreditFavorContent() {
     queryFn: async () =>
       await getPayments({
         accessToken: session?.token as string,
-        clientId: profile?.client_id as string,
+        clientId: getClientId(profile),
         debtorId: debtorId as string,
       }),
     enabled: canFetchInvoices,

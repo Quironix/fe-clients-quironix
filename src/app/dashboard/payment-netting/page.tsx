@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Language from "@/components/ui/language";
-import { useProfileContext } from "@/context/ProfileContext";
+import { getClientId, useProfileContext } from "@/context/ProfileContext";
 import { VisibilityState } from "@tanstack/react-table";
 import {
   Archive,
@@ -60,7 +60,7 @@ export default function PaymentNettingPage() {
     getSelectedRows,
     clearRowSelection,
     isHydrated,
-  } = usePaymentNetting(session?.token, profile?.client_id, false);
+  } = usePaymentNetting(session?.token, getClientId(profile), false);
   const filterInputsRef = useRef<FilterInputsRef>(null);
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
 
@@ -168,7 +168,7 @@ export default function PaymentNettingPage() {
 
       const response = await updateReconciliationTableProfile({
         accessToken: session?.token,
-        clientId: profile?.client_id,
+        clientId: getClientId(profile),
         userId: profile?.id,
         reconciliationTable: configToSave,
       });
@@ -219,7 +219,7 @@ export default function PaymentNettingPage() {
     try {
       const response = await reversePayment({
         accessToken: session?.token,
-        clientId: profile?.client_id,
+        clientId: getClientId(profile),
         paymentId: row.payment.id,
       });
 
@@ -236,7 +236,7 @@ export default function PaymentNettingPage() {
     try {
       const response = await eliminatePayment({
         accessToken: session?.token,
-        clientId: profile?.client_id,
+        clientId: getClientId(profile),
         movementId: row.id,
       });
 
@@ -421,13 +421,11 @@ export default function PaymentNettingPage() {
         </Card>
 
         {/* Modal para ver detalles */}
-        <div className="opacity-0">
-          <ViewDetailsModal
-            row={selectedTransaction}
-            open={openDetailModal}
-            onOpenChange={setOpenDetailModal}
-          />
-        </div>
+        <ViewDetailsModal
+          row={selectedTransaction}
+          open={openDetailModal}
+          onOpenChange={setOpenDetailModal}
+        />
       </Main>
     </>
   );

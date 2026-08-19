@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { useProfileContext } from "@/context/ProfileContext";
+import { getClientId, useProfileContext } from "@/context/ProfileContext";
 import { formatNumber } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -61,10 +61,10 @@ export default function ViewDetailsModal({
     queryFn: () =>
       getPaymentHistory({
         accessToken: session?.token,
-        clientId: profile?.client_id,
+        clientId: getClientId(profile),
         paymentId: paymentId,
       }),
-    enabled: open && !!paymentId && !!session?.token && !!profile?.client_id,
+    enabled: open && !!paymentId && !!session?.token && !!getClientId(profile),
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 

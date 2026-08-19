@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useProfileContext } from "@/context/ProfileContext";
+import { getClientId, useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
@@ -68,7 +68,7 @@ const FormAssignDebtor = ({
       setIsLoading(true);
       const response = await assignDebtor({
         accessToken: session.token,
-        clientId: profile.client_id,
+        clientId: getClientId(profile),
         debtorId: data.debtor_id,
         movementIds: selectedMovements.map((movement) => movement.id),
       });

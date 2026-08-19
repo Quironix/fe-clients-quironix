@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import Language from "@/components/ui/language";
-import { useProfileContext } from "@/context/ProfileContext";
+import { getClientId, useProfileContext } from "@/context/ProfileContext";
 import { FileCheck2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
@@ -57,7 +57,7 @@ function GeneratePaymentContent() {
 
   useEffect(() => {
     const fetchPaymentsData = async () => {
-      if (!session?.token || !profile?.client_id || movementIds.length === 0) {
+      if (!session?.token || !getClientId(profile) || movementIds.length === 0) {
         setIsLoading(false);
         return;
       }
@@ -66,7 +66,7 @@ function GeneratePaymentContent() {
         setIsLoading(true);
         const response = await getPaymentNetting({
           accessToken: session.token,
-          clientId: profile.client_id,
+          clientId: getClientId(profile),
           page: 1,
           limit: 100,
           status: "ALL",
@@ -86,7 +86,7 @@ function GeneratePaymentContent() {
     };
 
     fetchPaymentsData();
-  }, [session?.token, profile?.client_id, movementIds]);
+  }, [session?.token, profile, movementIds]);
 
   return (
     <>
