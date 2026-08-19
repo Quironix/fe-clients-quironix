@@ -76,6 +76,11 @@ export interface ManagementIndicators {
     target_amount: number;
     percentage: number;
   };
+  weekly_goal: {
+    current_amount: number;
+    target_amount: number;
+    percentage: number;
+  };
   overdue_reduction: {
     percentage: number;
     current_amount: number;

@@ -17,7 +17,8 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { ArrowLeft, PhoneCall } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, use, useEffect, useState } from "react";
 import type { Contact } from "../../debtors/types";
 import Header from "../../components/header";
 import { Main } from "../../components/main";
@@ -37,6 +38,11 @@ const Content = ({ params }: PageProps) => {
   // Unwrap params usando React.use()
   const { id } = use(params);
   const t = useTranslations("debtorManagement");
+  const searchParams = useSearchParams();
+  const initialTab =
+    searchParams.get("tab") === "add-management"
+      ? "add-management"
+      : "key-reasons";
 
   const { profile, session } = useProfileContext();
   const [activeContact, setActiveContact] = useState<Contact | null>(null);
@@ -172,7 +178,7 @@ const Content = ({ params }: PageProps) => {
         )}
 
         <div className="bg-white p-5 rounded-md shadow-xl mt-5 min-h-auto flex flex-col">
-          <Tabs defaultValue="key-reasons" className="flex flex-col flex-1">
+          <Tabs defaultValue={initialTab} className="flex flex-col flex-1">
             <TabsList>
               <TabsTrigger value="key-reasons">{t("tabs.keyReasons")}</TabsTrigger>
               <TabsTrigger value="add-management">{t("tabs.addManagement")}</TabsTrigger>
@@ -202,7 +208,11 @@ const Content = ({ params }: PageProps) => {
 };
 
 const Page = ({ params }: PageProps) => {
-  return <Content params={params} />;
+  return (
+    <Suspense fallback={null}>
+      <Content params={params} />
+    </Suspense>
+  );
 };
 
 export default Page;

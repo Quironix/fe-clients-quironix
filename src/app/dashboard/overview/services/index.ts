@@ -87,11 +87,13 @@ export const getAll = async (
   accessToken: string,
   clientId: string,
   filters?: { from?: string; to?: string },
-  period?: string | null
+  period?: string | null,
+  executiveId?: string | null
 ): Promise<KPIResponse> => {
   try {
     const url = new URL(`${API_URL}/v2/clients/${clientId}/reports/dashboard/kpis`);
     if (period) url.searchParams.set("period", period);
+    if (executiveId) url.searchParams.set("executiveId", executiveId);
 
     const response = await fetch(url.toString(), {
         headers: {

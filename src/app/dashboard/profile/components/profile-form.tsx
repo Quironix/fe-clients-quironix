@@ -103,7 +103,7 @@ const ProfileForm = () => {
   }, [profile, form]);
 
   const roles: { id: string; name: string }[] = Array.isArray(profile?.roles)
-    ? profile.roles
+    ? (profile.roles as { id: string; name: string }[])
     : [];
 
   return (

@@ -13,6 +13,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -58,6 +65,10 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
         })
       )
       .min(1, t("form.minOnePermission")),
+    dashboard_type: z
+      .enum(["MANAGER", "COLLECTION_MANAGER", "EXECUTIVE"])
+      .nullable()
+      .optional(),
   });
 
   type RoleFormValue = z.infer<typeof roleFormSchema>;
@@ -71,6 +82,7 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
       ...defaultValues,
       name: defaultValues?.name || "",
       description: defaultValues?.description || "",
+      dashboard_type: defaultValues?.dashboard_type ?? null,
       permissions:
         defaultValues?.scopes?.map((scope) => {
           if (typeof scope === "string") {
@@ -144,6 +156,7 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
         name: data.name,
         description: data.description,
         scopes: formattedScopes,
+        dashboard_type: data.dashboard_type ?? null,
       } as Role;
 
       // Agregar el ID solo si está presente en los datos originales
@@ -241,6 +254,46 @@ const RoleForm = ({ defaultValues, onSubmit, setOpen }: RoleFormProps) => {
                     {...field}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="dashboard_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("form.dashboardType")}</FormLabel>
+                <p className="text-sm text-gray-500 mb-2">
+                  {t("form.dashboardTypeDescription")}
+                </p>
+                <Select
+                  onValueChange={(value) =>
+                    field.onChange(value === "NONE" ? null : value)
+                  }
+                  value={field.value ?? "NONE"}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t("form.dashboardType")} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="NONE">
+                      {t("form.dashboardTypeNone")}
+                    </SelectItem>
+                    <SelectItem value="MANAGER">
+                      {t("form.dashboardTypeManager")}
+                    </SelectItem>
+                    <SelectItem value="COLLECTION_MANAGER">
+                      {t("form.dashboardTypeCollectionManager")}
+                    </SelectItem>
+                    <SelectItem value="EXECUTIVE">
+                      {t("form.dashboardTypeExecutive")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
