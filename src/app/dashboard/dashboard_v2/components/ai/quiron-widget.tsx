@@ -102,13 +102,19 @@ interface QuironDatasets {
   executiveSummary?: unknown;
 }
 
+function toAiKpi(kpi: KPI): Omit<KPI, "invoices"> {
+  const { invoices, ...aiKpi } = kpi;
+  return aiKpi;
+}
+
 function buildContextForTopic(topic: string, datasets: QuironDatasets): unknown {
   const { kpis, agingBuckets, debtorConcentration, cashDeviation, executiveSummary } =
     datasets;
+  const aiKpis = kpis.map(toAiKpi);
 
   if (topic.startsWith("kpi::")) {
     const name = topic.slice(5);
-    return { kpi: kpis.find((k) => k.name === name), allKpis: kpis };
+    return { kpi: aiKpis.find((k) => k.name === name), allKpis: aiKpis };
   }
 
   switch (topic) {
@@ -122,7 +128,7 @@ function buildContextForTopic(topic: string, datasets: QuironDatasets): unknown 
       return MOCK_QUIRONSCORE_CONTEXT;
     case "resumen":
     default:
-      return { executiveSummary, kpis };
+      return { executiveSummary, kpis: aiKpis };
   }
 }
 
