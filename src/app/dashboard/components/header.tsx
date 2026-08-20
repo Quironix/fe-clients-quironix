@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { NotificationBell } from "./notification-bell";
+import { InvoiceInboxMailbox } from "./invoice-inbox-mailbox";
 
 interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
   fixed?: boolean;
@@ -35,6 +36,7 @@ const Header = ({ className, fixed, children, ...props }: HeaderProps) => {
         className="bg-[#2F6EFF] text-white scale-120 hover:bg-[#2F6EFF]/90 hover:text-white border-none"
       />
       <NotificationBell />
+      <InvoiceInboxMailbox />
       <Separator orientation="vertical" className="h-6" />
       {children}
     </header>
