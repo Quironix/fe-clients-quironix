@@ -33,6 +33,7 @@ const EstimatedVsCollectedChart: React.FC<{
   period: HeroPeriod;
   chartData?: CashDeviationData["chart"];
 }> = ({ period, chartData }) => {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const d = MOCK_ESTIMATED_VS_COLLECTED[period];
   const estimated =
     chartData && chartData.estimated.length > 0
@@ -42,6 +43,7 @@ const EstimatedVsCollectedChart: React.FC<{
     chartData && chartData.collected.length > 0
       ? chartData.collected
       : d.collected;
+  const labels = chartData && chartData.labels.length > 0 ? chartData.labels : [];
   const chartLabel = chartData?.label || d.label;
 
   const w = 680;
@@ -65,31 +67,43 @@ const EstimatedVsCollectedChart: React.FC<{
     .join(" ")}`;
   const fmt = (v: number) => formatAmount(v);
 
+  const isSurplus = collected[n - 1] >= estimated[n - 1];
+  const lineColor = isSurplus ? "var(--qx-good)" : "var(--qx-bad)";
+  const textColor = isSurplus ? "var(--qx-good-tx)" : "var(--qx-bad-tx)";
+  const gapLabel = isSurplus ? "Superávit" : "Brecha creciente";
+
+  const hovered = hoveredIndex;
+  const tooltipLeftPct = hovered !== null ? (x(hovered) / w) * 100 : 0;
+  const tooltipTopPct =
+    hovered !== null
+      ? (Math.min(y(estimated[hovered]), y(collected[hovered])) / h) * 100
+      : 0;
+
   return (
     <div className="qxv2-body" style={{ paddingTop: 4 }}>
       <div className="qxv2-card-h" style={{ padding: "0 0 4px" }}>
-        <h3 style={{ fontSize: 13.5 }}>Estimado vs recaudado — {chartLabel}</h3>
+        <h3 style={{ fontSize: 13.5 }}>Proyección vs recaudado — {chartLabel}</h3>
       </div>
       <div className="qxv2-mline-legend">
         <span className="qxv2-lg">
           <span className="qxv2-dot dash" />
-          Estimado de caja
+          Proyección de caja
         </span>
         <span className="qxv2-lg">
-          <span className="qxv2-dot" style={{ background: "var(--qx-bad)" }} />
+          <span className="qxv2-dot" style={{ background: lineColor }} />
           Recaudado real
         </span>
-        <span className="qxv2-lg" style={{ color: "var(--qx-bad-tx)" }}>
-          Brecha creciente
+        <span className="qxv2-lg" style={{ color: textColor }}>
+          {gapLabel}
         </span>
       </div>
-      <div className="qxv2-mline-wrap">
+      <div className="qxv2-mline-wrap" style={{ position: "relative" }}>
         <svg
           className="qxv2-mline-svg"
           viewBox={`0 0 ${w} ${h}`}
           preserveAspectRatio="none"
         >
-          <polygon points={gap} fill="var(--qx-bad)" opacity={0.08} />
+          <polygon points={gap} fill={lineColor} opacity={0.08} />
           <polyline
             points={estLine}
             fill="none"
@@ -102,18 +116,59 @@ const EstimatedVsCollectedChart: React.FC<{
           <polyline
             points={recLine}
             fill="none"
-            stroke="var(--qx-bad)"
+            stroke={lineColor}
             strokeWidth={2.6}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          <circle cx={est[n - 1][0]} cy={est[n - 1][1]} r={3.2} fill="#98A2B3" />
-          <circle cx={rec[n - 1][0]} cy={rec[n - 1][1]} r={3.6} fill="var(--qx-bad)" />
+          {est.map(([px, py], i) => (
+            <circle key={`est-${i}`} cx={px} cy={py} r={i === n - 1 ? 3.2 : 2.4} fill="#98A2B3" />
+          ))}
+          {rec.map(([px, py], i) => (
+            <circle key={`rec-${i}`} cx={px} cy={py} r={i === n - 1 ? 3.6 : 2.8} fill={lineColor} />
+          ))}
+          {est.map((_, i) => (
+            <circle
+              key={`hit-${i}`}
+              cx={x(i)}
+              cy={h / 2}
+              r={h / 2}
+              fill="transparent"
+              style={{ cursor: "pointer" }}
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex((cur) => (cur === i ? null : cur))}
+            />
+          ))}
         </svg>
+        {hovered !== null ? (
+          <div
+            style={{
+              position: "absolute",
+              left: `${tooltipLeftPct}%`,
+              top: `${tooltipTopPct}%`,
+              transform: "translate(-50%, -110%)",
+              background: "#1f2937",
+              color: "#fff",
+              borderRadius: 8,
+              padding: "6px 10px",
+              fontSize: 11,
+              fontWeight: 700,
+              whiteSpace: "nowrap",
+              pointerEvents: "none",
+              zIndex: 2,
+            }}
+          >
+            <div style={{ opacity: 0.8, marginBottom: 2 }}>
+              {labels[hovered] ? `Semana del ${labels[hovered]}` : chartLabel}
+            </div>
+            <div>Estimado {fmt(estimated[hovered])}</div>
+            <div>Recaudado {fmt(collected[hovered])}</div>
+          </div>
+        ) : null}
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 18, marginTop: 6, fontSize: 11.5, fontWeight: 800 }}>
-        <span style={{ color: "#667085" }}>Estimado {fmt(estimated[n - 1])}</span>
-        <span style={{ color: "var(--qx-bad-tx)" }}>Recaudado {fmt(collected[n - 1])}</span>
+        <span style={{ color: "#667085" }}>Proyección {fmt(estimated[n - 1])}</span>
+        <span style={{ color: textColor }}>Recaudado {fmt(collected[n - 1])}</span>
       </div>
     </div>
   );
@@ -251,7 +306,7 @@ export const HeroCashDeviationCard: React.FC = () => {
       </div>
       <div className="qxv2-nums">
         <div className="qxv2-num">
-          <div className="qxv2-n-label">Estimado de caja</div>
+          <div className="qxv2-n-label">Esperado del período</div>
           <div className="qxv2-n-val">{estimatedStr}</div>
         </div>
         <div className="qxv2-num">
