@@ -1,11 +1,25 @@
-import { getDebtors } from "@/app/dashboard/debtors/services";
+import { getDebtorById, getDebtors } from "@/app/dashboard/debtors/services";
 import {
   DEFAULT_PAGINATION_PARAMS,
   PaginationParams,
 } from "@/app/dashboard/debtors/types/pagination";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { usePaginatedQuery } from "./usePaginatedQuery";
+
+interface UseDebtorParams {
+  accessToken: string;
+  clientId: string;
+  debtorId: string | null | undefined;
+}
+
+export const useDebtor = ({ accessToken, clientId, debtorId }: UseDebtorParams) => {
+  return useQuery({
+    queryKey: ["debtor", clientId, debtorId],
+    queryFn: () => getDebtorById(accessToken, clientId, debtorId as string),
+    enabled: !!accessToken && !!clientId && !!debtorId,
+  });
+};
 
 interface UseDebtorsParams {
   accessToken: string;
