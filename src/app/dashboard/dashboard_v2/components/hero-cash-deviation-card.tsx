@@ -193,7 +193,7 @@ export const HeroCashDeviationCard: React.FC = () => {
     : mock.deviationPct;
   const rangeLabel = realData?.rangeLabel || mock.range;
 
-  const segments = realData?.segments && realData.segments.length > 0
+  const segments = realData
     ? realData.segments.map((s) => {
         const matchingDef = HERO_CASH_DEVIATION_SEGMENTS.find((d) => d.key === s.key);
         return {
@@ -209,11 +209,17 @@ export const HeroCashDeviationCard: React.FC = () => {
         amountStr: mock.segAmounts[i] || "",
       }));
 
-  const insightLabel = realData?.insight?.topSegmentLabel || "Fase 1 vencida sin gestión";
-  const insightAmountStr = realData?.insight?.topSegmentAmount
-    ? formatAmount(realData.insight.topSegmentAmount)
+  const insightLabel = realData
+    ? realData.insight?.topSegmentLabel || "—"
+    : "Fase 1 vencida sin gestión";
+  const insightAmountStr = realData
+    ? formatAmount(realData.insight?.topSegmentAmount || 0)
     : mock.insightAmount;
-  const insightDebtors = realData?.insight?.topSegmentDebtorsCount ?? 3;
+  const insightDebtors = realData
+    ? realData.insight?.topSegmentDebtorsCount ?? 0
+    : 3;
+
+  const hasNoDeviation = !!realData && realData.deviationAmount <= 0;
 
   return (
     <div className="qxv2-card qxv2-hero">
@@ -260,58 +266,70 @@ export const HeroCashDeviationCard: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="qxv2-q-line">
-        ¿Dónde están los {deviationStr.replace("−", "")} que faltan? — cada tramo
-        se abre y muestra a los deudores que lo explican
-      </div>
-      <div className="qxv2-stack">
-        {segments
-          .filter((s) => s.pct > 0)
-          .map((s) => (
-            <button
-              type="button"
-              className={`qxv2-segb${expandedSegment === s.key ? " qxv2-segb-active" : ""}`}
-              key={s.key}
-              style={{ width: `${Math.max(s.pct, 1)}%`, background: s.color }}
-              title={`${s.label} · ${s.amountStr}`}
-              onClick={() =>
-                setExpandedSegment(expandedSegment === s.key ? null : s.key)
-              }
-            >
-              {s.pct > 8 ? <span>{s.amountStr}</span> : null}
-            </button>
-          ))}
-      </div>
-      <div className="qxv2-legend">
-        {segments.map((s) => (
-          <button
-            type="button"
-            className={`qxv2-lg qxv2-lg-btn${expandedSegment === s.key ? " qxv2-lg-active" : ""}${s.pct === 0 ? " qxv2-lg-empty" : ""}`}
-            key={s.key}
-            onClick={() =>
-              setExpandedSegment(expandedSegment === s.key ? null : s.key)
-            }
-          >
-            <span className="qxv2-dot" style={{ background: s.color }} />
-            {s.label} · {s.amountStr}
-          </button>
-        ))}
-      </div>
-      {expandedSegment ? (
-        <SegmentDebtorsPanel
-          clientId={profile?.client?.id || ""}
-          accessToken={session?.token || ""}
-          segment={expandedSegment}
-          period={period}
-        />
-      ) : null}
-      <div className="qxv2-insight">
-        <p>
-          Tramo mayor: <strong>{insightLabel} — {insightAmountStr} en {insightDebtors} deudores</strong>.
-          Esa caja no se cobra insistiendo: se cobra resolviendo la causa raíz.
-        </p>
-        <button className="qxv2-btn-orange">Enviar a gestión →</button>
-      </div>
+      {hasNoDeviation ? (
+        <div className="qxv2-insight" style={{ background: "var(--qx-good-bg)", borderColor: "var(--qx-good-bg)" }}>
+          <p>
+            <strong style={{ color: "var(--qx-good-tx)" }}>Sin brecha relevante en este período.</strong>{" "}
+            Lo recaudado está en línea con lo estimado: no hay facturas vencidas en litigio,
+            compromisos incumplidos, fase 1 sin gestión ni pagos sin aplicar que expliquen una diferencia.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="qxv2-q-line">
+            ¿Dónde están los {deviationStr.replace("−", "")} que faltan? — cada tramo
+            se abre y muestra a los deudores que lo explican
+          </div>
+          <div className="qxv2-stack">
+            {segments
+              .filter((s) => s.pct > 0)
+              .map((s) => (
+                <button
+                  type="button"
+                  className={`qxv2-segb${expandedSegment === s.key ? " qxv2-segb-active" : ""}`}
+                  key={s.key}
+                  style={{ width: `${Math.max(s.pct, 1)}%`, background: s.color }}
+                  title={`${s.label} · ${s.amountStr}`}
+                  onClick={() =>
+                    setExpandedSegment(expandedSegment === s.key ? null : s.key)
+                  }
+                >
+                  {s.pct > 8 ? <span>{s.amountStr}</span> : null}
+                </button>
+              ))}
+          </div>
+          <div className="qxv2-legend">
+            {segments.map((s) => (
+              <button
+                type="button"
+                className={`qxv2-lg qxv2-lg-btn${expandedSegment === s.key ? " qxv2-lg-active" : ""}${s.pct === 0 ? " qxv2-lg-empty" : ""}`}
+                key={s.key}
+                onClick={() =>
+                  setExpandedSegment(expandedSegment === s.key ? null : s.key)
+                }
+              >
+                <span className="qxv2-dot" style={{ background: s.color }} />
+                {s.label} · {s.amountStr}
+              </button>
+            ))}
+          </div>
+          {expandedSegment ? (
+            <SegmentDebtorsPanel
+              clientId={profile?.client?.id || ""}
+              accessToken={session?.token || ""}
+              segment={expandedSegment}
+              period={period}
+            />
+          ) : null}
+          <div className="qxv2-insight">
+            <p>
+              Tramo mayor: <strong>{insightLabel} — {insightAmountStr} en {insightDebtors} deudores</strong>.
+              Esa caja no se cobra insistiendo: se cobra resolviendo la causa raíz.
+            </p>
+            <button className="qxv2-btn-orange">Enviar a gestión →</button>
+          </div>
+        </>
+      )}
       <EstimatedVsCollectedChart period={period} chartData={realData?.chart} />
     </div>
   );
