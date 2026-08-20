@@ -37,6 +37,7 @@ import {
   ThermometerSnowflake,
   Upload,
   User2,
+  X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
@@ -96,8 +97,35 @@ export const StepThree = ({
     }
   }, []);
 
-  const handleFileChange = (file: File | null) => {
-    onFormChange({ file });
+  const isValidFile = (file: File) => {
+    const validTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "application/pdf",
+    ];
+    const maxSize = 5 * 1024 * 1024; // 5MB per file
+    return validTypes.includes(file.type) && file.size <= maxSize;
+  };
+
+  const addFiles = (incoming: FileList | File[]) => {
+    const valid = Array.from(incoming).filter(isValidFile);
+    if (valid.length === 0) return;
+    const current = formData.files ?? [];
+    // Deduplicate by name + size to avoid adding the same file twice
+    const merged = [...current];
+    for (const file of valid) {
+      const isDuplicate = merged.some(
+        (f) => f.name === file.name && f.size === file.size
+      );
+      if (!isDuplicate) merged.push(file);
+    }
+    onFormChange({ files: merged });
+  };
+
+  const removeFile = (index: number) => {
+    const current = formData.files ?? [];
+    onFormChange({ files: current.filter((_, i) => i !== index) });
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -112,16 +140,7 @@ export const StepThree = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file && isValidFile(file)) {
-      handleFileChange(file);
-    }
-  };
-
-  const isValidFile = (file: File) => {
-    const validTypes = ["image/jpeg", "image/png", "image/gif"];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    return validTypes.includes(file.type) && file.size <= maxSize;
+    addFiles(e.dataTransfer.files);
   };
 
   const formatCurrency = (amount: number | string) => {
@@ -761,11 +780,13 @@ export const StepThree = ({
             <input
               type="file"
               className="hidden"
-              accept="image/jpeg,image/png,image/gif"
+              accept="image/jpeg,image/png,image/gif,application/pdf"
+              multiple
               onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file && isValidFile(file)) {
-                  handleFileChange(file);
+                if (e.target.files) {
+                  addFiles(e.target.files);
+                  // Reset input so the same file can be re-added after removal
+                  e.target.value = "";
                 }
               }}
             />
@@ -774,12 +795,36 @@ export const StepThree = ({
               {t("uploadFile")}
             </span>
           </label>
-          {formData.file && (
-            <p className="text-sm text-green-600 mt-2">
-              {t("fileSelected", { name: formData.file.name })}
-            </p>
-          )}
         </div>
+
+        {formData.files && formData.files.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {formData.files.map((file, index) => (
+              <li
+                key={`${file.name}-${file.size}-${index}`}
+                className="flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-200 rounded-md"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <FileText className="w-4 h-4 text-gray-500 shrink-0" />
+                  <span className="text-sm text-gray-700 truncate">
+                    {file.name}
+                  </span>
+                  <span className="text-xs text-gray-400 shrink-0">
+                    ({(file.size / 1024).toFixed(0)} KB)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeFile(index)}
+                  className="ml-2 p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                  aria-label={`Remove ${file.name}`}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="bg-white rounded-lg p-4 border border-gray-200">

@@ -25,7 +25,9 @@ interface BuildEmailPayloadParams {
   debtorName?: string;
   bankAccountInfo?: string; // Pre-fetched bank account HTML (optional)
   trackId?: string;
-  /** Optional file attachment to include in the email. */
+  /** Optional file attachments to include in the email. */
+  attachments?: EmailAttachment[];
+  /** @deprecated Use attachments instead. Kept for backward compatibility. */
   attachment?: EmailAttachment;
 }
 
@@ -108,6 +110,7 @@ export function buildEmailPayload({
   bankAccountInfo,
   trackId,
   debtorName,
+  attachments,
   attachment,
 }: BuildEmailPayloadParams): EmailPayload {
   const contactEmail = managementFormData.contactValue;
@@ -243,7 +246,11 @@ export function buildEmailPayload({
       email_company: clientEmail,
     },
     trackId,
-    attachments: attachment ? [attachment] : undefined,
+    attachments: attachments && attachments.length > 0
+      ? attachments
+      : attachment
+        ? [attachment]
+        : undefined,
   };
 
   return emailPayload;

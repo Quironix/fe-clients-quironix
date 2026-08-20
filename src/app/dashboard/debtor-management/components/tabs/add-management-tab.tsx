@@ -61,7 +61,7 @@ export interface ManagementFormData {
   nextManagementDate: string | Date;
   nextManagementTime: string;
   caseData: CaseData;
-  file?: File | null;
+  files?: File[];
   comment?: string;
   sendEmail?: boolean;
 }
@@ -151,7 +151,7 @@ export const AddManagementTab = ({
       nextManagementDate: "",
       nextManagementTime: "",
       caseData: {},
-      file: null,
+      files: [],
       comment: "",
       sendEmail: true,
     });
@@ -240,7 +240,7 @@ export const AddManagementTab = ({
       nextManagementDate: "",
       nextManagementTime: "",
       caseData: {},
-      file: null,
+      files: [],
       comment: "",
       sendEmail: true,
     });
@@ -545,9 +545,10 @@ export const AddManagementTab = ({
         payload.case_data = normalizedCaseData;
       }
     }
-    if (managementFormData.file) {
-      const dataURI = await fileToDataURI(managementFormData.file);
-      payload.track_attachments = [dataURI];
+    if (managementFormData.files && managementFormData.files.length > 0) {
+      payload.track_attachments = await Promise.all(
+        managementFormData.files.map((file) => fileToDataURI(file))
+      );
     }
 
     return payload;
@@ -730,9 +731,14 @@ export const AddManagementTab = ({
               );
 
               if (selectedCombination) {
-                const emailAttachment = management.formData.file
-                  ? await fileToEmailAttachment(management.formData.file)
-                  : undefined;
+                const emailAttachments: EmailAttachment[] =
+                  management.formData.files && management.formData.files.length > 0
+                    ? await Promise.all(
+                        management.formData.files.map((file) =>
+                          fileToEmailAttachment(file)
+                        )
+                      )
+                    : [];
 
                 const emailPayload = buildEmailPayload({
                   managementFormData: management.formData,
@@ -742,7 +748,7 @@ export const AddManagementTab = ({
                   bankAccountInfo: bankAccountInfoHTML,
                   trackId: management.id,
                   debtorName: dataDebtor?.name,
-                  attachment: emailAttachment,
+                  attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
                 });
 
                 const emailResult = await sendTrackEmail(emailPayload, session.token, profile.client_id);
@@ -759,10 +765,13 @@ export const AddManagementTab = ({
               // For multiple managements, collect attachments from each one.
               const emailAttachments: EmailAttachment[] = [];
               for (const management of group.managements) {
-                if (management.formData.file) {
-                  emailAttachments.push(
-                    await fileToEmailAttachment(management.formData.file)
+                if (management.formData.files && management.formData.files.length > 0) {
+                  const converted = await Promise.all(
+                    management.formData.files.map((file) =>
+                      fileToEmailAttachment(file)
+                    )
                   );
+                  emailAttachments.push(...converted);
                 }
               }
 
