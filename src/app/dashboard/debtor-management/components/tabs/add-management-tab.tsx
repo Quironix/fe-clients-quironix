@@ -21,6 +21,7 @@ import {
 } from "../../config/management-types";
 import { buildEmailPayload } from "../../services/email-builder";
 import { buildMultipleEmailPayload } from "../../services/email-builder-multiple";
+import type { EmailAttachment } from "../../types/email";
 import {
   sendTrackEmail,
   sendMultipleManagementEmail,
@@ -70,6 +71,35 @@ export interface SavedManagement {
   formData: ManagementFormData;
   selectedInvoices: Invoice[];
   createdAt: Date;
+}
+
+/**
+ * Converts a File to a data URI string: "data:<mime>;base64,<content>".
+ * Used for track_attachments (Flujo 1).
+ */
+function fileToDataURI(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Converts a File to an EmailAttachment object (Flujo 2).
+ * content = base64 without the data URI prefix.
+ */
+async function fileToEmailAttachment(file: File): Promise<EmailAttachment> {
+  const dataURI = await fileToDataURI(file);
+  // dataURI format: "data:<type>;base64,<content>"
+  const content = dataURI.split(",")[1];
+  return {
+    content,
+    type: file.type,
+    filename: file.name,
+    disposition: "attachment",
+  };
 }
 
 const buildContactFromActive = (contact: Contact | null | undefined): Pick<ManagementFormData, "contactType" | "contactValue" | "selectedContact"> => {
@@ -407,7 +437,7 @@ export const AddManagementTab = ({
     }
   };
 
-  const buildTrackPayload = (litigationIds?: string[], paymentPlanIds?: string[]) => {
+  const buildTrackPayload = async (litigationIds?: string[], paymentPlanIds?: string[]) => {
     const dateISO = formatDateToISO(managementFormData.nextManagementDate);
     const time = managementFormData.nextManagementTime || "00:00";
     const nextManagementDateTime = `${dateISO}T${time}:00.000Z`;
@@ -515,6 +545,11 @@ export const AddManagementTab = ({
         payload.case_data = normalizedCaseData;
       }
     }
+    if (managementFormData.file) {
+      const dataURI = await fileToDataURI(managementFormData.file);
+      payload.track_attachments = [dataURI];
+    }
+
     return payload;
   };
 
@@ -550,7 +585,7 @@ export const AddManagementTab = ({
         toast.success(t("paymentPlanCreated"));
       }
 
-      const payload = buildTrackPayload(litigationIds, paymentPlanIds);
+      const payload = await buildTrackPayload(litigationIds, paymentPlanIds);
 
       const result = await createTrack(
         session.token,
@@ -623,7 +658,7 @@ export const AddManagementTab = ({
         toast.success(t("paymentPlanCreated"));
       }
 
-      const payload = buildTrackPayload(litigationIds, paymentPlanIds);
+      const payload = await buildTrackPayload(litigationIds, paymentPlanIds);
 
       const result = await createTrack(session.token, profile.client_id, payload);
 
@@ -695,6 +730,10 @@ export const AddManagementTab = ({
               );
 
               if (selectedCombination) {
+                const emailAttachment = management.formData.file
+                  ? await fileToEmailAttachment(management.formData.file)
+                  : undefined;
+
                 const emailPayload = buildEmailPayload({
                   managementFormData: management.formData,
                   selectedInvoices: management.selectedInvoices,
@@ -703,6 +742,7 @@ export const AddManagementTab = ({
                   bankAccountInfo: bankAccountInfoHTML,
                   trackId: management.id,
                   debtorName: dataDebtor?.name,
+                  attachment: emailAttachment,
                 });
 
                 const emailResult = await sendTrackEmail(emailPayload, session.token, profile.client_id);
@@ -716,6 +756,16 @@ export const AddManagementTab = ({
                 }
               }
             } else {
+              // For multiple managements, collect attachments from each one.
+              const emailAttachments: EmailAttachment[] = [];
+              for (const management of group.managements) {
+                if (management.formData.file) {
+                  emailAttachments.push(
+                    await fileToEmailAttachment(management.formData.file)
+                  );
+                }
+              }
+
               const emailPayload = buildMultipleEmailPayload({
                 managements: group.managements,
                 profile,
@@ -723,6 +773,7 @@ export const AddManagementTab = ({
                 contactName: group.contactName,
                 bankAccountInfo: bankAccountInfoHTML,
                 debtorName: dataDebtor?.name,
+                attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
               });
 
               const emailResult = await sendMultipleManagementEmail(
