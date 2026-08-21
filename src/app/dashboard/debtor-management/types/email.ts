@@ -44,6 +44,7 @@ export interface EmailPayload {
   }>;
   dynamicTemplateData: EmailDynamicTemplateData;
   trackId?: string;
+  attachments?: EmailAttachment[];
 }
 
 export interface EmailManagement {
@@ -81,9 +82,21 @@ export interface EmailMultiplePayload {
   }>;
   dynamicTemplateData: EmailMultipleDynamicTemplateData;
   trackId?: string;
+  attachments?: EmailAttachment[];
 }
 
 export interface EmailResponse {
   success: boolean;
   message: string;
+}
+
+export interface EmailAttachment {
+  /** Base64-encoded file content — no data URI prefix. */
+  content: string;
+  /** MIME type, e.g. "image/png", "application/pdf". */
+  type: string;
+  /** File name shown to the recipient, e.g. "evidencia.png". */
+  filename: string;
+  /** "attachment" (downloadable) or "inline". Defaults to "attachment". */
+  disposition?: "attachment" | "inline";
 }

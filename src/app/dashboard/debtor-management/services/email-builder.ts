@@ -2,7 +2,7 @@ import { getDocumentTypeDisplayData } from "@/app/dashboard/payment-netting/comp
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { ManagementFormData } from "../components/tabs/add-management-tab";
 import { ManagementCombination } from "../config/management-types";
-import { EmailInvoice, EmailPayload } from "../types/email";
+import { EmailAttachment, EmailInvoice, EmailPayload } from "../types/email";
 import { generateBodyDescriptionByDebtorComment } from "../utils/email-messages";
 import { generateBankInfoHTML } from "./bank-info-formatter";
 
@@ -25,6 +25,10 @@ interface BuildEmailPayloadParams {
   debtorName?: string;
   bankAccountInfo?: string; // Pre-fetched bank account HTML (optional)
   trackId?: string;
+  /** Optional file attachments to include in the email. */
+  attachments?: EmailAttachment[];
+  /** @deprecated Use attachments instead. Kept for backward compatibility. */
+  attachment?: EmailAttachment;
 }
 
 function formatCurrency(amount: number | string): string {
@@ -106,6 +110,8 @@ export function buildEmailPayload({
   bankAccountInfo,
   trackId,
   debtorName,
+  attachments,
+  attachment,
 }: BuildEmailPayloadParams): EmailPayload {
   const contactEmail = managementFormData.contactValue;
 
@@ -240,6 +246,11 @@ export function buildEmailPayload({
       email_company: clientEmail,
     },
     trackId,
+    attachments: attachments && attachments.length > 0
+      ? attachments
+      : attachment
+        ? [attachment]
+        : undefined,
   };
 
   return emailPayload;

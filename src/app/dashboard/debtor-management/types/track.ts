@@ -88,6 +88,12 @@ export interface CreateTrackPayload {
   metadata?: {
     callUniqueIds?: Array<string | null>;
   };
+  /**
+   * Files attached to the track.
+   * Each entry is a data URI: "data:<mime>;base64,<content>".
+   * Optional — omit if there are no attachments.
+   */
+  track_attachments?: string[];
 }
 
 /**

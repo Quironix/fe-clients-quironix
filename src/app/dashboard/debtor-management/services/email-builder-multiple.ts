@@ -2,6 +2,7 @@ import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { SavedManagement } from "../components/tabs/add-management-tab";
 import { getManagementCombination } from "../config/management-types";
 import {
+  EmailAttachment,
   EmailInvoice,
   EmailManagement,
   EmailMultiplePayload,
@@ -15,6 +16,8 @@ interface BuildMultipleEmailPayloadParams {
   contactName: string;
   bankAccountInfo?: string;
   debtorName?: string;
+  /** Optional attachments collected from each management's uploaded file. */
+  attachments?: EmailAttachment[];
 }
 
 function formatCurrency(amount: number | string): string {
@@ -97,6 +100,7 @@ export function buildMultipleEmailPayload({
   contactName,
   bankAccountInfo,
   debtorName,
+  attachments,
 }: BuildMultipleEmailPayloadParams): EmailMultiplePayload {
   const emailManagements: EmailManagement[] = managements.map(
     (management, index) => {
@@ -190,6 +194,7 @@ export function buildMultipleEmailPayload({
     // Best-effort: a single email can bundle multiple managements/tracks,
     // but a debtor reply can only link to one track_id — use the first.
     trackId: managements[0]?.id,
+    attachments: attachments && attachments.length > 0 ? attachments : undefined,
   };
 
   return emailPayload;
