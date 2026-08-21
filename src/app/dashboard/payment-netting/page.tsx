@@ -35,7 +35,7 @@ import FormAssignDebtor from "./components/form-assign-debtor";
 import IconDescription from "./components/icon-description";
 import ViewDetailsModal from "./components/view-details-modal";
 import { usePaymentNetting } from "./hooks/usePaymentNetting";
-import { eliminatePayment, reversePayment, updateReconciliationTableProfile } from "./services";
+import { eliminatePayment, getPaymentHistory, reversePayment, updateReconciliationTableProfile } from "./services";
 
 export default function PaymentNettingPage() {
   const t = useTranslations("paymentNetting");
@@ -204,7 +204,28 @@ export default function PaymentNettingPage() {
     }
   };
 
-  const handleOpenTransactionDetail = (transaction: any) => {
+  const handleOpenTransactionDetail = async (transaction: any) => {
+    const paymentId = transaction?.payment?.id;
+
+    if (paymentId) {
+      try {
+        await getPaymentHistory({
+          accessToken: session?.token,
+          clientId: getClientId(profile),
+          paymentId,
+        });
+      } catch (error) {
+        if (error instanceof Error && error.message === "INSUFFICIENT_PERMISSIONS") {
+          toast.error("Sin acceso", {
+            description:
+              "No tienes permisos para ver el detalle de este pago. Contacta con tu administrador.",
+            duration: 6000,
+          });
+          return;
+        }
+      }
+    }
+
     setSelectedTransaction(transaction);
     setOpenDetailModal(true);
   };
