@@ -403,11 +403,10 @@ export const getPaymentHistory = async ({
     const data = await response.json();
 
     if (!response.ok) {
-      return {
-        success: false,
-        message: data?.message || "Error al obtener el historial del pago",
-        data: null,
-      };
+      if (response.status === 403) {
+        throw new Error("INSUFFICIENT_PERMISSIONS");
+      }
+      throw new Error(data?.message || "Error al obtener el historial del pago");
     }
 
     return {
@@ -417,11 +416,7 @@ export const getPaymentHistory = async ({
     };
   } catch (error) {
     console.error(error);
-    return {
-      success: false,
-      message: "Error al obtener el historial del pago",
-      data: null,
-    };
+    throw error;
   }
 };
 

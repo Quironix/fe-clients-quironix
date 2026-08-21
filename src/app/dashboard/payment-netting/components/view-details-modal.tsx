@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { getClientId, useProfileContext } from "@/context/ProfileContext";
 import { formatNumber } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Barcode,
   Building2,
@@ -25,6 +26,7 @@ import {
   TrendingUp,
   User2,
 } from "lucide-react";
+import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { format, parseISO } from "date-fns";
@@ -67,6 +69,20 @@ export default function ViewDetailsModal({
     enabled: open && !!paymentId && !!session?.token && !!getClientId(profile),
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
+
+  useEffect(() => {
+    if (!error) return;
+    const isPermissionError =
+      error instanceof Error && error.message === "INSUFFICIENT_PERMISSIONS";
+    if (isPermissionError) {
+      toast.error("Sin acceso", {
+        description:
+          "No tienes permisos para ver el detalle de este pago. Contacta con tu administrador.",
+        duration: 6000,
+      });
+      onOpenChange?.(false);
+    }
+  }, [error, onOpenChange]);
 
   const defaultTrigger = (
     <Button variant="outline" size="sm">
@@ -225,19 +241,7 @@ export default function ViewDetailsModal({
     }
 
     if (error) {
-      return (
-        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-          <h3 className="font-medium text-sm text-red-700 mb-2">
-            Error al cargar el historial
-          </h3>
-          <p className="text-sm text-red-600">
-            No se pudo obtener el historial del pago. Mostrando datos básicos.
-          </p>
-          <pre className="text-xs bg-white p-3 rounded border overflow-auto max-h-96 whitespace-pre-wrap mt-2">
-            {JSON.stringify(row, null, 2)}
-          </pre>
-        </div>
-      );
+      return null;
     }
 
     return (
