@@ -27,13 +27,22 @@ interface ExportExcelModalProps {
   debtorId?: string;
 }
 
-const STATUS_SCHEMAS: ExportSchema[] = ["INVOICES", "LITIGATION", "CURRENT_ACCOUNT"];
+const STATUS_SCHEMAS: ExportSchema[] = [
+  "INVOICES",
+  "LITIGATION",
+  "CURRENT_ACCOUNT",
+  "CURRENT_ACCOUNT_ALL_DEBTORS",
+];
 
-// CURRENT_ACCOUNT exports the debtor's full history regardless of date —
-// the period picker below doesn't apply to it (PRD_consulta_cuenta_corriente.md §8.9.6).
-// The shared export endpoint still requires a valid from/to pair, so a
-// harmless (and always-valid) 3-month window is sent and ignored server-side.
-const SCHEMAS_WITHOUT_PERIOD: ExportSchema[] = ["CURRENT_ACCOUNT"];
+// CURRENT_ACCOUNT (and its "todos los deudores" sibling) export the full
+// open-documents history regardless of date — the period picker below
+// doesn't apply to them (PRD_consulta_cuenta_corriente.md §8.9.6). The
+// shared export endpoint still requires a valid from/to pair, so a harmless
+// (and always-valid) 3-month window is sent and ignored server-side.
+const SCHEMAS_WITHOUT_PERIOD: ExportSchema[] = [
+  "CURRENT_ACCOUNT",
+  "CURRENT_ACCOUNT_ALL_DEBTORS",
+];
 
 const MAX_SELECTION = 3;
 
@@ -116,6 +125,7 @@ export function ExportExcelModal({ open, onOpenChange, schema, accessToken, clie
     PAYMENTS: t("schemaPayments"),
     MANAGEMENTS: t("schemaManagements"),
     CURRENT_ACCOUNT: "Cuenta Corriente",
+    CURRENT_ACCOUNT_ALL_DEBTORS: "Cuenta Corriente - Todos los deudores",
   };
 
   const showStatus = STATUS_SCHEMAS.includes(schema);
