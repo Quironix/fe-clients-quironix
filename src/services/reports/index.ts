@@ -7,7 +7,8 @@ export type ExportSchema =
   | "PAYMENT_PLANS"
   | "PAYMENTS"
   | "MANAGEMENTS"
-  | "CURRENT_ACCOUNT";
+  | "CURRENT_ACCOUNT"
+  | "CURRENT_ACCOUNT_ALL_DEBTORS";
 
 export type ExportStatus = "open" | "closed" | "all";
 

@@ -12,6 +12,11 @@ export interface InvoiceStatementRow {
   status: "open" | "closed";
   applications_count: number;
   is_credit_or_debit_note: boolean;
+  /** Only populated by the "todos los deudores" consolidated view. */
+  debtor_id?: string;
+  debtor_name?: string;
+  debtor_code?: string;
+  order_number?: string | null;
 }
 
 export interface ApplicationStatementRow {
@@ -31,6 +36,10 @@ export interface PaymentRemainderStatementRow {
   payment_amount: number;
   remaining_balance: number;
   status: "open" | "closed";
+  /** Only populated by the "todos los deudores" consolidated view. */
+  debtor_id?: string;
+  debtor_name?: string;
+  debtor_code?: string;
 }
 
 export type AccountStatementRow =
