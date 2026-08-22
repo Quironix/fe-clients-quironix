@@ -121,6 +121,10 @@ const CurrentAccountPage = () => {
     if (debtorId) refetch();
   }, [debtorId]);
 
+  useEffect(() => {
+    if (!debtorId) setViewTab("all");
+  }, [debtorId]);
+
   // Column visibility for the "todos los deudores" view is kept per-browser
   // (localStorage) instead of the backend user profile — that profile's
   // table configs are one fixed jsonb column per table (see
@@ -260,7 +264,7 @@ const CurrentAccountPage = () => {
             icon={<Wallet color="white" />}
             subDescription="Transacciones"
           />
-          {ViewTabs}
+          {debtorId && ViewTabs}
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -297,7 +301,7 @@ const CurrentAccountPage = () => {
           icon={<Wallet color="white" />}
           subDescription="Transacciones"
         />
-        {ViewTabs}
+        {debtorId && ViewTabs}
 
         {viewTab === "single" && !debtorId && (
           <div className="flex justify-center items-center h-64">
