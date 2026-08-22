@@ -1185,7 +1185,8 @@
       "rowsPerPage": "Filas por página:",
       "page": "Página {current} de {total}",
       "viewHistory": "Ver historial",
-      "viewCurrentAccount": "Cuenta Corriente"
+      "viewCurrentAccount": "Cuenta Corriente",
+      "viewAllDebtorsCurrentAccount": "Cuenta corriente de todos los deudores"
     }
   },
   "paymentPlans": {
