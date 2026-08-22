@@ -26,10 +26,6 @@ import {
   sendTrackEmail,
   sendMultipleManagementEmail,
 } from "../../services/email-sender";
-import {
-  fetchAndFormatBankInfo,
-  generateBankInfoHTML,
-} from "../../services/bank-info-formatter";
 import { createPaymentPlan } from "../../services/payment-plan";
 import { createTrack } from "../../services/tracks";
 import { CaseData } from "../../types/track";
@@ -678,16 +674,11 @@ export const AddManagementTab = ({
       );
 
       if (managementsToEmail.length > 0) {
-        // Fetch bank information once before sending emails
-        const clientName = profile?.client?.name || "Cliente";
-        const clientEmail = profile?.client?.contacts?.[0]?.email || "";
-        const bankInfo = await fetchAndFormatBankInfo(
-          session.token,
-          profile.client_id,
-          clientName,
-          clientEmail
-        );
-        const bankAccountInfoHTML = generateBankInfoHTML(bankInfo);
+        // bank_account_info is now built server-side from the authenticated
+        // client_id (see PRD_comunicaciones_mensajes_pago_ejecutivo.md §8) —
+        // no client-side fetch, no dependency on the client.onboarding.banks
+        // scope. The placeholder below is always overwritten by the backend.
+        const bankAccountInfoHTML = "";
 
         const groupedByContact: Record<
           string,
