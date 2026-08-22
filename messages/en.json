@@ -1190,7 +1190,8 @@
       "rowsPerPage": "Rows per page:",
       "page": "Page {current} of {total}",
       "viewHistory": "View history",
-      "viewCurrentAccount": "Current Account"
+      "viewCurrentAccount": "Current Account",
+      "viewAllDebtorsCurrentAccount": "Current account for all debtors"
     }
   },
   "paymentPlans": {

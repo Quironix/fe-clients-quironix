@@ -39,6 +39,7 @@ const AccessDeniedContent = () => {
       string,
       { descriptionKey: string; category: string; icon: string }
     > = {
+      "/dashboard/home": { descriptionKey: "dashboardOverview", category: "General", icon: "📊" },
       "/dashboard/overview": { descriptionKey: "dashboardOverview", category: "General", icon: "📊" },
       "/dashboard/settings": { descriptionKey: "settings", category: "Onboarding", icon: "⚙️" },
       "/dashboard/integrations": { descriptionKey: "integrations", category: "Onboarding", icon: "🔗" },
@@ -139,7 +140,7 @@ const AccessDeniedContent = () => {
               <ArrowLeft className="w-4 h-4 mr-2" />
               {t("goBack")}
             </Button>
-            <Link href="/dashboard/overview">
+            <Link href="/dashboard/home">
               <Button className="w-full justify-start bg-primary hover:bg-primary/90">
                 <Home className="w-4 h-4 mr-2" />
                 {t("goToDashboard")}

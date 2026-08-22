@@ -78,12 +78,7 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
             items: [
               {
                 title: t("dashboard"),
-                url: "/dashboard/overview",
-                scope: "client.dashboard",
-              },
-              {
-                title: "Dashboard V2",
-                url: "/dashboard/dashboard_v2",
+                url: "/dashboard/home",
                 scope: "client.dashboard",
               },
               {

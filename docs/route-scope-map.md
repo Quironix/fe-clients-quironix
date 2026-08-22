@@ -16,7 +16,9 @@ Usado para normalizar `ROUTE_SCOPE_MAP` en `src/middleware.ts`.
 
 | Ruta                                          | Scope requerido                        | Estado        | Notas |
 |-----------------------------------------------|----------------------------------------|---------------|-------|
-| `/dashboard/overview`                         | `client.dashboard`                     | ✅ mapeado    | |
+| `/dashboard/home`                             | `client.dashboard`                     | ✅ mapeado    | Ruta canónica del dashboard (ex `dashboard_v2`) |
+| `/dashboard/overview`                         | `client.dashboard`                     | ✅ mapeado    | Legacy — redirige a `/dashboard/home`, código conservado en `overview/legacy-page.tsx` |
+| `/dashboard/dashboard_v2`                     | `client.dashboard`                     | ✅ mapeado    | Legacy — redirige a `/dashboard/home` |
 | `/dashboard/kpi`                              | `client.dashboard.kpis`                | ✅ mapeado    | |
 | `/dashboard/kpi_2`                            | `client.dashboard.kpis`                | ✅ mapeado    | Mismo scope que kpi — confirmar si kpi_2 es la versión activa |
 | `/dashboard/companies`                        | `client.onboarding.companies`          | ✅ mapeado    | Solo clientes FACTORING — validación extra en middleware |

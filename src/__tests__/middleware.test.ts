@@ -16,7 +16,7 @@ describe("root route redirect", () => {
     vi.resetModules();
   });
 
-  it("should redirect authenticated users to /dashboard/overview", async () => {
+  it("should redirect authenticated users to /dashboard/home", async () => {
     const middleware = (await import("@/middleware")).default;
     const { NextResponse } = await import("next/server");
 
@@ -28,7 +28,7 @@ describe("root route redirect", () => {
     await middleware(req as any);
 
     expect(NextResponse.redirect).toHaveBeenCalledWith(
-      new URL("/dashboard/overview", "http://localhost:3000")
+      new URL("/dashboard/home", "http://localhost:3000")
     );
   });
 
