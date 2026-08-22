@@ -36,6 +36,10 @@ export interface PaymentRemainderStatementRow {
   payment_amount: number;
   remaining_balance: number;
   status: "open" | "closed";
+  /** Only populated by the "todos los deudores" consolidated view. */
+  debtor_id?: string;
+  debtor_name?: string;
+  debtor_code?: string;
 }
 
 export type AccountStatementRow =

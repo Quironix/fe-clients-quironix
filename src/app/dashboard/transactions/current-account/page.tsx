@@ -31,7 +31,6 @@ import { updateCurrentAccountTableProfile } from "./services/profile";
 import {
   AccountStatementRow,
   AccountStatementStatus,
-  InvoiceStatementRow,
 } from "./services/types";
 
 const ALL_DEBTORS_COLUMNS_STORAGE_KEY = "current_account_all_debtors_columns";
@@ -407,9 +406,9 @@ const CurrentAccountPage = () => {
               </div>
             ) : (
               <>
-                <DataTableDynamicColumns<InvoiceStatementRow, unknown>
+                <DataTableDynamicColumns<AccountStatementRow, unknown>
                   columns={allDebtorsColumns}
-                  data={allDebtorsRows as InvoiceStatementRow[]}
+                  data={allDebtorsRows}
                   pagination={allDebtorsPagination}
                   onPaginationChange={handleAllDebtorsPaginationChange}
                   onSearchChange={handleAllDebtorsSearchChange}
@@ -421,7 +420,7 @@ const CurrentAccountPage = () => {
                   pageSize={allDebtorsCurrentLimit}
                   pageSizeOptions={[15, 20, 25, 30, 40, 50]}
                   enableGlobalFilter={true}
-                  searchPlaceholder="Buscar por deudor, código, RUT o documento"
+                  searchPlaceholder="Buscar por deudor, código, RUT, documento o pago"
                   showPagination={true}
                   enableColumnFilter={true}
                   initialColumnVisibility={allDebtorsColumnVisibility}
