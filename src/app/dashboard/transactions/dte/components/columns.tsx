@@ -200,6 +200,22 @@ export const columns: ColumnDef<DTE>[] = [
     },
   },
   {
+    accessorKey: "order_number",
+    header: "Orden de Compra",
+    cell: ({ row }) => {
+      const orderNumber = row.getValue("order_number") as string;
+      return <div>{orderNumber || "-"}</div>;
+    },
+  },
+  {
+    accessorKey: "reference",
+    header: "Referencia NC",
+    cell: ({ row }) => {
+      const reference = row.getValue("reference") as string;
+      return <div>{reference || "-"}</div>;
+    },
+  },
+  {
     id: "document",
     header: "Documento",
     cell: ({ row }) => {

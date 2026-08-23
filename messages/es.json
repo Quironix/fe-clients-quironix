@@ -1731,6 +1731,8 @@
         "issueDate": "Fecha de Emisión",
         "dueDate": "Fecha de Vencimiento",
         "amount": "Monto",
+        "orderNumber": "Orden de Compra",
+        "reference": "Referencia NC",
         "document": "Documento",
         "actions": "Acciones"
       },

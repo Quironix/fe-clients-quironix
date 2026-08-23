@@ -1736,6 +1736,8 @@
         "issueDate": "Issue Date",
         "dueDate": "Due Date",
         "amount": "Amount",
+        "orderNumber": "Purchase Order",
+        "reference": "Credit Note Reference",
         "document": "Document",
         "actions": "Actions"
       },
