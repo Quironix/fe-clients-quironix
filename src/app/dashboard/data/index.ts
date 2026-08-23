@@ -655,6 +655,27 @@ export const INVOICE_TYPES = [
   },
 ];
 
+export const INVOICE_PHASE_NAMES: Record<number, string> = {
+  1: "Factura sin información",
+  2: "Factura con Litigio",
+  3: "Recepcionada",
+  4: "Contabilizada",
+  5: "Con compromiso de pago",
+  6: "Compromiso Incumplido",
+  7: "Contabilidad de Pago",
+  8: "Factura Pagada",
+};
+
+export const getInvoicePhaseLabel = (
+  phase: number | string | null | undefined
+): string => {
+  if (phase === null || phase === undefined || phase === "") return "-";
+  const phaseNumber =
+    typeof phase === "string" ? parseInt(phase, 10) : phase;
+  if (Number.isNaN(phaseNumber)) return "-";
+  return INVOICE_PHASE_NAMES[phaseNumber] ?? `Fase ${phaseNumber}`;
+};
+
 export const DEBTOR_PAYMENT_METHODS = [
   {
     label: "Depósito o Transferencia",

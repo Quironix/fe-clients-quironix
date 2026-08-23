@@ -671,7 +671,10 @@
       "requiredFields": "Por favor, completa todos los campos requeridos",
       "saveSuccess": "Deudor guardado correctamente",
       "saveError": "Error al guardar el deudor",
-      "defaultContact": "Contacto por defecto"
+      "defaultContact": "Contacto por defecto",
+      "enabledContact": "Habilitado",
+      "sendPdf": "Envía PDF de facturas",
+      "overdueInvoices": "Facturas vencidas"
     },
     "attentionStep": {
       "title": "Atención",
@@ -1731,6 +1734,8 @@
         "issueDate": "Fecha de Emisión",
         "dueDate": "Fecha de Vencimiento",
         "amount": "Monto",
+        "orderNumber": "Orden de Compra",
+        "reference": "Referencia NC",
         "document": "Documento",
         "actions": "Acciones"
       },

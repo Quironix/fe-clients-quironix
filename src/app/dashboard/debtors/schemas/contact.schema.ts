@@ -11,6 +11,9 @@ export const contactSchema = z
     phone: z.string().optional(),
     channel: z.string().min(1),
     default: z.boolean().optional().default(false),
+    enabled: z.boolean().optional().default(true),
+    send_pdf: z.boolean().optional().default(false),
+    overdue_invoices: z.boolean().optional().default(false),
   })
   .superRefine((data, ctx) => {
     const channel = data.channel.toLowerCase().trim();

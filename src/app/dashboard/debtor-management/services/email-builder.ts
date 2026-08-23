@@ -119,6 +119,15 @@ export function buildEmailPayload({
     throw new Error("El contacto seleccionado no tiene un email válido");
   }
 
+  // Extra enabled contacts selected alongside the primary one — each gets
+  // its own personalized message (see PRD_contactos_del_deudor.md O3 /
+  // §6 "un solo correo por destinatario, no un solo correo con copia a
+  // todos").
+  const additionalEmails = (
+    managementFormData.additionalContactEmails || []
+  ).filter((email) => email && email !== contactEmail);
+  const recipients = [contactEmail, ...additionalEmails];
+
   const invoicesToSend = getInvoicesToSend(
     managementFormData,
     selectedInvoices,
@@ -166,14 +175,16 @@ export function buildEmailPayload({
         ? formatDate(managementFormData.caseData.pickupDate)
         : "";
 
-  // {bank_account_info} is intentionally left in place here — the backend
-  // (SendManagementEmail, see PRD_comunicaciones_mensajes_pago_ejecutivo.md
-  // §8) replaces it with server-built bank data, so the frontend no longer
-  // needs the client.onboarding.banks scope to read it.
+  // {bank_account_info} and {email_company} are intentionally left in place
+  // here — the backend (SendManagementEmail, see
+  // PRD_comunicaciones_mensajes_pago_ejecutivo.md §8) replaces them with
+  // server-built bank data and the client's invoice inbox alias
+  // ({alias}@finanzas.quironix.com), so the frontend no longer needs the
+  // client.onboarding.banks scope, and doesn't fall back to the client's
+  // generic contact email (a different address, not meant for payments).
   const bodyDescription = rawBodyDescription
     .replace(/\{amount\}/g, `<strong>$${formatCurrency(totalAmount)}</strong>`)
     .replace(/\{date\}/g, `<strong>${commitmentDate}</strong>`)
-    .replace(/\{email_company\}/g, `<strong>${clientEmail}</strong>`)
     .replace(/\{name_client\}/g, `<strong>${contactName}</strong>`);
 
   const clientName = (profile as any)?.client?.name || "Quironix";
@@ -186,7 +197,7 @@ export function buildEmailPayload({
   const bodyDescriptionWithGreeting = greeting + bodyDescription;
 
   const emailPayload: EmailPayload = {
-    to: contactEmail,
+    to: recipients.length > 1 ? recipients : contactEmail,
     templateId: SINGLE_TEMPLATE_ID,
     subject,
     from: {

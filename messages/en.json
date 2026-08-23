@@ -672,6 +672,9 @@
       "email": "Email",
       "phone": "Phone",
       "phonePlaceholder": "E.g.: +56 9 9891 8080",
+      "enabledContact": "Enabled",
+      "sendPdf": "Send invoice PDF",
+      "overdueInvoices": "Overdue invoices",
       "minOneContact": "Must keep at least one contact",
       "requiredFields": "Please complete all required fields",
       "saveSuccess": "Debtor saved successfully",
@@ -1736,6 +1739,8 @@
         "issueDate": "Issue Date",
         "dueDate": "Due Date",
         "amount": "Amount",
+        "orderNumber": "Purchase Order",
+        "reference": "Credit Note Reference",
         "document": "Document",
         "actions": "Actions"
       },
