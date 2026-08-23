@@ -53,6 +53,12 @@ export interface ManagementFormData {
   contactType: ContactType | "";
   contactValue: string;
   selectedContact?: DebtorContact | null;
+  /**
+   * Extra enabled contacts (besides selectedContact) to also receive the
+   * management email. Each recipient gets its own message — see
+   * PRD_contactos_del_deudor.md O3.
+   */
+  additionalContactEmails?: string[];
   observation: string;
   nextManagementDate: string | Date;
   nextManagementTime: string;

@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { functionsContact } from "../data";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useTranslations } from "next-intl";
@@ -52,6 +53,10 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
       email: "",
       phone: "",
       channel: "",
+      default: false,
+      enabled: true,
+      send_pdf: false,
+      overdue_invoices: false,
     },
   });
 
@@ -70,10 +75,23 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
         email: data.email,
         phone: data.phone,
         channel: data.channel,
+        default: data.default ?? false,
+        enabled: data.enabled ?? true,
+        send_pdf: data.send_pdf ?? false,
+        overdue_invoices: data.overdue_invoices ?? false,
       };
 
+      // Si el nuevo contacto queda marcado como preferente, desmarcar los demás
+      // (solo puede existir un contacto preferente por deudor a la vez)
+      const existingContacts = newContact.default
+        ? (dataDebtor.contacts || []).map((c: any) => ({
+            ...c,
+            default: false,
+          }))
+        : dataDebtor.contacts || [];
+
       // Agregar el nuevo contacto al array existente de contactos
-      const updatedContacts = [...(dataDebtor.contacts || []), newContact];
+      const updatedContacts = [...existingContacts, newContact];
 
       // Actualizar el deudor con los contactos actualizados
       const updatedDebtor = {
@@ -233,6 +251,88 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                         />
                       </FormControl>
                       <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-4 gap-6">
+                <FormField
+                  control={form.control}
+                  name="default"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
+                        <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                          Preferente
+                        </FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value ?? false}
+                            onCheckedChange={field.onChange}
+                            className="data-[state=checked]:bg-orange-500"
+                          />
+                        </FormControl>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="enabled"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
+                        <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                          Habilitado
+                        </FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value ?? true}
+                            onCheckedChange={field.onChange}
+                            className="data-[state=checked]:bg-orange-500"
+                          />
+                        </FormControl>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="send_pdf"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
+                        <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                          Envía PDF de facturas
+                        </FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value ?? false}
+                            onCheckedChange={field.onChange}
+                            className="data-[state=checked]:bg-orange-500"
+                          />
+                        </FormControl>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="overdue_invoices"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
+                        <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                          Facturas vencidas
+                        </FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value ?? false}
+                            onCheckedChange={field.onChange}
+                            className="data-[state=checked]:bg-orange-500"
+                          />
+                        </FormControl>
+                      </div>
                     </FormItem>
                   )}
                 />

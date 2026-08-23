@@ -119,6 +119,15 @@ export function buildEmailPayload({
     throw new Error("El contacto seleccionado no tiene un email válido");
   }
 
+  // Extra enabled contacts selected alongside the primary one — each gets
+  // its own personalized message (see PRD_contactos_del_deudor.md O3 /
+  // §6 "un solo correo por destinatario, no un solo correo con copia a
+  // todos").
+  const additionalEmails = (
+    managementFormData.additionalContactEmails || []
+  ).filter((email) => email && email !== contactEmail);
+  const recipients = [contactEmail, ...additionalEmails];
+
   const invoicesToSend = getInvoicesToSend(
     managementFormData,
     selectedInvoices,
@@ -188,7 +197,7 @@ export function buildEmailPayload({
   const bodyDescriptionWithGreeting = greeting + bodyDescription;
 
   const emailPayload: EmailPayload = {
-    to: contactEmail,
+    to: recipients.length > 1 ? recipients : contactEmail,
     templateId: SINGLE_TEMPLATE_ID,
     subject,
     from: {
