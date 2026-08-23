@@ -166,14 +166,16 @@ export function buildEmailPayload({
         ? formatDate(managementFormData.caseData.pickupDate)
         : "";
 
-  // {bank_account_info} is intentionally left in place here — the backend
-  // (SendManagementEmail, see PRD_comunicaciones_mensajes_pago_ejecutivo.md
-  // §8) replaces it with server-built bank data, so the frontend no longer
-  // needs the client.onboarding.banks scope to read it.
+  // {bank_account_info} and {email_company} are intentionally left in place
+  // here — the backend (SendManagementEmail, see
+  // PRD_comunicaciones_mensajes_pago_ejecutivo.md §8) replaces them with
+  // server-built bank data and the client's invoice inbox alias
+  // ({alias}@finanzas.quironix.com), so the frontend no longer needs the
+  // client.onboarding.banks scope, and doesn't fall back to the client's
+  // generic contact email (a different address, not meant for payments).
   const bodyDescription = rawBodyDescription
     .replace(/\{amount\}/g, `<strong>$${formatCurrency(totalAmount)}</strong>`)
     .replace(/\{date\}/g, `<strong>${commitmentDate}</strong>`)
-    .replace(/\{email_company\}/g, `<strong>${clientEmail}</strong>`)
     .replace(/\{name_client\}/g, `<strong>${contactName}</strong>`);
 
   const clientName = (profile as any)?.client?.name || "Quironix";
