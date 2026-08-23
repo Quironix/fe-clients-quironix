@@ -95,6 +95,9 @@ const ContactInfoStep: React.FC<StepProps> = ({
       phone: normalizePhoneNumber(contact?.phone || ""),
       channel: contact?.channel || "",
       default: contact?.default ?? false,
+      enabled: contact?.enabled ?? true,
+      send_pdf: contact?.send_pdf ?? false,
+      overdue_invoices: contact?.overdue_invoices ?? false,
     }));
   };
 
@@ -114,6 +117,9 @@ const ContactInfoStep: React.FC<StepProps> = ({
                 phone: "",
                 channel: "",
                 default: false,
+                enabled: true,
+                send_pdf: false,
+                overdue_invoices: false,
               },
             ],
     },
@@ -134,6 +140,9 @@ const ContactInfoStep: React.FC<StepProps> = ({
       phone: "",
       channel: "",
       default: false,
+      enabled: true,
+      send_pdf: false,
+      overdue_invoices: false,
     });
     // Abrir automáticamente el accordion del nuevo contacto
     setActiveAccordion(`item-${newIndex}`);
@@ -174,6 +183,9 @@ const ContactInfoStep: React.FC<StepProps> = ({
           channel: contact.channel,
           function: contact.function,
           default: contact.default ?? false,
+          enabled: contact.enabled ?? true,
+          send_pdf: contact.send_pdf ?? false,
+          overdue_invoices: contact.overdue_invoices ?? false,
         }));
 
         dataDebtor.contacts = normalizedContacts;
@@ -405,6 +417,60 @@ const ContactInfoStep: React.FC<StepProps> = ({
                                       }
                                       field.onChange(checked);
                                     }}
+                                    className="data-[state=checked]:bg-orange-500"
+                                  />
+                                </FormControl>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.enabled`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
+                                <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("enabledContact")}</FormLabel>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value ?? true}
+                                    onCheckedChange={field.onChange}
+                                    className="data-[state=checked]:bg-orange-500"
+                                  />
+                                </FormControl>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.send_pdf`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
+                                <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("sendPdf")}</FormLabel>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value ?? false}
+                                    onCheckedChange={field.onChange}
+                                    className="data-[state=checked]:bg-orange-500"
+                                  />
+                                </FormControl>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`contact_info.${index}.overdue_invoices`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
+                                <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("overdueInvoices")}</FormLabel>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value ?? false}
+                                    onCheckedChange={field.onChange}
                                     className="data-[state=checked]:bg-orange-500"
                                   />
                                 </FormControl>

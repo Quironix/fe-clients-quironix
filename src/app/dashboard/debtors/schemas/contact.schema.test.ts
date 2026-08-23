@@ -165,4 +165,38 @@ describe("contactSchema", () => {
       expect(paths).toContain("channel");
     }
   });
+
+  it("preferred/enabled/pdf/overdue fields default to enabled=true and the rest false when omitted", () => {
+    const result = contactSchema.safeParse({
+      ...BASE,
+      channel: "email",
+      email: "john@example.com",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.default).toBe(false);
+      expect(result.data.enabled).toBe(true);
+      expect(result.data.send_pdf).toBe(false);
+      expect(result.data.overdue_invoices).toBe(false);
+    }
+  });
+
+  it("accepts explicit values for enabled/send_pdf/overdue_invoices", () => {
+    const result = contactSchema.safeParse({
+      ...BASE,
+      channel: "email",
+      email: "john@example.com",
+      default: true,
+      enabled: false,
+      send_pdf: true,
+      overdue_invoices: true,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.default).toBe(true);
+      expect(result.data.enabled).toBe(false);
+      expect(result.data.send_pdf).toBe(true);
+      expect(result.data.overdue_invoices).toBe(true);
+    }
+  });
 });

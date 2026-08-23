@@ -31,7 +31,12 @@ export interface EmailDynamicTemplateData {
 }
 
 export interface EmailPayload {
-  to: string;
+  /**
+   * Recipient(s). The backend (services-quironix SendManagementEmailDto)
+   * accepts either a single email or a non-empty array — see
+   * PRD_contactos_del_deudor.md O3.
+   */
+  to: string | string[];
   templateId: string;
   subject?: string;
   from?: {
