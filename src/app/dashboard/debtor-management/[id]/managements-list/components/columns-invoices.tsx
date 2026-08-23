@@ -6,6 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getInvoicePhaseLabel } from "@/app/dashboard/data";
 import { formatDate, formatDateTime, formatDateTimeUTC, formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { ChevronDown, ChevronUp, Eye, Link2 } from "lucide-react";
@@ -97,7 +98,7 @@ const calculateDaysOverdue = (dueDate: string) => {
 
 const getCurrentPhase = (invoice: InvoiceWithTrack) => {
   const currentPhase = invoice.phases?.find((phase) => phase.is_current);
-  return currentPhase?.phase || "-";
+  return getInvoicePhaseLabel(currentPhase?.phase);
 };
 
 const calculateTimeInPhase = (invoice: InvoiceWithTrack) => {

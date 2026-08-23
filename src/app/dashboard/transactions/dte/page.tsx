@@ -35,6 +35,8 @@ const PageDTE = () => {
     { name: "issue_date", is_visible: true },
     { name: "due_date", is_visible: true },
     { name: "amount", is_visible: true },
+    { name: "order_number", is_visible: true },
+    { name: "reference", is_visible: true },
     { name: "actions", is_visible: true },
   ]);
 
@@ -53,6 +55,8 @@ const PageDTE = () => {
       issue_date: t("columnLabels.issueDate"),
       due_date: t("columnLabels.dueDate"),
       amount: t("columnLabels.amount"),
+      order_number: t("columnLabels.orderNumber"),
+      reference: t("columnLabels.reference"),
       actions: t("columnLabels.actions"),
     }),
     [t]
