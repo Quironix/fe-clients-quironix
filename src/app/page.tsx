@@ -5,7 +5,7 @@ export default async function Home() {
   const session = await auth();
 
   if (session?.token) {
-    redirect("/dashboard/overview");
+    redirect("/dashboard/home");
   }
 
   redirect("/sign-in");

@@ -64,7 +64,7 @@ const useLogin = () => {
     clearCache();
     try {
       const result = (await signIn("credentials", {
-        redirectTo: "/dashboard/overview",
+        redirectTo: "/dashboard/home",
         ...data,
         redirect: false,
       })) as unknown as SignInResponse;
@@ -81,7 +81,7 @@ const useLogin = () => {
       });
       sessionStorage.setItem("session_active", "1");
       form.reset();
-      router.push("/dashboard/overview");
+      router.push("/dashboard/home");
     } catch (error: any) {
       console.log("ERROR", error);
       toast.error(t("login.errorTitle"), {

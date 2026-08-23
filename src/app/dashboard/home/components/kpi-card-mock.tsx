@@ -26,7 +26,7 @@ const BodyFill = ({ k, c }: { k: MockKpiDef; c: string }) => {
           <div className="qxv2-fill-bar" style={{ width: `${pct}%`, background: c }} />
         </div>
         <span className="qxv2-fill-cap" style={{ color: c }}>
-          {String(k.pct).replace(".", ",")}% de la meta
+          {(k.pct ?? 0).toFixed(2).replace(".", ",")}% de la meta
         </span>
       </div>
     </>

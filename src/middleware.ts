@@ -8,6 +8,7 @@ const DASHBOARD_PATHS = ["/dashboard"];
 // Mapeo de rutas a scopes requeridos
 const ROUTE_SCOPE_MAP: Record<string, string> = {
   // Dashboard
+  "/dashboard/home": "client.dashboard",
   "/dashboard/overview": "client.dashboard",
   "/dashboard/dashboard_v2": "client.dashboard",
   "/dashboard/kpi": "client.dashboard.kpis",
@@ -124,7 +125,7 @@ export default auth(async (req) => {
   if (currentPath === "/") {
     if (session?.token) {
       return NextResponse.redirect(
-        new URL("/dashboard/overview", req.nextUrl.origin)
+        new URL("/dashboard/home", req.nextUrl.origin)
       );
     }
     return NextResponse.redirect(new URL("/sign-in", req.nextUrl.origin));
@@ -199,13 +200,13 @@ export default auth(async (req) => {
       // Si está en onboarding, redirigir a dashboard
       if (currentPath.startsWith("/onboarding")) {
         return NextResponse.redirect(
-          new URL("/dashboard/overview", req.nextUrl.origin)
+          new URL("/dashboard/home", req.nextUrl.origin)
         );
       }
       // Si está intentando acceder a una ruta protegida sin estado válido
       if (!DASHBOARD_PATHS.some((path) => currentPath.startsWith(path))) {
         return NextResponse.redirect(
-          new URL("/dashboard/overview", req.nextUrl.origin)
+          new URL("/dashboard/home", req.nextUrl.origin)
         );
       }
 
