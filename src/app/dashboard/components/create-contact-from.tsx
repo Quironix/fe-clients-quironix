@@ -255,7 +255,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                   )}
                 />
               </div>
-              <div className="grid grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="default"

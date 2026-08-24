@@ -1,3 +1,4 @@
+import { getInvoicePhaseLabel } from "@/app/dashboard/data";
 import { getDocumentTypeDisplayData } from "@/app/dashboard/payment-netting/components/document-type-badge";
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { ManagementFormData } from "../components/tabs/add-management-tab";
@@ -80,7 +81,7 @@ function formatInvoices(invoices: Invoice[]): EmailInvoice[] {
       amount: formatCurrency(invoice.amount || 0),
       balance: formatCurrency(invoice.balance || 0),
       rut_emisor: invoice.debtor?.dni_number || "",
-      phase: lastPhase?.phase || 1,
+      phase: getInvoicePhaseLabel(lastPhase?.phase),
     };
   });
 }
