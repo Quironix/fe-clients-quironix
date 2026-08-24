@@ -38,7 +38,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -466,7 +473,7 @@ export const StepTwo = ({
     if (!dataDebtor?.contacts) return [];
 
     const mappedContacts = dataDebtor.contacts
-      .filter((contact: any) => contact.email)
+      .filter((contact: any) => contact.email && contact.enabled !== false)
       .map(
         (contact: any, idx: number): DebtorContact => ({
           id: contact.id || `contact-${idx}`,
@@ -880,6 +887,78 @@ export const StepTwo = ({
                         )}
                       />
                     </div>
+
+                    {debtorContacts.length > 1 && (
+                      <div>
+                        <FormLabel>Contactos adicionales</FormLabel>
+                        {(() => {
+                          const selectedEmails: string[] =
+                            formData.additionalContactEmails || [];
+                          const otherContacts = debtorContacts.filter(
+                            (contact) => contact.value !== formData.contactValue
+                          );
+                          const toggleEmail = (
+                            email: string,
+                            checked: boolean
+                          ) => {
+                            onFormChange({
+                              additionalContactEmails: checked
+                                ? [...selectedEmails, email]
+                                : selectedEmails.filter((v) => v !== email),
+                            });
+                          };
+                          const triggerLabel =
+                            selectedEmails.length === 0
+                              ? "Agregar contactos adicionales"
+                              : `${selectedEmails.length} contacto(s) adicional(es)`;
+
+                          return (
+                            <Popover modal>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  disabled={otherContacts.length === 0}
+                                  className="w-full justify-start truncate font-normal mt-2"
+                                >
+                                  <span className="truncate">
+                                    {triggerLabel}
+                                  </span>
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-2" align="start">
+                                <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                                  {otherContacts.map((contact) => {
+                                    const checked = selectedEmails.includes(
+                                      contact.value
+                                    );
+                                    return (
+                                      <label
+                                        key={contact.id}
+                                        className="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-gray-100 cursor-pointer text-sm"
+                                      >
+                                        <Checkbox
+                                          checked={checked}
+                                          onCheckedChange={(value) =>
+                                            toggleEmail(
+                                              contact.value,
+                                              value === true
+                                            )
+                                          }
+                                        />
+                                        <span className="truncate">
+                                          {contact.label}
+                                        </span>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-4">

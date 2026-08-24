@@ -7,7 +7,7 @@ export interface EmailInvoice {
   amount: string;
   balance: string;
   rut_emisor: string;
-  phase: number;
+  phase: string;
 }
 
 export interface EmailDynamicTemplateData {

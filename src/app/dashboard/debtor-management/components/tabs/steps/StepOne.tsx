@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTableDynamicColumns } from "@/app/dashboard/components/data-table-dynamic-columns";
+import { getInvoicePhaseLabel } from "@/app/dashboard/data";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import { getInvoices } from "@/app/dashboard/payment-netting/services";
 import { Invoice } from "@/app/dashboard/payment-plans/store";
@@ -231,7 +232,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
             activePhase = phasesArray[phasesArray.length - 1];
           }
 
-          return <div>{activePhase?.phase ?? 0}</div>;
+          return <div>{getInvoicePhaseLabel(activePhase?.phase)}</div>;
         },
       },
       {
