@@ -289,6 +289,32 @@ export const getInvoiceAttachments = async (
   return response.json();
 };
 
+/**
+ * Descarga los bytes de un comprobante ya almacenado, vía el backend
+ * (no directo al bucket: GCS no manda Access-Control-Allow-Origin, así que
+ * un `fetch(storage_url)` desde el browser queda bloqueado por CORS. Ver
+ * PRD_tareas_validacion_fecha_y_pdf_facturas.md §6-B/§9).
+ */
+export const downloadInvoiceAttachment = async (
+  accessToken: string,
+  clientId: string,
+  invoiceId: string,
+  attachmentId: string
+): Promise<Blob> => {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/invoices/${invoiceId}/attachments/${attachmentId}/download`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to download invoice attachment");
+  }
+  return response.blob();
+};
+
 export const deleteInvoiceAttachment = async (
   accessToken: string,
   clientId: string,

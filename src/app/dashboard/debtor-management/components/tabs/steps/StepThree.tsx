@@ -7,6 +7,7 @@ import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/docume
 import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,7 +32,9 @@ import {
   FileText,
   HashIcon,
   History,
+  Loader2,
   Mail,
+  Paperclip,
   MessageCircle,
   Phone,
   ThermometerSnowflake,
@@ -42,7 +45,13 @@ import {
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useMemo, useState, useEffect } from "react";
+import { toast } from "sonner";
 import { disputes } from "@/app/dashboard/data";
+import {
+  downloadInvoiceAttachment,
+  getInvoiceAttachments,
+} from "@/app/dashboard/transactions/dte/services";
+import type { InvoiceAttachment } from "@/app/dashboard/transactions/dte/types";
 
 interface StepThreeProps {
   dataDebtor: any;
@@ -61,6 +70,7 @@ export const StepThree = ({
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const [isDragging, setIsDragging] = useState(false);
+  const [isAttachingInvoicePdfs, setIsAttachingInvoicePdfs] = useState(false);
 
   const selectedConfig = useMemo(() => {
     if (
@@ -126,6 +136,82 @@ export const StepThree = ({
   const removeFile = (index: number) => {
     const current = formData.files ?? [];
     onFormChange({ files: current.filter((_, i) => i !== index) });
+  };
+
+  /**
+   * PRD_tareas_validacion_fecha_y_pdf_facturas.md §6-B: trae el PDF ya
+   * almacenado (InvoiceAttachment.storage_url) de cada factura seleccionada
+   * y lo agrega al mismo arreglo `files` que llena el drag-and-drop manual.
+   * Nunca bloquea el envío ni genera un PDF nuevo — factura sin documento
+   * almacenado se omite y se avisa.
+   */
+  const handleAttachInvoicePdfs = async () => {
+    if (!session?.token || !profile?.client_id) return;
+    if (!selectedInvoices || selectedInvoices.length === 0) return;
+
+    setIsAttachingInvoicePdfs(true);
+    const attachedFiles: File[] = [];
+    const missingInvoiceLabels: string[] = [];
+
+    try {
+      for (const invoice of selectedInvoices) {
+        const invoiceLabel = invoice?.number || invoice?.folio || invoice?.id;
+        try {
+          const attachments: InvoiceAttachment[] = await getInvoiceAttachments(
+            session.token,
+            profile.client_id,
+            invoice.id
+          );
+          const attachment = Array.isArray(attachments)
+            ? attachments.find((a) => a.storage_url)
+            : undefined;
+
+          if (!attachment) {
+            missingInvoiceLabels.push(invoiceLabel);
+            continue;
+          }
+
+          const blob = await downloadInvoiceAttachment(
+            session.token,
+            profile.client_id,
+            invoice.id,
+            attachment.id
+          );
+          attachedFiles.push(
+            new File(
+              [blob],
+              attachment.filename || `factura-${invoiceLabel}.pdf`,
+              { type: blob.type || "application/pdf" }
+            )
+          );
+        } catch (error) {
+          console.error(
+            `Error al obtener el comprobante de la factura ${invoiceLabel}:`,
+            error
+          );
+          missingInvoiceLabels.push(invoiceLabel);
+        }
+      }
+
+      if (attachedFiles.length > 0) {
+        addFiles(attachedFiles);
+      }
+
+      if (missingInvoiceLabels.length > 0) {
+        toast.warning(
+          t("attachInvoicePdfsMissing", {
+            count: missingInvoiceLabels.length,
+            invoices: missingInvoiceLabels.join(", "),
+          })
+        );
+      } else if (attachedFiles.length > 0) {
+        toast.success(
+          t("attachInvoicePdfsSuccess", { count: attachedFiles.length })
+        );
+      }
+    } finally {
+      setIsAttachingInvoicePdfs(false);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -762,6 +848,25 @@ export const StepThree = ({
       {renderCaseDataFields()}
 
       <div className="bg-white rounded-lg p-4 border border-gray-200">
+        {selectedInvoices.length > 0 && (
+          <div className="mb-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isAttachingInvoicePdfs}
+              onClick={handleAttachInvoicePdfs}
+              className="border-orange-400 text-orange-600 hover:bg-orange-50"
+            >
+              {isAttachingInvoicePdfs ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Paperclip className="w-4 h-4 mr-2" />
+              )}
+              {t("attachInvoicePdfsButton")}
+            </Button>
+          </div>
+        )}
         <div
           className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
             isDragging
