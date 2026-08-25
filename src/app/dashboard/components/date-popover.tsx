@@ -17,13 +17,14 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { ControllerRenderProps } from "react-hook-form";
+import type { Matcher } from "react-day-picker";
 
 interface DatePopoverProps {
   field: ControllerRenderProps<any, any>;
   label: string;
   placeholder?: string;
   required?: boolean;
-  disabled?: boolean;
+  disabled?: boolean | Matcher | Matcher[];
 }
 
 export const DatePopover = ({
@@ -33,6 +34,8 @@ export const DatePopover = ({
   required = false,
   disabled = false,
 }: DatePopoverProps) => {
+  const isTriggerDisabled = typeof disabled === "boolean" ? disabled : false;
+
   return (
     <FormItem>
       <FormLabel>
@@ -43,7 +46,7 @@ export const DatePopover = ({
           <FormControl>
             <Button
               variant="outline"
-              disabled={disabled}
+              disabled={isTriggerDisabled}
               className="w-full justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
