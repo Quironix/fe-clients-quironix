@@ -67,6 +67,8 @@ import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { createAmountFieldSchema } from "./amount-field-schema";
+import { formatNumber } from "@/lib/utils";
 
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { getHolidays } from "@/app/dashboard/debtor-management/services/business-days";
@@ -88,6 +90,7 @@ const createFormSchema = (
   hasCompleteSelection: boolean,
   selectedCombination: any,
   t: (key: string, values?: Record<string, string>) => string,
+  totalizeSelectedInvoices: number = 0,
   isNextManagementDateDisabled?: (date: Date) => boolean
 ) => {
   const baseSchema: any = {
@@ -194,7 +197,13 @@ const createFormSchema = (
 
       selectedCombination.fields.forEach((field: FieldConfig) => {
         if (field.required) {
-          if (field.type === "number") {
+          if (field.type === "number" && field.name === "amount") {
+            caseDataSchema[field.name] = createAmountFieldSchema(
+              totalizeSelectedInvoices,
+              t("validationRequired", { field: field.label }),
+              t("validationAmountExceedsInvoices")
+            );
+          } else if (field.type === "number") {
             caseDataSchema[field.name] = z.coerce
               .number()
               .min(1, t("validationRequired", { field: field.label }));
@@ -249,7 +258,7 @@ const DynamicField = ({
   selectedInvoices?: Invoice[];
   litigations?: any[];
   totalizeSelectedInvoices?: number;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string>) => string;
 }) => {
   const fieldName = `caseData.${field.name}` as any;
   const { data: session } = useSession();
@@ -316,11 +325,9 @@ const DynamicField = ({
       control={control}
       name={fieldName}
       render={({ field: formField }) => {
-        const isAutoFillField = field.name === "amount" || field.name === "paymentAmount";
-        const fieldValue =
-          isAutoFillField && totalizeSelectedInvoices
-            ? totalizeSelectedInvoices.toString()
-            : formField.value || "";
+        const fieldValue = formField.value || "";
+        const showSuggestedHint =
+          field.name === "amount" && totalizeSelectedInvoices > 0;
 
         return (
           <FormItem>
@@ -362,6 +369,13 @@ const DynamicField = ({
                 />
               )}
             </FormControl>
+            {showSuggestedHint && (
+              <p className="text-xs text-gray-500">
+                {t("suggestedAmount", {
+                  amount: formatNumber(totalizeSelectedInvoices, false),
+                })}
+              </p>
+            )}
             <FormMessage />
           </FormItem>
         );
@@ -524,9 +538,16 @@ export const StepTwo = ({
         hasCompleteSelection,
         selectedCombination,
         t,
+        totalizeSelectedInvoices,
         isNextManagementDateDisabled
       ),
-    [hasCompleteSelection, selectedCombination, t, isNextManagementDateDisabled]
+    [
+      hasCompleteSelection,
+      selectedCombination,
+      t,
+      totalizeSelectedInvoices,
+      isNextManagementDateDisabled,
+    ]
   );
 
   const debtorContacts = useMemo<DebtorContact[]>(() => {
