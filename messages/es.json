@@ -957,6 +957,7 @@
       "noLitigationsSelected": "No hay litigios seleccionados para normalizar",
       "noValidInvoices": "No hay facturas válidas seleccionadas para el plan de pago",
       "totalAmountZero": "El monto total de las facturas debe ser mayor a 0",
+      "committedAmountInvalid": "El monto comprometido debe ser mayor a 0 y no superar el total de las facturas seleccionadas",
       "litigationIdsError": "No se pudo obtener los IDs de los litigios creados"
     },
     "savedCard": {
@@ -971,6 +972,7 @@
       "paymentPlanSummary": "Resumen del Plan de Pago",
       "configuration": "Configuración",
       "totalPlacement": "Colocación total",
+      "committedAmount": "Monto comprometido",
       "downPayment": "Pago contado ({percentage}%)",
       "numberOfInstallments": "Número de cuotas",
       "annualInterestRate": "Tasa de interés anual",
@@ -1118,6 +1120,7 @@
       "paymentPlanSummary": "Resumen del Plan de Pago",
       "configuration": "Configuración",
       "totalPlacement": "Colocación total",
+      "committedAmount": "Monto comprometido",
       "downPayment": "Pago contado ({percentage}%)",
       "numberOfInstallments": "Número de cuotas",
       "annualInterestRate": "Tasa de interés anual",

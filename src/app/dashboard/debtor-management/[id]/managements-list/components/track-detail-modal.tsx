@@ -380,6 +380,13 @@ export const TrackDetailModal = ({
                   />
                   <IconDescription
                     icon={<DollarSign className="w-5 h-5 text-blue-600" />}
+                    description="Monto comprometido"
+                    value={formatCurrency(
+                      trackData?.caseData?.committedAmount ?? totalAmount
+                    )}
+                  />
+                  <IconDescription
+                    icon={<DollarSign className="w-5 h-5 text-blue-600" />}
                     description={`Pago contado (${downPaymentPercentage}%)`}
                     value={formatCurrency(downPayment)}
                   />

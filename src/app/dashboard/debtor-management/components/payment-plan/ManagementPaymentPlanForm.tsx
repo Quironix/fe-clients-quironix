@@ -23,19 +23,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { DollarSign, FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { DEBTOR_PAYMENT_METHODS, PAYMENT_FREQUENCY } from "../../../data";
+import {
+  createPaymentPlanSchema,
+  PaymentPlanFormData,
+} from "./payment-plan-schema";
 
-const paymentPlanSchema = z.object({
-  downPayment: z.number().min(0, "Debe ser mayor o igual a 0"),
-  numberOfInstallments: z.number().min(1, "Debe ser al menos 1"),
-  annualInterestRate: z.number().min(0, "Debe ser mayor o igual a 0"),
-  paymentMethod: z.string().min(1, "La forma de pago es requerida"),
-  paymentFrequency: z.string().min(1, "La frecuencia es requerida"),
-  startDate: z.date({ message: "La fecha es requerida" }),
-});
-
-type PaymentPlanFormData = z.infer<typeof paymentPlanSchema>;
+export { createPaymentPlanSchema };
 
 interface ManagementPaymentPlanFormProps {
   value?: any;
@@ -51,23 +45,11 @@ const ManagementPaymentPlanForm = ({
   const onChangeRef = useRef(onChange);
   const [calculatedInstallment, setCalculatedInstallment] = useState(0);
   const [totalInterest, setTotalInterest] = useState(0);
+  const committedAmountTouched = useRef(false);
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
-
-  const form = useForm<PaymentPlanFormData>({
-    resolver: zodResolver(paymentPlanSchema) as any,
-    mode: "onChange",
-    defaultValues: value || {
-      downPayment: 0,
-      numberOfInstallments: 1,
-      annualInterestRate: 0,
-      paymentMethod: "",
-      paymentFrequency: "",
-      startDate: undefined,
-    },
-  });
 
   const calculateTotalAmount = () => {
     return selectedInvoices.reduce((sum, invoice) => {
@@ -78,6 +60,38 @@ const ManagementPaymentPlanForm = ({
       return Math.round(sum + (isNaN(amount) ? 0 : amount));
     }, 0);
   };
+
+  const initialTotalAmount = calculateTotalAmount();
+  const totalInvoicesAmountRef = useRef(initialTotalAmount);
+
+  const form = useForm<PaymentPlanFormData>({
+    resolver: (async (values: any, context: any, options: any) => {
+      const schema = createPaymentPlanSchema(totalInvoicesAmountRef.current);
+      return zodResolver(schema)(values, context, options);
+    }) as any,
+    mode: "onChange",
+    defaultValues: value || {
+      committedAmount: initialTotalAmount,
+      downPayment: 0,
+      numberOfInstallments: 1,
+      annualInterestRate: 0,
+      paymentMethod: "",
+      paymentFrequency: "",
+      startDate: undefined,
+    },
+  });
+
+  useEffect(() => {
+    totalInvoicesAmountRef.current = initialTotalAmount;
+
+    if (!committedAmountTouched.current) {
+      form.setValue("committedAmount", initialTotalAmount, {
+        shouldValidate: true,
+      });
+    } else {
+      form.trigger("committedAmount");
+    }
+  }, [initialTotalAmount, form]);
 
   const getFrequencyFactor = (frequency: string) => {
     switch (frequency) {
@@ -194,6 +208,39 @@ const ManagementPaymentPlanForm = ({
                 </div>
               </div>
             </div>
+
+            <FormField
+              control={form.control}
+              name="committedAmount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Monto del compromiso ($){" "}
+                    <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ingresa el monto comprometido"
+                      value={
+                        field.value !== undefined && field.value !== null
+                          ? formatNumberWithThousands(field.value)
+                          : ""
+                      }
+                      onChange={(e) => {
+                        committedAmountTouched.current = true;
+                        const value = formatCurrency(e.target.value);
+                        field.onChange(parseFormattedNumber(value));
+                      }}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-gray-500">
+                    Sugerido: ${formatNumberWithThousands(totalAmount)} (suma
+                    de las facturas seleccionadas)
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <Separator />
 
@@ -368,6 +415,15 @@ const ManagementPaymentPlanForm = ({
                 <span className="text-sm text-gray-700">Colocación total:</span>
                 <span className="text-sm font-bold text-gray-900">
                   ${formatNumberWithThousands(totalAmount)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-700">
+                  Monto comprometido:
+                </span>
+                <span className="text-sm font-bold text-gray-900">
+                  ${formatNumberWithThousands(form.watch("committedAmount") || 0)}
                 </span>
               </div>
 

@@ -413,6 +413,12 @@ export const AddManagementTab = ({
       throw new Error(t("totalAmountZero"));
     }
 
+    const committedAmount = paymentPlanData.committedAmount ?? totalAmount;
+
+    if (committedAmount < 1 || committedAmount > totalAmount) {
+      throw new Error(t("committedAmountInvalid"));
+    }
+
     const paymentPlanPayload = {
       debtorId: dataDebtor.id,
       selectedInvoices: validInvoices.map((inv) => inv.id),
@@ -515,6 +521,8 @@ export const AddManagementTab = ({
 
         payload.case_data = {
           paymentPlanIds: validatedIds,
+          committedAmount:
+            managementFormData.caseData.paymentPlanData?.committedAmount,
         };
       } else {
         // Caso normal: otros tipos de gestión

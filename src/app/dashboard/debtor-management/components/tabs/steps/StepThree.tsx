@@ -356,6 +356,11 @@ export const StepThree = ({
                   />
                   <IconDescription
                     icon={<DollarSign className="w-5 h-5 text-blue-600" />}
+                    description={t("committedAmount")}
+                    value={formatCurrency(planData.committedAmount ?? totalAmount)}
+                  />
+                  <IconDescription
+                    icon={<DollarSign className="w-5 h-5 text-blue-600" />}
                     description={t("downPayment", { percentage: downPaymentPercentage })}
                     value={formatCurrency(downPayment)}
                   />
