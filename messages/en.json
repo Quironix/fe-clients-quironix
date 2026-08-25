@@ -1073,6 +1073,8 @@
       "validationPaymentDate": "Date is required",
       "validationPaymentPlanFields": "Must complete all payment plan fields",
       "validationRequired": "{field} is required",
+      "validationAmountExceedsInvoices": "The amount cannot exceed the total of the selected invoices",
+      "suggestedAmount": "Suggested: ${amount} (total of the selected invoices)",
       "callOut": "Outbound call",
       "callIn": "Inbound call",
       "mailOut": "Outbound email",
