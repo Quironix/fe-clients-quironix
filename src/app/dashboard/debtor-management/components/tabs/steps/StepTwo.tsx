@@ -68,7 +68,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { createAmountFieldSchema } from "./amount-field-schema";
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 
 import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { getHolidays } from "@/app/dashboard/debtor-management/services/business-days";
@@ -328,6 +329,15 @@ const DynamicField = ({
         const fieldValue = formField.value || "";
         const showSuggestedHint =
           field.name === "amount" && totalizeSelectedInvoices > 0;
+        const numericAmount =
+          typeof fieldValue === "number"
+            ? fieldValue
+            : parseFloat(String(fieldValue).replace(/[^\d.-]/g, ""));
+        const isAmountOutOfRange =
+          showSuggestedHint &&
+          fieldValue !== "" &&
+          !isNaN(numericAmount) &&
+          (numericAmount < 1 || numericAmount > totalizeSelectedInvoices);
 
         return (
           <FormItem>
@@ -370,8 +380,18 @@ const DynamicField = ({
               )}
             </FormControl>
             {showSuggestedHint && (
-              <p className="text-xs text-gray-500">
-                {t("suggestedAmount", {
+              <p
+                className={cn(
+                  "text-xs flex items-center gap-1",
+                  isAmountOutOfRange
+                    ? "text-red-600 font-medium"
+                    : "text-gray-500"
+                )}
+              >
+                {isAmountOutOfRange && (
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                )}
+                {t("amountRangeHint", {
                   amount: formatNumber(totalizeSelectedInvoices, false),
                 })}
               </p>

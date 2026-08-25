@@ -1071,6 +1071,7 @@
       "validationRequired": "{field} es requerido",
       "validationAmountExceedsInvoices": "El monto no puede superar el total de las facturas seleccionadas",
       "suggestedAmount": "Sugerido: ${amount} (suma de las facturas seleccionadas)",
+      "amountRangeHint": "Debe ser entre $1 y ${amount} (suma de las facturas seleccionadas). Fuera de ese rango no podrás avanzar al siguiente paso.",
       "callOut": "Llamada saliente",
       "callIn": "Llamada entrante",
       "mailOut": "Correo saliente",
