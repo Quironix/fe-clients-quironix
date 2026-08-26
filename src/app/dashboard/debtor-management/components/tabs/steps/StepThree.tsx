@@ -46,7 +46,7 @@ import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
-import { disputes } from "@/app/dashboard/data";
+import { disputes, getInvoicePhaseLabel } from "@/app/dashboard/data";
 
 interface StepThreeProps {
   dataDebtor: any;
@@ -139,8 +139,15 @@ export const StepThree = ({
    * factura seleccionada y lo agrega al mismo arreglo `files` que llena el
    * drag-and-drop manual. `Invoice.file` es una URL de GCS — se descarga vía
    * `/api/pdf-proxy` (mismo origen) para evitar el bloqueo CORS del bucket.
+   * El tipo se fuerza a `application/pdf` (en vez de confiar en el
+   * content-type del bucket) porque `addFiles`/`isValidFile` descarta en
+   * silencio cualquier tipo fuera de su whitelist — un content-type distinto
+   * (ej. `application/octet-stream`) hacía que el archivo nunca llegara a
+   * `formData.files` aunque el toast de éxito ya se hubiera disparado.
    * Nunca bloquea el envío ni genera un PDF nuevo — factura sin `file` se
-   * omite y se avisa.
+   * omite y se avisa. Una factura cuyo PDF ya está en la lista de adjuntos
+   * (mismo nombre determinístico `factura-{label}.pdf`) se omite sin
+   * volver a descargarla, para no permitir adjuntarla más de una vez.
    */
   const handleAttachInvoicePdfs = async () => {
     if (!session?.token || !profile?.client_id) return;
@@ -149,10 +156,21 @@ export const StepThree = ({
     setIsAttachingInvoicePdfs(true);
     const attachedFiles: File[] = [];
     const missingInvoiceLabels: string[] = [];
+    const alreadyAttachedLabels: string[] = [];
+    const existingFilenames = new Set(
+      (formData.files ?? []).map((f) => f.name)
+    );
 
     try {
       for (const invoice of selectedInvoices) {
         const invoiceLabel = invoice?.number || invoice?.folio || invoice?.id;
+        const filename = `factura-${invoiceLabel}.pdf`;
+
+        if (existingFilenames.has(filename)) {
+          alreadyAttachedLabels.push(invoiceLabel);
+          continue;
+        }
+
         if (!invoice?.file) {
           missingInvoiceLabels.push(invoiceLabel);
           continue;
@@ -168,10 +186,9 @@ export const StepThree = ({
           }
           const blob = await response.blob();
           attachedFiles.push(
-            new File([blob], `factura-${invoiceLabel}.pdf`, {
-              type: blob.type || "application/pdf",
-            })
+            new File([blob], filename, { type: "application/pdf" })
           );
+          existingFilenames.add(filename);
         } catch (error) {
           console.error(
             `Error al obtener el PDF de la factura ${invoiceLabel}:`,
@@ -195,6 +212,12 @@ export const StepThree = ({
       } else if (attachedFiles.length > 0) {
         toast.success(
           t("attachInvoicePdfsSuccess", { count: attachedFiles.length })
+        );
+      } else if (alreadyAttachedLabels.length > 0) {
+        toast.info(
+          t("attachInvoicePdfsAlreadyAttached", {
+            count: alreadyAttachedLabels.length,
+          })
         );
       }
     } finally {
@@ -759,8 +782,10 @@ export const StepThree = ({
                     <TableCell className="text-xs">
                       {Array.isArray(invoice?.phases) &&
                       invoice.phases.length > 0
-                        ? ((invoice.phases[invoice.phases.length - 1] as any)
-                            .phase ?? 0)
+                        ? getInvoicePhaseLabel(
+                            (invoice.phases[invoice.phases.length - 1] as any)
+                              .phase
+                          )
                         : "-"}
                     </TableCell>
                   </TableRow>
