@@ -64,11 +64,19 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { createAmountFieldSchema } from "./amount-field-schema";
+import { cn, formatNumber } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 
 import { Invoice } from "@/app/dashboard/payment-plans/store";
+import { getHolidays } from "@/app/dashboard/debtor-management/services/business-days";
+import {
+  computeDueDateCap,
+  isNextManagementDateDisabled as checkNextManagementDateDisabled,
+} from "@/app/dashboard/debtor-management/utils/next-management-date";
 
 interface StepTwoProps {
   dataDebtor: any;
@@ -82,7 +90,9 @@ interface StepTwoProps {
 const createFormSchema = (
   hasCompleteSelection: boolean,
   selectedCombination: any,
-  t: (key: string, values?: Record<string, string>) => string
+  t: (key: string, values?: Record<string, string>) => string,
+  totalizeSelectedInvoices: number = 0,
+  isNextManagementDateDisabled?: (date: Date) => boolean
 ) => {
   const baseSchema: any = {
     managementType: z.string().min(1, t("validationManagementType")),
@@ -106,7 +116,16 @@ const createFormSchema = (
       .union([z.string(), z.date()])
       .refine((val) => val !== "" && val !== null, {
         message: t("validationDate"),
-      });
+      })
+      .refine(
+        (val) => {
+          if (!isNextManagementDateDisabled) return true;
+          const date = val instanceof Date ? val : new Date(val);
+          if (isNaN(date.getTime())) return true;
+          return !isNextManagementDateDisabled(date);
+        },
+        { message: t("validationDateDisabled") }
+      );
     baseSchema.nextManagementTime = z
       .string()
       .min(1, t("validationTime"));
@@ -179,7 +198,13 @@ const createFormSchema = (
 
       selectedCombination.fields.forEach((field: FieldConfig) => {
         if (field.required) {
-          if (field.type === "number") {
+          if (field.type === "number" && field.name === "amount") {
+            caseDataSchema[field.name] = createAmountFieldSchema(
+              totalizeSelectedInvoices,
+              t("validationRequired", { field: field.label }),
+              t("validationAmountExceedsInvoices")
+            );
+          } else if (field.type === "number") {
             caseDataSchema[field.name] = z.coerce
               .number()
               .min(1, t("validationRequired", { field: field.label }));
@@ -234,7 +259,7 @@ const DynamicField = ({
   selectedInvoices?: Invoice[];
   litigations?: any[];
   totalizeSelectedInvoices?: number;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string>) => string;
 }) => {
   const fieldName = `caseData.${field.name}` as any;
   const { data: session } = useSession();
@@ -301,11 +326,18 @@ const DynamicField = ({
       control={control}
       name={fieldName}
       render={({ field: formField }) => {
-        const isAutoFillField = field.name === "amount" || field.name === "paymentAmount";
-        const fieldValue =
-          isAutoFillField && totalizeSelectedInvoices
-            ? totalizeSelectedInvoices.toString()
-            : formField.value || "";
+        const fieldValue = formField.value || "";
+        const showSuggestedHint =
+          field.name === "amount" && totalizeSelectedInvoices > 0;
+        const numericAmount =
+          typeof fieldValue === "number"
+            ? fieldValue
+            : parseFloat(String(fieldValue).replace(/[^\d.-]/g, ""));
+        const isAmountOutOfRange =
+          showSuggestedHint &&
+          fieldValue !== "" &&
+          !isNaN(numericAmount) &&
+          (numericAmount < 1 || numericAmount > totalizeSelectedInvoices);
 
         return (
           <FormItem>
@@ -347,6 +379,23 @@ const DynamicField = ({
                 />
               )}
             </FormControl>
+            {showSuggestedHint && (
+              <p
+                className={cn(
+                  "text-xs flex items-center gap-1",
+                  isAmountOutOfRange
+                    ? "text-red-600 font-medium"
+                    : "text-gray-500"
+                )}
+              >
+                {isAmountOutOfRange && (
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                )}
+                {t("amountRangeHint", {
+                  amount: formatNumber(totalizeSelectedInvoices, false),
+                })}
+              </p>
+            )}
             <FormMessage />
           </FormItem>
         );
@@ -385,6 +434,45 @@ export const StepTwo = ({
 
   const [debtorLitigations, setDebtorLitigations] = useState<any[]>([]);
   const [loadingLitigations, setLoadingLitigations] = useState(false);
+
+  // Fecha próxima gestión: fines de semana + feriados chilenos + fechas
+  // pasadas + tope por vencimiento. Ver PRD_tareas_validacion_fecha_y_pdf_facturas.md §8.
+  const [holidaySet, setHolidaySet] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!session?.token || !profile?.client_id) return;
+
+    const currentYear = new Date().getFullYear();
+
+    Promise.all([
+      getHolidays(session.token, profile.client_id, currentYear),
+      getHolidays(session.token, profile.client_id, currentYear + 1),
+    ])
+      .then(([currentYearHolidays, nextYearHolidays]) => {
+        setHolidaySet(
+          new Set([
+            ...currentYearHolidays.holidays,
+            ...nextYearHolidays.holidays,
+          ])
+        );
+      })
+      .catch((error) => {
+        // Fail open: never block scheduling because the holidays fetch
+        // failed — only weekend/past-date/due-date-cap rules still apply.
+        console.error("Error al obtener feriados:", error);
+      });
+  }, [session?.token, profile?.client_id]);
+
+  const dueDateCap = useMemo(
+    () => computeDueDateCap(selectedInvoices || [], holidaySet),
+    [selectedInvoices, holidaySet]
+  );
+
+  const isNextManagementDateDisabled = useCallback(
+    (date: Date) =>
+      checkNextManagementDateDisabled(date, { holidaySet, dueDateCap }),
+    [holidaySet, dueDateCap]
+  );
 
   const onValidationChangeRef = useRef(onValidationChange);
   const onFormChangeRef = useRef(onFormChange);
@@ -465,8 +553,21 @@ export const StepTwo = ({
   ]);
 
   const formSchema = useMemo(
-    () => createFormSchema(hasCompleteSelection, selectedCombination, t),
-    [hasCompleteSelection, selectedCombination, t]
+    () =>
+      createFormSchema(
+        hasCompleteSelection,
+        selectedCombination,
+        t,
+        totalizeSelectedInvoices,
+        isNextManagementDateDisabled
+      ),
+    [
+      hasCompleteSelection,
+      selectedCombination,
+      t,
+      totalizeSelectedInvoices,
+      isNextManagementDateDisabled,
+    ]
   );
 
   const debtorContacts = useMemo<DebtorContact[]>(() => {
@@ -995,7 +1096,12 @@ export const StepTwo = ({
                         control={form.control}
                         name="nextManagementDate"
                         render={({ field }) => (
-                          <DatePopover field={field} label={t("dateLabel")} required />
+                          <DatePopover
+                            field={field}
+                            label={t("dateLabel")}
+                            required
+                            disabled={isNextManagementDateDisabled}
+                          />
                         )}
                       />
 
