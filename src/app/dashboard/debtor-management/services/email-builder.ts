@@ -141,6 +141,16 @@ export function buildEmailPayload({
     return sum + (balance || 0);
   }, 0);
 
+  const caseData = managementFormData.caseData;
+  const committedAmount =
+    caseData?.amount ??
+    caseData?.paymentAmount ??
+    caseData?.paymentCommitmentAmount;
+  const displayAmount =
+    typeof committedAmount === "number" && !Number.isNaN(committedAmount)
+      ? committedAmount
+      : totalAmount;
+
   const formattedInvoices = formatInvoices(invoicesToSend);
 
   const clientLogoUrl = profile?.client?.operational?.logo_url || "";
@@ -184,7 +194,7 @@ export function buildEmailPayload({
   // client.onboarding.banks scope, and doesn't fall back to the client's
   // generic contact email (a different address, not meant for payments).
   const bodyDescription = rawBodyDescription
-    .replace(/\{amount\}/g, `<strong>$${formatCurrency(totalAmount)}</strong>`)
+    .replace(/\{amount\}/g, `<strong>$${formatCurrency(displayAmount)}</strong>`)
     .replace(/\{date\}/g, `<strong>${commitmentDate}</strong>`)
     .replace(/\{name_client\}/g, `<strong>${contactName}</strong>`);
 
@@ -214,7 +224,7 @@ export function buildEmailPayload({
           name_client: contactName,
           body_description: bodyDescriptionWithGreeting,
           header_text: managementCombination.label,
-          header_amount: formatCurrency(totalAmount),
+          header_amount: formatCurrency(displayAmount),
           is_invoices: true,
           invoices: formattedInvoices,
           is_factoring: isFactoring,
@@ -223,7 +233,7 @@ export function buildEmailPayload({
           contact_email: clientEmail,
           contact_mail: clientEmail,
           bank_account_info: bankAccountInfo || generateBankInfoHTML(null),
-          amount: formatCurrency(totalAmount),
+          amount: formatCurrency(displayAmount),
           date: managementFormData.caseData?.commitmentDate
             ? formatDate(managementFormData.caseData.commitmentDate)
             : managementFormData.caseData?.paymentDate
@@ -241,7 +251,7 @@ export function buildEmailPayload({
       name_client: contactName,
       body_description: bodyDescriptionWithGreeting,
       header_text: managementCombination.label,
-      header_amount: formatCurrency(totalAmount),
+      header_amount: formatCurrency(displayAmount),
       is_invoices: true,
       invoices: formattedInvoices,
       is_factoring: isFactoring,
@@ -250,7 +260,7 @@ export function buildEmailPayload({
       contact_email: clientEmail,
       contact_mail: clientEmail,
       bank_account_info: bankAccountInfo || generateBankInfoHTML(null),
-      amount: formatCurrency(totalAmount),
+      amount: formatCurrency(displayAmount),
       date: managementFormData.caseData?.commitmentDate
         ? formatDate(managementFormData.caseData.commitmentDate)
         : managementFormData.caseData?.paymentDate
