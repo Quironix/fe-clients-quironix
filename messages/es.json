@@ -1146,6 +1146,7 @@
       "attachInvoicePdfsButton": "Adjuntar PDF de facturas seleccionadas",
       "attachInvoicePdfsSuccess": "Se adjuntó el PDF de {count} factura(s)",
       "attachInvoicePdfsMissing": "No se pudo adjuntar el PDF de {count} factura(s) sin documento disponible: {invoices}",
+      "attachInvoicePdfsAlreadyAttached": "El PDF de {count} factura(s) seleccionada(s) ya estaba adjunto",
       "additionalComment": "Comentario adicional",
       "commentPlaceholder": "Escribe algún comentario adicional sobre esta gestión...",
       "sendEmailLabel": "Enviar resumen por email después de guardar.",
