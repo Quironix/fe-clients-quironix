@@ -47,11 +47,6 @@ import { useSession } from "next-auth/react";
 import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { disputes } from "@/app/dashboard/data";
-import {
-  downloadInvoiceAttachment,
-  getInvoiceAttachments,
-} from "@/app/dashboard/transactions/dte/services";
-import type { InvoiceAttachment } from "@/app/dashboard/transactions/dte/types";
 
 interface StepThreeProps {
   dataDebtor: any;
@@ -139,11 +134,13 @@ export const StepThree = ({
   };
 
   /**
-   * PRD_tareas_validacion_fecha_y_pdf_facturas.md §6-B: trae el PDF ya
-   * almacenado (InvoiceAttachment.storage_url) de cada factura seleccionada
-   * y lo agrega al mismo arreglo `files` que llena el drag-and-drop manual.
-   * Nunca bloquea el envío ni genera un PDF nuevo — factura sin documento
-   * almacenado se omite y se avisa.
+   * PRD_tareas_validacion_fecha_y_pdf_facturas.md §6-B: trae el PDF de la
+   * factura misma (Invoice.file, ya presente en `selectedInvoices`) de cada
+   * factura seleccionada y lo agrega al mismo arreglo `files` que llena el
+   * drag-and-drop manual. `Invoice.file` es una URL de GCS — se descarga vía
+   * `/api/pdf-proxy` (mismo origen) para evitar el bloqueo CORS del bucket.
+   * Nunca bloquea el envío ni genera un PDF nuevo — factura sin `file` se
+   * omite y se avisa.
    */
   const handleAttachInvoicePdfs = async () => {
     if (!session?.token || !profile?.client_id) return;
@@ -156,37 +153,28 @@ export const StepThree = ({
     try {
       for (const invoice of selectedInvoices) {
         const invoiceLabel = invoice?.number || invoice?.folio || invoice?.id;
-        try {
-          const attachments: InvoiceAttachment[] = await getInvoiceAttachments(
-            session.token,
-            profile.client_id,
-            invoice.id
-          );
-          const attachment = Array.isArray(attachments)
-            ? attachments.find((a) => a.storage_url)
-            : undefined;
+        if (!invoice?.file) {
+          missingInvoiceLabels.push(invoiceLabel);
+          continue;
+        }
 
-          if (!attachment) {
+        try {
+          const response = await fetch(
+            `/api/pdf-proxy?url=${encodeURIComponent(invoice.file)}`
+          );
+          if (!response.ok) {
             missingInvoiceLabels.push(invoiceLabel);
             continue;
           }
-
-          const blob = await downloadInvoiceAttachment(
-            session.token,
-            profile.client_id,
-            invoice.id,
-            attachment.id
-          );
+          const blob = await response.blob();
           attachedFiles.push(
-            new File(
-              [blob],
-              attachment.filename || `factura-${invoiceLabel}.pdf`,
-              { type: blob.type || "application/pdf" }
-            )
+            new File([blob], `factura-${invoiceLabel}.pdf`, {
+              type: blob.type || "application/pdf",
+            })
           );
         } catch (error) {
           console.error(
-            `Error al obtener el comprobante de la factura ${invoiceLabel}:`,
+            `Error al obtener el PDF de la factura ${invoiceLabel}:`,
             error
           );
           missingInvoiceLabels.push(invoiceLabel);
