@@ -39,11 +39,37 @@ function parseDateOnlyLocal(dateString: string): Date | null {
 }
 
 /**
- * Tope = min(due_date de facturas seleccionadas) + 2 días corridos.
+ * Suma `days` días hábiles a `date`, saltando fines de semana y los
+ * feriados presentes en `holidaySet` (mismo Set<string> ISO "YYYY-MM-DD"
+ * que ya carga StepTwo.tsx vía getHolidays()).
+ */
+export function addBusinessDays(
+  date: Date,
+  days: number,
+  holidaySet: Set<string>
+): Date {
+  const result = new Date(date);
+  let remaining = days;
+  while (remaining > 0) {
+    result.setDate(result.getDate() + 1);
+    if (isWeekendDate(result) || holidaySet.has(toDateOnlyString(result))) {
+      continue;
+    }
+    remaining -= 1;
+  }
+  return result;
+}
+
+/**
+ * Tope = SI alguna factura seleccionada está vencida (due_date < hoy)
+ *          ENTONCES hoy + 2 días hábiles
+ *        SINO min( fecha_vencimiento_mas_proxima, hoy + 30 días hábiles )
  * `null` si no hay facturas seleccionadas con due_date válido (sin tope).
  */
 export function computeDueDateCap(
-  selectedInvoices: Array<{ due_date?: string | null }>
+  selectedInvoices: Array<{ due_date?: string | null }>,
+  holidaySet: Set<string>,
+  today: Date = new Date()
 ): Date | null {
   const dueDates = (selectedInvoices || [])
     .map((invoice) =>
@@ -53,10 +79,19 @@ export function computeDueDateCap(
 
   if (dueDates.length === 0) return null;
 
-  const minDueDate = dueDates.reduce((min, date) => (date < min ? date : min));
-  const cap = new Date(minDueDate);
-  cap.setDate(cap.getDate() + 2);
-  return cap;
+  const startOfToday = new Date(today);
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const hasOverdueInvoice = dueDates.some((date) => date < startOfToday);
+  if (hasOverdueInvoice) {
+    return addBusinessDays(startOfToday, 2, holidaySet);
+  }
+
+  const nearestDueDate = dueDates.reduce((min, date) =>
+    date < min ? date : min
+  );
+  const maxHorizon = addBusinessDays(startOfToday, 30, holidaySet);
+  return nearestDueDate < maxHorizon ? nearestDueDate : maxHorizon;
 }
 
 export function isNextManagementDateDisabled(

@@ -464,8 +464,8 @@ export const StepTwo = ({
   }, [session?.token, profile?.client_id]);
 
   const dueDateCap = useMemo(
-    () => computeDueDateCap(selectedInvoices || []),
-    [selectedInvoices]
+    () => computeDueDateCap(selectedInvoices || [], holidaySet),
+    [selectedInvoices, holidaySet]
   );
 
   const isNextManagementDateDisabled = useCallback(

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  addBusinessDays,
   computeDueDateCap,
   isNextManagementDateDisabled,
   isPastDate,
@@ -36,28 +37,85 @@ describe("next-management-date (PRD_tareas_validacion_fecha_y_pdf_facturas.md §
     });
   });
 
+  describe("addBusinessDays", () => {
+    it("skips weekends", () => {
+      // 2026-01-15 es jueves
+      const result = addBusinessDays(new Date(2026, 0, 15), 2, new Set());
+      // vie 16, sáb/dom saltados -> lun 19
+      expect(toDateOnlyString(result)).toBe("2026-01-19");
+    });
+
+    it("skips holidays in holidaySet", () => {
+      const holidaySet = new Set(["2026-01-16"]); // viernes feriado
+      const result = addBusinessDays(new Date(2026, 0, 15), 2, holidaySet);
+      // vie 16 feriado, sáb/dom saltados, lun 19, mar 20
+      expect(toDateOnlyString(result)).toBe("2026-01-20");
+    });
+  });
+
   describe("computeDueDateCap", () => {
+    const today = new Date(2026, 0, 15); // jueves
+
     it("returns null when there are no selected invoices", () => {
-      expect(computeDueDateCap([])).toBeNull();
+      expect(computeDueDateCap([], new Set(), today)).toBeNull();
     });
 
-    it("returns min(due_date) + 2 días corridos", () => {
-      const cap = computeDueDateCap([
-        { due_date: "2026-06-20" },
-        { due_date: "2026-06-10" },
-        { due_date: "2026-06-30" },
-      ]);
-      expect(cap).not.toBeNull();
-      expect(toDateOnlyString(cap as Date)).toBe("2026-06-12");
+    it("returns null when due_date is missing or invalid", () => {
+      expect(
+        computeDueDateCap(
+          [{ due_date: undefined }, { due_date: "not-a-date" }],
+          new Set(),
+          today
+        )
+      ).toBeNull();
     });
 
-    it("ignores invoices with a missing or invalid due_date", () => {
-      const cap = computeDueDateCap([
-        { due_date: undefined },
-        { due_date: "not-a-date" },
-        { due_date: "2026-06-10" },
-      ]);
-      expect(toDateOnlyString(cap as Date)).toBe("2026-06-12");
+    it("caps at today + 2 business days when an invoice is overdue", () => {
+      const cap = computeDueDateCap(
+        [{ due_date: "2026-01-10" }], // vencida
+        new Set(),
+        today
+      );
+      expect(toDateOnlyString(cap as Date)).toBe("2026-01-19");
+    });
+
+    it("caps at min(nearest due date, today + 30 business days) when nothing is overdue and nearest due date is closer", () => {
+      const cap = computeDueDateCap(
+        [{ due_date: "2026-01-20" }, { due_date: "2026-02-01" }],
+        new Set(),
+        today
+      );
+      expect(toDateOnlyString(cap as Date)).toBe("2026-01-20");
+    });
+
+    it("caps at today + 30 business days when nothing is overdue and nearest due date is farther out", () => {
+      const cap = computeDueDateCap(
+        [{ due_date: "2026-12-31" }],
+        new Set(),
+        today
+      );
+      const expected = addBusinessDays(today, 30, new Set());
+      expect(toDateOnlyString(cap as Date)).toBe(toDateOnlyString(expected));
+    });
+
+    it("the overdue rule wins when there is a mix of overdue and non-overdue invoices", () => {
+      const cap = computeDueDateCap(
+        [{ due_date: "2026-01-10" }, { due_date: "2026-01-16" }],
+        new Set(),
+        today
+      );
+      // vencida manda: hoy + 2 hábiles, no min(due_date, hoy+30h)
+      expect(toDateOnlyString(cap as Date)).toBe("2026-01-19");
+    });
+
+    it("skips holidays when computing the overdue cap", () => {
+      const holidaySet = new Set(["2026-01-16"]);
+      const cap = computeDueDateCap(
+        [{ due_date: "2026-01-10" }],
+        holidaySet,
+        today
+      );
+      expect(toDateOnlyString(cap as Date)).toBe("2026-01-20");
     });
   });
 
