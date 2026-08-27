@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { buildEmailPayload } from "./email-builder";
-import type { ManagementFormData } from "../components/tabs/add-management-tab";
 import type { ManagementCombination } from "../config/management-types";
+
+// Local minimal shape instead of importing ManagementFormData from
+// add-management-tab.tsx: that file transitively pulls in
+// ManagementLitigationForm.tsx, which the vite/esbuild JSX transform in this
+// repo's vitest config fails to parse (pre-existing, unrelated to this fix —
+// confirmed the same failure happens on develop HEAD via `git stash`).
+type ManagementFormData = Record<string, any>;
 
 const managementCombination: ManagementCombination = {
   id: "combo-1",
@@ -70,5 +76,36 @@ describe("buildEmailPayload — recipients", () => {
     expect(() =>
       buildEmailPayload(baseParams({ contactValue: "" })),
     ).toThrow("El contacto seleccionado no tiene un email válido");
+  });
+});
+
+describe("buildEmailPayload — committed amount", () => {
+  const invoices = [
+    { id: "inv-1", balance: 4200000 },
+    { id: "inv-2", balance: 800000 },
+  ] as any;
+
+  it("uses the edited committed amount instead of the invoice sum when it's a number", () => {
+    const payload = buildEmailPayload({
+      ...baseParams({ caseData: { amount: 1000 } }),
+      selectedInvoices: invoices,
+    });
+    expect(payload.dynamicTemplateData.header_amount).toBe("1.000");
+  });
+
+  it("falls back to the invoice sum when the committed amount is a string (regression: native <input> onChange must coerce to number)", () => {
+    const payload = buildEmailPayload({
+      ...baseParams({ caseData: { amount: "1000" } }),
+      selectedInvoices: invoices,
+    });
+    expect(payload.dynamicTemplateData.header_amount).toBe("5.000.000");
+  });
+
+  it("falls back to the invoice sum when no committed amount was entered", () => {
+    const payload = buildEmailPayload({
+      ...baseParams({ caseData: {} }),
+      selectedInvoices: invoices,
+    });
+    expect(payload.dynamicTemplateData.header_amount).toBe("5.000.000");
   });
 });

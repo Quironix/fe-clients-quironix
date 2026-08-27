@@ -127,12 +127,22 @@ export function buildMultipleEmailPayload({
         return sum + (balance || 0);
       }, 0);
 
+      const caseData = management.formData.caseData;
+      const committedAmount =
+        caseData?.amount ??
+        caseData?.paymentAmount ??
+        caseData?.paymentCommitmentAmount;
+      const displayAmount =
+        typeof committedAmount === "number" && !Number.isNaN(committedAmount)
+          ? committedAmount
+          : totalAmount;
+
       const formattedInvoices = formatInvoices(invoicesToSend);
 
       return {
         id: index + 1,
         header_text: managementCombination.label,
-        header_amount: totalAmount > 0 ? formatCurrency(totalAmount) : "",
+        header_amount: displayAmount > 0 ? formatCurrency(displayAmount) : "",
         is_invoices: invoicesToSend.length > 0,
         invoices: formattedInvoices,
         body_html: "",
