@@ -7,6 +7,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  oxc: {
+    jsx: { runtime: "automatic" },
+  },
   define: {
     "process.env.NEXT_PUBLIC_API_URL": '"http://localhost:3000"',
   },

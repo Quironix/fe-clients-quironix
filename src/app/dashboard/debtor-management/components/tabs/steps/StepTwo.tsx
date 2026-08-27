@@ -374,7 +374,15 @@ const DynamicField = ({
                   type={field.type}
                   placeholder={field.placeholder}
                   value={fieldValue}
-                  onChange={formField.onChange}
+                  onChange={(e) => {
+                    if (field.type === "number") {
+                      formField.onChange(
+                        e.target.value === "" ? "" : Number(e.target.value)
+                      );
+                    } else {
+                      formField.onChange(e);
+                    }
+                  }}
                   className="w-full"
                 />
               )}
@@ -689,25 +697,43 @@ export const StepTwo = ({
       totalizeSelectedInvoices > 0
     ) {
       const autoFillFields = ["amount", "paymentAmount"];
+      const nextAutoValues: Record<string, number | string> = {};
 
       autoFillFields.forEach((fieldName) => {
         const field = selectedCombination.fields.find(
           (f) => f.name === fieldName
         );
-        if (field) {
-          const currentValue = form.getValues(`caseData.${fieldName}`);
-          const newValue =
-            field.type === "number"
-              ? totalizeSelectedInvoices
-              : totalizeSelectedInvoices.toString();
+        if (!field) return;
 
+        const currentValue = form.getValues(`caseData.${fieldName}`);
+        const newValue =
+          field.type === "number"
+            ? totalizeSelectedInvoices
+            : totalizeSelectedInvoices.toString();
+        const previousAutoValue = formData.caseDataAutoValues?.[fieldName];
+
+        const isUntouched =
+          currentValue === undefined ||
+          currentValue === "" ||
+          currentValue === previousAutoValue;
+
+        if (isUntouched) {
           if (currentValue !== newValue) {
             form.setValue(`caseData.${fieldName}`, newValue, {
               shouldValidate: false,
               shouldDirty: false,
             });
           }
+          nextAutoValues[fieldName] = newValue;
+        } else {
+          // El usuario editó el valor manualmente: no sobrescribir, pero sí
+          // recordar cuál sería la sugerencia actual para la próxima comparación.
+          nextAutoValues[fieldName] = newValue;
         }
+      });
+
+      onFormChangeRef.current({
+        caseDataAutoValues: { ...formData.caseDataAutoValues, ...nextAutoValues },
       });
     }
   }, [

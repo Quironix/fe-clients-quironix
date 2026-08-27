@@ -63,6 +63,7 @@ export interface ManagementFormData {
   nextManagementDate: string | Date;
   nextManagementTime: string;
   caseData: CaseData;
+  caseDataAutoValues?: Record<string, number | string>;
   files?: File[];
   comment?: string;
   sendEmail?: boolean;
@@ -153,6 +154,7 @@ export const AddManagementTab = ({
       nextManagementDate: "",
       nextManagementTime: "",
       caseData: {},
+      caseDataAutoValues: {},
       files: [],
       comment: "",
       sendEmail: true,
@@ -242,6 +244,7 @@ export const AddManagementTab = ({
       nextManagementDate: "",
       nextManagementTime: "",
       caseData: {},
+      caseDataAutoValues: {},
       files: [],
       comment: "",
       sendEmail: true,
