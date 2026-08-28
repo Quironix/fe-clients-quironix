@@ -155,14 +155,17 @@ const mapLevel2Kpi = (
 
   if (item.name === "% Facturas en Fase 1" && level2Data.invoicePhase) {
     const pct = level2Data.invoicePhase.targetPhaseCountPercent;
-    const tone: KpiTone = pct <= 35 ? "good" : pct <= 50 ? "warn" : "bad";
+    const tone: KpiTone = pct >= 60 ? "good" : pct >= 45 ? "warn" : "bad";
     return {
       ...item,
       value: `${pct}`,
       pct,
+      num: pct,
+      target: 60,
+      targetLabel: "Meta 60%",
       status: tone,
-      badge: { tx: pct <= 35 ? "Baja mora temprana" : "Monitorear", tone },
-      meta: `Meta: ≤35% · ${level2Data.invoicePhase.targetPhaseCount} facturas`,
+      badge: { tx: pct >= 60 ? "En meta" : "Monitorear", tone },
+      meta: `Meta: ≥60% · ${level2Data.invoicePhase.targetPhaseCount} facturas en fase temprana`,
     };
   }
 

@@ -12,7 +12,9 @@ export const TodayPriorities: React.FC<TodayPrioritiesProps> = ({
   isLoading,
 }) => {
   const router = useRouter();
-  const sorted = data.slice().sort((a, b) => a.priority - b.priority);
+  const sorted = data
+    .filter((task) => typeof task.amount === "number" && task.amount > 0)
+    .sort((a, b) => a.priority - b.priority);
 
   return (
     <div className="qxv2-card">
@@ -25,6 +27,10 @@ export const TodayPriorities: React.FC<TodayPrioritiesProps> = ({
       <div className="qxv2-task-rows">
         {isLoading ? (
           <div className="qxv2-h-sub">Cargando...</div>
+        ) : sorted.length === 0 ? (
+          <div className="qxv2-seg-debtors-empty">
+            No hay prioridades con monto pendiente para hoy.
+          </div>
         ) : (
           sorted.map((task, i) => (
             <div className="qxv2-task" key={task.id}>

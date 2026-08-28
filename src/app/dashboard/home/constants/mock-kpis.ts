@@ -201,7 +201,7 @@ export const MOCK_KPIS_EJECUTIVO: MockKpiDef[] = [
     q: "¿Estoy conteniendo la mora temprana?",
     value: "42",
     unit: "%",
-    badge: { tx: "↗ +4 pp", tone: "warn" },
+    badge: { tx: "Monitorear", tone: "warn" },
     num: 42,
     target: 60,
     targetLabel: "Meta 60%",
