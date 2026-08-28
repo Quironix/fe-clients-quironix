@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { ColumnDef } from "@tanstack/react-table";
 import { Loader2, Mail, MessageSquare, Phone, Send } from "lucide-react";
 import { CollectorResponse } from "../services/types";
@@ -9,6 +10,9 @@ interface CreateColumnsParams {
   onExecute?: (collector: CollectorResponse) => void;
   executingId?: string | null;
   t?: (key: string) => string;
+  isActive?: (collector: CollectorResponse) => boolean;
+  onToggleActive?: (collector: CollectorResponse, next: boolean) => void;
+  togglingId?: string | null;
 }
 
 const formatDate = (dateString: string) => {
@@ -36,7 +40,8 @@ const getChannelIcon = (channel: string) => {
 export const createColumns = (
   params?: CreateColumnsParams
 ): ColumnDef<CollectorResponse>[] => {
-  const { onExecute, executingId, t } = params ?? {};
+  const { onExecute, executingId, t, isActive, onToggleActive, togglingId } =
+    params ?? {};
   const tr = t || ((key: string) => key);
   return [
     {
@@ -88,6 +93,32 @@ export const createColumns = (
           {row.original.createdAt ? formatDate(row.original.createdAt) : "N/A"}
         </div>
       ),
+    },
+    {
+      id: "active",
+      header: tr("active"),
+      cell: ({ row }) => {
+        const collector = row.original;
+        const checked = isActive
+          ? isActive(collector)
+          : collector.status ?? true;
+        const isTemplate = collector.type === "TEMPLATE";
+        return (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={checked}
+              disabled={togglingId === collector.id || !onToggleActive}
+              onCheckedChange={(next) => onToggleActive?.(collector, next)}
+              className="data-[state=checked]:bg-orange-500"
+            />
+            {isTemplate && (
+              <span className="text-[10px] uppercase tracking-wide text-gray-400">
+                Quironix
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       id: "actions",
