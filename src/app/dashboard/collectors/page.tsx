@@ -14,6 +14,7 @@ import Header from "../components/header";
 import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import { createColumns } from "./components/columns";
+import QuironixCollectorsPanel from "./components/quironix-collectors-panel";
 import { useCollectors } from "./hooks/useCollectors";
 import { executeCollector } from "./services";
 import { CollectorResponse } from "./services/types";
@@ -114,6 +115,11 @@ const CollectorsPage = () => {
           description={t("description")}
           icon={<Cog color="white" />}
           subDescription={t("subDescription")}
+        />
+
+        <QuironixCollectorsPanel
+          token={session?.token}
+          clientId={profile?.client_id}
         />
 
         <Card>

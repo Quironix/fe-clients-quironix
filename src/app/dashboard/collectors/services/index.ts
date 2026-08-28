@@ -148,6 +148,61 @@ export const deleteCollector = async (
   }
 };
 
+export interface AssignableCollector {
+  id: string;
+  name: string;
+  description: string;
+  channel: string;
+  type: "TEMPLATE" | "CLIENT";
+  enabled: boolean;
+}
+
+export const getAssignable = async (
+  accessToken: string,
+  clientId: string
+): Promise<AssignableCollector[]> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/collectors/assignable`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch assignable collectors");
+  }
+
+  return response.json();
+};
+
+export const setCollectorActivation = async (
+  accessToken: string,
+  collectorId: string,
+  enabled: boolean,
+  clientId: string
+): Promise<{ collectorId: string; clientId: string; enabled: boolean }> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v2/clients/${clientId}/collectors/${collectorId}/activation`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ enabled }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to update collector activation");
+  }
+
+  return response.json();
+};
+
 export const executeCollector = async (
   accessToken: string,
   collectorId: string,
