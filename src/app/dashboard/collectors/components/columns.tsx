@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { ColumnDef } from "@tanstack/react-table";
 import { Loader2, Mail, MessageSquare, Phone, Send } from "lucide-react";
 import { CollectorResponse } from "../services/types";
@@ -9,6 +10,9 @@ interface CreateColumnsParams {
   onExecute?: (collector: CollectorResponse) => void;
   executingId?: string | null;
   t?: (key: string) => string;
+  isActive?: (collector: CollectorResponse) => boolean;
+  onToggleActive?: (collector: CollectorResponse, next: boolean) => void;
+  togglingId?: string | null;
 }
 
 const formatDate = (dateString: string) => {
@@ -36,7 +40,8 @@ const getChannelIcon = (channel: string) => {
 export const createColumns = (
   params?: CreateColumnsParams
 ): ColumnDef<CollectorResponse>[] => {
-  const { onExecute, executingId, t } = params ?? {};
+  const { onExecute, executingId, t, isActive, onToggleActive, togglingId } =
+    params ?? {};
   const tr = t || ((key: string) => key);
   return [
     {
@@ -59,7 +64,7 @@ export const createColumns = (
       accessorKey: "channel",
       header: tr("channels"),
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center">
           {getChannelIcon(row.original.channel)}
         </div>
       ),
@@ -90,17 +95,42 @@ export const createColumns = (
       ),
     },
     {
+      id: "active",
+      header: tr("active"),
+      cell: ({ row }) => {
+        const collector = row.original;
+        if (collector.type !== "TEMPLATE") {
+          return <span className="text-gray-300">—</span>;
+        }
+        const checked = isActive
+          ? isActive(collector)
+          : collector.status ?? true;
+        return (
+          <Switch
+            checked={checked}
+            disabled={togglingId === collector.id || !onToggleActive}
+            onCheckedChange={(next) => onToggleActive?.(collector, next)}
+            className="data-[state=checked]:bg-orange-500"
+          />
+        );
+      },
+    },
+    {
       id: "actions",
       header: tr("actions"),
       cell: ({ row }) => {
         const collector = row.original;
         const isExecuting = executingId === collector.id;
+        const active = isActive
+          ? isActive(collector)
+          : collector.status ?? true;
         return (
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            disabled={isExecuting}
+            disabled={isExecuting || !active}
+            title={!active ? "Collector desactivado" : undefined}
             onClick={() => onExecute?.(collector)}
           >
             {isExecuting ? (

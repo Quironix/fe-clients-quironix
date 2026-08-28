@@ -2533,6 +2533,7 @@
         "createdAt": "Fecha Creación",
         "channel": "Canales",
         "status": "Estado",
+        "active": "Activo",
         "actions": "Acciones"
       }
     },
@@ -2542,6 +2543,7 @@
       "channels": "Canales",
       "frequency": "Frecuencia",
       "status": "Estado",
+      "active": "Activo",
       "subject": "Asunto",
       "createdAt": "Fecha Creación",
       "actions": "Acciones"

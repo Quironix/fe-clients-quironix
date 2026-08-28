@@ -47,6 +47,7 @@ export interface UpdateCollectorRequest {
 export interface CollectorResponse {
   id: string;
   clientId: string;
+  type?: "TEMPLATE" | "CLIENT";
   name: string;
   description: string;
   frequency: string;
