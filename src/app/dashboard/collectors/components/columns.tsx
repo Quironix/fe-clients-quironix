@@ -64,7 +64,7 @@ export const createColumns = (
       accessorKey: "channel",
       header: tr("channels"),
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center">
           {getChannelIcon(row.original.channel)}
         </div>
       ),
