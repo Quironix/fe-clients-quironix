@@ -99,24 +99,19 @@ export const createColumns = (
       header: tr("active"),
       cell: ({ row }) => {
         const collector = row.original;
+        if (collector.type !== "TEMPLATE") {
+          return <span className="text-gray-300">—</span>;
+        }
         const checked = isActive
           ? isActive(collector)
           : collector.status ?? true;
-        const isTemplate = collector.type === "TEMPLATE";
         return (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={checked}
-              disabled={togglingId === collector.id || !onToggleActive}
-              onCheckedChange={(next) => onToggleActive?.(collector, next)}
-              className="data-[state=checked]:bg-orange-500"
-            />
-            {isTemplate && (
-              <span className="text-[10px] uppercase tracking-wide text-gray-400">
-                Quironix
-              </span>
-            )}
-          </div>
+          <Switch
+            checked={checked}
+            disabled={togglingId === collector.id || !onToggleActive}
+            onCheckedChange={(next) => onToggleActive?.(collector, next)}
+            className="data-[state=checked]:bg-orange-500"
+          />
         );
       },
     },

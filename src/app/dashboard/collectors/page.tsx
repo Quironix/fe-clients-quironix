@@ -19,7 +19,6 @@ import {
   executeCollector,
   getAssignable,
   setCollectorActivation,
-  updateStatus,
 } from "./services";
 import { CollectorResponse } from "./services/types";
 
@@ -43,7 +42,6 @@ const CollectorsPage = () => {
     rowSelection,
     handleRowSelectionChange,
     isHydrated,
-    refetch,
   } = useCollectors(session?.token, profile?.client_id, {});
 
   useEffect(() => {
@@ -131,25 +129,16 @@ const CollectorsPage = () => {
   const handleToggleActive = useCallback(
     async (collector: CollectorResponse, next: boolean) => {
       if (!session?.token || !profile?.client_id) return;
+      if (collector.type !== "TEMPLATE") return;
       setTogglingId(collector.id);
       try {
-        if (collector.type === "TEMPLATE") {
-          await setCollectorActivation(
-            session.token,
-            collector.id,
-            next,
-            profile.client_id
-          );
-          setActivationById((curr) => ({ ...curr, [collector.id]: next }));
-        } else {
-          await updateStatus(
-            session.token,
-            collector.id,
-            next,
-            profile.client_id
-          );
-          refetch();
-        }
+        await setCollectorActivation(
+          session.token,
+          collector.id,
+          next,
+          profile.client_id
+        );
+        setActivationById((curr) => ({ ...curr, [collector.id]: next }));
         toast.success(
           next
             ? `"${collector.name}" activado`
@@ -161,7 +150,7 @@ const CollectorsPage = () => {
         setTogglingId(null);
       }
     },
-    [session?.token, profile?.client_id, refetch]
+    [session?.token, profile?.client_id]
   );
 
   const columns = useMemo(
