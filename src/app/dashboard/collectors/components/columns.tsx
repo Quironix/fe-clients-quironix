@@ -121,12 +121,16 @@ export const createColumns = (
       cell: ({ row }) => {
         const collector = row.original;
         const isExecuting = executingId === collector.id;
+        const active = isActive
+          ? isActive(collector)
+          : collector.status ?? true;
         return (
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            disabled={isExecuting}
+            disabled={isExecuting || !active}
+            title={!active ? "Collector desactivado" : undefined}
             onClick={() => onExecute?.(collector)}
           >
             {isExecuting ? (
