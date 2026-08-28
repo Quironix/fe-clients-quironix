@@ -90,7 +90,7 @@ const CollectorsPage = () => {
       subject: t("columnLabels.subject"),
       createdAt: t("columnLabels.createdAt"),
       channel: t("columnLabels.channel"),
-      active: "Activo",
+      active: t("columnLabels.active"),
       actions: t("columnLabels.actions"),
     }),
     [t]

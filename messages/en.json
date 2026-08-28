@@ -2538,6 +2538,7 @@
         "createdAt": "Created Date",
         "channel": "Channels",
         "status": "Status",
+        "active": "Active",
         "actions": "Actions"
       }
     },
@@ -2547,6 +2548,7 @@
       "channels": "Channels",
       "frequency": "Frequency",
       "status": "Status",
+      "active": "Active",
       "subject": "Subject",
       "createdAt": "Created Date",
       "actions": "Actions"
