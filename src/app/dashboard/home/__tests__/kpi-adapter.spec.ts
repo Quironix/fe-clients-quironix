@@ -139,15 +139,17 @@ describe("kpi-adapter (Dashboard V2)", () => {
         targetPhaseAmount: 10000000,
         totalOverdueCount: 100,
         totalOverdueAmount: 40000000,
-        targetPhaseCountPercent: 25,
-        targetPhaseAmountPercent: 25,
+        targetPhaseCountPercent: 72,
+        targetPhaseAmountPercent: 72,
         distribution: [],
       },
     });
 
     const phaseItem = items.find((i) => i.name === "% Facturas en Fase 1");
     expect(phaseItem).toBeDefined();
-    expect(phaseItem?.value).toBe("25");
+    expect(phaseItem?.value).toBe("72");
     expect(phaseItem?.status).toBe("good");
+    expect(phaseItem?.num).toBe(72);
+    expect(phaseItem?.target).toBe(60);
   });
 });
