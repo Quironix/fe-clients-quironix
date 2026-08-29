@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 
 interface DebtorContactSelectFormItemProps {
@@ -45,6 +46,14 @@ function buildContactLabel(contact: any): string {
  */
 function isPreferredContact(contact: any): boolean {
   return contact?.default === true || contact?.preferred === true;
+}
+
+function PreferredBadge() {
+  return (
+    <Badge className="ml-2 border-orange-200 bg-orange-100 text-orange-700">
+      Preferente
+    </Badge>
+  );
 }
 
 /**
@@ -128,6 +137,7 @@ export default function DebtorContactSelectFormItem({
                         }
                       />
                       <span className="truncate">{contactName}</span>
+                      {isPreferredContact(contact) && <PreferredBadge />}
                     </label>
                   );
                 })}
@@ -176,7 +186,10 @@ export default function DebtorContactSelectFormItem({
               const contactName = buildContactLabel(contact);
               return (
                 <SelectItem key={contactName} value={contactName}>
-                  {contactName}
+                  <span className="flex items-center">
+                    <span className="truncate">{contactName}</span>
+                    {isPreferredContact(contact) && <PreferredBadge />}
+                  </span>
                 </SelectItem>
               );
             })

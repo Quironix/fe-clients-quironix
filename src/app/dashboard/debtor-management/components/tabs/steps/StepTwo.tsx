@@ -38,6 +38,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -596,6 +597,7 @@ export const StepTwo = ({
           value: contact.email,
           label: `${contact.name} - ${contact.email}`,
           name: contact.name || "",
+          preferred: contact.default === true || contact.preferred === true,
         })
       );
 
@@ -1001,7 +1003,16 @@ export const StepTwo = ({
                                       key={contact.id}
                                       value={contact.id}
                                     >
-                                      {contact.name}
+                                      <span className="flex items-center">
+                                        <span className="truncate">
+                                          {contact.name}
+                                        </span>
+                                        {contact.preferred && (
+                                          <Badge className="ml-2 border-orange-200 bg-orange-100 text-orange-700">
+                                            Preferente
+                                          </Badge>
+                                        )}
+                                      </span>
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -1082,6 +1093,11 @@ export const StepTwo = ({
                                         <span className="truncate">
                                           {contact.label}
                                         </span>
+                                        {contact.preferred && (
+                                          <Badge className="ml-1 border-orange-200 bg-orange-100 text-orange-700">
+                                            Preferente
+                                          </Badge>
+                                        )}
                                       </label>
                                     );
                                   })}
