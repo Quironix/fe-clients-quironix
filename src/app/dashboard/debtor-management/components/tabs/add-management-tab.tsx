@@ -45,6 +45,7 @@ export interface DebtorContact {
   value: string;
   label: string;
   name?: string;
+  preferred?: boolean;
 }
 export interface ManagementFormData {
   managementType: string;

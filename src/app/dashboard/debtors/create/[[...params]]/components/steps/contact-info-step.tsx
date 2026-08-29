@@ -38,6 +38,7 @@ import { useDebtorsStore } from "../../../../store";
 
 import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-buttons";
 import { contactSchema } from "@/app/dashboard/debtors/schemas/contact.schema";
+import ContactCollectorSubscriptions from "@/app/dashboard/components/contact-collector-subscriptions";
 import {
   Accordion,
   AccordionContent,
@@ -98,6 +99,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
       enabled: contact?.enabled ?? true,
       send_pdf: contact?.send_pdf ?? false,
       overdue_invoices: contact?.overdue_invoices ?? false,
+      collector_ids: contact?.collector_ids ?? [],
     }));
   };
 
@@ -120,6 +122,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
                 enabled: true,
                 send_pdf: false,
                 overdue_invoices: false,
+                collector_ids: [],
               },
             ],
     },
@@ -143,6 +146,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
       enabled: true,
       send_pdf: false,
       overdue_invoices: false,
+      collector_ids: [],
     });
     // Abrir automáticamente el accordion del nuevo contacto
     setActiveAccordion(`item-${newIndex}`);
@@ -186,6 +190,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
           enabled: contact.enabled ?? true,
           send_pdf: contact.send_pdf ?? false,
           overdue_invoices: contact.overdue_invoices ?? false,
+          collector_ids: contact.collector_ids ?? [],
         }));
 
         dataDebtor.contacts = normalizedContacts;
@@ -442,43 +447,21 @@ const ContactInfoStep: React.FC<StepProps> = ({
                             </FormItem>
                           )}
                         />
-                        <FormField
-                          control={form.control}
-                          name={`contact_info.${index}.send_pdf`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
-                                <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("sendPdf")}</FormLabel>
-                                <FormControl>
-                                  <Switch
-                                    checked={field.value ?? false}
-                                    onCheckedChange={field.onChange}
-                                    className="data-[state=checked]:bg-orange-500"
-                                  />
-                                </FormControl>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`contact_info.${index}.overdue_invoices`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
-                                <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("overdueInvoices")}</FormLabel>
-                                <FormControl>
-                                  <Switch
-                                    checked={field.value ?? false}
-                                    onCheckedChange={field.onChange}
-                                    className="data-[state=checked]:bg-orange-500"
-                                  />
-                                </FormControl>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
                       </div>
+                      <FormField
+                        control={form.control}
+                        name={`contact_info.${index}.collector_ids`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <ContactCollectorSubscriptions
+                                value={field.value ?? []}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </AccordionContent>
                 </AccordionItem>

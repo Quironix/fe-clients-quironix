@@ -53,11 +53,23 @@ export const DebtorContacts = ({
 
   const { isConnected } = useWebRTCAutoConnect();
 
+  // El "Contacto principal" del panel es el preferente (default/preferred);
+  // si ninguno lo es, se mantiene el orden original. Sin badge.
+  const preferredFirst = (list: Contact[] = []): Contact[] => {
+    const idx = list.findIndex(
+      (c: any) => c?.default === true || c?.preferred === true,
+    );
+    return idx > 0
+      ? [list[idx], ...list.slice(0, idx), ...list.slice(idx + 1)]
+      : list;
+  };
+
   // Usar los contactos del store si están disponibles, sino usar las props
-  const contacts =
+  const contacts = preferredFirst(
     dataDebtor?.contacts && dataDebtor.contacts.length > 0
       ? dataDebtor.contacts
-      : [mainContact, ...additionalContacts];
+      : [mainContact, ...additionalContacts],
+  );
 
   const [currentMainContact, setCurrentMainContact] = useState<Contact>(
     contacts[0] || mainContact
@@ -79,9 +91,10 @@ export const DebtorContacts = ({
   // Actualizar cuando cambian los contactos en el store
   useEffect(() => {
     if (dataDebtor?.contacts && dataDebtor.contacts.length > 0) {
-      const newMain = dataDebtor.contacts[0];
+      const ordered = preferredFirst(dataDebtor.contacts);
+      const newMain = ordered[0];
       setCurrentMainContact(newMain);
-      setCurrentAdditionalContacts(dataDebtor.contacts.slice(1));
+      setCurrentAdditionalContacts(ordered.slice(1));
       onContactChange?.(newMain);
     }
   }, [dataDebtor?.contacts]);

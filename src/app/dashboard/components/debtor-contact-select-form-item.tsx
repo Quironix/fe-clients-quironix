@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 
 interface DebtorContactSelectFormItemProps {
@@ -43,10 +44,29 @@ function buildContactLabel(contact: any): string {
  * missing `enabled` field is treated as enabled (legacy contacts default to
  * true). See PRD_contactos_del_deudor.md O2.
  */
-function getEnabledContacts(selectedDebtor: any): any[] {
-  return (selectedDebtor?.contacts || []).filter(
-    (contact: any) => contact.enabled !== false,
+function isPreferredContact(contact: any): boolean {
+  return contact?.default === true || contact?.preferred === true;
+}
+
+function PreferredBadge() {
+  return (
+    <Badge className="ml-2 border-orange-200 bg-orange-100 text-orange-700">
+      Preferente
+    </Badge>
   );
+}
+
+/**
+ * Contactos vigentes con el preferente primero
+ * (PRD_contactos_vigentes_y_targeting_collector.md O1/O1b).
+ */
+function getEnabledContacts(selectedDebtor: any): any[] {
+  return (selectedDebtor?.contacts || [])
+    .filter((contact: any) => contact.enabled !== false)
+    .sort(
+      (a: any, b: any) =>
+        Number(isPreferredContact(b)) - Number(isPreferredContact(a)),
+    );
 }
 
 export default function DebtorContactSelectFormItem({
@@ -117,6 +137,7 @@ export default function DebtorContactSelectFormItem({
                         }
                       />
                       <span className="truncate">{contactName}</span>
+                      {isPreferredContact(contact) && <PreferredBadge />}
                     </label>
                   );
                 })}
@@ -165,7 +186,10 @@ export default function DebtorContactSelectFormItem({
               const contactName = buildContactLabel(contact);
               return (
                 <SelectItem key={contactName} value={contactName}>
-                  {contactName}
+                  <span className="flex items-center">
+                    <span className="truncate">{contactName}</span>
+                    {isPreferredContact(contact) && <PreferredBadge />}
+                  </span>
                 </SelectItem>
               );
             })
