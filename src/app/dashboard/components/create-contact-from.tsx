@@ -32,6 +32,7 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useState } from "react";
+import ContactCollectorSubscriptions from "./contact-collector-subscriptions";
 
 interface CreateContactFormProps {
   onSuccess?: () => void;
@@ -57,6 +58,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
       enabled: true,
       send_pdf: false,
       overdue_invoices: false,
+      collector_ids: [],
     },
   });
 
@@ -79,6 +81,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
         enabled: data.enabled ?? true,
         send_pdf: data.send_pdf ?? false,
         overdue_invoices: data.overdue_invoices ?? false,
+        collector_ids: data.collector_ids ?? [],
       };
 
       // Si el nuevo contacto queda marcado como preferente, desmarcar los demás
@@ -296,47 +299,21 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="send_pdf"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
-                        <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                          Envía PDF de facturas
-                        </FormLabel>
-                        <FormControl>
-                          <Switch
-                            checked={field.value ?? false}
-                            onCheckedChange={field.onChange}
-                            className="data-[state=checked]:bg-orange-500"
-                          />
-                        </FormControl>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="overdue_invoices"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
-                        <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                          Facturas vencidas
-                        </FormLabel>
-                        <FormControl>
-                          <Switch
-                            checked={field.value ?? false}
-                            onCheckedChange={field.onChange}
-                            className="data-[state=checked]:bg-orange-500"
-                          />
-                        </FormControl>
-                      </div>
-                    </FormItem>
-                  )}
-                />
               </div>
+              <FormField
+                control={form.control}
+                name="collector_ids"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <ContactCollectorSubscriptions
+                        value={field.value ?? []}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
             <div className="flex justify-end w-full">
               <Button type="submit" disabled={isSubmitting}>

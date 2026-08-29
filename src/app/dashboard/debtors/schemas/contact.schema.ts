@@ -14,6 +14,10 @@ export const contactSchema = z
     enabled: z.boolean().optional().default(true),
     send_pdf: z.boolean().optional().default(false),
     overdue_invoices: z.boolean().optional().default(false),
+    // PRD_contactos_vigentes_y_targeting_collector.md O2: ids de los Collectors
+    // a los que este contacto está suscrito. Reemplaza a send_pdf/overdue_invoices
+    // (que quedan como legacy para el backfill y el puente de transición).
+    collector_ids: z.array(z.string()).optional().default([]),
   })
   .superRefine((data, ctx) => {
     const channel = data.channel.toLowerCase().trim();

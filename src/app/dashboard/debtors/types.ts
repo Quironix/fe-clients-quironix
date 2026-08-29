@@ -35,6 +35,11 @@ export interface Contact {
   channel: string;
   function?: string;
   default?: boolean;
+  enabled?: boolean;
+  preferred?: boolean;
+  send_pdf?: boolean;
+  overdue_invoices?: boolean;
+  collector_ids?: string[];
 }
 
 export interface Metadatum {

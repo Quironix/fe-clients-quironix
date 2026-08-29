@@ -583,6 +583,12 @@ export const StepTwo = ({
 
     const mappedContacts = dataDebtor.contacts
       .filter((contact: any) => contact.email && contact.enabled !== false)
+      // PRD_contactos_vigentes_y_targeting_collector.md O1b: preferente primero.
+      .sort(
+        (a: any, b: any) =>
+          Number(b?.default === true || b?.preferred === true) -
+          Number(a?.default === true || a?.preferred === true),
+      )
       .map(
         (contact: any, idx: number): DebtorContact => ({
           id: contact.id || `contact-${idx}`,

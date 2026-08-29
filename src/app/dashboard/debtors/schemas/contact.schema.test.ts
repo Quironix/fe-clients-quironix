@@ -178,6 +178,7 @@ describe("contactSchema", () => {
       expect(result.data.enabled).toBe(true);
       expect(result.data.send_pdf).toBe(false);
       expect(result.data.overdue_invoices).toBe(false);
+      expect(result.data.collector_ids).toEqual([]);
     }
   });
 

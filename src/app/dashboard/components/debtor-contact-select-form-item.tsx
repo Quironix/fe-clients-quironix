@@ -43,10 +43,21 @@ function buildContactLabel(contact: any): string {
  * missing `enabled` field is treated as enabled (legacy contacts default to
  * true). See PRD_contactos_del_deudor.md O2.
  */
+function isPreferredContact(contact: any): boolean {
+  return contact?.default === true || contact?.preferred === true;
+}
+
+/**
+ * Contactos vigentes con el preferente primero
+ * (PRD_contactos_vigentes_y_targeting_collector.md O1/O1b).
+ */
 function getEnabledContacts(selectedDebtor: any): any[] {
-  return (selectedDebtor?.contacts || []).filter(
-    (contact: any) => contact.enabled !== false,
-  );
+  return (selectedDebtor?.contacts || [])
+    .filter((contact: any) => contact.enabled !== false)
+    .sort(
+      (a: any, b: any) =>
+        Number(isPreferredContact(b)) - Number(isPreferredContact(a)),
+    );
 }
 
 export default function DebtorContactSelectFormItem({
