@@ -28,6 +28,7 @@ export interface CreateCollectorRequest {
   subject: string;
   body_message: string;
   send_associate_invoices: boolean;
+  send_associate_receipts: boolean;
   segmentations: CollectorSegmentation[];
 }
 
@@ -41,6 +42,7 @@ export interface UpdateCollectorRequest {
   subject?: string;
   body_message?: string;
   send_associate_invoices?: boolean;
+  send_associate_receipts?: boolean;
   segmentations?: CollectorSegmentation[];
 }
 
@@ -58,6 +60,7 @@ export interface CollectorResponse {
   subject: string;
   bodyMessage: string;
   sendAssociateInvoices: boolean;
+  sendAssociateReceipts: boolean;
   segmentations: CollectorSegmentation[];
   createdAt: string;
   updatedAt: string;
