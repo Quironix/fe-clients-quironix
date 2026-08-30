@@ -104,7 +104,10 @@ const InvoiceAttachmentsUploadSection = () => {
           Sube un CSV o Excel con las columnas <b>number</b>,{" "}
           <b>nombre_archivo</b>, <b>codigo_deudor</b>,{" "}
           <b>tipo_documento</b> y <b>client_code</b> junto con los PDF de los
-          comprobantes referenciados. La columna <b>client_code</b> es
+          comprobantes referenciados. En <b>tipo_documento</b> usa{" "}
+          <b>COMPROBANTE</b> para adjuntar un respaldo a la factura, o el tipo
+          del DTE (<b>INVOICE</b>, <b>CREDIT_NOTE</b>, …) si el PDF es el
+          documento tributario mismo. La columna <b>client_code</b> es
           obligatoria si tu cliente agrupa varias empresas (holding): usa el
           mismo código que ves en la columna "Código de cliente" de{" "}
           <b>/dashboard/companies</b>.
