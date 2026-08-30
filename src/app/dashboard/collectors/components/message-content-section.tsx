@@ -135,6 +135,27 @@ export function MessageContentSection({ form }: MessageContentSectionProps) {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="send_associate_receipts"
+          render={({ field }) => (
+            <FormItem className="flex flex-col items-start space-x-3 space-y-0">
+              <FormLabel>{t("attachReceipts")}</FormLabel>
+              <FormControl>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {t("sendAssociatedReceipts")}
+                  </span>
+                </div>
+              </FormControl>
+            </FormItem>
+          )}
+        />
       </AccordionContent>
     </AccordionItem>
   );

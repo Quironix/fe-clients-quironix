@@ -51,6 +51,7 @@ export const CollectorForm = ({
     subject: z.string().min(1, t("validation.subjectRequired")),
     body_message: z.string().min(1, t("validation.bodyRequired")),
     send_associate_invoices: z.boolean().default(false),
+    send_associate_receipts: z.boolean().default(false),
     segmentations: z
       .array(
         z.object({
@@ -96,6 +97,7 @@ export const CollectorForm = ({
       subject: "",
       body_message: "",
       send_associate_invoices: false,
+      send_associate_receipts: false,
       segmentations: [
         {
           applicable_segment: "",
@@ -128,6 +130,7 @@ export const CollectorForm = ({
         subject: initialData.subject,
         body_message: initialData.bodyMessage,
         send_associate_invoices: initialData.sendAssociateInvoices,
+        send_associate_receipts: initialData.sendAssociateReceipts ?? false,
         segmentations: initialData.segmentations.map((seg) => {
           const exclusions: string[] = [];
           if (seg.exclusions.exclude_cash_documents)
@@ -183,6 +186,7 @@ export const CollectorForm = ({
         subject: data.subject,
         body_message: data.body_message,
         send_associate_invoices: data.send_associate_invoices,
+        send_associate_receipts: data.send_associate_receipts,
         segmentations: data.segmentations.map((segment) => {
           const hasWeekendDays = segment.schedule.preferred_days.some((day) =>
             weekendDays.includes(day)

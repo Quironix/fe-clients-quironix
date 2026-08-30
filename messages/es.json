@@ -2637,8 +2637,10 @@
       "subjectPlaceholder": "Ej: Tu factura de...",
       "bodyMessage": "Cuerpo del mensaje",
       "bodyPlaceholder": "Completa",
-      "attachInvoice": "Adjuntar factura",
-      "sendAssociatedInvoices": "Enviar facturas asociadas"
+      "attachInvoice": "Adjuntar factura (DTE)",
+      "sendAssociatedInvoices": "Adjunta el PDF del DTE de cada factura incluida en el envío",
+      "attachReceipts": "Adjuntar comprobantes",
+      "sendAssociatedReceipts": "Adjunta todos los comprobantes cargados en cada factura incluida en el envío"
     },
     "variableInput": {
       "addVariable": "Variable",
