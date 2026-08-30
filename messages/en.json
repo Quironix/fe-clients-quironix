@@ -2538,6 +2538,7 @@
         "createdAt": "Created Date",
         "channel": "Channels",
         "status": "Status",
+        "active": "Active",
         "actions": "Actions"
       }
     },
@@ -2547,6 +2548,7 @@
       "channels": "Channels",
       "frequency": "Frequency",
       "status": "Status",
+      "active": "Active",
       "subject": "Subject",
       "createdAt": "Created Date",
       "actions": "Actions"
@@ -2640,8 +2642,10 @@
       "subjectPlaceholder": "E.g.: Your invoice for...",
       "bodyMessage": "Message body",
       "bodyPlaceholder": "Complete",
-      "attachInvoice": "Attach invoice",
-      "sendAssociatedInvoices": "Send associated invoices"
+      "attachInvoice": "Attach invoice (DTE)",
+      "sendAssociatedInvoices": "Attach the DTE PDF of every invoice included in the send",
+      "attachReceipts": "Attach receipts",
+      "sendAssociatedReceipts": "Attach every receipt uploaded to each invoice included in the send"
     },
     "variableInput": {
       "addVariable": "Variable",
