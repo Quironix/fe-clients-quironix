@@ -9,18 +9,26 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { useInboundInvoiceEmails } from "@/hooks/useInboundInvoiceEmails";
 import {
   InboundInvoiceEmail,
-  InboundInvoiceEmailStatus,
+  isEmailLinked,
 } from "@/services/inbound-invoice-emails";
 import { formatDateTime } from "@/lib/utils";
 import { IconFile } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-const TABS: { value: InboundInvoiceEmailStatus | "ALL"; labelKey: string }[] = [
-  { value: "PENDING_REVIEW", labelKey: "tab_pending" },
+type InboxTab = "PENDING" | "LINKED" | "ALL";
+
+const TABS: { value: InboxTab; labelKey: string }[] = [
+  { value: "PENDING", labelKey: "tab_pending" },
   { value: "LINKED", labelKey: "tab_linked" },
   { value: "ALL", labelKey: "tab_all" },
 ];
+
+const matchesTab = (email: InboundInvoiceEmail, tab: InboxTab) => {
+  if (tab === "ALL") return true;
+  if (tab === "LINKED") return isEmailLinked(email);
+  return email.status === "PENDING_REVIEW";
+};
 
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
@@ -29,19 +37,18 @@ export const InvoiceInboxList = () => {
   const accessToken = session?.token as string;
   const clientId = profile?.client?.id as string;
 
-  const [activeTab, setActiveTab] = useState<InboundInvoiceEmailStatus | "ALL">(
-    "PENDING_REVIEW",
-  );
+  const [activeTab, setActiveTab] = useState<InboxTab>("PENDING");
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
     null,
   );
   const [detailOpen, setDetailOpen] = useState(false);
 
-  const { data: emails = [], isLoading } = useInboundInvoiceEmails(
+  const { data: allEmails = [], isLoading } = useInboundInvoiceEmails(
     accessToken,
     clientId,
-    activeTab === "ALL" ? undefined : activeTab,
   );
+
+  const emails = allEmails.filter((email) => matchesTab(email, activeTab));
 
   const handleOpenEmail = (email: InboundInvoiceEmail) => {
     setSelectedEmail(email);
@@ -54,9 +61,7 @@ export const InvoiceInboxList = () => {
     <div className="flex flex-col gap-4">
       <Tabs
         value={activeTab}
-        onValueChange={(value) =>
-          setActiveTab(value as InboundInvoiceEmailStatus | "ALL")
-        }
+        onValueChange={(value) => setActiveTab(value as InboxTab)}
       >
         <TabsList>
           {TABS.map((tab) => (

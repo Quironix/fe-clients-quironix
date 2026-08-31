@@ -19,7 +19,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useProfileContext } from "@/context/ProfileContext";
 import { useDebtor, useDebtors } from "@/hooks/useDebtors";
 import { useLinkInboundInvoiceEmail } from "@/hooks/useInboundInvoiceEmails";
-import { InboundInvoiceEmail } from "@/services/inbound-invoice-emails";
+import {
+  InboundInvoiceEmail,
+  isEmailLinked,
+} from "@/services/inbound-invoice-emails";
 import {
   IconFile,
   IconCheck,
@@ -64,7 +67,8 @@ export const InvoiceInboxDetailSheet = ({
   const { debtors, handleSearchChange, isLoading: isSearchingDebtors } =
     useDebtors({ accessToken, clientId, initialLimit: 8 });
 
-  const isLinked = email?.status === "LINKED";
+  const isLinked = email ? isEmailLinked(email) : false;
+  const isAutoMatched = email?.status === "MATCHED";
 
   const { data: linkedDebtor, isLoading: isLoadingLinkedDebtor } = useDebtor({
     accessToken,
@@ -200,8 +204,13 @@ export const InvoiceInboxDetailSheet = ({
                 <IconCircleCheckFilled className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-emerald-800">
-                    {t("linked_to")}
+                    {isAutoMatched ? t("auto_linked_to") : t("linked_to")}
                   </p>
+                  {isAutoMatched && email.matched_by && (
+                    <p className="text-xs text-emerald-600">
+                      {t(`matched_by_${email.matched_by.toLowerCase()}`)}
+                    </p>
+                  )}
                   <p className="truncate text-sm text-emerald-700">
                     {isLoadingLinkedDebtor
                       ? t("loading")
