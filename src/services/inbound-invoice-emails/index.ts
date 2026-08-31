@@ -24,7 +24,8 @@ export interface InboundInvoiceEmail {
   body_html: string | null;
   attachments: InboundInvoiceEmailAttachment[];
   status: InboundInvoiceEmailStatus;
-  matched_by: "EMAIL" | "MANUAL" | null;
+  matched_by: "FOLIO" | "DOMAIN" | "RUT" | "MANUAL" | null;
+  matched_invoice_id: string | null;
   linked_invoice_id: string | null;
   reviewed_by_user_id: string | null;
   reviewed_at: string | null;
@@ -35,6 +36,12 @@ export interface InvoiceInbox {
   alias: string;
   address: string;
 }
+
+// Un correo cuenta como "vinculado" tanto si lo vinculó un ejecutivo (LINKED)
+// como si lo auto-vinculó la cascada de matching (MATCHED). Ambos tienen
+// debtor_id seteado y son estados terminales.
+export const isEmailLinked = (email: Pick<InboundInvoiceEmail, "status">) =>
+  email.status === "LINKED" || email.status === "MATCHED";
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
