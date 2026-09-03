@@ -21,6 +21,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IntentBadge } from "@/app/dashboard/invoice-inbox/components/inbox-badges";
 import { InvoiceInboxDetailSheet } from "./invoice-inbox-detail-sheet";
 
 export const InvoiceInboxMailbox = () => {
@@ -109,6 +110,7 @@ export const InvoiceInboxMailbox = () => {
                 <span className="line-clamp-1 block text-xs text-muted-foreground">
                   {email.from_address}
                 </span>
+                <IntentBadge intent={email.intent} />
                 {email.attachments.length > 0 && (
                   <span className="text-[11px] text-muted-foreground">
                     {email.attachments.length}{" "}

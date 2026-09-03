@@ -1,34 +1,107 @@
 "use client";
 import { InvoiceInboxDetailSheet } from "@/app/dashboard/components/invoice-inbox-detail-sheet";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useInboundInvoiceEmails } from "@/hooks/useInboundInvoiceEmails";
+import { cn, formatDateTime } from "@/lib/utils";
 import {
+  emailRoute,
   InboundInvoiceEmail,
   isEmailLinked,
 } from "@/services/inbound-invoice-emails";
-import { formatDateTime } from "@/lib/utils";
 import { IconFile } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  agentBadgeKind,
+  AgentStatusBadge,
+  ContactReviewBadge,
+  IntentBadge,
+} from "./inbox-badges";
 
-type InboxTab = "PENDING" | "LINKED" | "ALL";
+type SectionId = "MATCHING" | "AGENT" | "ALL";
 
-const TABS: { value: InboxTab; labelKey: string }[] = [
-  { value: "PENDING", labelKey: "tab_pending" },
-  { value: "LINKED", labelKey: "tab_linked" },
-  { value: "ALL", labelKey: "tab_all" },
+interface SubFilter {
+  id: string;
+  labelKey: string;
+  match: (email: InboundInvoiceEmail) => boolean;
+}
+
+interface Section {
+  id: SectionId;
+  labelKey: string;
+  inSection: (email: InboundInvoiceEmail) => boolean;
+  subs: SubFilter[];
+}
+
+const SECTIONS: Section[] = [
+  {
+    id: "MATCHING",
+    labelKey: "section.matching",
+    inSection: (email) => emailRoute(email) === "MATCHING",
+    subs: [
+      { id: "ALL", labelKey: "subfilter.all", match: () => true },
+      {
+        id: "LINKED",
+        labelKey: "subfilter.auto_linked",
+        match: (email) => isEmailLinked(email),
+      },
+      {
+        id: "PENDING",
+        labelKey: "subfilter.pending_review",
+        match: (email) => !isEmailLinked(email),
+      },
+    ],
+  },
+  {
+    id: "AGENT",
+    labelKey: "section.agent",
+    inSection: (email) => emailRoute(email) === "AGENT",
+    subs: [
+      { id: "ALL", labelKey: "subfilter.all", match: () => true },
+      {
+        id: "ANSWERED",
+        labelKey: "subfilter.answered",
+        match: (email) => agentBadgeKind(email) === "answered",
+      },
+      {
+        id: "SUGGESTION",
+        labelKey: "subfilter.suggestion",
+        match: (email) => agentBadgeKind(email) === "suggestion",
+      },
+      {
+        id: "REVIEW",
+        labelKey: "subfilter.review",
+        match: (email) => {
+          const kind = agentBadgeKind(email);
+          return (
+            kind === "review" ||
+            kind === "review_guardrail" ||
+            (!kind && email.status === "PENDING_REVIEW")
+          );
+        },
+      },
+    ],
+  },
+  {
+    id: "ALL",
+    labelKey: "section.all",
+    inSection: () => true,
+    subs: [
+      { id: "ALL", labelKey: "subfilter.all", match: () => true },
+      {
+        id: "PENDING",
+        labelKey: "subfilter.pending",
+        match: (email) => !isEmailLinked(email),
+      },
+      {
+        id: "RESOLVED",
+        labelKey: "subfilter.resolved",
+        match: (email) => isEmailLinked(email),
+      },
+    ],
+  },
 ];
-
-const matchesTab = (email: InboundInvoiceEmail, tab: InboxTab) => {
-  if (tab === "ALL") return true;
-  if (tab === "LINKED") return isEmailLinked(email);
-  return email.status === "PENDING_REVIEW";
-};
 
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
@@ -37,7 +110,8 @@ export const InvoiceInboxList = () => {
   const accessToken = session?.token as string;
   const clientId = profile?.client?.id as string;
 
-  const [activeTab, setActiveTab] = useState<InboxTab>("PENDING");
+  const [sectionId, setSectionId] = useState<SectionId>("ALL");
+  const [subId, setSubId] = useState("ALL");
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
     null,
   );
@@ -48,7 +122,22 @@ export const InvoiceInboxList = () => {
     clientId,
   );
 
-  const emails = allEmails.filter((email) => matchesTab(email, activeTab));
+  const inEmails = useMemo(
+    () => allEmails.filter((email) => email.direction !== "OUT"),
+    [allEmails],
+  );
+
+  const section = SECTIONS.find((item) => item.id === sectionId) ?? SECTIONS[0];
+  const sub = section.subs.find((item) => item.id === subId) ?? section.subs[0];
+
+  const emails = inEmails
+    .filter((email) => section.inSection(email))
+    .filter((email) => sub.match(email));
+
+  const handleSelectSection = (id: SectionId) => {
+    setSectionId(id);
+    setSubId("ALL");
+  };
 
   const handleOpenEmail = (email: InboundInvoiceEmail) => {
     setSelectedEmail(email);
@@ -60,17 +149,38 @@ export const InvoiceInboxList = () => {
   return (
     <div className="flex flex-col gap-4">
       <Tabs
-        value={activeTab}
-        onValueChange={(value) => setActiveTab(value as InboxTab)}
+        value={sectionId}
+        onValueChange={(value) => handleSelectSection(value as SectionId)}
       >
         <TabsList>
-          {TABS.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {t(tab.labelKey)}
+          {SECTIONS.map((item) => (
+            <TabsTrigger key={item.id} value={item.id}>
+              {t(item.labelKey)}
+              <span className="ml-2 rounded-full bg-gray-200 px-1.5 text-[10px] font-bold text-gray-600">
+                {inEmails.filter((email) => item.inSection(email)).length}
+              </span>
             </TabsTrigger>
           ))}
         </TabsList>
       </Tabs>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {section.subs.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setSubId(item.id)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-semibold",
+              subId === item.id
+                ? "border-blue-200 bg-blue-50 text-primary"
+                : "border-transparent bg-gray-100 text-gray-600 hover:bg-gray-200",
+            )}
+          >
+            {t(item.labelKey)}
+          </button>
+        ))}
+      </div>
 
       {isLoading && (
         <div className="py-10 text-center text-sm text-muted-foreground">
@@ -80,7 +190,7 @@ export const InvoiceInboxList = () => {
 
       {!isLoading && emails.length === 0 && (
         <div className="py-10 text-center text-sm text-muted-foreground">
-          {t("empty")}
+          {t("empty_filter")}
         </div>
       )}
 
@@ -90,37 +200,29 @@ export const InvoiceInboxList = () => {
             key={email.id}
             type="button"
             onClick={() => handleOpenEmail(email)}
-            className="flex items-center justify-between gap-4 rounded-md border p-4 text-left hover:bg-gray-50"
+            className="flex items-start justify-between gap-4 rounded-md border p-4 text-left hover:bg-gray-50"
           >
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="truncate font-medium">
-                  {email.subject || t("no_subject")}
-                </span>
-                <span
-                  className={
-                    email.status === "PENDING_REVIEW"
-                      ? "rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700"
-                      : "rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-700"
-                  }
-                >
-                  {email.status === "PENDING_REVIEW"
-                    ? t("status_pending")
-                    : t("status_linked")}
-                </span>
-              </div>
-              <p className="truncate text-sm text-muted-foreground">
+              <span className="block truncate font-medium">
+                {email.subject || t("no_subject")}
+              </span>
+              <p className="truncate text-xs text-muted-foreground">
                 {email.from_address}
               </p>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <IntentBadge intent={email.intent} />
+                <AgentStatusBadge email={email} />
+                <ContactReviewBadge email={email} />
+              </div>
             </div>
-            <div className="flex shrink-0 items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex shrink-0 flex-col items-end gap-1.5 text-sm text-muted-foreground">
+              <span className="text-xs">{formatDateTime(email.created_at)}</span>
               {email.attachments.length > 0 && (
-                <span className="flex items-center gap-1">
-                  <IconFile className="h-4 w-4" />
+                <span className="flex items-center gap-1 text-xs">
+                  <IconFile className="h-3.5 w-3.5" />
                   {email.attachments.length}
                 </span>
               )}
-              <span>{formatDateTime(email.created_at)}</span>
             </div>
           </button>
         ))}

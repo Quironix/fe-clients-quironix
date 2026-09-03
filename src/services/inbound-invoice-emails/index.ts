@@ -14,6 +14,23 @@ export interface InboundInvoiceEmailAttachment {
   storage_url: string;
 }
 
+export type InboundEmailIntent =
+  | "COMPROBANTE_PAGO"
+  | "SOLICITUD_FACTURA"
+  | "CONSULTA_DATOS_DE_PAGO"
+  | "ACUSE_RECIBO_SIN_ACCION"
+  | "CONTACTO_NO_VIGENTE"
+  | "COMPROMISO_PAGO"
+  | "OTRA";
+
+export type InboundEmailAgentStatus =
+  | "PENDING"
+  | "ROUTED_TO_MATCHING"
+  | "HANDLED_BY_AGENT"
+  | "ESCALATED_TO_HUMAN";
+
+export type InboundEmailRoute = "MATCHING" | "AGENT";
+
 export interface InboundInvoiceEmail {
   id: string;
   client_id: string;
@@ -30,6 +47,16 @@ export interface InboundInvoiceEmail {
   reviewed_by_user_id: string | null;
   reviewed_at: string | null;
   created_at: string;
+  // Router de intención (PRD_03). Poblados por el clasificador LLM en modo
+  // sombra / Fase 2; opcionales mientras el bff termina de proxearlos.
+  direction?: "IN" | "OUT";
+  intent?: InboundEmailIntent | null;
+  intent_secondary?: string[] | null;
+  intent_confidence?: number | null;
+  agent_status?: InboundEmailAgentStatus | null;
+  agent_suggested_reply?: string | null;
+  agent_guardrail_triggered?: boolean | null;
+  agent_requires_contact_review?: boolean | null;
 }
 
 export interface InvoiceInbox {
@@ -42,6 +69,15 @@ export interface InvoiceInbox {
 // debtor_id seteado y son estados terminales.
 export const isEmailLinked = (email: Pick<InboundInvoiceEmail, "status">) =>
   email.status === "LINKED" || email.status === "MATCHED";
+
+// El router de intención (PRD_03) parte cada correo en dos rutas: los
+// comprobantes de pago van a la cascada de matching, el resto lo toma el
+// agente. Un correo sin intención clasificada (router apagado o bff sin
+// proxear todavía) se trata como "resto" para que siga visible.
+export const emailRoute = (
+  email: Pick<InboundInvoiceEmail, "intent">,
+): InboundEmailRoute =>
+  email.intent === "COMPROBANTE_PAGO" ? "MATCHING" : "AGENT";
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {

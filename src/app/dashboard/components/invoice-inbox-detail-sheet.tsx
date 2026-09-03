@@ -20,6 +20,11 @@ import { useProfileContext } from "@/context/ProfileContext";
 import { useDebtor, useDebtors } from "@/hooks/useDebtors";
 import { useLinkInboundInvoiceEmail } from "@/hooks/useInboundInvoiceEmails";
 import {
+  AgentStatusBadge,
+  ContactReviewBadge,
+  IntentBadge,
+} from "@/app/dashboard/invoice-inbox/components/inbox-badges";
+import {
   InboundInvoiceEmail,
   isEmailLinked,
 } from "@/services/inbound-invoice-emails";
@@ -89,6 +94,15 @@ export const InvoiceInboxDetailSheet = ({
 
   const senderInitial = email.from_address.charAt(0).toUpperCase();
   const showPicker = !isLinked || isEditingLink;
+  const route = email.intent === "COMPROBANTE_PAGO" ? "MATCHING" : "AGENT";
+  const routeHintKey =
+    route === "MATCHING"
+      ? "verdict.route_matching"
+      : email.agent_guardrail_triggered
+        ? "verdict.route_guardrail"
+        : email.agent_suggested_reply
+          ? "verdict.route_suggestion"
+          : "verdict.route_review";
 
   const handleStartEdit = () => {
     if (linkedDebtor) {
@@ -152,9 +166,40 @@ export const InvoiceInboxDetailSheet = ({
               </div>
             </div>
           </SheetDescription>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <IntentBadge intent={email.intent} />
+            <AgentStatusBadge email={email} />
+            <ContactReviewBadge email={email} />
+          </div>
         </SheetHeader>
 
         <div className="flex flex-col gap-4 px-4 pb-4">
+          {email.intent && (
+            <div className="rounded-lg border bg-gray-50/60 p-3">
+              <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                {t("verdict.label")}
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <IntentBadge intent={email.intent} />
+                {typeof email.intent_confidence === "number" && (
+                  <span className="text-xs text-muted-foreground">
+                    {t("verdict.confidence", {
+                      value: Math.round(email.intent_confidence * 100),
+                    })}
+                  </span>
+                )}
+              </div>
+              {email.intent_secondary && email.intent_secondary.length > 0 && (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  {t("verdict.secondary")}: {email.intent_secondary.join(", ")}
+                </p>
+              )}
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {t(routeHintKey)}
+              </p>
+            </div>
+          )}
+
           <div>
             <p className="mb-1.5 text-xs font-medium text-muted-foreground">
               {t("message")}
@@ -195,6 +240,26 @@ export const InvoiceInboxDetailSheet = ({
                   </a>
                 ))}
               </div>
+            </div>
+          )}
+
+          {email.agent_suggested_reply && (
+            <div>
+              <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                {t("verdict.suggested_reply")}
+              </p>
+              <div className="rounded-md border bg-amber-50/50 p-3 text-sm whitespace-pre-wrap text-amber-900">
+                {email.agent_suggested_reply}
+              </div>
+              <p className="mt-1 text-[11px] font-medium text-amber-700">
+                {t("verdict.suggested_reply_hint")}
+              </p>
+            </div>
+          )}
+
+          {email.agent_requires_contact_review && (
+            <div className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-xs text-yellow-800">
+              {t("agent.contact_review_note")}
             </div>
           )}
 
