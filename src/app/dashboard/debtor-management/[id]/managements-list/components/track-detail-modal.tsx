@@ -747,7 +747,14 @@ export const TrackDetailModal = ({
                     <IconDescription
                       icon={<FileText className="w-6 h-6 text-blue-600" />}
                       description="Ejecutivo"
-                      value={`${trackData.executive.first_name} ${trackData.executive.last_name}`}
+                      value={
+                        trackData.executive
+                          ? `${trackData.executive.first_name ?? ""} ${trackData.executive.last_name ?? ""}`.trim()
+                          : trackData.agentSource === "AI_EMAIL_READER" ||
+                              trackData.metadata?.source === "AI_EMAIL_READER"
+                            ? tq("name")
+                            : "-"
+                      }
                     />
                     <IconDescription
                       icon={<FileText className="w-6 h-6 text-blue-600" />}

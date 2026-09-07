@@ -33,6 +33,13 @@ export const IntentBadge = ({
 }) => {
   const t = useTranslations("dashboard.invoice_inbox");
   if (!intent) return null;
+  const key = `intent.${intent}`;
+  const label = t.has(key)
+    ? t(key)
+    : intent
+        .toLowerCase()
+        .replace(/_/g, " ")
+        .replace(/^\w/, (c) => c.toUpperCase());
   return (
     <span
       className={cn(
@@ -41,7 +48,7 @@ export const IntentBadge = ({
         className,
       )}
     >
-      {t(`intent.${intent}`)}
+      {label}
     </span>
   );
 };
