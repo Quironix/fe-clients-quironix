@@ -2895,6 +2895,13 @@
     "channel": {
       "finanzas": "Finance",
       "cobranza": "Collections+"
+    },
+    "widget": {
+      "open": "Open Quirón",
+      "close": "Close Quirón",
+      "subtitle": "Collections AI: reads, handles and records in the history",
+      "live": "● Up to date",
+      "placeholder": "Ask Quirón…"
     }
   }
 }

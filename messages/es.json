@@ -2895,6 +2895,13 @@
     "channel": {
       "finanzas": "Finanzas",
       "cobranza": "Cobranza+"
+    },
+    "widget": {
+      "open": "Abrir Quirón",
+      "close": "Cerrar Quirón",
+      "subtitle": "IA de cobranza: lee, gestiona y registra en el historial",
+      "live": "● Al día",
+      "placeholder": "Pregúntale a Quirón…"
     }
   }
 }
