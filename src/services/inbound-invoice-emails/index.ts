@@ -27,7 +27,33 @@ export type InboundEmailAgentStatus =
   | "PENDING"
   | "ROUTED_TO_MATCHING"
   | "HANDLED_BY_AGENT"
-  | "ESCALATED_TO_HUMAN";
+  | "ESCALATED_TO_HUMAN"
+  | "SHADOW_ONLY";
+
+export type AgentComboId =
+  | "COMPLETE_PAYMENT"
+  | "PARTIAL_PAYMENT"
+  | "DEPOSIT_PROMISE"
+  | "CHECK_PROMISE";
+
+export interface AgentExtractedPaymentProof {
+  paid_on?: string | null;
+  amount?: number | string | null;
+  invoice_numbers?: string[] | null;
+}
+
+export interface AgentExtractedPaymentPromise {
+  date?: string | null;
+  amount?: number | string | null;
+  medium?: "CHECK" | "DEPOSIT_OR_TRANSFER" | null;
+  invoice_numbers?: string[] | null;
+}
+
+export interface AgentExtracted {
+  payment_proof?: AgentExtractedPaymentProof | null;
+  payment_promise?: AgentExtractedPaymentPromise | null;
+  disputed_amount?: boolean | null;
+}
 
 export type InboundEmailRoute = "MATCHING" | "AGENT";
 
@@ -57,6 +83,22 @@ export interface InboundInvoiceEmail {
   agent_suggested_reply?: string | null;
   agent_guardrail_triggered?: boolean | null;
   agent_requires_contact_review?: boolean | null;
+  agent_confidence?: number | null;
+  agent_category?: string | null;
+  agent_tools_used?: string[] | null;
+  agent_summary?: string | null;
+  agent_extracted?: AgentExtracted | null;
+  agent_combo?: AgentComboId | string | null;
+  linked_track_id?: string | null;
+  agent_shadow_payload?: Record<string, unknown> | null;
+}
+
+export interface GetInboundInvoiceEmailsFilters {
+  status?: InboundInvoiceEmailStatus;
+  intent?: InboundEmailIntent;
+  agentStatus?: InboundEmailAgentStatus;
+  page?: number;
+  limit?: number;
 }
 
 export interface InvoiceInbox {
@@ -93,9 +135,17 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export async function getInboundInvoiceEmails(
   accessToken: string,
   clientId: string,
-  status?: InboundInvoiceEmailStatus,
+  filters?: InboundInvoiceEmailStatus | GetInboundInvoiceEmailsFilters,
 ): Promise<InboundInvoiceEmail[]> {
-  const params = status ? `?status=${status}` : "";
+  const f: GetInboundInvoiceEmailsFilters =
+    typeof filters === "string" ? { status: filters } : filters ?? {};
+  const qs = new URLSearchParams();
+  if (f.status) qs.set("status", f.status);
+  if (f.intent) qs.set("intent", f.intent);
+  if (f.agentStatus) qs.set("agent_status", f.agentStatus);
+  if (f.page) qs.set("page", String(f.page));
+  if (f.limit) qs.set("limit", String(f.limit));
+  const params = qs.toString() ? `?${qs.toString()}` : "";
   const response = await fetch(
     `${API_URL}/v2/clients/${clientId}/inbound-invoice-emails${params}`,
     {

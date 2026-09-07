@@ -397,6 +397,7 @@
         "review_guardrail": "A revisión · guardrail",
         "review": "A revisión",
         "matching": "Ruteado a matching",
+        "shadow": "Registrado en modo sombra",
         "contact_review": "Contacto por revisar",
         "contact_review_note": "El remitente avisó que ya no gestiona las cuentas por pagar. Queda un pendiente para que el ejecutivo actualice los contactos del deudor."
       },
@@ -2856,5 +2857,44 @@
     "schemaPaymentPlans": "Planes de pago",
     "schemaPayments": "Pagos",
     "schemaManagements": "Gestiones"
+  },
+  "quiron": {
+    "name": "Quirón",
+    "verdict_title": "Veredicto de Quirón",
+    "understood": "Quirón entendió",
+    "promise": "Compromiso de pago",
+    "proof": "Comprobante de pago",
+    "promise_date": "Fecha",
+    "promise_amount": "Monto",
+    "promise_medium": "Medio",
+    "proof_paid_on": "Pagado el",
+    "proof_amount": "Monto",
+    "invoices": "Folios",
+    "disputed_amount": "El deudor manifiesta desacuerdo con el monto",
+    "tools": "Herramientas usadas",
+    "confidence": "Confianza {value}%",
+    "threshold": "umbral {value}%",
+    "secondary": "Intenciones secundarias",
+    "view_track": "Ver gestión en el historial →",
+    "shadow": "Registrado en modo sombra",
+    "shadow_hint": "El agente armó el borrador pero no creó la gestión.",
+    "created_by": "Registrada por Quirón",
+    "managed_by": "Gestionado por Quirón",
+    "suggested_reply": "Borrador sugerido",
+    "suggested_reply_hint": "No se envía en esta fase: lo confirma y envía el ejecutivo.",
+    "combo": {
+      "COMPLETE_PAYMENT": "Pago total confirmado",
+      "PARTIAL_PAYMENT": "Pago parcial confirmado",
+      "DEPOSIT_PROMISE": "Compromiso de depósito o transferencia",
+      "CHECK_PROMISE": "Compromiso con cheque"
+    },
+    "medium": {
+      "CHECK": "Cheque",
+      "DEPOSIT_OR_TRANSFER": "Depósito o transferencia"
+    },
+    "channel": {
+      "finanzas": "Finanzas",
+      "cobranza": "Cobranza+"
+    }
   }
 }

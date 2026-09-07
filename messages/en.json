@@ -397,6 +397,7 @@
         "review_guardrail": "Needs review · guardrail",
         "review": "Needs review",
         "matching": "Routed to matching",
+        "shadow": "Recorded in shadow mode",
         "contact_review": "Contact to review",
         "contact_review_note": "The sender said they no longer handle accounts payable. An account manager needs to update the debtor's contacts."
       },
@@ -2856,5 +2857,44 @@
     "schemaPaymentPlans": "Payment plans",
     "schemaPayments": "Payments",
     "schemaManagements": "Managements"
+  },
+  "quiron": {
+    "name": "Quirón",
+    "verdict_title": "Quirón's verdict",
+    "understood": "Quirón understood",
+    "promise": "Payment commitment",
+    "proof": "Payment receipt",
+    "promise_date": "Date",
+    "promise_amount": "Amount",
+    "promise_medium": "Method",
+    "proof_paid_on": "Paid on",
+    "proof_amount": "Amount",
+    "invoices": "Invoice numbers",
+    "disputed_amount": "The debtor disputes the amount",
+    "tools": "Tools used",
+    "confidence": "Confidence {value}%",
+    "threshold": "threshold {value}%",
+    "secondary": "Secondary intents",
+    "view_track": "View management in history →",
+    "shadow": "Recorded in shadow mode",
+    "shadow_hint": "The agent built the draft but did not create the management.",
+    "created_by": "Recorded by Quirón",
+    "managed_by": "Handled by Quirón",
+    "suggested_reply": "Suggested draft",
+    "suggested_reply_hint": "Not sent in this phase: the executive confirms and sends it.",
+    "combo": {
+      "COMPLETE_PAYMENT": "Full payment confirmed",
+      "PARTIAL_PAYMENT": "Partial payment confirmed",
+      "DEPOSIT_PROMISE": "Deposit or transfer commitment",
+      "CHECK_PROMISE": "Check commitment"
+    },
+    "medium": {
+      "CHECK": "Check",
+      "DEPOSIT_OR_TRANSFER": "Deposit or transfer"
+    },
+    "channel": {
+      "finanzas": "Finance",
+      "cobranza": "Collections+"
+    }
   }
 }
