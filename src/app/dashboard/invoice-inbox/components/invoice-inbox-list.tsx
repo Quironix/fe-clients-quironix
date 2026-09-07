@@ -11,13 +11,18 @@ import {
 } from "@/services/inbound-invoice-emails";
 import { IconFile } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   agentBadgeKind,
   AgentStatusBadge,
   ContactReviewBadge,
   IntentBadge,
 } from "./inbox-badges";
+import { QuironVerdict } from "@/components/quiron/quiron-verdict";
+import {
+  getInboundEmailReplies,
+  type TrackEmailMessage,
+} from "@/services/inbound-email-replies";
 
 type SectionId = "MATCHING" | "AGENT" | "ALL";
 
@@ -103,13 +108,99 @@ const SECTIONS: Section[] = [
   },
 ];
 
+const CobranzaChannelList = ({
+  accessToken,
+  clientId,
+}: {
+  accessToken: string;
+  clientId: string;
+}) => {
+  const t = useTranslations("dashboard.invoice_inbox");
+  const [messages, setMessages] = useState<TrackEmailMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    getInboundEmailReplies(accessToken, clientId)
+      .then((data) => {
+        if (active) setMessages(data);
+      })
+      .catch(() => {
+        if (active) setMessages([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [accessToken, clientId]);
+
+  if (loading) {
+    return (
+      <div className="py-10 text-center text-sm text-muted-foreground">
+        {t("loading")}
+      </div>
+    );
+  }
+  if (messages.length === 0) {
+    return (
+      <div className="py-10 text-center text-sm text-muted-foreground">
+        {t("empty_filter")}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {messages.map((message) => (
+        <div key={message.id} className="rounded-md border p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <span className="block truncate font-medium">
+                {message.subject || t("no_subject")}
+              </span>
+              <p className="truncate text-xs text-muted-foreground">
+                {message.from_address}
+              </p>
+            </div>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {formatDateTime(message.created_at)}
+            </span>
+          </div>
+          {message.agent_status && (
+            <div className="mt-3">
+              <QuironVerdict
+                compact
+                intent={message.agent_category}
+                confidence={message.agent_confidence}
+                secondaryIntents={message.agent_secondary_intents}
+                agentStatus={message.agent_status}
+                guardrailTriggered={message.agent_guardrail_triggered}
+                toolsUsed={message.agent_tools_used}
+                summary={message.agent_summary}
+                extracted={message.agent_extracted as Record<string, unknown>}
+                combo={message.agent_combo}
+                linkedTrackId={message.agent_management_track_id}
+              />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
   const t = useTranslations("dashboard.invoice_inbox");
+  const tq = useTranslations("quiron");
 
   const accessToken = session?.token as string;
   const clientId = profile?.client?.id as string;
 
+  const [channel, setChannel] = useState<"FINANZAS" | "COBRANZA">("FINANZAS");
   const [sectionId, setSectionId] = useState<SectionId>("ALL");
   const [subId, setSubId] = useState("ALL");
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
@@ -148,6 +239,37 @@ export const InvoiceInboxList = () => {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setChannel("FINANZAS")}
+          className={cn(
+            "rounded-full border px-3 py-1 text-xs font-semibold",
+            channel === "FINANZAS"
+              ? "border-blue-200 bg-blue-50 text-primary"
+              : "border-transparent bg-gray-100 text-gray-600 hover:bg-gray-200",
+          )}
+        >
+          {tq("channel.finanzas")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setChannel("COBRANZA")}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold",
+            channel === "COBRANZA"
+              ? "border-blue-200 bg-blue-50 text-primary"
+              : "border-transparent bg-gray-100 text-gray-600 hover:bg-gray-200",
+          )}
+        >
+          {tq("channel.cobranza")}
+        </button>
+      </div>
+
+      {channel === "COBRANZA" ? (
+        <CobranzaChannelList accessToken={accessToken} clientId={clientId} />
+      ) : (
+        <>
       <Tabs
         value={sectionId}
         onValueChange={(value) => handleSelectSection(value as SectionId)}
@@ -233,6 +355,8 @@ export const InvoiceInboxList = () => {
         open={detailOpen}
         onOpenChange={setDetailOpen}
       />
+        </>
+      )}
     </div>
   );
 };
