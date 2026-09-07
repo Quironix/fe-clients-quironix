@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { IntentBadge } from "@/app/dashboard/invoice-inbox/components/inbox-badges";
+import { QuironMark } from "@/components/quiron/quiron-mark";
 import { InvoiceInboxDetailSheet } from "./invoice-inbox-detail-sheet";
 
 export const InvoiceInboxMailbox = () => {
@@ -100,6 +101,10 @@ export const InvoiceInboxMailbox = () => {
                 )}
               >
                 <div className="flex w-full items-center gap-1.5">
+                  {(email.agent_status === "HANDLED_BY_AGENT" ||
+                    email.agent_status === "SHADOW_ONLY") && (
+                    <QuironMark size="sm" />
+                  )}
                   <span className="flex-1 truncate text-sm font-medium">
                     {email.subject || t("no_subject")}
                   </span>

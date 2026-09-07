@@ -24,6 +24,8 @@ import {
   ContactReviewBadge,
   IntentBadge,
 } from "@/app/dashboard/invoice-inbox/components/inbox-badges";
+import { QuironVerdict } from "@/components/quiron/quiron-verdict";
+import { useRouter } from "next/navigation";
 import {
   InboundInvoiceEmail,
   isEmailLinked,
@@ -59,6 +61,7 @@ export const InvoiceInboxDetailSheet = ({
 }: InvoiceInboxDetailSheetProps) => {
   const { profile, session } = useProfileContext();
   const t = useTranslations("dashboard.invoice_inbox");
+  const router = useRouter();
 
   const accessToken = session?.token as string;
   const clientId = profile?.client?.id as string;
@@ -94,15 +97,6 @@ export const InvoiceInboxDetailSheet = ({
 
   const senderInitial = email.from_address.charAt(0).toUpperCase();
   const showPicker = !isLinked || isEditingLink;
-  const route = email.intent === "COMPROBANTE_PAGO" ? "MATCHING" : "AGENT";
-  const routeHintKey =
-    route === "MATCHING"
-      ? "verdict.route_matching"
-      : email.agent_guardrail_triggered
-        ? "verdict.route_guardrail"
-        : email.agent_suggested_reply
-          ? "verdict.route_suggestion"
-          : "verdict.route_review";
 
   const handleStartEdit = () => {
     if (linkedDebtor) {
@@ -175,29 +169,27 @@ export const InvoiceInboxDetailSheet = ({
 
         <div className="flex flex-col gap-4 px-4 pb-4">
           {email.intent && (
-            <div className="rounded-lg border bg-gray-50/60 p-3">
-              <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                {t("verdict.label")}
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <IntentBadge intent={email.intent} />
-                {typeof email.intent_confidence === "number" && (
-                  <span className="text-xs text-muted-foreground">
-                    {t("verdict.confidence", {
-                      value: Math.round(email.intent_confidence * 100),
-                    })}
-                  </span>
-                )}
-              </div>
-              {email.intent_secondary && email.intent_secondary.length > 0 && (
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  {t("verdict.secondary")}: {email.intent_secondary.join(", ")}
-                </p>
-              )}
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                {t(routeHintKey)}
-              </p>
-            </div>
+            <QuironVerdict
+              intent={email.intent}
+              confidence={email.intent_confidence ?? email.agent_confidence}
+              secondaryIntents={email.intent_secondary}
+              agentStatus={email.agent_status}
+              guardrailTriggered={email.agent_guardrail_triggered}
+              toolsUsed={email.agent_tools_used}
+              summary={email.agent_summary}
+              extracted={email.agent_extracted}
+              combo={email.agent_combo}
+              linkedTrackId={email.linked_track_id}
+              suggestedReply={email.agent_suggested_reply}
+              onViewTrack={
+                email.debtor_id
+                  ? () =>
+                      router.push(
+                        `/dashboard/debtor-management/${email.debtor_id}/managements-list`,
+                      )
+                  : undefined
+              }
+            />
           )}
 
           <div>
@@ -240,20 +232,6 @@ export const InvoiceInboxDetailSheet = ({
                   </a>
                 ))}
               </div>
-            </div>
-          )}
-
-          {email.agent_suggested_reply && (
-            <div>
-              <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                {t("verdict.suggested_reply")}
-              </p>
-              <div className="rounded-md border bg-amber-50/50 p-3 text-sm whitespace-pre-wrap text-amber-900">
-                {email.agent_suggested_reply}
-              </div>
-              <p className="mt-1 text-[11px] font-medium text-amber-700">
-                {t("verdict.suggested_reply_hint")}
-              </p>
             </div>
           )}
 

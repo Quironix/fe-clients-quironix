@@ -11,10 +11,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { Loader2, Mail, Paperclip, Send } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { sendTrackEmail } from "../../../services/email-sender";
 import { TrackEmailMessage } from "../../../types/debtor-tracks";
+import { QuironVerdict } from "@/components/quiron/quiron-verdict";
 import { EmailPayload } from "../../../types/email";
 
 // PRD_canal_correo_bidireccional_multiturno.md §4.6: template SendGrid
@@ -68,11 +69,23 @@ export const EmailThreadSheet = ({
   executiveProfile,
 }: EmailThreadSheetProps) => {
   const [replyText, setReplyText] = useState("");
+  const [replyPrefilled, setReplyPrefilled] = useState(false);
   const [sending, setSending] = useState(false);
 
   const lastInboundMessage = [...messages]
     .reverse()
     .find((m) => m.direction === "IN");
+
+  useEffect(() => {
+    if (
+      !replyPrefilled &&
+      !replyText &&
+      lastInboundMessage?.agent_suggested_reply
+    ) {
+      setReplyText(lastInboundMessage.agent_suggested_reply);
+      setReplyPrefilled(true);
+    }
+  }, [lastInboundMessage, replyPrefilled, replyText]);
   const lastOutboundMessage = [...messages]
     .reverse()
     .find((m) => m.direction === "OUT");
@@ -249,6 +262,26 @@ export const EmailThreadSheet = ({
                             {attachment.filename}
                           </a>
                         ))}
+                      </div>
+                    )}
+
+                    {isInbound && message.agent_status && (
+                      <div className="mt-2 pt-2 border-t border-emerald-200">
+                        <QuironVerdict
+                          compact
+                          intent={message.agent_category}
+                          confidence={message.agent_confidence}
+                          secondaryIntents={message.agent_secondary_intents}
+                          agentStatus={message.agent_status}
+                          guardrailTriggered={message.agent_guardrail_triggered}
+                          toolsUsed={message.agent_tools_used}
+                          summary={message.agent_summary}
+                          extracted={
+                            message.agent_extracted as Record<string, unknown>
+                          }
+                          combo={message.agent_combo}
+                          linkedTrackId={message.agent_management_track_id}
+                        />
                       </div>
                     )}
                   </div>

@@ -13,6 +13,7 @@ import { getPaymentPlanById } from "@/app/dashboard/payment-plans/services";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import DialogForm from "@/app/dashboard/components/dialog-form";
+import { QuironMark } from "@/components/quiron/quiron-mark";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -55,6 +56,7 @@ export const TrackDetailModal = ({
   clientId,
 }: TrackDetailModalProps) => {
   const t = useTranslations("debtorManagement.trackDetail");
+  const tq = useTranslations("quiron");
   const [trackData, setTrackData] = useState<any>(null);
   const [litigationsData, setLitigationsData] = useState<any[]>([]);
   const [paymentPlanData, setPaymentPlanData] = useState<any>(null);
@@ -531,6 +533,35 @@ export const TrackDetailModal = ({
         </div>
       ) : (
         <div className="space-y-4">
+          {(trackData.agentSource === "AI_EMAIL_READER" ||
+            trackData.metadata?.source === "AI_EMAIL_READER") && (
+            <div
+              className="flex flex-wrap items-center gap-2 rounded-lg border p-3"
+              style={{
+                borderColor:
+                  "color-mix(in srgb, var(--quiron) 25%, transparent)",
+                backgroundColor:
+                  "color-mix(in srgb, var(--quiron) 5%, transparent)",
+              }}
+            >
+              <QuironMark size="sm" />
+              <span className="text-sm font-semibold">{tq("created_by")}</span>
+              {trackData.agent_combo && (
+                <span className="text-xs font-medium">
+                  {tq(`combo.${trackData.agent_combo}`)}
+                </span>
+              )}
+              {Array.isArray(trackData.agent_tools_used) &&
+                trackData.agent_tools_used.map((tool: string) => (
+                  <span
+                    key={tool}
+                    className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium"
+                  >
+                    {tool}
+                  </span>
+                ))}
+            </div>
+          )}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="flex items-center gap-2 mb-3">
               <FileText className="w-4 h-4 text-gray-700" />
