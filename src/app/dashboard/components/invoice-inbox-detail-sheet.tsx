@@ -112,6 +112,10 @@ export const InvoiceInboxDetailSheet = ({
           emailRoute(email) === "MATCHING"
             ? isEmailLinked(email)
             : email.agent_status === "HANDLED_BY_AGENT",
+        // Un comprobante de finanzas se resuelve encontrando el deudor
+        // (matching), no con el botón "Marcar como gestionado".
+        needsMatching:
+          emailRoute(email) === "MATCHING" && !isEmailLinked(email),
         subject: email.subject,
         from: email.from_address,
         createdAt: email.created_at,
@@ -136,6 +140,7 @@ export const InvoiceInboxDetailSheet = ({
           id: cobranza.id,
           resolvedAt: cobranza.resolved_at ?? null,
           autoHandled: cobranza.agent_status === "HANDLED_BY_AGENT",
+          needsMatching: false,
           subject: cobranza.subject ?? null,
           from: cobranza.from_address,
           createdAt: cobranza.created_at,
@@ -321,7 +326,7 @@ export const InvoiceInboxDetailSheet = ({
             </div>
           )}
 
-          {!view.autoHandled && (
+          {!view.autoHandled && !view.needsMatching && (
             <div className="flex flex-col gap-2 border-t pt-4">
               {view.resolvedAt ? (
                 <>
