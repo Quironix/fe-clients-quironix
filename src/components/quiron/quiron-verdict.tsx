@@ -201,35 +201,17 @@ export const QuironVerdict = ({
         </div>
       )}
 
-      {toolsUsed && toolsUsed.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1">
-          <span className="text-[11px] text-muted-foreground">
-            {t("tools")}:
-          </span>
-          {toolsUsed.map((tool) => (
-            <span
-              key={tool}
-              className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium"
-            >
-              {tool}
-            </span>
-          ))}
-        </div>
-      )}
-
       {agentStatus && (
         <p className="text-[11px] text-muted-foreground">
           {agentStatus === "ROUTED_TO_MATCHING"
             ? tv("route_matching")
             : guardrailTriggered
               ? tv("route_guardrail")
-              : suggestedReply
-                ? tv("route_suggestion")
-                : agentStatus === "SHADOW_ONLY"
-                  ? t("shadow_hint")
-                  : agentStatus === "ESCALATED_TO_HUMAN"
-                    ? tv("route_review")
-                    : ""}
+              : agentStatus === "SHADOW_ONLY"
+                ? t("shadow_hint")
+                : agentStatus === "ESCALATED_TO_HUMAN"
+                  ? tv("route_review")
+                  : ""}
         </p>
       )}
 
@@ -242,18 +224,6 @@ export const QuironVerdict = ({
         >
           {t("view_track")}
         </button>
-      )}
-
-      {suggestedReply && (
-        <div className="space-y-1">
-          <div className="text-xs font-semibold">{t("suggested_reply")}</div>
-          <p className="whitespace-pre-wrap rounded-md bg-muted p-2 text-xs text-muted-foreground">
-            {suggestedReply}
-          </p>
-          <p className="text-[10px] text-muted-foreground">
-            {t("suggested_reply_hint")}
-          </p>
-        </div>
       )}
     </div>
   );

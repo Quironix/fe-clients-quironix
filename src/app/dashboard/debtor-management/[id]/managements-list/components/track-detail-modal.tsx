@@ -551,15 +551,6 @@ export const TrackDetailModal = ({
                   {tq(`combo.${trackData.agent_combo}`)}
                 </span>
               )}
-              {Array.isArray(trackData.agent_tools_used) &&
-                trackData.agent_tools_used.map((tool: string) => (
-                  <span
-                    key={tool}
-                    className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium"
-                  >
-                    {tool}
-                  </span>
-                ))}
             </div>
           )}
           <div className="bg-white rounded-lg p-4 border border-gray-200">

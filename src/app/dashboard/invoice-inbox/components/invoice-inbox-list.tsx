@@ -15,7 +15,6 @@ import {
 import { type TrackEmailMessage } from "@/services/inbound-email-replies";
 import { IconFile } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { IntentBadge } from "@/components/quiron/intent-badge";
 import {
@@ -42,6 +41,7 @@ interface UnifiedRow {
   isLinked: boolean;
   debtorId: string | null;
   finanzas?: InboundInvoiceEmail;
+  cobranza?: TrackEmailMessage;
 }
 
 const fromFinanzas = (email: InboundInvoiceEmail): UnifiedRow => ({
@@ -80,6 +80,7 @@ const fromCobranza = (message: TrackEmailMessage): UnifiedRow => ({
       : "AGENT",
   isLinked: Boolean(message.agent_management_track_id),
   debtorId: message.debtor_id ?? null,
+  cobranza: message,
 });
 
 const rowBadgeKind = (row: UnifiedRow): AgentBadgeKind =>
@@ -178,7 +179,6 @@ const SECTIONS: Section[] = [
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
   const t = useTranslations("dashboard.invoice_inbox");
-  const router = useRouter();
 
   const accessToken = session?.token as string;
   const clientId = profile?.client?.id as string;
@@ -188,6 +188,8 @@ export const InvoiceInboxList = () => {
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
     null,
   );
+  const [selectedCobranza, setSelectedCobranza] =
+    useState<TrackEmailMessage | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
   const { data: finanzasEmails = [], isLoading: loadingFinanzas } =
@@ -224,15 +226,15 @@ export const InvoiceInboxList = () => {
 
   const handleOpenRow = (row: UnifiedRow) => {
     if (row.origin === "FINANZAS" && row.finanzas) {
+      setSelectedCobranza(null);
       setSelectedEmail(row.finanzas);
-      setDetailOpen(true);
+    } else if (row.cobranza) {
+      setSelectedEmail(null);
+      setSelectedCobranza(row.cobranza);
+    } else {
       return;
     }
-    if (row.debtorId) {
-      router.push(
-        `/dashboard/debtor-management/${row.debtorId}/managements-list`,
-      );
-    }
+    setDetailOpen(true);
   };
 
   if (!accessToken || !clientId) return null;
@@ -333,6 +335,7 @@ export const InvoiceInboxList = () => {
 
       <InvoiceInboxDetailSheet
         email={selectedEmail}
+        cobranza={selectedCobranza}
         open={detailOpen}
         onOpenChange={setDetailOpen}
       />
