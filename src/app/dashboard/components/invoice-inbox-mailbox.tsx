@@ -38,11 +38,19 @@ export const InvoiceInboxMailbox = () => {
   );
   const [detailOpen, setDetailOpen] = useState(false);
 
-  const { data: emails = [] } = usePendingInboundInvoiceEmails(
+  const { data: pendingEmails = [] } = usePendingInboundInvoiceEmails(
     accessToken,
     clientId,
   );
   const { data: inbox } = useInvoiceInbox(accessToken, clientId);
+
+  // El contador solo cuenta lo que de verdad necesita al ejecutivo: `status`
+  // sigue en PENDING_REVIEW aunque Quirón lo haya gestionado o el ejecutivo lo
+  // haya cerrado a mano (resolved_at).
+  const emails = pendingEmails.filter(
+    (email) =>
+      !email.resolved_at && email.agent_status !== "HANDLED_BY_AGENT",
+  );
 
   const handleCopyAddress = () => {
     if (!inbox?.address) return;
