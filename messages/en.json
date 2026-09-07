@@ -2881,6 +2881,9 @@
     "shadow_hint": "The agent built the draft but did not create the management.",
     "created_by": "Recorded by Quirón",
     "managed_by": "Handled by Quirón",
+    "mark_handled": "Mark as handled",
+    "mark_pending": "Mark as pending",
+    "marked_handled": "Handled manually by the executive",
     "suggested_reply": "Suggested draft",
     "suggested_reply_hint": "Not sent in this phase: the executive confirms and sends it.",
     "combo": {

@@ -39,6 +39,7 @@ interface UnifiedRow {
   requiresContactReview: boolean | null;
   route: "MATCHING" | "AGENT";
   isLinked: boolean;
+  resolvedAt: string | null;
   debtorId: string | null;
   finanzas?: InboundInvoiceEmail;
   cobranza?: TrackEmailMessage;
@@ -58,6 +59,7 @@ const fromFinanzas = (email: InboundInvoiceEmail): UnifiedRow => ({
   requiresContactReview: email.agent_requires_contact_review ?? null,
   route: emailRoute(email) === "MATCHING" ? "MATCHING" : "AGENT",
   isLinked: isEmailLinked(email),
+  resolvedAt: email.resolved_at ?? null,
   debtorId: email.debtor_id ?? null,
   finanzas: email,
 });
@@ -79,6 +81,7 @@ const fromCobranza = (message: TrackEmailMessage): UnifiedRow => ({
       ? "MATCHING"
       : "AGENT",
   isLinked: Boolean(message.agent_management_track_id),
+  resolvedAt: message.resolved_at ?? null,
   debtorId: message.debtor_id ?? null,
   cobranza: message,
 });
@@ -95,9 +98,10 @@ const rowBadgeKind = (row: UnifiedRow): AgentBadgeKind =>
 // el resto (consultas, solicitudes de factura, disputas, …) matchear un deudor
 // NO resuelve nada: solo cuenta como gestionado si Quirón creó la gestión.
 const isHandled = (row: UnifiedRow) =>
-  row.route === "MATCHING"
+  Boolean(row.resolvedAt) ||
+  (row.route === "MATCHING"
     ? row.isLinked
-    : row.agentStatus === "HANDLED_BY_AGENT";
+    : row.agentStatus === "HANDLED_BY_AGENT");
 
 const isPending = (row: UnifiedRow) => !isHandled(row);
 

@@ -18,7 +18,10 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useDebtor, useDebtors } from "@/hooks/useDebtors";
-import { useLinkInboundInvoiceEmail } from "@/hooks/useInboundInvoiceEmails";
+import {
+  useLinkInboundInvoiceEmail,
+  useResolveInboundEmail,
+} from "@/hooks/useInboundInvoiceEmails";
 import {
   AgentStatusBadge,
   ContactReviewBadge,
@@ -30,6 +33,7 @@ import { IntentBadge as PrimitiveIntentBadge } from "@/components/quiron/intent-
 import { useRouter } from "next/navigation";
 import {
   InboundInvoiceEmail,
+  emailRoute,
   isEmailLinked,
 } from "@/services/inbound-invoice-emails";
 import { type TrackEmailMessage } from "@/services/inbound-email-replies";
@@ -92,6 +96,7 @@ export const InvoiceInboxDetailSheet = ({
   });
 
   const linkMutation = useLinkInboundInvoiceEmail(accessToken, clientId);
+  const resolveMutation = useResolveInboundEmail(accessToken, clientId);
 
   useEffect(() => {
     setIsEditingLink(false);
@@ -101,6 +106,12 @@ export const InvoiceInboxDetailSheet = ({
   const view = email
     ? {
         kind: "FINANZAS" as const,
+        id: email.id,
+        resolvedAt: email.resolved_at ?? null,
+        autoHandled:
+          emailRoute(email) === "MATCHING"
+            ? isEmailLinked(email)
+            : email.agent_status === "HANDLED_BY_AGENT",
         subject: email.subject,
         from: email.from_address,
         createdAt: email.created_at,
@@ -122,6 +133,9 @@ export const InvoiceInboxDetailSheet = ({
     : cobranza
       ? {
           kind: "COBRANZA" as const,
+          id: cobranza.id,
+          resolvedAt: cobranza.resolved_at ?? null,
+          autoHandled: cobranza.agent_status === "HANDLED_BY_AGENT",
           subject: cobranza.subject ?? null,
           from: cobranza.from_address,
           createdAt: cobranza.created_at,
@@ -304,6 +318,56 @@ export const InvoiceInboxDetailSheet = ({
           {view.contactReview && (
             <div className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-xs text-yellow-800">
               {t("agent.contact_review_note")}
+            </div>
+          )}
+
+          {!view.autoHandled && (
+            <div className="flex flex-col gap-2 border-t pt-4">
+              {view.resolvedAt ? (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-emerald-700">
+                    <IconCircleCheckFilled className="h-4 w-4" />
+                    {tq("marked_handled")}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="self-start text-xs text-muted-foreground"
+                    disabled={resolveMutation.isPending}
+                    onClick={() =>
+                      resolveMutation.mutate(
+                        { id: view.id, channel: view.kind, resolved: false },
+                        {
+                          onSuccess: () => onOpenChange(false),
+                          onError: (e: Error) => toast.error(e.message),
+                        },
+                      )
+                    }
+                  >
+                    {tq("mark_pending")}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  className="w-full justify-center gap-2"
+                  disabled={resolveMutation.isPending}
+                  onClick={() =>
+                    resolveMutation.mutate(
+                      { id: view.id, channel: view.kind, resolved: true },
+                      {
+                        onSuccess: () => {
+                          toast.success(tq("marked_handled"));
+                          onOpenChange(false);
+                        },
+                        onError: (e: Error) => toast.error(e.message),
+                      },
+                    )
+                  }
+                >
+                  <IconCheck className="h-4 w-4" />
+                  {tq("mark_handled")}
+                </Button>
+              )}
             </div>
           )}
 

@@ -91,6 +91,8 @@ export interface InboundInvoiceEmail {
   agent_combo?: AgentComboId | string | null;
   linked_track_id?: string | null;
   agent_shadow_payload?: Record<string, unknown> | null;
+  resolved_at?: string | null;
+  resolved_by_user_id?: string | null;
 }
 
 export interface GetInboundInvoiceEmailsFilters {
@@ -173,6 +175,27 @@ export async function linkInboundInvoiceEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
+    },
+  );
+
+  return handleResponse<InboundInvoiceEmail>(response);
+}
+
+export async function resolveInboundInvoiceEmail(
+  accessToken: string,
+  clientId: string,
+  id: string,
+  resolved: boolean,
+): Promise<InboundInvoiceEmail> {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/inbound-invoice-emails/${id}/resolve`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ resolved }),
     },
   );
 

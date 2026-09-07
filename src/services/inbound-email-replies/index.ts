@@ -26,6 +26,26 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
+export async function resolveInboundEmailReply(
+  accessToken: string,
+  clientId: string,
+  id: string,
+  resolved: boolean,
+): Promise<TrackEmailMessage> {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/inbound-email-replies/${id}/resolve`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ resolved }),
+    },
+  );
+  return handleResponse<TrackEmailMessage>(response);
+}
+
 export async function getInboundEmailReplies(
   accessToken: string,
   clientId: string,

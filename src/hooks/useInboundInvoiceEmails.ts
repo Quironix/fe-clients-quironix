@@ -5,9 +5,11 @@ import {
   getInboundInvoiceEmails,
   getInvoiceInbox,
   linkInboundInvoiceEmail,
+  resolveInboundInvoiceEmail,
 } from "@/services/inbound-invoice-emails";
 import {
   getInboundEmailReplies,
+  resolveInboundEmailReply,
   type TrackEmailMessage,
 } from "@/services/inbound-email-replies";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -23,6 +25,33 @@ export function useInboundEmailReplies(accessToken: string, clientId: string) {
     enabled: !!accessToken && !!clientId,
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
+  });
+}
+
+export function useResolveInboundEmail(accessToken: string, clientId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      channel,
+      resolved,
+    }: {
+      id: string;
+      channel: "FINANZAS" | "COBRANZA";
+      resolved: boolean;
+    }) =>
+      channel === "FINANZAS"
+        ? resolveInboundInvoiceEmail(accessToken, clientId, id, resolved)
+        : resolveInboundEmailReply(accessToken, clientId, id, resolved),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [INBOUND_INVOICE_EMAILS_QUERY_KEY, clientId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [INBOUND_EMAIL_REPLIES_QUERY_KEY, clientId],
+      });
+    },
   });
 }
 

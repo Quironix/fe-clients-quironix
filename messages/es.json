@@ -2881,6 +2881,9 @@
     "shadow_hint": "El agente armó el borrador pero no creó la gestión.",
     "created_by": "Registrada por Quirón",
     "managed_by": "Gestionado por Quirón",
+    "mark_handled": "Marcar como gestionado",
+    "mark_pending": "Marcar como pendiente",
+    "marked_handled": "Gestionado manualmente por el ejecutivo",
     "suggested_reply": "Borrador sugerido",
     "suggested_reply_hint": "No se envía en esta fase: lo confirma y envía el ejecutivo.",
     "combo": {
