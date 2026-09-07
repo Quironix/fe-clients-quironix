@@ -37,6 +37,7 @@ export interface QuironVerdictProps {
   combo?: string | null;
   linkedTrackId?: string | null;
   suggestedReply?: string | null;
+  shadowPayload?: Record<string, unknown> | null;
   onViewTrack?: () => void;
   compact?: boolean;
   className?: string;
@@ -64,6 +65,7 @@ export const QuironVerdict = ({
   combo,
   linkedTrackId,
   suggestedReply,
+  shadowPayload,
   onViewTrack,
   compact = false,
   className,
@@ -73,6 +75,15 @@ export const QuironVerdict = ({
 
   const proof = extracted?.payment_proof;
   const promise = extracted?.payment_promise;
+  const draft = shadowPayload as
+    | {
+        observation?: string;
+        nextManagementDate?: string;
+        caseData?: Record<string, unknown>;
+      }
+    | null
+    | undefined;
+  const draftCase = draft?.caseData ?? {};
   const confPct = pct(confidence);
   const thrPct = pct(threshold);
 
@@ -196,6 +207,38 @@ export const QuironVerdict = ({
           {extracted?.disputed_amount && (
             <p className="text-xs font-medium text-red-600">
               {t("disputed_amount")}
+            </p>
+          )}
+        </div>
+      )}
+
+      {draft && (draft.observation || draft.nextManagementDate) && (
+        <div className="space-y-1.5 rounded-md border border-dashed p-2">
+          <div className="text-xs font-semibold">{t("draft_title")}</div>
+          <Row
+            label={t("proof_paid_on")}
+            value={
+              (draftCase.paymentDate as string) ||
+              (draftCase.commitmentDate as string) ||
+              (draftCase.pickupDate as string) ||
+              undefined
+            }
+          />
+          <Row
+            label={t("proof_amount")}
+            value={amount(
+              (draftCase.paymentAmount as number) ??
+                (draftCase.amount as number) ??
+                (draftCase.paymentCommitmentAmount as number),
+            )}
+          />
+          <Row
+            label={t("next_management")}
+            value={draft.nextManagementDate}
+          />
+          {draft.observation && (
+            <p className="whitespace-pre-wrap text-xs text-muted-foreground">
+              {draft.observation}
             </p>
           )}
         </div>

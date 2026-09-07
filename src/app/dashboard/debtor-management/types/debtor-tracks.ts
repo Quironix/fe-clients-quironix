@@ -207,6 +207,7 @@ export interface TrackEmailMessage {
   agent_summary?: string | null;
   agent_extracted?: Record<string, unknown> | null;
   agent_combo?: string | null;
+  agent_shadow_payload?: Record<string, unknown> | null;
   resolved_at?: string | null;
   resolved_by_user_id?: string | null;
 }

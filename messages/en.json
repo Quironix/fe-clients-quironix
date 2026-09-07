@@ -2863,6 +2863,8 @@
     "name": "Quirón",
     "verdict_title": "Quirón's verdict",
     "understood": "Quirón understood",
+    "draft_title": "Draft Quirón prepared (shadow mode)",
+    "next_management": "Next management",
     "promise": "Payment commitment",
     "proof": "Payment receipt",
     "promise_date": "Date",

@@ -2863,6 +2863,8 @@
     "name": "Quirón",
     "verdict_title": "Veredicto de Quirón",
     "understood": "Quirón entendió",
+    "draft_title": "Borrador que armó Quirón (modo sombra)",
+    "next_management": "Próxima gestión",
     "promise": "Compromiso de pago",
     "proof": "Comprobante de pago",
     "promise_date": "Fecha",

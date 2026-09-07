@@ -89,11 +89,18 @@ export const InvoiceInboxDetailSheet = ({
   const isLinked = email ? isEmailLinked(email) : false;
   const isAutoMatched = email?.status === "MATCHED";
 
-  const { data: linkedDebtor, isLoading: isLoadingLinkedDebtor } = useDebtor({
+  // El deudor que Quirón resolvió: en cobranza+ siempre viene (es un hilo de un
+  // deudor); en finanzas se setea cuando el agente lo matcheó (aunque no se
+  // haya persistido la gestión — p.ej. modo sombra).
+  const resolvedDebtorId =
+    email?.debtor_id ?? cobranza?.debtor_id ?? null;
+
+  const { data: resolvedDebtor, isLoading: isLoadingLinkedDebtor } = useDebtor({
     accessToken,
     clientId,
-    debtorId: isLinked ? email?.debtor_id : null,
+    debtorId: resolvedDebtorId,
   });
+  const linkedDebtor = resolvedDebtor;
 
   const linkMutation = useLinkInboundInvoiceEmail(accessToken, clientId);
   const resolveMutation = useResolveInboundEmail(accessToken, clientId);
@@ -129,6 +136,7 @@ export const InvoiceInboxDetailSheet = ({
         combo: email.agent_combo ?? null,
         linkedTrackId: email.linked_track_id ?? null,
         suggestedReply: email.agent_suggested_reply ?? null,
+        shadowPayload: email.agent_shadow_payload ?? null,
         contactReview: email.agent_requires_contact_review ?? null,
         body: email.body_text ?? null,
         attachments: email.attachments ?? [],
@@ -155,6 +163,7 @@ export const InvoiceInboxDetailSheet = ({
           combo: cobranza.agent_combo ?? null,
           linkedTrackId: cobranza.agent_management_track_id ?? null,
           suggestedReply: cobranza.agent_suggested_reply ?? null,
+          shadowPayload: cobranza.agent_shadow_payload ?? null,
           contactReview: cobranza.agent_requires_contact_review ?? null,
           body: cobranza.body_text ?? null,
           attachments: cobranza.attachments ?? [],
@@ -259,6 +268,21 @@ export const InvoiceInboxDetailSheet = ({
               </>
             )}
           </div>
+          {resolvedDebtorId && (
+            <button
+              type="button"
+              onClick={goToThread}
+              disabled={!view.debtorId}
+              className="flex w-fit items-center gap-1.5 rounded-md border bg-muted/40 px-2 py-1 text-xs font-medium hover:bg-muted disabled:cursor-default disabled:hover:bg-muted/40"
+            >
+              <span className="text-muted-foreground">{t("linked_to")}:</span>
+              {isLoadingLinkedDebtor
+                ? t("loading")
+                : resolvedDebtor
+                  ? `${resolvedDebtor.debtor_code} — ${resolvedDebtor.name}`
+                  : resolvedDebtorId}
+            </button>
+          )}
         </SheetHeader>
 
         <div className="flex flex-col gap-4 px-4 pb-4">
@@ -272,6 +296,7 @@ export const InvoiceInboxDetailSheet = ({
               summary={view.summary}
               extracted={view.extracted}
               combo={view.combo}
+              shadowPayload={view.shadowPayload}
               linkedTrackId={view.linkedTrackId}
               onViewTrack={view.debtorId ? goToThread : undefined}
             />
