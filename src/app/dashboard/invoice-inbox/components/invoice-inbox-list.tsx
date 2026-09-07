@@ -90,6 +90,15 @@ const rowBadgeKind = (row: UnifiedRow): AgentBadgeKind =>
     suggestedReply: row.suggestedReply,
   });
 
+const isReview = (row: UnifiedRow) => {
+  const kind = rowBadgeKind(row);
+  return (
+    kind === "review" ||
+    kind === "review_guardrail" ||
+    (!kind && row.origin === "FINANZAS" && !row.isLinked)
+  );
+};
+
 type SectionId = "MATCHING" | "AGENT" | "ALL";
 
 interface SubFilter {
@@ -105,63 +114,54 @@ interface Section {
   subs: SubFilter[];
 }
 
-const AGENT_SUBS: SubFilter[] = [
-  { id: "ALL", labelKey: "subfilter.all", match: () => true },
-  {
-    id: "ANSWERED",
-    labelKey: "subfilter.answered",
-    match: (row) => rowBadgeKind(row) === "answered",
-  },
-  {
-    id: "SUGGESTION",
-    labelKey: "subfilter.suggestion",
-    match: (row) => rowBadgeKind(row) === "suggestion",
-  },
-  {
-    id: "REVIEW",
-    labelKey: "subfilter.review",
-    match: (row) => {
-      const kind = rowBadgeKind(row);
-      return (
-        kind === "review" ||
-        kind === "review_guardrail" ||
-        (!kind && row.origin === "FINANZAS" && !row.isLinked)
-      );
-    },
-  },
-];
-
+// Orden de izquierda a derecha: primero los estados accionables, "Todos" al final.
 const SECTIONS: Section[] = [
   {
     id: "MATCHING",
     labelKey: "section.matching",
     inSection: (row) => row.route === "MATCHING",
     subs: [
-      { id: "ALL", labelKey: "subfilter.all", match: () => true },
-      {
-        id: "LINKED",
-        labelKey: "subfilter.auto_linked",
-        match: (row) => row.isLinked,
-      },
       {
         id: "PENDING",
         labelKey: "subfilter.pending_review",
         match: (row) => !row.isLinked,
       },
+      {
+        id: "LINKED",
+        labelKey: "subfilter.auto_linked",
+        match: (row) => row.isLinked,
+      },
+      { id: "ALL", labelKey: "subfilter.all", match: () => true },
     ],
   },
   {
     id: "AGENT",
     labelKey: "section.agent",
     inSection: (row) => row.route === "AGENT",
-    subs: AGENT_SUBS,
+    subs: [
+      {
+        id: "REVIEW",
+        labelKey: "subfilter.pending_review",
+        match: isReview,
+      },
+      {
+        id: "SUGGESTION",
+        labelKey: "subfilter.suggestion",
+        match: (row) => rowBadgeKind(row) === "suggestion",
+      },
+      {
+        id: "ANSWERED",
+        labelKey: "subfilter.answered",
+        match: (row) => rowBadgeKind(row) === "answered",
+      },
+      { id: "ALL", labelKey: "subfilter.all", match: () => true },
+    ],
   },
   {
     id: "ALL",
     labelKey: "section.all",
     inSection: () => true,
     subs: [
-      { id: "ALL", labelKey: "subfilter.all", match: () => true },
       {
         id: "PENDING",
         labelKey: "subfilter.pending",
@@ -172,6 +172,7 @@ const SECTIONS: Section[] = [
         labelKey: "subfilter.resolved",
         match: (row) => row.isLinked,
       },
+      { id: "ALL", labelKey: "subfilter.all", match: () => true },
     ],
   },
 ];
@@ -184,7 +185,9 @@ export const InvoiceInboxList = () => {
   const clientId = profile?.client?.id as string;
 
   const [sectionId, setSectionId] = useState<SectionId>("ALL");
-  const [subId, setSubId] = useState("ALL");
+  const [subId, setSubId] = useState(
+    () => SECTIONS.find((s) => s.id === "ALL")!.subs[0].id,
+  );
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
     null,
   );
@@ -221,7 +224,8 @@ export const InvoiceInboxList = () => {
 
   const handleSelectSection = (id: SectionId) => {
     setSectionId(id);
-    setSubId("ALL");
+    const next = SECTIONS.find((s) => s.id === id) ?? SECTIONS[0];
+    setSubId(next.subs[0].id);
   };
 
   const handleOpenRow = (row: UnifiedRow) => {

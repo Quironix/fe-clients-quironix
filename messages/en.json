@@ -392,7 +392,7 @@
         "OTRA": "Other / needs review"
       },
       "agent": {
-        "answered": "Answered by the agent",
+        "answered": "Handled by Quirón",
         "suggestion": "Suggestion available",
         "review_guardrail": "Needs review · guardrail",
         "review": "Needs review",
@@ -410,8 +410,8 @@
         "all": "All",
         "auto_linked": "Auto-linked",
         "pending_review": "Pending review",
-        "answered": "Answered by the agent",
-        "suggestion": "Suggestion available",
+        "answered": "Handled by Quirón",
+        "suggestion": "Suggestions available",
         "review": "Needs review",
         "pending": "Pending",
         "resolved": "Resolved"

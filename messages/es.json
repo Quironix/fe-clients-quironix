@@ -392,7 +392,7 @@
         "OTRA": "Otra / a revisión"
       },
       "agent": {
-        "answered": "Respondido por el agente",
+        "answered": "Gestionado por Quirón",
         "suggestion": "Sugerencia disponible",
         "review_guardrail": "A revisión · guardrail",
         "review": "A revisión",
@@ -410,8 +410,8 @@
         "all": "Todos",
         "auto_linked": "Auto-vinculados",
         "pending_review": "Pendientes de revisión",
-        "answered": "Respondidos por el agente",
-        "suggestion": "Sugerencia disponible",
+        "answered": "Gestionados por Quirón",
+        "suggestion": "Sugerencias disponibles",
         "review": "A revisión",
         "pending": "Pendientes",
         "resolved": "Resueltos"
