@@ -410,6 +410,8 @@
       "subfilter": {
         "all": "Todos",
         "auto_linked": "Auto-vinculados",
+        "auto_matched": "Auto-matcheados",
+        "manual_linked": "Vinculados a mano",
         "pending_review": "Pendientes de revisión",
         "answered": "Gestionados",
         "suggestion": "Sugerencias disponibles",

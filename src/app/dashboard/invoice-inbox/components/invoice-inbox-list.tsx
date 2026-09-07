@@ -93,17 +93,28 @@ const rowBadgeKind = (row: UnifiedRow): AgentBadgeKind =>
     suggestedReply: row.suggestedReply,
   });
 
-// "Gestionado" = ya no requiere acción del ejecutivo. Para un comprobante eso
-// pasa cuando se matchea el deudor (entra a la conciliación automática). Para
-// el resto (consultas, solicitudes de factura, disputas, …) matchear un deudor
-// NO resuelve nada: solo cuenta como gestionado si Quirón creó la gestión.
-const isHandled = (row: UnifiedRow) =>
-  Boolean(row.resolvedAt) ||
-  (row.route === "MATCHING"
-    ? row.isLinked
-    : row.agentStatus === "HANDLED_BY_AGENT");
+// Cómo quedó resuelto el correo:
+//  - "pending": el ejecutivo todavía tiene que hacer algo.
+//  - "auto":    lo resolvió el sistema — la cascada matcheó el deudor
+//    (comprobante -> conciliación automática) o Quirón creó la gestión.
+//  - "manual":  el ejecutivo lo vinculó / cerró a mano.
+// Para un comprobante, matchear el deudor lo resuelve. Para el resto (consultas,
+// solicitudes, disputas) matchear NO resuelve nada: solo cuenta si Quirón creó
+// la gestión o el ejecutivo lo marcó.
+type ResolutionKind = "pending" | "auto" | "manual";
 
-const isPending = (row: UnifiedRow) => !isHandled(row);
+const resolutionKind = (row: UnifiedRow): ResolutionKind => {
+  if (row.resolvedAt) return "manual";
+  if (row.origin === "FINANZAS" && row.route === "MATCHING") {
+    if (row.finanzas?.status === "MATCHED") return "auto";
+    if (row.finanzas?.status === "LINKED") return "manual";
+    return "pending";
+  }
+  return row.agentStatus === "HANDLED_BY_AGENT" ? "auto" : "pending";
+};
+
+const isHandled = (row: UnifiedRow) => resolutionKind(row) !== "pending";
+const isPending = (row: UnifiedRow) => resolutionKind(row) === "pending";
 
 type SectionId = "MATCHING" | "AGENT" | "ALL";
 
@@ -133,9 +144,14 @@ const SECTIONS: Section[] = [
         match: isPending,
       },
       {
-        id: "LINKED",
-        labelKey: "subfilter.auto_linked",
-        match: isHandled,
+        id: "AUTO",
+        labelKey: "subfilter.auto_matched",
+        match: (row) => resolutionKind(row) === "auto",
+      },
+      {
+        id: "MANUAL",
+        labelKey: "subfilter.manual_linked",
+        match: (row) => resolutionKind(row) === "manual",
       },
       { id: "ALL", labelKey: "subfilter.all", match: () => true },
     ],
