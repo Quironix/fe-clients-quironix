@@ -382,6 +382,7 @@
       "tab_all": "Todos",
       "loading": "Cargando...",
       "empty_filter": "No hay correos que coincidan con este filtro.",
+      "pending_count": "{count} sin gestionar",
       "intent": {
         "COMPROBANTE_PAGO": "Comprobante",
         "SOLICITUD_FACTURA": "Solicitud de factura",

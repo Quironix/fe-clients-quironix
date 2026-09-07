@@ -90,14 +90,16 @@ const rowBadgeKind = (row: UnifiedRow): AgentBadgeKind =>
     suggestedReply: row.suggestedReply,
   });
 
-const isReview = (row: UnifiedRow) => {
-  const kind = rowBadgeKind(row);
-  return (
-    kind === "review" ||
-    kind === "review_guardrail" ||
-    (!kind && row.origin === "FINANZAS" && !row.isLinked)
-  );
-};
+// "Gestionado" = ya no requiere acción del ejecutivo. Para un comprobante eso
+// pasa cuando se matchea el deudor (entra a la conciliación automática). Para
+// el resto (consultas, solicitudes de factura, disputas, …) matchear un deudor
+// NO resuelve nada: solo cuenta como gestionado si Quirón creó la gestión.
+const isHandled = (row: UnifiedRow) =>
+  row.route === "MATCHING"
+    ? row.isLinked
+    : row.agentStatus === "HANDLED_BY_AGENT";
+
+const isPending = (row: UnifiedRow) => !isHandled(row);
 
 type SectionId = "MATCHING" | "AGENT" | "ALL";
 
@@ -124,12 +126,12 @@ const SECTIONS: Section[] = [
       {
         id: "PENDING",
         labelKey: "subfilter.pending_review",
-        match: (row) => !row.isLinked,
+        match: isPending,
       },
       {
         id: "LINKED",
         labelKey: "subfilter.auto_linked",
-        match: (row) => row.isLinked,
+        match: isHandled,
       },
       { id: "ALL", labelKey: "subfilter.all", match: () => true },
     ],
@@ -142,7 +144,8 @@ const SECTIONS: Section[] = [
       {
         id: "REVIEW",
         labelKey: "subfilter.pending_review",
-        match: isReview,
+        match: (row) =>
+          isPending(row) && rowBadgeKind(row) !== "suggestion",
       },
       {
         id: "SUGGESTION",
@@ -152,7 +155,7 @@ const SECTIONS: Section[] = [
       {
         id: "ANSWERED",
         labelKey: "subfilter.answered",
-        match: (row) => rowBadgeKind(row) === "answered",
+        match: isHandled,
       },
       { id: "ALL", labelKey: "subfilter.all", match: () => true },
     ],
@@ -165,12 +168,12 @@ const SECTIONS: Section[] = [
       {
         id: "PENDING",
         labelKey: "subfilter.pending",
-        match: (row) => !row.isLinked,
+        match: isPending,
       },
       {
         id: "RESOLVED",
         labelKey: "subfilter.resolved",
-        match: (row) => row.isLinked,
+        match: isHandled,
       },
       { id: "ALL", labelKey: "subfilter.all", match: () => true },
     ],
@@ -250,14 +253,27 @@ export const InvoiceInboxList = () => {
         onValueChange={(value) => handleSelectSection(value as SectionId)}
       >
         <TabsList>
-          {SECTIONS.map((item) => (
-            <TabsTrigger key={item.id} value={item.id}>
-              {t(item.labelKey)}
-              <span className="ml-2 rounded-full bg-gray-200 px-1.5 text-[10px] font-bold text-gray-600">
-                {rows.filter((row) => item.inSection(row)).length}
-              </span>
-            </TabsTrigger>
-          ))}
+          {SECTIONS.map((item) => {
+            const pending = rows.filter(
+              (row) => item.inSection(row) && isPending(row),
+            ).length;
+            return (
+              <TabsTrigger key={item.id} value={item.id}>
+                {t(item.labelKey)}
+                <span
+                  className={cn(
+                    "ml-2 rounded-full px-1.5 text-[10px] font-bold",
+                    pending > 0
+                      ? "bg-red-100 text-red-700"
+                      : "bg-gray-200 text-gray-400",
+                  )}
+                  title={t("pending_count", { count: pending })}
+                >
+                  {pending}
+                </span>
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
       </Tabs>
 
@@ -292,17 +308,26 @@ export const InvoiceInboxList = () => {
       )}
 
       <div className="flex flex-col gap-2">
-        {visibleRows.map((row) => (
+        {visibleRows.map((row) => {
+          const pending = isPending(row);
+          return (
           <button
             key={row.key}
             type="button"
             onClick={() => handleOpenRow(row)}
-            className="flex items-start justify-between gap-4 rounded-md border p-4 text-left hover:bg-gray-50"
+            className={cn(
+              "flex items-start justify-between gap-4 rounded-md border border-l-4 p-4 text-left hover:bg-gray-50",
+              pending
+                ? "border-l-red-500 bg-red-50/40"
+                : "border-l-transparent",
+            )}
           >
             <div className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5 truncate font-medium">
-                {(row.agentStatus === "HANDLED_BY_AGENT" ||
-                  row.agentStatus === "SHADOW_ONLY") && (
+                {pending && (
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                )}
+                {isHandled(row) && row.agentStatus === "HANDLED_BY_AGENT" && (
                   <QuironMark size="sm" />
                 )}
                 <span className="truncate">
@@ -334,7 +359,8 @@ export const InvoiceInboxList = () => {
               )}
             </div>
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <InvoiceInboxDetailSheet

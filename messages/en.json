@@ -382,6 +382,7 @@
       "tab_all": "All",
       "loading": "Loading...",
       "empty_filter": "No emails match this filter.",
+      "pending_count": "{count} unhandled",
       "intent": {
         "COMPROBANTE_PAGO": "Receipt",
         "SOLICITUD_FACTURA": "Invoice request",
