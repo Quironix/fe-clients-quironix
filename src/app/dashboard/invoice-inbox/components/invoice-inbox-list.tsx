@@ -7,11 +7,7 @@ import {
   useInboundInvoiceEmails,
 } from "@/hooks/useInboundInvoiceEmails";
 import { cn, formatDateTime } from "@/lib/utils";
-import {
-  emailRoute,
-  InboundInvoiceEmail,
-  isEmailLinked,
-} from "@/services/inbound-invoice-emails";
+import { InboundInvoiceEmail } from "@/services/inbound-invoice-emails";
 import { type TrackEmailMessage } from "@/services/inbound-email-replies";
 import { IconFile } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
@@ -20,185 +16,16 @@ import { IntentBadge } from "@/components/quiron/intent-badge";
 import {
   AgentStatusBadge,
   ContactReviewBadge,
-  agentBadgeKind,
-  type AgentBadgeKind,
 } from "@/components/quiron/agent-status-badge";
 import { QuironMark } from "@/components/quiron/quiron-mark";
-
-interface UnifiedRow {
-  key: string;
-  origin: "FINANZAS" | "COBRANZA";
-  subject: string | null;
-  fromAddress: string;
-  createdAt: string;
-  attachmentsCount: number;
-  intent: string | null;
-  agentStatus: string | null;
-  guardrailTriggered: boolean | null;
-  suggestedReply: string | null;
-  requiresContactReview: boolean | null;
-  route: "MATCHING" | "AGENT";
-  isLinked: boolean;
-  resolvedAt: string | null;
-  debtorId: string | null;
-  finanzas?: InboundInvoiceEmail;
-  cobranza?: TrackEmailMessage;
-}
-
-const fromFinanzas = (email: InboundInvoiceEmail): UnifiedRow => ({
-  key: `f-${email.id}`,
-  origin: "FINANZAS",
-  subject: email.subject,
-  fromAddress: email.from_address,
-  createdAt: email.created_at,
-  attachmentsCount: email.attachments?.length ?? 0,
-  intent: email.intent ?? null,
-  agentStatus: email.agent_status ?? null,
-  guardrailTriggered: email.agent_guardrail_triggered ?? null,
-  suggestedReply: email.agent_suggested_reply ?? null,
-  requiresContactReview: email.agent_requires_contact_review ?? null,
-  route: emailRoute(email) === "MATCHING" ? "MATCHING" : "AGENT",
-  isLinked: isEmailLinked(email),
-  resolvedAt: email.resolved_at ?? null,
-  debtorId: email.debtor_id ?? null,
-  finanzas: email,
-});
-
-const fromCobranza = (message: TrackEmailMessage): UnifiedRow => ({
-  key: `c-${message.id}`,
-  origin: "COBRANZA",
-  subject: message.subject ?? null,
-  fromAddress: message.from_address,
-  createdAt: message.created_at,
-  attachmentsCount: message.attachments?.length ?? 0,
-  intent: message.agent_category ?? null,
-  agentStatus: message.agent_status ?? null,
-  guardrailTriggered: message.agent_guardrail_triggered ?? null,
-  suggestedReply: message.agent_suggested_reply ?? null,
-  requiresContactReview: message.agent_requires_contact_review ?? null,
-  route:
-    message.agent_category === "CONFIRMA_PAGO_CON_COMPROBANTE"
-      ? "MATCHING"
-      : "AGENT",
-  isLinked: Boolean(message.agent_management_track_id),
-  resolvedAt: message.resolved_at ?? null,
-  debtorId: message.debtor_id ?? null,
-  cobranza: message,
-});
-
-const rowBadgeKind = (row: UnifiedRow): AgentBadgeKind =>
-  agentBadgeKind({
-    agentStatus: row.agentStatus,
-    guardrailTriggered: row.guardrailTriggered,
-    suggestedReply: row.suggestedReply,
-  });
-
-// Cómo quedó resuelto el correo:
-//  - "pending": el ejecutivo todavía tiene que hacer algo.
-//  - "auto":    lo resolvió el sistema — la cascada matcheó el deudor
-//    (comprobante -> conciliación automática) o Quirón creó la gestión.
-//  - "manual":  el ejecutivo lo vinculó / cerró a mano.
-// Para un comprobante, matchear el deudor lo resuelve. Para el resto (consultas,
-// solicitudes, disputas) matchear NO resuelve nada: solo cuenta si Quirón creó
-// la gestión o el ejecutivo lo marcó.
-type ResolutionKind = "pending" | "auto" | "manual";
-
-const resolutionKind = (row: UnifiedRow): ResolutionKind => {
-  if (row.resolvedAt) return "manual";
-  if (row.origin === "FINANZAS" && row.route === "MATCHING") {
-    if (row.finanzas?.status === "MATCHED") return "auto";
-    if (row.finanzas?.status === "LINKED") return "manual";
-    return "pending";
-  }
-  return row.agentStatus === "HANDLED_BY_AGENT" ? "auto" : "pending";
-};
-
-const isHandled = (row: UnifiedRow) => resolutionKind(row) !== "pending";
-const isPending = (row: UnifiedRow) => resolutionKind(row) === "pending";
-
-type SectionId = "MATCHING" | "AGENT" | "ALL";
-
-interface SubFilter {
-  id: string;
-  labelKey: string;
-  match: (row: UnifiedRow) => boolean;
-}
-
-interface Section {
-  id: SectionId;
-  labelKey: string;
-  inSection: (row: UnifiedRow) => boolean;
-  subs: SubFilter[];
-}
-
-// Orden de izquierda a derecha: primero los estados accionables, "Todos" al final.
-const SECTIONS: Section[] = [
-  {
-    id: "MATCHING",
-    labelKey: "section.matching",
-    inSection: (row) => row.route === "MATCHING",
-    subs: [
-      {
-        id: "PENDING",
-        labelKey: "subfilter.pending_review",
-        match: isPending,
-      },
-      {
-        id: "AUTO",
-        labelKey: "subfilter.auto_matched",
-        match: (row) => resolutionKind(row) === "auto",
-      },
-      {
-        id: "MANUAL",
-        labelKey: "subfilter.manual_linked",
-        match: (row) => resolutionKind(row) === "manual",
-      },
-      { id: "ALL", labelKey: "subfilter.all", match: () => true },
-    ],
-  },
-  {
-    id: "AGENT",
-    labelKey: "section.agent",
-    inSection: (row) => row.route === "AGENT",
-    subs: [
-      {
-        id: "REVIEW",
-        labelKey: "subfilter.pending_review",
-        match: (row) =>
-          isPending(row) && rowBadgeKind(row) !== "suggestion",
-      },
-      {
-        id: "SUGGESTION",
-        labelKey: "subfilter.suggestion",
-        match: (row) => rowBadgeKind(row) === "suggestion",
-      },
-      {
-        id: "ANSWERED",
-        labelKey: "subfilter.answered",
-        match: isHandled,
-      },
-      { id: "ALL", labelKey: "subfilter.all", match: () => true },
-    ],
-  },
-  {
-    id: "ALL",
-    labelKey: "section.all",
-    inSection: () => true,
-    subs: [
-      {
-        id: "PENDING",
-        labelKey: "subfilter.pending",
-        match: isPending,
-      },
-      {
-        id: "RESOLVED",
-        labelKey: "subfilter.resolved",
-        match: isHandled,
-      },
-      { id: "ALL", labelKey: "subfilter.all", match: () => true },
-    ],
-  },
-];
+import {
+  SECTIONS,
+  isHandled,
+  isPending,
+  mergeRows,
+  type SectionId,
+  type UnifiedRow,
+} from "@/app/dashboard/invoice-inbox/lib/unified-inbox";
 
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
@@ -223,18 +50,10 @@ export const InvoiceInboxList = () => {
   const { data: cobranzaReplies = [], isLoading: loadingCobranza } =
     useInboundEmailReplies(accessToken, clientId);
 
-  const rows = useMemo(() => {
-    const merged = [
-      ...finanzasEmails
-        .filter((email) => email.direction !== "OUT")
-        .map(fromFinanzas),
-      ...cobranzaReplies.map(fromCobranza),
-    ];
-    return merged.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-  }, [finanzasEmails, cobranzaReplies]);
+  const rows = useMemo(
+    () => mergeRows(finanzasEmails, cobranzaReplies),
+    [finanzasEmails, cobranzaReplies],
+  );
 
   const isLoading = loadingFinanzas || loadingCobranza;
 
