@@ -6,10 +6,25 @@ import {
   getInvoiceInbox,
   linkInboundInvoiceEmail,
 } from "@/services/inbound-invoice-emails";
+import {
+  getInboundEmailReplies,
+  type TrackEmailMessage,
+} from "@/services/inbound-email-replies";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const INBOUND_INVOICE_EMAILS_QUERY_KEY = "inbound-invoice-emails";
+const INBOUND_EMAIL_REPLIES_QUERY_KEY = "inbound-email-replies";
 const INVOICE_INBOX_QUERY_KEY = "invoice-inbox";
+
+export function useInboundEmailReplies(accessToken: string, clientId: string) {
+  return useQuery<TrackEmailMessage[]>({
+    queryKey: [INBOUND_EMAIL_REPLIES_QUERY_KEY, clientId],
+    queryFn: () => getInboundEmailReplies(accessToken, clientId),
+    enabled: !!accessToken && !!clientId,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: false,
+  });
+}
 
 export function useInboundInvoiceEmails(
   accessToken: string,

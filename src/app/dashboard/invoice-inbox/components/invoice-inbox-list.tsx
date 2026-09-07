@@ -2,91 +2,158 @@
 import { InvoiceInboxDetailSheet } from "@/app/dashboard/components/invoice-inbox-detail-sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileContext } from "@/context/ProfileContext";
-import { useInboundInvoiceEmails } from "@/hooks/useInboundInvoiceEmails";
+import {
+  useInboundEmailReplies,
+  useInboundInvoiceEmails,
+} from "@/hooks/useInboundInvoiceEmails";
 import { cn, formatDateTime } from "@/lib/utils";
 import {
   emailRoute,
   InboundInvoiceEmail,
   isEmailLinked,
 } from "@/services/inbound-invoice-emails";
+import { type TrackEmailMessage } from "@/services/inbound-email-replies";
 import { IconFile } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import { IntentBadge } from "@/components/quiron/intent-badge";
 import {
-  agentBadgeKind,
   AgentStatusBadge,
   ContactReviewBadge,
-  IntentBadge,
-} from "./inbox-badges";
-import { QuironVerdict } from "@/components/quiron/quiron-verdict";
-import {
-  getInboundEmailReplies,
-  type TrackEmailMessage,
-} from "@/services/inbound-email-replies";
+  agentBadgeKind,
+  type AgentBadgeKind,
+} from "@/components/quiron/agent-status-badge";
+import { QuironMark } from "@/components/quiron/quiron-mark";
+
+interface UnifiedRow {
+  key: string;
+  origin: "FINANZAS" | "COBRANZA";
+  subject: string | null;
+  fromAddress: string;
+  createdAt: string;
+  attachmentsCount: number;
+  intent: string | null;
+  agentStatus: string | null;
+  guardrailTriggered: boolean | null;
+  suggestedReply: string | null;
+  requiresContactReview: boolean | null;
+  route: "MATCHING" | "AGENT";
+  isLinked: boolean;
+  debtorId: string | null;
+  finanzas?: InboundInvoiceEmail;
+}
+
+const fromFinanzas = (email: InboundInvoiceEmail): UnifiedRow => ({
+  key: `f-${email.id}`,
+  origin: "FINANZAS",
+  subject: email.subject,
+  fromAddress: email.from_address,
+  createdAt: email.created_at,
+  attachmentsCount: email.attachments?.length ?? 0,
+  intent: email.intent ?? null,
+  agentStatus: email.agent_status ?? null,
+  guardrailTriggered: email.agent_guardrail_triggered ?? null,
+  suggestedReply: email.agent_suggested_reply ?? null,
+  requiresContactReview: email.agent_requires_contact_review ?? null,
+  route: emailRoute(email) === "MATCHING" ? "MATCHING" : "AGENT",
+  isLinked: isEmailLinked(email),
+  debtorId: email.debtor_id ?? null,
+  finanzas: email,
+});
+
+const fromCobranza = (message: TrackEmailMessage): UnifiedRow => ({
+  key: `c-${message.id}`,
+  origin: "COBRANZA",
+  subject: message.subject ?? null,
+  fromAddress: message.from_address,
+  createdAt: message.created_at,
+  attachmentsCount: message.attachments?.length ?? 0,
+  intent: message.agent_category ?? null,
+  agentStatus: message.agent_status ?? null,
+  guardrailTriggered: message.agent_guardrail_triggered ?? null,
+  suggestedReply: message.agent_suggested_reply ?? null,
+  requiresContactReview: message.agent_requires_contact_review ?? null,
+  route:
+    message.agent_category === "CONFIRMA_PAGO_CON_COMPROBANTE"
+      ? "MATCHING"
+      : "AGENT",
+  isLinked: Boolean(message.agent_management_track_id),
+  debtorId: message.debtor_id ?? null,
+});
+
+const rowBadgeKind = (row: UnifiedRow): AgentBadgeKind =>
+  agentBadgeKind({
+    agentStatus: row.agentStatus,
+    guardrailTriggered: row.guardrailTriggered,
+    suggestedReply: row.suggestedReply,
+  });
 
 type SectionId = "MATCHING" | "AGENT" | "ALL";
 
 interface SubFilter {
   id: string;
   labelKey: string;
-  match: (email: InboundInvoiceEmail) => boolean;
+  match: (row: UnifiedRow) => boolean;
 }
 
 interface Section {
   id: SectionId;
   labelKey: string;
-  inSection: (email: InboundInvoiceEmail) => boolean;
+  inSection: (row: UnifiedRow) => boolean;
   subs: SubFilter[];
 }
+
+const AGENT_SUBS: SubFilter[] = [
+  { id: "ALL", labelKey: "subfilter.all", match: () => true },
+  {
+    id: "ANSWERED",
+    labelKey: "subfilter.answered",
+    match: (row) => rowBadgeKind(row) === "answered",
+  },
+  {
+    id: "SUGGESTION",
+    labelKey: "subfilter.suggestion",
+    match: (row) => rowBadgeKind(row) === "suggestion",
+  },
+  {
+    id: "REVIEW",
+    labelKey: "subfilter.review",
+    match: (row) => {
+      const kind = rowBadgeKind(row);
+      return (
+        kind === "review" ||
+        kind === "review_guardrail" ||
+        (!kind && row.origin === "FINANZAS" && !row.isLinked)
+      );
+    },
+  },
+];
 
 const SECTIONS: Section[] = [
   {
     id: "MATCHING",
     labelKey: "section.matching",
-    inSection: (email) => emailRoute(email) === "MATCHING",
+    inSection: (row) => row.route === "MATCHING",
     subs: [
       { id: "ALL", labelKey: "subfilter.all", match: () => true },
       {
         id: "LINKED",
         labelKey: "subfilter.auto_linked",
-        match: (email) => isEmailLinked(email),
+        match: (row) => row.isLinked,
       },
       {
         id: "PENDING",
         labelKey: "subfilter.pending_review",
-        match: (email) => !isEmailLinked(email),
+        match: (row) => !row.isLinked,
       },
     ],
   },
   {
     id: "AGENT",
     labelKey: "section.agent",
-    inSection: (email) => emailRoute(email) === "AGENT",
-    subs: [
-      { id: "ALL", labelKey: "subfilter.all", match: () => true },
-      {
-        id: "ANSWERED",
-        labelKey: "subfilter.answered",
-        match: (email) => agentBadgeKind(email) === "answered",
-      },
-      {
-        id: "SUGGESTION",
-        labelKey: "subfilter.suggestion",
-        match: (email) => agentBadgeKind(email) === "suggestion",
-      },
-      {
-        id: "REVIEW",
-        labelKey: "subfilter.review",
-        match: (email) => {
-          const kind = agentBadgeKind(email);
-          return (
-            kind === "review" ||
-            kind === "review_guardrail" ||
-            (!kind && email.status === "PENDING_REVIEW")
-          );
-        },
-      },
-    ],
+    inSection: (row) => row.route === "AGENT",
+    subs: AGENT_SUBS,
   },
   {
     id: "ALL",
@@ -97,110 +164,25 @@ const SECTIONS: Section[] = [
       {
         id: "PENDING",
         labelKey: "subfilter.pending",
-        match: (email) => !isEmailLinked(email),
+        match: (row) => !row.isLinked,
       },
       {
         id: "RESOLVED",
         labelKey: "subfilter.resolved",
-        match: (email) => isEmailLinked(email),
+        match: (row) => row.isLinked,
       },
     ],
   },
 ];
 
-const CobranzaChannelList = ({
-  accessToken,
-  clientId,
-}: {
-  accessToken: string;
-  clientId: string;
-}) => {
-  const t = useTranslations("dashboard.invoice_inbox");
-  const [messages, setMessages] = useState<TrackEmailMessage[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    getInboundEmailReplies(accessToken, clientId)
-      .then((data) => {
-        if (active) setMessages(data);
-      })
-      .catch(() => {
-        if (active) setMessages([]);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [accessToken, clientId]);
-
-  if (loading) {
-    return (
-      <div className="py-10 text-center text-sm text-muted-foreground">
-        {t("loading")}
-      </div>
-    );
-  }
-  if (messages.length === 0) {
-    return (
-      <div className="py-10 text-center text-sm text-muted-foreground">
-        {t("empty_filter")}
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-3">
-      {messages.map((message) => (
-        <div key={message.id} className="rounded-md border p-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <span className="block truncate font-medium">
-                {message.subject || t("no_subject")}
-              </span>
-              <p className="truncate text-xs text-muted-foreground">
-                {message.from_address}
-              </p>
-            </div>
-            <span className="shrink-0 text-xs text-muted-foreground">
-              {formatDateTime(message.created_at)}
-            </span>
-          </div>
-          {message.agent_status && (
-            <div className="mt-3">
-              <QuironVerdict
-                compact
-                intent={message.agent_category}
-                confidence={message.agent_confidence}
-                secondaryIntents={message.agent_secondary_intents}
-                agentStatus={message.agent_status}
-                guardrailTriggered={message.agent_guardrail_triggered}
-                toolsUsed={message.agent_tools_used}
-                summary={message.agent_summary}
-                extracted={message.agent_extracted as Record<string, unknown>}
-                combo={message.agent_combo}
-                linkedTrackId={message.agent_management_track_id}
-              />
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
-
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
   const t = useTranslations("dashboard.invoice_inbox");
-  const tq = useTranslations("quiron");
+  const router = useRouter();
 
   const accessToken = session?.token as string;
   const clientId = profile?.client?.id as string;
 
-  const [channel, setChannel] = useState<"FINANZAS" | "COBRANZA">("FINANZAS");
   const [sectionId, setSectionId] = useState<SectionId>("ALL");
   const [subId, setSubId] = useState("ALL");
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
@@ -208,68 +190,55 @@ export const InvoiceInboxList = () => {
   );
   const [detailOpen, setDetailOpen] = useState(false);
 
-  const { data: allEmails = [], isLoading } = useInboundInvoiceEmails(
-    accessToken,
-    clientId,
-  );
+  const { data: finanzasEmails = [], isLoading: loadingFinanzas } =
+    useInboundInvoiceEmails(accessToken, clientId);
+  const { data: cobranzaReplies = [], isLoading: loadingCobranza } =
+    useInboundEmailReplies(accessToken, clientId);
 
-  const inEmails = useMemo(
-    () => allEmails.filter((email) => email.direction !== "OUT"),
-    [allEmails],
-  );
+  const rows = useMemo(() => {
+    const merged = [
+      ...finanzasEmails
+        .filter((email) => email.direction !== "OUT")
+        .map(fromFinanzas),
+      ...cobranzaReplies.map(fromCobranza),
+    ];
+    return merged.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [finanzasEmails, cobranzaReplies]);
+
+  const isLoading = loadingFinanzas || loadingCobranza;
 
   const section = SECTIONS.find((item) => item.id === sectionId) ?? SECTIONS[0];
   const sub = section.subs.find((item) => item.id === subId) ?? section.subs[0];
 
-  const emails = inEmails
-    .filter((email) => section.inSection(email))
-    .filter((email) => sub.match(email));
+  const visibleRows = rows
+    .filter((row) => section.inSection(row))
+    .filter((row) => sub.match(row));
 
   const handleSelectSection = (id: SectionId) => {
     setSectionId(id);
     setSubId("ALL");
   };
 
-  const handleOpenEmail = (email: InboundInvoiceEmail) => {
-    setSelectedEmail(email);
-    setDetailOpen(true);
+  const handleOpenRow = (row: UnifiedRow) => {
+    if (row.origin === "FINANZAS" && row.finanzas) {
+      setSelectedEmail(row.finanzas);
+      setDetailOpen(true);
+      return;
+    }
+    if (row.debtorId) {
+      router.push(
+        `/dashboard/debtor-management/${row.debtorId}/managements-list`,
+      );
+    }
   };
 
   if (!accessToken || !clientId) return null;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setChannel("FINANZAS")}
-          className={cn(
-            "rounded-full border px-3 py-1 text-xs font-semibold",
-            channel === "FINANZAS"
-              ? "border-blue-200 bg-blue-50 text-primary"
-              : "border-transparent bg-gray-100 text-gray-600 hover:bg-gray-200",
-          )}
-        >
-          {tq("channel.finanzas")}
-        </button>
-        <button
-          type="button"
-          onClick={() => setChannel("COBRANZA")}
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold",
-            channel === "COBRANZA"
-              ? "border-blue-200 bg-blue-50 text-primary"
-              : "border-transparent bg-gray-100 text-gray-600 hover:bg-gray-200",
-          )}
-        >
-          {tq("channel.cobranza")}
-        </button>
-      </div>
-
-      {channel === "COBRANZA" ? (
-        <CobranzaChannelList accessToken={accessToken} clientId={clientId} />
-      ) : (
-        <>
       <Tabs
         value={sectionId}
         onValueChange={(value) => handleSelectSection(value as SectionId)}
@@ -279,7 +248,7 @@ export const InvoiceInboxList = () => {
             <TabsTrigger key={item.id} value={item.id}>
               {t(item.labelKey)}
               <span className="ml-2 rounded-full bg-gray-200 px-1.5 text-[10px] font-bold text-gray-600">
-                {inEmails.filter((email) => item.inSection(email)).length}
+                {rows.filter((row) => item.inSection(row)).length}
               </span>
             </TabsTrigger>
           ))}
@@ -310,39 +279,51 @@ export const InvoiceInboxList = () => {
         </div>
       )}
 
-      {!isLoading && emails.length === 0 && (
+      {!isLoading && visibleRows.length === 0 && (
         <div className="py-10 text-center text-sm text-muted-foreground">
           {t("empty_filter")}
         </div>
       )}
 
       <div className="flex flex-col gap-2">
-        {emails.map((email) => (
+        {visibleRows.map((row) => (
           <button
-            key={email.id}
+            key={row.key}
             type="button"
-            onClick={() => handleOpenEmail(email)}
+            onClick={() => handleOpenRow(row)}
             className="flex items-start justify-between gap-4 rounded-md border p-4 text-left hover:bg-gray-50"
           >
             <div className="min-w-0 flex-1">
-              <span className="block truncate font-medium">
-                {email.subject || t("no_subject")}
+              <span className="flex items-center gap-1.5 truncate font-medium">
+                {(row.agentStatus === "HANDLED_BY_AGENT" ||
+                  row.agentStatus === "SHADOW_ONLY") && (
+                  <QuironMark size="sm" />
+                )}
+                <span className="truncate">
+                  {row.subject || t("no_subject")}
+                </span>
               </span>
               <p className="truncate text-xs text-muted-foreground">
-                {email.from_address}
+                {row.fromAddress}
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                <IntentBadge intent={email.intent} />
-                <AgentStatusBadge email={email} />
-                <ContactReviewBadge email={email} />
+                <IntentBadge intent={row.intent} />
+                <AgentStatusBadge
+                  agentStatus={row.agentStatus}
+                  guardrailTriggered={row.guardrailTriggered}
+                  suggestedReply={row.suggestedReply}
+                />
+                <ContactReviewBadge
+                  requiresContactReview={row.requiresContactReview}
+                />
               </div>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1.5 text-sm text-muted-foreground">
-              <span className="text-xs">{formatDateTime(email.created_at)}</span>
-              {email.attachments.length > 0 && (
+              <span className="text-xs">{formatDateTime(row.createdAt)}</span>
+              {row.attachmentsCount > 0 && (
                 <span className="flex items-center gap-1 text-xs">
                   <IconFile className="h-3.5 w-3.5" />
-                  {email.attachments.length}
+                  {row.attachmentsCount}
                 </span>
               )}
             </div>
@@ -355,8 +336,6 @@ export const InvoiceInboxList = () => {
         open={detailOpen}
         onOpenChange={setDetailOpen}
       />
-        </>
-      )}
     </div>
   );
 };
