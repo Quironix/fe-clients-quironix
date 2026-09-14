@@ -27,20 +27,62 @@ import { allDebtorsColumns } from "./components/columns-all-debtors";
 import { columns } from "./components/columns";
 import { useAccountStatement } from "./hooks/useAccountStatement";
 import { useAccountStatementAllDebtors } from "./hooks/useAccountStatementAllDebtors";
-import { updateCurrentAccountTableProfile } from "./services/profile";
+import {
+  clearStoredAllDebtorsColumns,
+  mergeColumnPreferences,
+  readStoredAllDebtorsColumns,
+} from "./services/column-preferences";
+import {
+  CURRENT_ACCOUNT_ALL_DEBTORS_TABLE_KEY,
+  CURRENT_ACCOUNT_TABLE_KEY,
+  updateTablePreferences,
+} from "./services/profile";
 import {
   AccountStatementRow,
   AccountStatementStatus,
 } from "./services/types";
 
-const ALL_DEBTORS_COLUMNS_STORAGE_KEY = "current_account_all_debtors_columns";
+/**
+ * QUI-17 §5 — visibilidad por defecto.
+ *
+ * 19 columnas encendidas de golpe hacen la grilla ilegible. Nacen visibles las
+ * de hoy mas las cuatro que motivan el pedido — Mora, Fase, Analista y
+ * Litigio. Las otras siete (codigos y razon social de cliente, codigo y RUT de
+ * deudor, fecha de vencimiento, numero interno y fecha de carga) nacen apagadas
+ * y se encienden desde el selector. El Excel las trae todas igual (O3).
+ */
+const DEFAULT_ALL_DEBTORS_COLUMNS: Array<{ name: string; is_visible: boolean }> =
+  [
+    { name: "company_client_code", is_visible: false },
+    { name: "company_name", is_visible: false },
+    { name: "debtor_code", is_visible: false },
+    { name: "debtor", is_visible: true },
+    { name: "debtor_dni", is_visible: false },
+    { name: "document_type", is_visible: true },
+    { name: "number", is_visible: true },
+    { name: "date", is_visible: true },
+    { name: "due_date", is_visible: false },
+    { name: "amount", is_visible: true },
+    { name: "balance", is_visible: true },
+    { name: "days_overdue", is_visible: true },
+    { name: "external_number", is_visible: false },
+    { name: "order_number", is_visible: true },
+    { name: "phase", is_visible: true },
+    { name: "analyst", is_visible: true },
+    { name: "litigation", is_visible: true },
+    { name: "created_at", is_visible: false },
+    { name: "status", is_visible: true },
+  ];
 
-const DEFAULT_ALL_DEBTORS_COLUMNS: Array<{ name: string; is_visible: boolean }> = [
-  { name: "debtor", is_visible: true },
+const DEFAULT_SINGLE_DEBTOR_COLUMNS: Array<{
+  name: string;
+  is_visible: boolean;
+}> = [
+  { name: "row_type", is_visible: true },
   { name: "document", is_visible: true },
-  { name: "order_number", is_visible: true },
   { name: "date", is_visible: true },
   { name: "amount", is_visible: true },
+  { name: "applied", is_visible: true },
   { name: "balance", is_visible: true },
   { name: "status", is_visible: true },
 ];
@@ -57,15 +99,7 @@ const CurrentAccountPage = () => {
 
   const [columnConfiguration, setColumnConfiguration] = useState<
     Array<{ name: string; is_visible: boolean }>
-  >([
-    { name: "row_type", is_visible: true },
-    { name: "document", is_visible: true },
-    { name: "date", is_visible: true },
-    { name: "amount", is_visible: true },
-    { name: "applied", is_visible: true },
-    { name: "balance", is_visible: true },
-    { name: "status", is_visible: true },
-  ]);
+  >(DEFAULT_SINGLE_DEBTOR_COLUMNS);
 
   const columnVisibility = useMemo(() => {
     const visibility: VisibilityState = {};
@@ -88,12 +122,18 @@ const CurrentAccountPage = () => {
     []
   );
 
+  // QUI-17 §8 — la preferencia vive en table_preferences. Se cae al campo
+  // viejo `current_account_table` solo por si algun perfil lo trae: el backend
+  // nunca lo guardo (lo descartaba en silencio), asi que en la practica viene
+  // vacio.
   useEffect(() => {
-    if (profile?.profile?.current_account_table?.length > 0) {
-      const savedConfig = profile.profile.current_account_table;
-      if (Array.isArray(savedConfig)) {
-        setColumnConfiguration(savedConfig);
-      }
+    const saved =
+      profile?.profile?.table_preferences?.[CURRENT_ACCOUNT_TABLE_KEY] ??
+      profile?.profile?.current_account_table;
+    if (Array.isArray(saved) && saved.length > 0) {
+      setColumnConfiguration(
+        mergeColumnPreferences(DEFAULT_SINGLE_DEBTOR_COLUMNS, saved)
+      );
     }
   }, [profile?.profile]);
 
@@ -125,29 +165,46 @@ const CurrentAccountPage = () => {
     if (!debtorId) setViewTab("all");
   }, [debtorId]);
 
-  // Column visibility for the "todos los deudores" view is kept per-browser
-  // (localStorage) instead of the backend user profile — that profile's
-  // table configs are one fixed jsonb column per table (see
-  // UserProfileEntity), so adding a new one is a larger, separate schema
-  // change than this iteration's scope.
+  // QUI-17 §8 — la preferencia de esta grilla ya no vive en el navegador: viaja
+  // con el usuario en su perfil de backend.
   const [allDebtorsColumnConfiguration, setAllDebtorsColumnConfiguration] =
     useState<Array<{ name: string; is_visible: boolean }>>(
       DEFAULT_ALL_DEBTORS_COLUMNS
     );
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(
-        ALL_DEBTORS_COLUMNS_STORAGE_KEY
+    const saved =
+      profile?.profile?.table_preferences?.[
+        CURRENT_ACCOUNT_ALL_DEBTORS_TABLE_KEY
+      ];
+
+    if (Array.isArray(saved) && saved.length > 0) {
+      setAllDebtorsColumnConfiguration(
+        mergeColumnPreferences(DEFAULT_ALL_DEBTORS_COLUMNS, saved)
       );
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) setAllDebtorsColumnConfiguration(parsed);
-      }
-    } catch {
-      // ignore malformed/unavailable storage
+      return;
     }
-  }, []);
+
+    // Rescate de una sola pasada: lo que el usuario habia configurado cuando
+    // esto vivia en localStorage se usa una ultima vez, se sube al perfil y la
+    // clave del navegador se borra (§8.5).
+    const legacy = readStoredAllDebtorsColumns();
+    if (!legacy || legacy.length === 0) return;
+
+    const merged = mergeColumnPreferences(DEFAULT_ALL_DEBTORS_COLUMNS, legacy);
+    setAllDebtorsColumnConfiguration(merged);
+
+    if (!session?.token || !getClientId(profile) || !profile?.id) return;
+    void updateTablePreferences({
+      accessToken: session.token,
+      clientId: getClientId(profile),
+      userId: profile.id,
+      tableName: CURRENT_ACCOUNT_ALL_DEBTORS_TABLE_KEY,
+      columns: merged,
+    }).then((response) => {
+      if (response.success) clearStoredAllDebtorsColumns();
+    });
+  }, [profile?.profile, profile?.id, session?.token]);
 
   const allDebtorsColumnVisibility = useMemo(() => {
     const visibility: VisibilityState = {};
@@ -157,14 +214,28 @@ const CurrentAccountPage = () => {
     return visibility;
   }, [allDebtorsColumnConfiguration]);
 
+  // Mismas etiquetas que el Excel de Facturas (O4): "Mora", "Numero interno",
+  // "Fase" y "Fecha de carga en sistema" significan lo mismo en los dos lados.
   const allDebtorsColumnLabels = useMemo(
     () => ({
-      debtor: "Deudor",
-      document: "Documento / Nº",
+      company_client_code: "Código cliente",
+      company_name: "Razón social cliente",
+      debtor_code: "Código deudor",
+      debtor: "Razón social deudor",
+      debtor_dni: "RUT deudor",
+      document_type: "Tipo de documento",
+      number: "Número de documento",
+      date: "Fecha emisión",
+      due_date: "Fecha vencimiento",
+      amount: "Monto documento",
+      balance: "Saldo documento",
+      days_overdue: "Mora",
+      external_number: "Número interno",
       order_number: "OC",
-      date: "Fecha",
-      amount: "Monto",
-      balance: "Saldo",
+      phase: "Fase",
+      analyst: "Analista",
+      litigation: "Litigio",
+      created_at: "Fecha de carga en sistema",
       status: "Estatus",
     }),
     []
@@ -174,15 +245,23 @@ const CurrentAccountPage = () => {
     config?: Array<{ name: string; is_visible: boolean }>
   ) => {
     if (!config) return;
-    setAllDebtorsColumnConfiguration(config);
-    try {
-      window.localStorage.setItem(
-        ALL_DEBTORS_COLUMNS_STORAGE_KEY,
-        JSON.stringify(config)
-      );
-    } catch {
-      // ignore unavailable storage
+
+    const response = await updateTablePreferences({
+      accessToken: session?.token || "",
+      clientId: getClientId(profile),
+      userId: profile?.id || "",
+      tableName: CURRENT_ACCOUNT_ALL_DEBTORS_TABLE_KEY,
+      columns: config,
+    });
+
+    // §8.5 — si el guardado falla se lo decimos, y no movemos la grilla: nadie
+    // vuelve a ver "guardado" sobre algo que se perdio.
+    if (!response.success) {
+      toast.error(response.message);
+      return;
     }
+
+    setAllDebtorsColumnConfiguration(config);
   };
 
   const {
@@ -210,11 +289,12 @@ const CurrentAccountPage = () => {
     try {
       const configToSave = config || columnConfiguration;
 
-      const response = await updateCurrentAccountTableProfile({
-        accessToken: session?.token,
+      const response = await updateTablePreferences({
+        accessToken: session?.token || "",
         clientId: getClientId(profile),
-        userId: profile?.id,
-        currentAccountTable: configToSave,
+        userId: profile?.id || "",
+        tableName: CURRENT_ACCOUNT_TABLE_KEY,
+        columns: configToSave,
       });
 
       if (response.success) {

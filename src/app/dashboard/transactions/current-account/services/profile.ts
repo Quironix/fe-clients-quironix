@@ -1,15 +1,34 @@
+import { TableColumnPreference } from "@/context/ProfileContext";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const updateCurrentAccountTableProfile = async ({
+/** Llaves de grilla que el backend acepta en `table_preferences` (QUI-17 §8.4). */
+export const CURRENT_ACCOUNT_TABLE_KEY = "current_account";
+export const CURRENT_ACCOUNT_ALL_DEBTORS_TABLE_KEY =
+  "current_account_all_debtors";
+
+/**
+ * Guarda la preferencia de columnas de UNA grilla en el perfil del usuario.
+ *
+ * QUI-17 §8 — reemplaza a `updateCurrentAccountTableProfile`, que mandaba
+ * `current_account_table` y recibia 200 OK sobre un campo que el backend no
+ * tenia: TypeORM lo descartaba en silencio y el usuario veia "Perfil
+ * actualizado correctamente" sobre algo que se evaporaba al recargar.
+ *
+ * El backend hace merge por llave, asi que mandar una grilla no pisa las otras.
+ */
+export const updateTablePreferences = async ({
   accessToken,
   clientId,
   userId,
-  currentAccountTable,
+  tableName,
+  columns,
 }: {
   accessToken: string;
   clientId: string;
   userId: string;
-  currentAccountTable: Array<{ name: string; is_visible: boolean }>;
+  tableName: string;
+  columns: TableColumnPreference[];
 }) => {
   try {
     const response = await fetch(
@@ -21,13 +40,15 @@ export const updateCurrentAccountTableProfile = async ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          current_account_table: currentAccountTable,
+          table_preferences: {
+            [tableName]: columns,
+          },
         }),
       }
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => null);
       return {
         success: false,
         message: errorData?.message || "Error al actualizar el perfil",
