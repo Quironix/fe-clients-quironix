@@ -31,16 +31,12 @@ export function useInboundEmailReplies(accessToken: string, clientId: string) {
 export function useResolveInboundEmail(accessToken: string, clientId: string) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      id,
-      channel,
-      resolved,
-    }: {
-      id: string;
-      channel: "FINANZAS" | "COBRANZA";
-      resolved: boolean;
-    }) =>
+  return useMutation<
+    InboundInvoiceEmail | TrackEmailMessage,
+    Error,
+    { id: string; channel: "FINANZAS" | "COBRANZA"; resolved: boolean }
+  >({
+    mutationFn: ({ id, channel, resolved }) =>
       channel === "FINANZAS"
         ? resolveInboundInvoiceEmail(accessToken, clientId, id, resolved)
         : resolveInboundEmailReply(accessToken, clientId, id, resolved),
