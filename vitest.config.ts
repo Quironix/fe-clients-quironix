@@ -17,13 +17,13 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
-        "src/**/*.test.{ts,tsx}",
+        "src/**/*.{test,spec}.{ts,tsx}",
         "src/**/__tests__/**",
         "src/components/ui/**",
         "src/app/**/page.tsx",
