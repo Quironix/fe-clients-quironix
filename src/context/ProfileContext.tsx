@@ -31,12 +31,23 @@ export interface ProfileClient {
   [key: string]: unknown;
 }
 
+export type TableColumnPreference = { name: string; is_visible: boolean };
+
 export interface ProfileSettings {
-  reconciliation_table?: Array<{ name: string; is_visible: boolean }>;
-  current_account_table?: Array<{ name: string; is_visible: boolean }>;
-  tracks_table?: Array<{ name: string; is_visible: boolean }>;
-  litigations_table?: Array<{ name: string; is_visible: boolean }>;
-  invoices_table?: Array<{ name: string; is_visible: boolean }>;
+  reconciliation_table?: TableColumnPreference[];
+  /**
+   * OJO: el backend nunca guardo este campo — no existe en UserProfileEntity,
+   * asi que TypeORM lo descartaba en silencio y el PUT respondia 200 igual.
+   * Se mantiene declarado solo para leer lo que haya quedado dando vueltas.
+   * La preferencia real de las dos grillas de Cuenta Corriente vive ahora en
+   * `table_preferences` (QUI-17 §8).
+   */
+  current_account_table?: TableColumnPreference[];
+  tracks_table?: TableColumnPreference[];
+  litigations_table?: TableColumnPreference[];
+  invoices_table?: TableColumnPreference[];
+  /** QUI-17 §8.3 — mapa: una llave por grilla. */
+  table_preferences?: Record<string, TableColumnPreference[]>;
 }
 
 export interface ProfileRole {
