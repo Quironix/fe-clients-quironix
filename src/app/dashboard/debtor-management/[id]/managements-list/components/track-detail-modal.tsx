@@ -33,12 +33,24 @@ import {
   FileText,
   History,
   MessageCircle,
+  Paperclip,
   Phone,
   ThermometerSnowflake,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+
+/** Fila de `track_attachments`. `file_name` es null en filas anteriores a la
+ *  migración 1813000000000. */
+interface TrackAttachment {
+  id?: string;
+  storage_url: string;
+  file_name?: string | null;
+  content_type?: string | null;
+  size_bytes?: number | null;
+  created_at?: string;
+}
 
 interface TrackDetailModalProps {
   isOpen: boolean;
@@ -726,6 +738,36 @@ export const TrackDetailModal = ({
                         : "-"}
                     </p>
                   </div>
+                  {/* PRD_04 §5.0 — evidencia de la gestión: el correo original
+                      y sus archivos cuando la registró el lector de mails, o
+                      lo que adjuntó el ejecutivo a mano. */}
+                  {Array.isArray(trackData.attachments) &&
+                    trackData.attachments.length > 0 && (
+                      <div className="flex flex-col gap-2 mt-5">
+                        <div className="flex items-center gap-2">
+                          <Paperclip className="w-4 h-4 text-gray-700" />
+                          <h3 className="font-semibold text-sm text-gray-700">
+                            Adjuntos
+                          </h3>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          {trackData.attachments.map(
+                            (attachment: TrackAttachment, index: number) => (
+                              <a
+                                key={`${attachment.storage_url}-${index}`}
+                                href={attachment.storage_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-blue-600 hover:underline break-all text-xs"
+                              >
+                                <Paperclip className="h-3 w-3 shrink-0" />
+                                {attachment.file_name || "Archivo adjunto"}
+                              </a>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-3">
