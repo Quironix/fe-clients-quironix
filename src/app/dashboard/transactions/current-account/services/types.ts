@@ -17,6 +17,22 @@ export interface InvoiceStatementRow {
   debtor_name?: string;
   debtor_code?: string;
   order_number?: string | null;
+
+  /**
+   * QUI-17 — la ficha completa del documento. Todos opcionales: solo los
+   * puebla la vista consolidada "todos los deudores"; la vista por deudor
+   * sigue devolviendo exactamente lo de antes.
+   */
+  debtor_dni?: string | null;
+  company_client_code?: string | null;
+  company_name?: string | null;
+  external_number?: string | null;
+  created_at?: string | null;
+  days_overdue?: number;
+  phase?: number | null;
+  phase_label?: string | null;
+  analyst_name?: string | null;
+  has_open_litigation?: boolean;
 }
 
 export interface ApplicationStatementRow {
@@ -40,6 +56,13 @@ export interface PaymentRemainderStatementRow {
   debtor_id?: string;
   debtor_name?: string;
   debtor_code?: string;
+
+  /**
+   * Un pago no conciliado no es un documento: no tiene tipo, fechas, fase ni
+   * litigio. De las 18 columnas solo puede llenar estas.
+   */
+  debtor_dni?: string | null;
+  analyst_name?: string | null;
 }
 
 export type AccountStatementRow =
