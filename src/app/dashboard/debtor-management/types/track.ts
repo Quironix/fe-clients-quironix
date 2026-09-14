@@ -99,7 +99,7 @@ export interface CreateTrackPayload {
 /**
  * Fila de `track_attachments` tal como la devuelve el detalle de una gestión.
  * `file_name` / `content_type` / `size_bytes` llegan null en las filas
- * anteriores a la migración 1813000000000 (adjuntos subidos como base64 sin
+ * anteriores a la migración 1822000000000 (adjuntos subidos como base64 sin
  * nombre). Las gestiones que registra el lector de mails (PRD_04 §5.0) traen
  * el correo en HTML y sus archivos, referenciados desde el hilo del correo.
  */

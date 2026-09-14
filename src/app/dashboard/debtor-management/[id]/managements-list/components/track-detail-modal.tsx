@@ -42,7 +42,7 @@ import { useMemo, useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /** Fila de `track_attachments`. `file_name` es null en filas anteriores a la
- *  migración 1813000000000. */
+ *  migración 1822000000000. */
 interface TrackAttachment {
   id?: string;
   storage_url: string;
