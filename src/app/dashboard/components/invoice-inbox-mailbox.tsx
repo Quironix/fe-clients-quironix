@@ -9,18 +9,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useProfileContext } from "@/context/ProfileContext";
 import {
+  useInboundEmailReplies,
+  useInboundInvoiceEmails,
   useInvoiceInbox,
-  usePendingInboundInvoiceEmails,
 } from "@/hooks/useInboundInvoiceEmails";
 import { cn } from "@/lib/utils";
 import { InboundInvoiceEmail } from "@/services/inbound-invoice-emails";
+import { type TrackEmailMessage } from "@/services/inbound-email-replies";
 import { IconCopy, IconMail } from "@tabler/icons-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { IntentBadge } from "@/components/quiron/intent-badge";
+import {
+  isPending,
+  mergeRows,
+  type UnifiedRow,
+} from "@/app/dashboard/invoice-inbox/lib/unified-inbox";
 import { InvoiceInboxDetailSheet } from "./invoice-inbox-detail-sheet";
 
 export const InvoiceInboxMailbox = () => {
@@ -34,13 +42,24 @@ export const InvoiceInboxMailbox = () => {
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
     null,
   );
+  const [selectedCobranza, setSelectedCobranza] =
+    useState<TrackEmailMessage | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  const { data: emails = [] } = usePendingInboundInvoiceEmails(
+  const { data: finanzasEmails = [] } = useInboundInvoiceEmails(
+    accessToken,
+    clientId,
+  );
+  const { data: cobranzaReplies = [] } = useInboundEmailReplies(
     accessToken,
     clientId,
   );
   const { data: inbox } = useInvoiceInbox(accessToken, clientId);
+
+  const pendingRows = useMemo(
+    () => mergeRows(finanzasEmails, cobranzaReplies).filter(isPending),
+    [finanzasEmails, cobranzaReplies],
+  );
 
   const handleCopyAddress = () => {
     if (!inbox?.address) return;
@@ -48,8 +67,16 @@ export const InvoiceInboxMailbox = () => {
     toast.success(t("address_copied"));
   };
 
-  const handleOpenEmail = (email: InboundInvoiceEmail) => {
-    setSelectedEmail(email);
+  const handleOpenRow = (row: UnifiedRow) => {
+    if (row.origin === "FINANZAS" && row.finanzas) {
+      setSelectedCobranza(null);
+      setSelectedEmail(row.finanzas);
+    } else if (row.cobranza) {
+      setSelectedEmail(null);
+      setSelectedCobranza(row.cobranza);
+    } else {
+      return;
+    }
     setDetailOpen(true);
   };
 
@@ -64,9 +91,9 @@ export const InvoiceInboxMailbox = () => {
             className="relative flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
           >
             <IconMail className="h-5 w-5" />
-            {emails.length > 0 && (
+            {pendingRows.length > 0 && (
               <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                {emails.length > 99 ? "99+" : emails.length}
+                {pendingRows.length > 99 ? "99+" : pendingRows.length}
               </span>
             )}
           </button>
@@ -76,43 +103,44 @@ export const InvoiceInboxMailbox = () => {
             <span className="text-sm font-medium">{t("title")}</span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {emails.length === 0 && (
+          {pendingRows.length === 0 && (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
               {t("empty")}
             </div>
           )}
-          {emails.map((email: InboundInvoiceEmail) => {
-            const relativeTime = formatDistanceToNow(
-              new Date(email.created_at),
-              { addSuffix: true, locale: es },
-            );
+          {pendingRows.map((row) => {
+            const relativeTime = formatDistanceToNow(new Date(row.createdAt), {
+              addSuffix: true,
+              locale: es,
+            });
 
             return (
               <DropdownMenuItem
-                key={email.id}
+                key={row.key}
                 onSelect={(e) => {
                   e.preventDefault();
-                  handleOpenEmail(email);
+                  handleOpenRow(row);
                 }}
                 className={cn(
-                  "flex flex-col items-start gap-1 whitespace-normal border-l-2 border-l-amber-500 py-2 pl-2.5",
+                  "flex flex-col items-start gap-1 whitespace-normal border-l-2 border-l-red-500 py-2 pl-2.5",
                 )}
               >
                 <div className="flex w-full items-center gap-1.5">
                   <span className="flex-1 truncate text-sm font-medium">
-                    {email.subject || t("no_subject")}
+                    {row.subject || t("no_subject")}
                   </span>
                   <span className="shrink-0 text-[11px] text-muted-foreground">
                     {relativeTime}
                   </span>
                 </div>
                 <span className="line-clamp-1 block text-xs text-muted-foreground">
-                  {email.from_address}
+                  {row.fromAddress}
                 </span>
-                {email.attachments.length > 0 && (
+                <IntentBadge intent={row.intent} />
+                {row.attachmentsCount > 0 && (
                   <span className="text-[11px] text-muted-foreground">
-                    {email.attachments.length}{" "}
-                    {email.attachments.length === 1 ? "adjunto" : "adjuntos"}
+                    {row.attachmentsCount}{" "}
+                    {row.attachmentsCount === 1 ? "adjunto" : "adjuntos"}
                   </span>
                 )}
               </DropdownMenuItem>
@@ -156,6 +184,7 @@ export const InvoiceInboxMailbox = () => {
 
       <InvoiceInboxDetailSheet
         email={selectedEmail}
+        cobranza={selectedCobranza}
         open={detailOpen}
         onOpenChange={setDetailOpen}
       />

@@ -13,6 +13,7 @@ import { getPaymentPlanById } from "@/app/dashboard/payment-plans/services";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import DialogForm from "@/app/dashboard/components/dialog-form";
+import { QuironMark } from "@/components/quiron/quiron-mark";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -32,12 +33,24 @@ import {
   FileText,
   History,
   MessageCircle,
+  Paperclip,
   Phone,
   ThermometerSnowflake,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+
+/** Fila de `track_attachments`. `file_name` es null en filas anteriores a la
+ *  migración 1822000000000. */
+interface TrackAttachment {
+  id?: string;
+  storage_url: string;
+  file_name?: string | null;
+  content_type?: string | null;
+  size_bytes?: number | null;
+  created_at?: string;
+}
 
 interface TrackDetailModalProps {
   isOpen: boolean;
@@ -55,6 +68,7 @@ export const TrackDetailModal = ({
   clientId,
 }: TrackDetailModalProps) => {
   const t = useTranslations("debtorManagement.trackDetail");
+  const tq = useTranslations("quiron");
   const [trackData, setTrackData] = useState<any>(null);
   const [litigationsData, setLitigationsData] = useState<any[]>([]);
   const [paymentPlanData, setPaymentPlanData] = useState<any>(null);
@@ -531,6 +545,26 @@ export const TrackDetailModal = ({
         </div>
       ) : (
         <div className="space-y-4">
+          {(trackData.agentSource === "AI_EMAIL_READER" ||
+            trackData.metadata?.source === "AI_EMAIL_READER") && (
+            <div
+              className="flex flex-wrap items-center gap-2 rounded-lg border p-3"
+              style={{
+                borderColor:
+                  "color-mix(in srgb, var(--quiron) 25%, transparent)",
+                backgroundColor:
+                  "color-mix(in srgb, var(--quiron) 5%, transparent)",
+              }}
+            >
+              <QuironMark size="sm" />
+              <span className="text-sm font-semibold">{tq("created_by")}</span>
+              {trackData.agent_combo && (
+                <span className="text-xs font-medium">
+                  {tq(`combo.${trackData.agent_combo}`)}
+                </span>
+              )}
+            </div>
+          )}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="flex items-center gap-2 mb-3">
               <FileText className="w-4 h-4 text-gray-700" />
@@ -704,6 +738,36 @@ export const TrackDetailModal = ({
                         : "-"}
                     </p>
                   </div>
+                  {/* PRD_04 §5.0 — evidencia de la gestión: el correo original
+                      y sus archivos cuando la registró el lector de mails, o
+                      lo que adjuntó el ejecutivo a mano. */}
+                  {Array.isArray(trackData.attachments) &&
+                    trackData.attachments.length > 0 && (
+                      <div className="flex flex-col gap-2 mt-5">
+                        <div className="flex items-center gap-2">
+                          <Paperclip className="w-4 h-4 text-gray-700" />
+                          <h3 className="font-semibold text-sm text-gray-700">
+                            Adjuntos
+                          </h3>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          {trackData.attachments.map(
+                            (attachment: TrackAttachment, index: number) => (
+                              <a
+                                key={`${attachment.storage_url}-${index}`}
+                                href={attachment.storage_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-blue-600 hover:underline break-all text-xs"
+                              >
+                                <Paperclip className="h-3 w-3 shrink-0" />
+                                {attachment.file_name || "Archivo adjunto"}
+                              </a>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-3">
@@ -716,7 +780,14 @@ export const TrackDetailModal = ({
                     <IconDescription
                       icon={<FileText className="w-6 h-6 text-blue-600" />}
                       description="Ejecutivo"
-                      value={`${trackData.executive.first_name} ${trackData.executive.last_name}`}
+                      value={
+                        trackData.executive
+                          ? `${trackData.executive.first_name ?? ""} ${trackData.executive.last_name ?? ""}`.trim()
+                          : trackData.agentSource === "AI_EMAIL_READER" ||
+                              trackData.metadata?.source === "AI_EMAIL_READER"
+                            ? tq("name")
+                            : "-"
+                      }
                     />
                     <IconDescription
                       icon={<FileText className="w-6 h-6 text-blue-600" />}

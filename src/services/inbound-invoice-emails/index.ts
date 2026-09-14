@@ -14,6 +14,49 @@ export interface InboundInvoiceEmailAttachment {
   storage_url: string;
 }
 
+export type InboundEmailIntent =
+  | "COMPROBANTE_PAGO"
+  | "SOLICITUD_FACTURA"
+  | "CONSULTA_DATOS_DE_PAGO"
+  | "ACUSE_RECIBO_SIN_ACCION"
+  | "CONTACTO_NO_VIGENTE"
+  | "COMPROMISO_PAGO"
+  | "OTRA";
+
+export type InboundEmailAgentStatus =
+  | "PENDING"
+  | "ROUTED_TO_MATCHING"
+  | "HANDLED_BY_AGENT"
+  | "ESCALATED_TO_HUMAN"
+  | "SHADOW_ONLY";
+
+export type AgentComboId =
+  | "COMPLETE_PAYMENT"
+  | "PARTIAL_PAYMENT"
+  | "DEPOSIT_PROMISE"
+  | "CHECK_PROMISE";
+
+export interface AgentExtractedPaymentProof {
+  paid_on?: string | null;
+  amount?: number | string | null;
+  invoice_numbers?: string[] | null;
+}
+
+export interface AgentExtractedPaymentPromise {
+  date?: string | null;
+  amount?: number | string | null;
+  medium?: "CHECK" | "DEPOSIT_OR_TRANSFER" | null;
+  invoice_numbers?: string[] | null;
+}
+
+export interface AgentExtracted {
+  payment_proof?: AgentExtractedPaymentProof | null;
+  payment_promise?: AgentExtractedPaymentPromise | null;
+  disputed_amount?: boolean | null;
+}
+
+export type InboundEmailRoute = "MATCHING" | "AGENT";
+
 export interface InboundInvoiceEmail {
   id: string;
   client_id: string;
@@ -30,6 +73,34 @@ export interface InboundInvoiceEmail {
   reviewed_by_user_id: string | null;
   reviewed_at: string | null;
   created_at: string;
+  // Router de intención (PRD_03). Poblados por el clasificador LLM en modo
+  // sombra / Fase 2; opcionales mientras el bff termina de proxearlos.
+  direction?: "IN" | "OUT";
+  intent?: InboundEmailIntent | null;
+  intent_secondary?: string[] | null;
+  intent_confidence?: number | null;
+  agent_status?: InboundEmailAgentStatus | null;
+  agent_suggested_reply?: string | null;
+  agent_guardrail_triggered?: boolean | null;
+  agent_requires_contact_review?: boolean | null;
+  agent_confidence?: number | null;
+  agent_category?: string | null;
+  agent_tools_used?: string[] | null;
+  agent_summary?: string | null;
+  agent_extracted?: AgentExtracted | null;
+  agent_combo?: AgentComboId | string | null;
+  linked_track_id?: string | null;
+  agent_shadow_payload?: Record<string, unknown> | null;
+  resolved_at?: string | null;
+  resolved_by_user_id?: string | null;
+}
+
+export interface GetInboundInvoiceEmailsFilters {
+  status?: InboundInvoiceEmailStatus;
+  intent?: InboundEmailIntent;
+  agentStatus?: InboundEmailAgentStatus;
+  page?: number;
+  limit?: number;
 }
 
 export interface InvoiceInbox {
@@ -42,6 +113,15 @@ export interface InvoiceInbox {
 // debtor_id seteado y son estados terminales.
 export const isEmailLinked = (email: Pick<InboundInvoiceEmail, "status">) =>
   email.status === "LINKED" || email.status === "MATCHED";
+
+// El router de intención (PRD_03) parte cada correo en dos rutas: los
+// comprobantes de pago van a la cascada de matching, el resto lo toma el
+// agente. Un correo sin intención clasificada (router apagado o bff sin
+// proxear todavía) se trata como "resto" para que siga visible.
+export const emailRoute = (
+  email: Pick<InboundInvoiceEmail, "intent">,
+): InboundEmailRoute =>
+  email.intent === "COMPROBANTE_PAGO" ? "MATCHING" : "AGENT";
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -57,9 +137,17 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export async function getInboundInvoiceEmails(
   accessToken: string,
   clientId: string,
-  status?: InboundInvoiceEmailStatus,
+  filters?: InboundInvoiceEmailStatus | GetInboundInvoiceEmailsFilters,
 ): Promise<InboundInvoiceEmail[]> {
-  const params = status ? `?status=${status}` : "";
+  const f: GetInboundInvoiceEmailsFilters =
+    typeof filters === "string" ? { status: filters } : filters ?? {};
+  const qs = new URLSearchParams();
+  if (f.status) qs.set("status", f.status);
+  if (f.intent) qs.set("intent", f.intent);
+  if (f.agentStatus) qs.set("agent_status", f.agentStatus);
+  if (f.page) qs.set("page", String(f.page));
+  if (f.limit) qs.set("limit", String(f.limit));
+  const params = qs.toString() ? `?${qs.toString()}` : "";
   const response = await fetch(
     `${API_URL}/v2/clients/${clientId}/inbound-invoice-emails${params}`,
     {
@@ -87,6 +175,27 @@ export async function linkInboundInvoiceEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
+    },
+  );
+
+  return handleResponse<InboundInvoiceEmail>(response);
+}
+
+export async function resolveInboundInvoiceEmail(
+  accessToken: string,
+  clientId: string,
+  id: string,
+  resolved: boolean,
+): Promise<InboundInvoiceEmail> {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/inbound-invoice-emails/${id}/resolve`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ resolved }),
     },
   );
 

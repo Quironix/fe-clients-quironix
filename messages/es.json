@@ -346,11 +346,11 @@
       "no_track_linked": "Esta notificación no tiene una gestión vinculada"
     },
     "invoice_inbox": {
-      "title": "Buzón de pagos",
-      "description": "Revisa los correos recibidos y vincúlalos a un deudor",
-      "empty": "No hay correos en tu buzón de pagos",
+      "title": "Bandeja de correos",
+      "description": "Revisa los correos recibidos y gestiónalos según su intención",
+      "empty": "No hay correos en tu bandeja",
       "unidentified_sender": "Remitente sin identificar",
-      "your_inbox": "Tu buzón de pagos",
+      "your_inbox": "Tu casilla",
       "copy_address": "Copiar dirección",
       "address_copied": "Dirección copiada",
       "view_all": "Ver todos",
@@ -380,7 +380,56 @@
       "tab_pending": "Pendientes",
       "tab_linked": "Vinculados",
       "tab_all": "Todos",
-      "loading": "Cargando..."
+      "loading": "Cargando...",
+      "empty_filter": "No hay correos que coincidan con este filtro.",
+      "pending_count": "{count} sin gestionar",
+      "intent": {
+        "COMPROBANTE_PAGO": "Comprobante",
+        "SOLICITUD_FACTURA": "Solicitud de factura",
+        "CONSULTA_DATOS_DE_PAGO": "Consulta de pago",
+        "ACUSE_RECIBO_SIN_ACCION": "Acuse de recibo",
+        "CONTACTO_NO_VIGENTE": "Contacto no vigente",
+        "COMPROMISO_PAGO": "Compromiso de pago",
+        "OTRA": "Otra / a revisión"
+      },
+      "agent": {
+        "answered": "Gestionado por Quirón",
+        "suggestion": "Sugerencia disponible",
+        "review_guardrail": "A revisión · guardrail",
+        "review": "A revisión",
+        "matching": "Ruteado a matching",
+        "shadow": "Registrado en modo sombra",
+        "contact_review": "Contacto por revisar",
+        "contact_review_note": "El remitente avisó que ya no gestiona las cuentas por pagar. Queda un pendiente para que el ejecutivo actualice los contactos del deudor."
+      },
+      "section": {
+        "matching": "Comprobantes de pago",
+        "agent": "Consultas y gestión",
+        "all": "Todos"
+      },
+      "subfilter": {
+        "all": "Todos",
+        "auto_linked": "Auto-vinculados",
+        "auto_matched": "Auto-matcheados",
+        "manual_linked": "Vinculados a mano",
+        "pending_review": "Pendientes de revisión",
+        "answered": "Gestionados",
+        "suggestion": "Sugerencias disponibles",
+        "review": "A revisión",
+        "pending": "Pendientes",
+        "resolved": "Resueltos"
+      },
+      "verdict": {
+        "label": "Veredicto del clasificador",
+        "confidence": "Confianza {value}%",
+        "secondary": "Intenciones secundarias",
+        "route_matching": "Comprobante de pago: se procesa en la cascada de conciliación automática, igual que hoy.",
+        "route_guardrail": "El guardrail detectó lenguaje legal o señal de disputa en el texto. Nunca sale una respuesta automática; lo revisa un ejecutivo.",
+        "route_suggestion": "El agente dejó un borrador sugerido. En esta fase no se envía: lo confirma y envía el ejecutivo.",
+        "route_review": "Queda para revisión de un ejecutivo con la intención etiquetada.",
+        "suggested_reply": "Borrador sugerido",
+        "suggested_reply_hint": "Generado por el clasificador — no se envía en esta fase"
+      }
     },
     "accessDenied": {
       "title": "Acceso Denegado",
@@ -2811,5 +2860,56 @@
     "schemaPaymentPlans": "Planes de pago",
     "schemaPayments": "Pagos",
     "schemaManagements": "Gestiones"
+  },
+  "quiron": {
+    "name": "Quirón",
+    "verdict_title": "Veredicto de Quirón",
+    "understood": "Quirón entendió",
+    "draft_title": "Borrador que armó Quirón (modo sombra)",
+    "next_management": "Próxima gestión",
+    "promise": "Compromiso de pago",
+    "proof": "Comprobante de pago",
+    "promise_date": "Fecha",
+    "promise_amount": "Monto",
+    "promise_medium": "Medio",
+    "proof_paid_on": "Pagado el",
+    "proof_amount": "Monto",
+    "invoices": "Folios",
+    "disputed_amount": "El deudor manifiesta desacuerdo con el monto",
+    "tools": "Herramientas usadas",
+    "confidence": "Confianza {value}%",
+    "threshold": "umbral {value}%",
+    "secondary": "Intenciones secundarias",
+    "view_track": "Ver gestión en el historial →",
+    "shadow": "Registrado en modo sombra",
+    "shadow_hint": "El agente armó el borrador pero no creó la gestión.",
+    "created_by": "Registrada por Quirón",
+    "managed_by": "Gestionado por Quirón",
+    "mark_handled": "Marcar como gestionado",
+    "mark_pending": "Marcar como pendiente",
+    "marked_handled": "Gestionado manualmente por el ejecutivo",
+    "suggested_reply": "Borrador sugerido",
+    "suggested_reply_hint": "No se envía en esta fase: lo confirma y envía el ejecutivo.",
+    "combo": {
+      "COMPLETE_PAYMENT": "Pago total confirmado",
+      "PARTIAL_PAYMENT": "Pago parcial confirmado",
+      "DEPOSIT_PROMISE": "Compromiso de depósito o transferencia",
+      "CHECK_PROMISE": "Compromiso con cheque"
+    },
+    "medium": {
+      "CHECK": "Cheque",
+      "DEPOSIT_OR_TRANSFER": "Depósito o transferencia"
+    },
+    "channel": {
+      "finanzas": "Finanzas",
+      "cobranza": "Cobranza+"
+    },
+    "widget": {
+      "open": "Abrir Quirón",
+      "close": "Cerrar Quirón",
+      "subtitle": "IA de cobranza: lee, gestiona y registra en el historial",
+      "live": "● Al día",
+      "placeholder": "Pregúntale a Quirón…"
+    }
   }
 }

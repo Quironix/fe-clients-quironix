@@ -8,6 +8,7 @@ import {
   getExecutiveCommentLabel,
 } from "../../../config/management-types";
 import { DebtorTrack } from "../../../types/debtor-tracks";
+import { QuironBadge } from "@/components/quiron/quiron-badge";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "-";
@@ -121,11 +122,22 @@ export const createColumns = (): ColumnDef<DebtorTrack>[] => [
   {
     accessorKey: "executive",
     header: "Nombre analista",
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {row.original.executive.first_name} {row.original.executive.last_name}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const track = row.original;
+      if (
+        (track as { agentSource?: string }).agentSource === "AI_EMAIL_READER" ||
+        track.metadata?.source === "AI_EMAIL_READER"
+      ) {
+        return <QuironBadge />;
+      }
+      return (
+        <div className="text-sm">
+          {track.executive
+            ? `${track.executive.first_name ?? ""} ${track.executive.last_name ?? ""}`.trim()
+            : "-"}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "contact",

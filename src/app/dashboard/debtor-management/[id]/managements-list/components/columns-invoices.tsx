@@ -13,6 +13,7 @@ import { ChevronDown, ChevronUp, Eye, Link2 } from "lucide-react";
 import { useState } from "react";
 import { DEBTOR_COMMENTS, getChannelTypeLabel, getExecutiveCommentLabel } from "../../../config/management-types";
 import { InvoiceWithTrack } from "../../../types/debtor-tracks";
+import { QuironBadge } from "@/components/quiron/quiron-badge";
 
 // Clases literales (no interpoladas) para que Tailwind las detecte en build.
 const THREAD_TAG_CLASSES: Record<string, string> = {
@@ -249,6 +250,12 @@ export const createInvoiceColumns = (
         const track = row.original.track;
         if (track?.executiveComment === "AUTOMATED_COMMUNICATION") {
           return <div className="text-sm">{collectorEngineLabel ?? "Collector engine"}</div>;
+        }
+        if (
+          track?.agentSource === "AI_EMAIL_READER" ||
+          track?.metadata?.source === "AI_EMAIL_READER"
+        ) {
+          return <QuironBadge />;
         }
         return (
           <div className="text-sm">
