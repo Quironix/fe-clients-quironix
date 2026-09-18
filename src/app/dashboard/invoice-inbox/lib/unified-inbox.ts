@@ -4,10 +4,6 @@ import {
   isEmailLinked,
 } from "@/services/inbound-invoice-emails";
 import { type TrackEmailMessage } from "@/services/inbound-email-replies";
-import {
-  agentBadgeKind,
-  type AgentBadgeKind,
-} from "@/components/quiron/agent-status-badge";
 
 // Una sola fila de la bandeja de correos, sin importar de qué canal viene
 // (inbound-invoice-emails de finanzas o inbound-email-replies de cobranza+).
@@ -86,13 +82,6 @@ export const mergeRows = (
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
-export const rowBadgeKind = (row: UnifiedRow): AgentBadgeKind =>
-  agentBadgeKind({
-    agentStatus: row.agentStatus,
-    guardrailTriggered: row.guardrailTriggered,
-    suggestedReply: row.suggestedReply,
-  });
-
 // Cómo quedó resuelto el correo:
 //  - "pending": el ejecutivo todavía tiene que hacer algo.
 //  - "auto":    lo resolvió el sistema — la cascada matcheó el deudor
@@ -118,69 +107,17 @@ export const isHandled = (row: UnifiedRow) =>
 export const isPending = (row: UnifiedRow) =>
   resolutionKind(row) === "pending";
 
-export type SectionId = "MATCHING" | "AGENT" | "ALL";
+// La bandeja es una sola lista: comprobantes y gestiones mezclados, ordenados
+// por fecha. Los dos únicos filtros miran el estado del correo, no su ruta.
+export type InboxFilterId = "PENDING" | "ALL";
 
-export interface SubFilter {
-  id: string;
+export interface InboxFilter {
+  id: InboxFilterId;
   labelKey: string;
   match: (row: UnifiedRow) => boolean;
 }
 
-export interface Section {
-  id: SectionId;
-  labelKey: string;
-  inSection: (row: UnifiedRow) => boolean;
-  subs: SubFilter[];
-}
-
-// Orden de izquierda a derecha: primero los estados accionables, "Todos" al final.
-export const SECTIONS: Section[] = [
-  {
-    id: "MATCHING",
-    labelKey: "section.matching",
-    inSection: (row) => row.route === "MATCHING",
-    subs: [
-      { id: "PENDING", labelKey: "subfilter.pending_review", match: isPending },
-      {
-        id: "AUTO",
-        labelKey: "subfilter.auto_matched",
-        match: (row) => resolutionKind(row) === "auto",
-      },
-      {
-        id: "MANUAL",
-        labelKey: "subfilter.manual_linked",
-        match: (row) => resolutionKind(row) === "manual",
-      },
-      { id: "ALL", labelKey: "subfilter.all", match: () => true },
-    ],
-  },
-  {
-    id: "AGENT",
-    labelKey: "section.agent",
-    inSection: (row) => row.route === "AGENT",
-    subs: [
-      {
-        id: "REVIEW",
-        labelKey: "subfilter.pending_review",
-        match: (row) => isPending(row) && rowBadgeKind(row) !== "suggestion",
-      },
-      {
-        id: "SUGGESTION",
-        labelKey: "subfilter.suggestion",
-        match: (row) => rowBadgeKind(row) === "suggestion",
-      },
-      { id: "ANSWERED", labelKey: "subfilter.answered", match: isHandled },
-      { id: "ALL", labelKey: "subfilter.all", match: () => true },
-    ],
-  },
-  {
-    id: "ALL",
-    labelKey: "section.all",
-    inSection: () => true,
-    subs: [
-      { id: "PENDING", labelKey: "subfilter.pending", match: isPending },
-      { id: "RESOLVED", labelKey: "subfilter.resolved", match: isHandled },
-      { id: "ALL", labelKey: "subfilter.all", match: () => true },
-    ],
-  },
+export const INBOX_FILTERS: InboxFilter[] = [
+  { id: "PENDING", labelKey: "filter.unhandled", match: isPending },
+  { id: "ALL", labelKey: "filter.all", match: () => true },
 ];

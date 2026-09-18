@@ -377,12 +377,8 @@
       "linked_success": "Correo vinculado correctamente",
       "status_pending": "Pendiente",
       "status_linked": "Vinculado",
-      "tab_pending": "Pendientes",
-      "tab_linked": "Vinculados",
-      "tab_all": "Todos",
       "loading": "Cargando...",
       "empty_filter": "No hay correos que coincidan con este filtro.",
-      "pending_count": "{count} sin gestionar",
       "intent": {
         "COMPROBANTE_PAGO": "Comprobante",
         "SOLICITUD_FACTURA": "Solicitud de factura",
@@ -402,23 +398,6 @@
         "contact_review": "Contacto por revisar",
         "contact_review_note": "El remitente avisó que ya no gestiona las cuentas por pagar. Queda un pendiente para que el ejecutivo actualice los contactos del deudor."
       },
-      "section": {
-        "matching": "Comprobantes de pago",
-        "agent": "Consultas y gestión",
-        "all": "Todos"
-      },
-      "subfilter": {
-        "all": "Todos",
-        "auto_linked": "Auto-vinculados",
-        "auto_matched": "Auto-matcheados",
-        "manual_linked": "Vinculados a mano",
-        "pending_review": "Pendientes de revisión",
-        "answered": "Gestionados",
-        "suggestion": "Sugerencias disponibles",
-        "review": "A revisión",
-        "pending": "Pendientes",
-        "resolved": "Resueltos"
-      },
       "verdict": {
         "label": "Veredicto del clasificador",
         "confidence": "Confianza {value}%",
@@ -429,6 +408,10 @@
         "route_review": "Queda para revisión de un ejecutivo con la intención etiquetada.",
         "suggested_reply": "Borrador sugerido",
         "suggested_reply_hint": "Generado por el clasificador — no se envía en esta fase"
+      },
+      "filter": {
+        "unhandled": "No gestionados",
+        "all": "Todos"
       }
     },
     "accessDenied": {
