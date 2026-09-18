@@ -103,49 +103,54 @@ export const InvoiceInboxMailbox = () => {
             <span className="text-sm font-medium">{t("title")}</span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {pendingRows.length === 0 && (
-            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              {t("empty")}
-            </div>
-          )}
-          {pendingRows.map((row) => {
-            const relativeTime = formatDistanceToNow(new Date(row.createdAt), {
-              addSuffix: true,
-              locale: es,
-            });
+          <div className="max-h-[50vh] overflow-x-hidden overflow-y-auto">
+            {pendingRows.length === 0 && (
+              <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                {t("empty")}
+              </div>
+            )}
+            {pendingRows.map((row) => {
+              const relativeTime = formatDistanceToNow(
+                new Date(row.createdAt),
+                {
+                  addSuffix: true,
+                  locale: es,
+                },
+              );
 
-            return (
-              <DropdownMenuItem
-                key={row.key}
-                onSelect={(e) => {
-                  e.preventDefault();
-                  handleOpenRow(row);
-                }}
-                className={cn(
-                  "flex flex-col items-start gap-1 whitespace-normal border-l-2 border-l-red-500 py-2 pl-2.5",
-                )}
-              >
-                <div className="flex w-full items-center gap-1.5">
-                  <span className="flex-1 truncate text-sm font-medium">
-                    {row.subject || t("no_subject")}
+              return (
+                <DropdownMenuItem
+                  key={row.key}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    handleOpenRow(row);
+                  }}
+                  className={cn(
+                    "flex flex-col items-start gap-1 whitespace-normal border-l-2 border-l-red-500 py-2 pl-2.5",
+                  )}
+                >
+                  <div className="flex w-full items-center gap-1.5">
+                    <span className="flex-1 truncate text-sm font-medium">
+                      {row.subject || t("no_subject")}
+                    </span>
+                    <span className="shrink-0 text-[11px] text-muted-foreground">
+                      {relativeTime}
+                    </span>
+                  </div>
+                  <span className="line-clamp-1 block text-xs text-muted-foreground">
+                    {row.fromAddress}
                   </span>
-                  <span className="shrink-0 text-[11px] text-muted-foreground">
-                    {relativeTime}
-                  </span>
-                </div>
-                <span className="line-clamp-1 block text-xs text-muted-foreground">
-                  {row.fromAddress}
-                </span>
-                <IntentBadge intent={row.intent} />
-                {row.attachmentsCount > 0 && (
-                  <span className="text-[11px] text-muted-foreground">
-                    {row.attachmentsCount}{" "}
-                    {row.attachmentsCount === 1 ? "adjunto" : "adjuntos"}
-                  </span>
-                )}
-              </DropdownMenuItem>
-            );
-          })}
+                  <IntentBadge intent={row.intent} />
+                  {row.attachmentsCount > 0 && (
+                    <span className="text-[11px] text-muted-foreground">
+                      {row.attachmentsCount}{" "}
+                      {row.attachmentsCount === 1 ? "adjunto" : "adjuntos"}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              );
+            })}
+          </div>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onSelect={(e) => {
