@@ -19,11 +19,11 @@ import {
 } from "@/components/quiron/agent-status-badge";
 import { QuironMark } from "@/components/quiron/quiron-mark";
 import {
-  SECTIONS,
+  INBOX_FILTERS,
   isHandled,
   isPending,
   mergeRows,
-  type SectionId,
+  type InboxFilterId,
   type UnifiedRow,
 } from "@/app/dashboard/invoice-inbox/lib/unified-inbox";
 
@@ -34,10 +34,7 @@ export const InvoiceInboxList = () => {
   const accessToken = session?.token as string;
   const clientId = profile?.client?.id as string;
 
-  const [sectionId, setSectionId] = useState<SectionId>("ALL");
-  const [subId, setSubId] = useState(
-    () => SECTIONS.find((s) => s.id === "ALL")!.subs[0].id,
-  );
+  const [filterId, setFilterId] = useState<InboxFilterId>("ALL");
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
     null,
   );
@@ -57,18 +54,10 @@ export const InvoiceInboxList = () => {
 
   const isLoading = loadingFinanzas || loadingCobranza;
 
-  const section = SECTIONS.find((item) => item.id === sectionId) ?? SECTIONS[0];
-  const sub = section.subs.find((item) => item.id === subId) ?? section.subs[0];
+  const filter =
+    INBOX_FILTERS.find((item) => item.id === filterId) ?? INBOX_FILTERS[0];
 
-  const visibleRows = rows
-    .filter((row) => section.inSection(row))
-    .filter((row) => sub.match(row));
-
-  const handleSelectSection = (id: SectionId) => {
-    setSectionId(id);
-    const next = SECTIONS.find((s) => s.id === id) ?? SECTIONS[0];
-    setSubId(next.subs[0].id);
-  };
+  const visibleRows = rows.filter((row) => filter.match(row));
 
   const handleOpenRow = (row: UnifiedRow) => {
     if (row.origin === "FINANZAS" && row.finanzas) {
@@ -88,51 +77,31 @@ export const InvoiceInboxList = () => {
   return (
     <div className="flex flex-col gap-4">
       <Tabs
-        value={sectionId}
-        onValueChange={(value) => handleSelectSection(value as SectionId)}
+        value={filterId}
+        onValueChange={(value) => setFilterId(value as InboxFilterId)}
       >
         <TabsList>
-          {SECTIONS.map((item) => {
-            const pending = rows.filter(
-              (row) => item.inSection(row) && isPending(row),
-            ).length;
+          {INBOX_FILTERS.map((item) => {
+            const count = rows.filter((row) => item.match(row)).length;
+            const highlight = item.id === "PENDING" && count > 0;
             return (
               <TabsTrigger key={item.id} value={item.id}>
                 {t(item.labelKey)}
                 <span
                   className={cn(
                     "ml-2 rounded-full px-1.5 text-[10px] font-bold",
-                    pending > 0
+                    highlight
                       ? "bg-red-100 text-red-700"
                       : "bg-gray-200 text-gray-400",
                   )}
-                  title={t("pending_count", { count: pending })}
                 >
-                  {pending}
+                  {count}
                 </span>
               </TabsTrigger>
             );
           })}
         </TabsList>
       </Tabs>
-
-      <div className="flex flex-wrap items-center gap-2">
-        {section.subs.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setSubId(item.id)}
-            className={cn(
-              "rounded-full border px-3 py-1 text-xs font-semibold",
-              subId === item.id
-                ? "border-blue-200 bg-blue-50 text-primary"
-                : "border-transparent bg-gray-100 text-gray-600 hover:bg-gray-200",
-            )}
-          >
-            {t(item.labelKey)}
-          </button>
-        ))}
-      </div>
 
       {isLoading && (
         <div className="py-10 text-center text-sm text-muted-foreground">
