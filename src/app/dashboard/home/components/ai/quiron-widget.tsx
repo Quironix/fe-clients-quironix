@@ -13,6 +13,7 @@ import {
 } from "@assistant-ui/react-ai-sdk";
 import { Bot, Send, Sparkles, User, X } from "lucide-react";
 import { FC, useEffect, useMemo, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { KPI } from "../../../overview/services/types";
 import {
@@ -139,6 +140,7 @@ interface QuironWidgetProps {
 
 export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
   const { enabled, isOpen, topic, askToken, open, close } = useQuiron();
+  const tw = useTranslations("quiron.widget");
   const { session, profile } = useProfileContext();
   const accessToken = session?.token || "";
   const clientId = profile?.client?.id || "";
@@ -195,8 +197,8 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
         type="button"
         className={`qxv2-quiron-fab${isOpen ? " hidden" : ""}`}
         onClick={open}
-        title="Abrir Quirón"
-        aria-label="Abrir Quirón"
+        title={tw("open")}
+        aria-label={tw("open")}
       >
         <Sparkles className="qxv2-fab-ic" size={22} />
         <span className="qxv2-fab-tx">Quirón</span>
@@ -210,14 +212,14 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
           </div>
           <div>
             <h3>Quirón</h3>
-            <div className="qxv2-q-sub">Asistente de cobranza con IA</div>
+            <div className="qxv2-q-sub">{tw("subtitle")}</div>
           </div>
-          <span className="qxv2-q-live">● Al día</span>
+          <span className="qxv2-q-live">{tw("live")}</span>
           <button
             type="button"
             className="qxv2-qr-close"
             onClick={close}
-            aria-label="Cerrar Quirón"
+            aria-label={tw("close")}
           >
             <X size={17} />
           </button>
@@ -437,12 +439,13 @@ const QuironSuggestions: FC<{ topic: string }> = ({ topic }) => {
 };
 
 const QuironComposer: FC = () => {
+  const tw = useTranslations("quiron.widget");
   return (
     <ComposerPrimitive.Root className="qxv2-q-input">
       <ComposerPrimitive.Input
         autoFocus
         rows={1}
-        placeholder="Pregúntale a Quirón…"
+        placeholder={tw("placeholder")}
       />
       <ThreadPrimitive.If running={false}>
         <ComposerPrimitive.Send asChild>

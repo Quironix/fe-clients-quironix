@@ -59,6 +59,7 @@ export interface DebtorTrack {
   nextManagementDate: string;
   caseData?: CaseData;
   metadata: Record<string, any>;
+  agentSource?: string | null;
   invoiceIds: string[];
   invoices: Invoice[];
   createdAt: string;
@@ -145,6 +146,7 @@ export interface InvoiceWithTrack {
     nextManagementDate: string;
     caseData: CaseData;
     metadata: Record<string, any>;
+    agentSource?: string | null;
     invoiceIds: string[];
     invoices: any[];
     createdAt: string;
@@ -171,6 +173,12 @@ export interface EmailMessageAttachment {
   storage_url: string;
 }
 
+export type AgentReplyStatus =
+  | "PENDING"
+  | "HANDLED_BY_AGENT"
+  | "ESCALATED_TO_HUMAN"
+  | "SHADOW_ONLY";
+
 export interface TrackEmailMessage {
   id: string;
   direction: "IN" | "OUT";
@@ -185,7 +193,23 @@ export interface TrackEmailMessage {
   to_addresses?: string[] | null;
   template_id?: string | null;
   sent_by_executive_id?: string | null;
+  read_at?: string | null;
   created_at: string;
+  agent_status?: AgentReplyStatus | null;
+  agent_category?: string | null;
+  agent_confidence?: number | null;
+  agent_secondary_intents?: string[] | null;
+  agent_guardrail_triggered?: boolean | null;
+  agent_tools_used?: string[] | null;
+  agent_suggested_reply?: string | null;
+  agent_requires_contact_review?: boolean | null;
+  agent_management_track_id?: string | null;
+  agent_summary?: string | null;
+  agent_extracted?: Record<string, unknown> | null;
+  agent_combo?: string | null;
+  agent_shadow_payload?: Record<string, unknown> | null;
+  resolved_at?: string | null;
+  resolved_by_user_id?: string | null;
 }
 
 export interface InvoiceTracksParams {
