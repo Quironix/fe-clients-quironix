@@ -23,7 +23,8 @@ export const agentBadgeKind = ({
   suggestedReply,
 }: AgentStatusInput): AgentBadgeKind => {
   if (agentStatus === "HANDLED_BY_AGENT") return "answered";
-  if (agentStatus === "ROUTED_TO_MATCHING") return "matching";
+  // PRD_07 O7 — ROUTED_TO_MATCHING deja de mostrarse: nombra lo que el sistema
+  // intentó, no lo que pasó. El backend lo sigue guardando (NO6).
   if (agentStatus === "SHADOW_ONLY") return "shadow";
   if (agentStatus === "ESCALATED_TO_HUMAN") {
     if (guardrailTriggered) return "review_guardrail";
