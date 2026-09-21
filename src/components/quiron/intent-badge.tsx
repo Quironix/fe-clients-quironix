@@ -7,8 +7,14 @@ export type QuironIntent =
   | "SOLICITUD_FACTURA"
   | "CONSULTA_DATOS_DE_PAGO"
   | "ACUSE_RECIBO_SIN_ACCION"
+  // PRD_07 O4 — deprecada en finanzas; se conserva por las filas viejas (NO4).
   | "CONTACTO_NO_VIGENTE"
   | "COMPROMISO_PAGO"
+  | "CASILLA_INVALIDA"
+  | "REBOTE_TRANSITORIO"
+  | "AUSENCIA_TEMPORAL"
+  | "DEUDA_DESCONOCIDA"
+  | "FACTURA_RECLAMADA"
   | "OTRA";
 
 const INTENT_STYLE: Record<string, string> = {
@@ -18,6 +24,13 @@ const INTENT_STYLE: Record<string, string> = {
   ACUSE_RECIBO_SIN_ACCION: "bg-slate-100 text-slate-600",
   CONTACTO_NO_VIGENTE: "bg-amber-100 text-amber-700",
   COMPROMISO_PAGO: "bg-emerald-100 text-emerald-700",
+  // PRD_07 O4/O5 — el color separa por urgencia, que es lo que el cajón único
+  // no dejaba ver: rojo lo que hay que hacer hoy, gris lo informativo.
+  CASILLA_INVALIDA: "bg-red-100 text-red-700",
+  REBOTE_TRANSITORIO: "bg-slate-100 text-slate-600",
+  AUSENCIA_TEMPORAL: "bg-amber-100 text-amber-700",
+  DEUDA_DESCONOCIDA: "bg-red-100 text-red-700",
+  FACTURA_RECLAMADA: "bg-orange-100 text-orange-700",
   OTRA: "bg-red-100 text-red-700",
 };
 

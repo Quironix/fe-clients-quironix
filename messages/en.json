@@ -386,6 +386,11 @@
         "ACUSE_RECIBO_SIN_ACCION": "Acknowledgement",
         "CONTACTO_NO_VIGENTE": "Contact no longer valid",
         "COMPROMISO_PAGO": "Payment commitment",
+        "CASILLA_INVALIDA": "Invalid mailbox",
+        "REBOTE_TRANSITORIO": "Didn't get through",
+        "AUSENCIA_TEMPORAL": "Out of office",
+        "DEUDA_DESCONOCIDA": "Denies the debt",
+        "FACTURA_RECLAMADA": "Invoice disputed",
         "OTRA": "Other / needs review"
       },
       "agent": {

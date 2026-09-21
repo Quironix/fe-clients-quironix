@@ -386,6 +386,11 @@
         "ACUSE_RECIBO_SIN_ACCION": "Acuse de recibo",
         "CONTACTO_NO_VIGENTE": "Contacto no vigente",
         "COMPROMISO_PAGO": "Compromiso de pago",
+        "CASILLA_INVALIDA": "Casilla inválida",
+        "REBOTE_TRANSITORIO": "No llegó esta vez",
+        "AUSENCIA_TEMPORAL": "Fuera de oficina",
+        "DEUDA_DESCONOCIDA": "Desconoce la deuda",
+        "FACTURA_RECLAMADA": "Factura reclamada",
         "OTRA": "Otra / a revisión"
       },
       "agent": {
