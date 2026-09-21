@@ -19,8 +19,16 @@ export type InboundEmailIntent =
   | "SOLICITUD_FACTURA"
   | "CONSULTA_DATOS_DE_PAGO"
   | "ACUSE_RECIBO_SIN_ACCION"
+  // PRD_07 O4 — deprecada en finanzas; se conserva por las filas viejas (NO4).
   | "CONTACTO_NO_VIGENTE"
   | "COMPROMISO_PAGO"
+  // PRD_07 O4 — las tres que parten `CONTACTO_NO_VIGENTE`.
+  | "CASILLA_INVALIDA"
+  | "REBOTE_TRANSITORIO"
+  | "AUSENCIA_TEMPORAL"
+  // PRD_07 O5 — el deudor que dice que no debe.
+  | "DEUDA_DESCONOCIDA"
+  | "FACTURA_RECLAMADA"
   | "OTRA";
 
 export type InboundEmailAgentStatus =
