@@ -364,6 +364,8 @@
       "matched_by_folio": "by the invoice number found in the email",
       "matched_by_domain": "by the sender's domain",
       "matched_by_rut": "by the tax ID found",
+      "matched_by_nombre": "by the payer's name",
+      "matched_by_asunto": "by the debtor's name in the subject",
       "matched_by_manual": "by an account manager",
       "already_linked": "This email was already linked to a debtor",
       "change_debtor": "Change debtor",
