@@ -364,6 +364,8 @@
       "matched_by_folio": "por el folio detectado en el correo",
       "matched_by_domain": "por el dominio del remitente",
       "matched_by_rut": "por el RUT detectado",
+      "matched_by_nombre": "por el nombre del pagador",
+      "matched_by_asunto": "por el nombre del deudor en el asunto",
       "matched_by_manual": "por un ejecutivo",
       "already_linked": "Este correo ya fue vinculado a un deudor",
       "change_debtor": "Cambiar deudor",
