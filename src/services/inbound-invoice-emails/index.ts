@@ -75,7 +75,14 @@ export interface InboundInvoiceEmail {
   body_html: string | null;
   attachments: InboundInvoiceEmailAttachment[];
   status: InboundInvoiceEmailStatus;
-  matched_by: "FOLIO" | "DOMAIN" | "RUT" | "MANUAL" | null;
+  matched_by:
+    | "FOLIO"
+    | "DOMAIN"
+    | "RUT"
+    | "NOMBRE"
+    | "ASUNTO"
+    | "MANUAL"
+    | null;
   matched_invoice_id: string | null;
   linked_invoice_id: string | null;
   reviewed_by_user_id: string | null;
