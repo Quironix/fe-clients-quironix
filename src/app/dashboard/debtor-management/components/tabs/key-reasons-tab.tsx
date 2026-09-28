@@ -4,6 +4,7 @@ import {
   ArrowRight,
   CreditCard,
   FileX2,
+  Gauge,
   History,
   Scale,
   ShieldCheck,
@@ -14,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { CollectionProfile } from "../../types";
 import CreditRisk from "../credit-risk";
+import { DebtorKpisCard } from "../debtor-kpis-card";
 import { DebtorChatbot } from "../debtor-chatbot";
 import { KeyReasons } from "../key-reasons";
 import LastManagements from "../last-managements";
@@ -39,6 +41,7 @@ export const KeyReasonsTab = ({
 }: KeyReasonsTabProps) => {
   const t = useTranslations("debtorManagement.keyReasonsTab");
   const tDetail = useTranslations("debtorManagement.detail");
+  const tKpis = useTranslations("debtorManagement.debtorKpis");
   const tLastManagements = useTranslations("debtorManagement.lastManagementsCard");
   const router = useRouter();
   if (isFetchingCollectionProfile) {
@@ -107,6 +110,14 @@ export const KeyReasonsTab = ({
       <div className="h-full w-2xl overflow-y-auto">
         <div className="flex flex-col gap-3">
           <KeyReasons callReasons={collectionProfile.call_reasons} />
+
+          <CardCollapsible
+            icon={<Gauge />}
+            title={tKpis("title")}
+            defaultOpen={true}
+          >
+            <DebtorKpisCard debtorId={debtorId} />
+          </CardCollapsible>
 
           <CardCollapsible
             icon={<ShieldCheck />}

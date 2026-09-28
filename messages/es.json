@@ -1242,6 +1242,24 @@
       "viewHistory": "Ver historial",
       "viewCurrentAccount": "Cuenta Corriente",
       "viewAllDebtorsCurrentAccount": "Cuenta corriente de todos los deudores"
+    },
+    "debtorKpis": {
+      "title": "Credibilidad y Rating",
+      "credibility": "Credibilidad",
+      "rating": "Rating de atraso",
+      "noScore": "Sin nota",
+      "insufficient": "Historia insuficiente ({total} de 3 hechos)",
+      "noFacts": "Sin hechos resueltos",
+      "facts": "{fulfilled} de {total} obligaciones cumplidas",
+      "days": "{days} días",
+      "noRating": "Sin puntaje todavía",
+      "invoices": "{count} facturas predictivas",
+      "provisional": "Cortes provisionales",
+      "notCalculated": "Aún no se calculan los KPIs de este deudor",
+      "asOf": "Al {date}",
+      "green": "Verde",
+      "yellow": "Amarillo",
+      "red": "Rojo"
     }
   },
   "paymentPlans": {

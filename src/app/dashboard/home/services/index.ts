@@ -8,6 +8,7 @@ import {
   DsoProjectionData,
   ExecutiveSummaryData,
   InvoicePhaseDistributionData,
+  QuironscoreData,
   MyProgressData,
   TaskProgressData,
   TeamCapacityMember,
@@ -331,6 +332,14 @@ export const getMyProgress = (accessToken: string, clientId: string) => {
 export const getTeamCapacity = (accessToken: string, clientId: string) => {
   return safeFetch<TeamCapacityMember[] | null>(
     `${API_URL}/v2/clients/${clientId}/reports/dashboard/team-capacity`,
+    accessToken,
+    null,
+  );
+};
+
+export const getQuironscore = (accessToken: string, clientId: string) => {
+  return safeFetch<QuironscoreData | null>(
+    `${API_URL}/v2/clients/${clientId}/reports/kpis/quironscore`,
     accessToken,
     null,
   );

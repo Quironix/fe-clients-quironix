@@ -11,6 +11,7 @@ import {
   getExecutiveSummary,
   getInvoicePhaseDistribution,
   getMyProgress,
+  getQuironscore,
   getTaskProgress,
   getTeamCapacity,
   getTeamOverview,
@@ -253,6 +254,19 @@ export const useMyProgress = ({
   useQuery({
     queryKey: ["dashboard_v2", "my-progress", clientId],
     queryFn: () => getMyProgress(accessToken, clientId),
+    enabled: enabled && !!accessToken && !!clientId,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+export const useQuironscore = ({
+  accessToken,
+  clientId,
+  enabled = true,
+}: BaseParams) =>
+  useQuery({
+    queryKey: ["dashboard_v2", "quironscore", clientId],
+    queryFn: () => getQuironscore(accessToken, clientId),
     enabled: enabled && !!accessToken && !!clientId,
     staleTime: 5 * 60 * 1000,
     placeholderData: keepPreviousData,

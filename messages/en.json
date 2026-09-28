@@ -1242,6 +1242,24 @@
       "viewHistory": "View history",
       "viewCurrentAccount": "Current Account",
       "viewAllDebtorsCurrentAccount": "Current account for all debtors"
+    },
+    "debtorKpis": {
+      "title": "Credibility and Rating",
+      "credibility": "Credibility",
+      "rating": "Delay rating",
+      "noScore": "No score",
+      "insufficient": "Insufficient history ({total} of 3 facts)",
+      "noFacts": "No resolved facts",
+      "facts": "{fulfilled} of {total} obligations met",
+      "days": "{days} days",
+      "noRating": "No score yet",
+      "invoices": "{count} predictive invoices",
+      "provisional": "Provisional cuts",
+      "notCalculated": "KPIs for this debtor have not been calculated yet",
+      "asOf": "As of {date}",
+      "green": "Green",
+      "yellow": "Yellow",
+      "red": "Red"
     }
   },
   "paymentPlans": {

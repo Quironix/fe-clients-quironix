@@ -189,3 +189,29 @@ export interface TeamCapacityMember {
   assigned: number;
   capacity: number | null;
 }
+
+export interface QuironscoreData {
+  calculationDate: string;
+  quironscore: number | null;
+  status: "OK" | "INSUFFICIENT_INFORMATION";
+  naCauses: string[];
+  classificationStatus: string;
+  cash: {
+    score: number | null;
+    raw: number | null;
+    pctMonthDue: number | null;
+  };
+  rating: {
+    score: number | null;
+    simpleAverage: number | null;
+    coverageBalance: number | null;
+    cutStatus: "VALIDADO" | "PROVISIONAL_C0";
+  };
+  go: { score: number | null; planned: number; compliant: number };
+  credibility: {
+    score: number | null;
+    coverage: number | null;
+    n: number;
+    universeN: number;
+  };
+}

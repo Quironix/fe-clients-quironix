@@ -1,56 +1,25 @@
+"use client";
+import React from "react";
+import { useProfileContext } from "@/context/ProfileContext";
+import { useQuironscore } from "../hooks/useDashboardAggregates";
+import { buildQuironscoreView } from "../utils/quironscore-view";
 import { QuironAiButton } from "./ai/quiron-buttons";
 
-const MOCK_SCORE = 78;
-const MOCK_DELTA = "+3 pts vs semana anterior";
-const MOCK_BAND = "Cartera en rango saludable";
-
-const MOCK_COMPONENTS = [
-  { label: "Puntualidad de pago", value: 82 },
-  { label: "Contactabilidad", value: 71 },
-  { label: "Cumplimiento de compromisos", value: 75 },
-  { label: "Normalización de litigios", value: 84 },
-];
-
-const MOCK_HISTORY = [64, 67, 69, 70, 71, 73, 75, 76, 78];
-
 const toneColor = (v: number) =>
-  v < 50 ? "#EF4444" : v < 70 ? "#F59E0B" : "#1FA35C";
-
-const HistorySpark = ({ points }: { points: number[] }) => {
-  const w = 260;
-  const h = 44;
-  const pad = 4;
-  const n = points.length;
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const rg = max - min || 1;
-  const x = (i: number) => i * (w / (n - 1 || 1));
-  const y = (v: number) => h - pad - ((v - min) / rg) * (h - pad * 2);
-  const pts = points.map((p, i) => [x(i), y(p)] as const);
-  const line = pts.map((p) => p.join(",")).join(" ");
-  const color = "#F59E0B";
-
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-      <polygon points={`0,${h} ${line} ${w},${h}`} fill={color} opacity={0.08} />
-      <polyline
-        points={line}
-        fill="none"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx={pts[n - 1][0]} cy={pts[n - 1][1]} r={2.6} fill={color} />
-    </svg>
-  );
-};
+  v < 34 ? "#EF4444" : v < 67 ? "#F59E0B" : "#1FA35C";
+const MUTED = "#9AA3B5";
 
 export const QuironscoreCard: React.FC = () => {
+  const { session, profile } = useProfileContext();
+  const { data, isLoading } = useQuironscore({
+    accessToken: session?.token || "",
+    clientId: profile?.client?.id || "",
+    enabled: !!session?.token && !!profile?.client?.id,
+  });
+
+  const view = buildQuironscoreView(data ?? null);
   const circumference = 2 * Math.PI * 48;
-  const offset = circumference - (MOCK_SCORE / 100) * circumference;
-  const last = MOCK_HISTORY[MOCK_HISTORY.length - 1];
-  const first = MOCK_HISTORY[0];
+  const offset = circumference - ((view.score ?? 0) / 100) * circumference;
 
   return (
     <div className="qxv2-card qxv2-score">
@@ -67,7 +36,7 @@ export const QuironscoreCard: React.FC = () => {
             borderRadius: 999,
           }}
         >
-          En validación
+          En calibración
         </span>
         <QuironAiButton
           topic="quironscore"
@@ -79,62 +48,82 @@ export const QuironscoreCard: React.FC = () => {
       <div className="qxv2-sc-top">
         <div className="qxv2-donut">
           <svg viewBox="0 0 112 112">
-            <circle cx="56" cy="56" r="48" fill="none" stroke="#EFF1F7" strokeWidth="10" />
             <circle
               cx="56"
               cy="56"
               r="48"
               fill="none"
-              stroke="#F59E0B"
+              stroke="#EFF1F7"
               strokeWidth="10"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={offset}
-              transform="rotate(-90 56 56)"
             />
+            {view.score !== null && (
+              <circle
+                cx="56"
+                cy="56"
+                r="48"
+                fill="none"
+                stroke={toneColor(view.score)}
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                transform="rotate(-90 56 56)"
+              />
+            )}
           </svg>
           <div className="qxv2-d-val">
             <div>
-              <b>{MOCK_SCORE}</b>
+              <b>{view.score ?? "N/A"}</b>
               <i>DE 100</i>
             </div>
           </div>
         </div>
         <div className="qxv2-sc-side">
-          <span className="qxv2-band">{MOCK_BAND}</span>
-          <div className="qxv2-delta" style={{ color: "var(--qx-good-tx)" }}>
-            ▲ {MOCK_DELTA}
+          <span className="qxv2-band">
+            {isLoading ? "Cargando…" : view.headline}
+          </span>
+          {data?.calculationDate && (
+            <div className="qxv2-scale">
+              Calculado al {data.calculationDate}
+            </div>
+          )}
+          <div className="qxv2-scale">
+            Caja 45 · Rating 25 · Gestión 15 · Credibilidad 15
           </div>
-          <div className="qxv2-scale">0–40 crítico · 40–70 presión · 70–100 saludable</div>
         </div>
       </div>
       <div className="qxv2-sc-comps">
-        {MOCK_COMPONENTS.map((c) => (
-          <div className="qxv2-sc-comp" key={c.label}>
-            <span className="qxv2-c-name">{c.label}</span>
+        {view.components.map((c) => (
+          <div className="qxv2-sc-comp" key={c.label} title={c.detail}>
+            <span className="qxv2-c-name">
+              {c.label}
+              <small
+                style={{ display: "block", color: MUTED, fontWeight: 500 }}
+              >
+                {c.detail}
+              </small>
+            </span>
             <span className="qxv2-c-track">
               <span
                 className="qxv2-c-fill"
-                style={{ width: `${c.value}%`, background: toneColor(c.value) }}
+                style={{
+                  width: `${c.value ?? 0}%`,
+                  background: c.value === null ? MUTED : toneColor(c.value),
+                }}
               />
             </span>
-            <span className="qxv2-c-val" style={{ color: toneColor(c.value) }}>
-              {c.value}
+            <span
+              className="qxv2-c-val"
+              style={{ color: c.value === null ? MUTED : toneColor(c.value) }}
+            >
+              {c.value ?? "N/A"}
             </span>
           </div>
         ))}
       </div>
-      <div className="qxv2-sc-hist">
-        <div className="qxv2-sh-top">
-          <span className="qxv2-sh-lbl">Evolución · últimas 9 semanas</span>
-          <span className="qxv2-sh-trend" style={{ color: "var(--qx-good-tx)" }}>
-            ▲ {last - first} pts
-          </span>
-        </div>
-        <HistorySpark points={MOCK_HISTORY} />
-      </div>
       <div className="qxv2-sc-note">
-        Evolución del Health Score · la fórmula final se validará en la siguiente etapa.
+        Si falta un componente no hay Quironscore: no se inventa ni se
+        redistribuye su peso.
       </div>
     </div>
   );
