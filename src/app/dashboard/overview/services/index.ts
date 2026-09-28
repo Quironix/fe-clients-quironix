@@ -51,6 +51,7 @@ const buildKPIObject = (
     definition,
     unit: unit as KPI["unit"],
     value,
+    hasValue: item.value !== null && item.value !== undefined,
     target: acceptance_criteria,
     thresholds,
     status: statusInfo.status,

@@ -5,6 +5,7 @@ const STATUS_HEX: Record<string, string> = {
   good: "#1FA35C",
   warn: "#F59E0B",
   bad: "#EF4444",
+  none: "#98A2B3",
 };
 
 const ValRow = ({ k }: { k: MockKpiDef }) => (

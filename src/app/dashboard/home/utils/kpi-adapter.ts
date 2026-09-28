@@ -1,6 +1,12 @@
-import { KPI_NAME_MAP, STATUS_LABELS } from "../../overview/constants/kpi-constants";
+import {
+  KPI_NAME_MAP,
+  STATUS_LABELS,
+} from "../../overview/constants/kpi-constants";
 import { KPI } from "../../overview/services/types";
-import { calculateKPITrend, getProgressPercentage } from "../../overview/utils/kpi-utils";
+import {
+  calculateKPITrend,
+  getProgressPercentage,
+} from "../../overview/utils/kpi-utils";
 import { KpiTone, MockKpiDef } from "../constants/mock-kpis";
 import {
   CommitmentsSummaryData,
@@ -41,13 +47,38 @@ const findRealKpi = (mockName: string, realKpis: KPI[]): KPI | undefined => {
   return realKpis.find((k) => k.name === displayName);
 };
 
+const mapKpiWithoutValue = (kpi: KPI, template: MockKpiDef): MockKpiDef => ({
+  ...template,
+  value: "—",
+  unit: "",
+  badge: { tx: "Sin datos", tone: "none" },
+  status: "none",
+  meta: `Meta: ${kpi.target}${kpi.unit}`,
+  metaVal: kpi.target,
+  metaLabel: `Meta ${kpi.target}`,
+  trend: [],
+  pct: 0,
+  num: 0,
+});
+
 const mapRealKpiToMockShape = (kpi: KPI, template: MockKpiDef): MockKpiDef => {
+  if (kpi.hasValue === false) return mapKpiWithoutValue(kpi, template);
   const tone = STATUS_TO_TONE[kpi.status];
   const trendInfo = calculateKPITrend(kpi);
-  const badgeTone: KpiTone = trendInfo ? (trendInfo.isGood ? "good" : "bad") : tone;
+  const badgeTone: KpiTone = trendInfo
+    ? trendInfo.isGood
+      ? "good"
+      : "bad"
+    : tone;
   const badgeArrow =
-    trendInfo?.direction === "up" ? "↑" : trendInfo?.direction === "down" ? "↓" : "→";
-  const badgeText = trendInfo ? `${badgeArrow} ${trendInfo.value}%` : STATUS_LABELS[kpi.status];
+    trendInfo?.direction === "up"
+      ? "↑"
+      : trendInfo?.direction === "down"
+        ? "↓"
+        : "→";
+  const badgeText = trendInfo
+    ? `${badgeArrow} ${trendInfo.value}%`
+    : STATUS_LABELS[kpi.status];
   const history = (kpi.history || [])
     .map((h) => h.value)
     .filter((v): v is number => v !== null);
@@ -72,7 +103,11 @@ const mapRealKpiToMockShape = (kpi: KPI, template: MockKpiDef): MockKpiDef => {
       merged.trend = history.length >= 2 ? history : [kpi.value, kpi.value];
       break;
     case "fill":
-      merged.pct = getProgressPercentage(kpi.value, kpi.target, kpi.thresholds.direction);
+      merged.pct = getProgressPercentage(
+        kpi.value,
+        kpi.target,
+        kpi.thresholds.direction,
+      );
       break;
     case "gauge":
       merged.num = Math.max(0, Math.min(100, kpi.value));
@@ -97,7 +132,8 @@ const mapLevel2Kpi = (
   if (!level2Data) return item;
 
   if (
-    (item.name === "% Avance de Tareas" || item.name === "% Cumplimiento de Tareas") &&
+    (item.name === "% Avance de Tareas" ||
+      item.name === "% Cumplimiento de Tareas") &&
     level2Data.taskProgress
   ) {
     const pct = level2Data.taskProgress.progress_percent;
@@ -112,7 +148,10 @@ const mapLevel2Kpi = (
     };
   }
 
-  if (item.name === "% Compromisos Cumplidos" && level2Data.commitmentsSummary) {
+  if (
+    item.name === "% Compromisos Cumplidos" &&
+    level2Data.commitmentsSummary
+  ) {
     const pct = level2Data.commitmentsSummary.fulfilledPercentage;
     const tone: KpiTone = pct >= 75 ? "good" : pct >= 50 ? "warn" : "bad";
     return {
@@ -125,7 +164,10 @@ const mapLevel2Kpi = (
     };
   }
 
-  if (item.name === "Contactabilidad Efectiva" && level2Data.contactEffectiveness) {
+  if (
+    item.name === "Contactabilidad Efectiva" &&
+    level2Data.contactEffectiveness
+  ) {
     const pct = level2Data.contactEffectiveness.effectivenessPercent;
     const tone: KpiTone = pct >= 50 ? "good" : pct >= 35 ? "warn" : "bad";
     return {

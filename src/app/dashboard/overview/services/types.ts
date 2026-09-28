@@ -30,6 +30,7 @@ export interface KPI {
   definition: string;
   unit: KPIUnit;
   value: number;
+  hasValue?: boolean;
   target: number;
   thresholds: KPIThresholds;
   status: KPIStatus;

@@ -4,7 +4,7 @@
    the dashboard matches the approved design exactly. */
 
 export type KpiViz = "fill" | "trend" | "gauge" | "share" | "tally";
-export type KpiTone = "good" | "warn" | "bad";
+export type KpiTone = "good" | "warn" | "bad" | "none";
 
 export interface MockKpiDef {
   name: string;

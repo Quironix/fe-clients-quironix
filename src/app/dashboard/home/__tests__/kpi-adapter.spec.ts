@@ -152,4 +152,35 @@ describe("kpi-adapter (Dashboard V2)", () => {
     expect(phaseItem?.num).toBe(72);
     expect(phaseItem?.target).toBe(60);
   });
+  it("a KPI without a value (API null) shows 'Sin datos', never 0% or Crítico", () => {
+    const realKpis: KPI[] = [
+      {
+        id: "credibility-id",
+        name: "Credibilidad compuesta",
+        value: 0,
+        hasValue: false,
+        target: 60,
+        unit: "%",
+        status: "error",
+        category: "produced-quality",
+        description: "Credibilidad compuesta",
+        formula: "CREDIBILITY_INDEX",
+        thresholds: { good: 60, warning: 40, direction: "up" },
+        history: [],
+        drillDown: { byCustomer: [], byProduct: [], byRegion: [] },
+      } as unknown as KPI,
+    ];
+
+    const item = buildKpiGridItems(MOCK_KPIS_MANAGER, realKpis).find(
+      (i) => i.name === "Credibilidad compuesta",
+    );
+
+    expect(item).toMatchObject({
+      value: "—",
+      status: "none",
+      badge: { tx: "Sin datos", tone: "none" },
+      trend: [],
+    });
+    expect(item?._isMock).toBeUndefined();
+  });
 });
