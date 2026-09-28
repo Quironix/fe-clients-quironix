@@ -2,18 +2,17 @@
 import { useState } from "react";
 import { useProfileContext } from "@/context/ProfileContext";
 import {
-  HERO_CASH_DEVIATION_SEGMENTS,
+  CASH_DEVIATION_SEGMENT_COLORS,
   HERO_PERIOD_LABELS,
   HeroPeriod,
-  MOCK_ESTIMATED_VS_COLLECTED,
-  MOCK_HERO_CASH_DEVIATION,
-} from "../constants/mock-extras";
+} from "../constants/cash-deviation";
 import {
   useCashDeviationByPhase,
   useCashDeviationSegmentDebtors,
 } from "../hooks/useDashboardAggregates";
 import { CashDeviationData } from "../types";
 import { QuironAiButton } from "./ai/quiron-buttons";
+import { CardMessage, loadingOrEmpty } from "./card-message";
 
 const PERIODS: HeroPeriod[] = ["dia", "semana", "mes"];
 
@@ -30,21 +29,10 @@ const formatAmount = (amount: number): string => {
 };
 
 const EstimatedVsCollectedChart: React.FC<{
-  period: HeroPeriod;
-  chartData?: CashDeviationData["chart"];
-}> = ({ period, chartData }) => {
+  chartData: CashDeviationData["chart"];
+}> = ({ chartData }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const d = MOCK_ESTIMATED_VS_COLLECTED[period];
-  const estimated =
-    chartData && chartData.estimated.length > 0
-      ? chartData.estimated
-      : d.estimated;
-  const collected =
-    chartData && chartData.collected.length > 0
-      ? chartData.collected
-      : d.collected;
-  const labels = chartData && chartData.labels.length > 0 ? chartData.labels : [];
-  const chartLabel = chartData?.label || d.label;
+  const { estimated, collected, labels, label: chartLabel } = chartData;
 
   const w = 680;
   const h = 120;
@@ -82,7 +70,9 @@ const EstimatedVsCollectedChart: React.FC<{
   return (
     <div className="qxv2-body" style={{ paddingTop: 4 }}>
       <div className="qxv2-card-h" style={{ padding: "0 0 4px" }}>
-        <h3 style={{ fontSize: 13.5 }}>Proyección vs recaudado — {chartLabel}</h3>
+        <h3 style={{ fontSize: 13.5 }}>
+          Proyección vs recaudado — {chartLabel}
+        </h3>
       </div>
       <div className="qxv2-mline-legend">
         <span className="qxv2-lg">
@@ -122,10 +112,22 @@ const EstimatedVsCollectedChart: React.FC<{
             strokeLinejoin="round"
           />
           {est.map(([px, py], i) => (
-            <circle key={`est-${i}`} cx={px} cy={py} r={i === n - 1 ? 3.2 : 2.4} fill="#98A2B3" />
+            <circle
+              key={`est-${i}`}
+              cx={px}
+              cy={py}
+              r={i === n - 1 ? 3.2 : 2.4}
+              fill="#98A2B3"
+            />
           ))}
           {rec.map(([px, py], i) => (
-            <circle key={`rec-${i}`} cx={px} cy={py} r={i === n - 1 ? 3.6 : 2.8} fill={lineColor} />
+            <circle
+              key={`rec-${i}`}
+              cx={px}
+              cy={py}
+              r={i === n - 1 ? 3.6 : 2.8}
+              fill={lineColor}
+            />
           ))}
           {est.map((_, i) => (
             <circle
@@ -136,7 +138,9 @@ const EstimatedVsCollectedChart: React.FC<{
               fill="transparent"
               style={{ cursor: "pointer" }}
               onMouseEnter={() => setHoveredIndex(i)}
-              onMouseLeave={() => setHoveredIndex((cur) => (cur === i ? null : cur))}
+              onMouseLeave={() =>
+                setHoveredIndex((cur) => (cur === i ? null : cur))
+              }
             />
           ))}
         </svg>
@@ -166,9 +170,22 @@ const EstimatedVsCollectedChart: React.FC<{
           </div>
         ) : null}
       </div>
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 18, marginTop: 6, fontSize: 11.5, fontWeight: 800 }}>
-        <span style={{ color: "#667085" }}>Proyección {fmt(estimated[n - 1])}</span>
-        <span style={{ color: textColor }}>Recaudado {fmt(collected[n - 1])}</span>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 18,
+          marginTop: 6,
+          fontSize: 11.5,
+          fontWeight: 800,
+        }}
+      >
+        <span style={{ color: "#667085" }}>
+          Proyección {fmt(estimated[n - 1])}
+        </span>
+        <span style={{ color: textColor }}>
+          Recaudado {fmt(collected[n - 1])}
+        </span>
       </div>
     </div>
   );
@@ -232,108 +249,103 @@ export const HeroCashDeviationCard: React.FC = () => {
     enabled: !!session?.token && !!profile?.client?.id,
   });
 
-  const mock = MOCK_HERO_CASH_DEVIATION[period];
+  const header = (
+    <div className="qxv2-card-h">
+      <h3>Desviación de caja — explicada por fase</h3>
+      {realData?.rangeLabel && (
+        <span className="qxv2-h-sub">{realData.rangeLabel}</span>
+      )}
+      <div className="qxv2-seg">
+        {PERIODS.map((p) => (
+          <button
+            key={p}
+            className={p === period ? "on" : ""}
+            onClick={() => {
+              setPeriod(p);
+              setExpandedSegment(null);
+            }}
+          >
+            {HERO_PERIOD_LABELS[p]}
+          </button>
+        ))}
+      </div>
+      <QuironAiButton
+        topic="cash-deviation"
+        variant="ghost"
+        size="sm"
+        style={{ marginLeft: "auto" }}
+      />
+    </div>
+  );
 
-  const estimatedStr = realData
-    ? formatAmount(realData.estimatedAmount)
-    : mock.estimated;
-  const collectedStr = realData
-    ? formatAmount(realData.collectedAmount)
-    : mock.collected;
-  const deviationStr = realData
-    ? `−${formatAmount(realData.deviationAmount)}`
-    : mock.deviation;
-  const deviationPctStr = realData
-    ? `(−${realData.deviationPct}%)`
-    : mock.deviationPct;
-  const rangeLabel = realData?.rangeLabel || mock.range;
+  if (!realData) {
+    return (
+      <div className="qxv2-card qxv2-hero">
+        {header}
+        <CardMessage>{loadingOrEmpty(isLoading)}</CardMessage>
+      </div>
+    );
+  }
 
-  const segments = realData
-    ? realData.segments.map((s) => {
-        const matchingDef = HERO_CASH_DEVIATION_SEGMENTS.find((d) => d.key === s.key);
-        return {
-          key: s.key,
-          label: s.label,
-          color: matchingDef?.color || "#94A3B8",
-          pct: s.pct,
-          amountStr: formatAmount(s.amount),
-        };
-      })
-    : HERO_CASH_DEVIATION_SEGMENTS.map((s, i) => ({
-        ...s,
-        amountStr: mock.segAmounts[i] || "",
-      }));
-
-  const insightLabel = realData
-    ? realData.insight?.topSegmentLabel || "—"
-    : "Fase 1 vencida sin gestión";
-  const insightAmountStr = realData
-    ? formatAmount(realData.insight?.topSegmentAmount || 0)
-    : mock.insightAmount;
-  const insightDebtors = realData
-    ? realData.insight?.topSegmentDebtorsCount ?? 0
-    : 3;
-
-  const hasNoDeviation = !!realData && realData.deviationAmount <= 0;
+  const deviationStr = `−${formatAmount(realData.deviationAmount)}`;
+  const segments = realData.segments.map((s) => ({
+    key: s.key,
+    label: s.label,
+    color:
+      CASH_DEVIATION_SEGMENT_COLORS[s.key] ||
+      CASH_DEVIATION_SEGMENT_COLORS.otras,
+    pct: s.pct,
+    amountStr: formatAmount(s.amount),
+  }));
+  const hasNoDeviation = realData.deviationAmount <= 0;
+  const hasChart = (realData.chart?.estimated.length ?? 0) > 0;
 
   return (
     <div className="qxv2-card qxv2-hero">
-      <div className="qxv2-card-h">
-        <h3>Desviación de caja — explicada por fase</h3>
-        <span className="qxv2-h-sub">
-          {rangeLabel} · {realData ? "datos reales" : isLoading ? "cargando…" : "datos ilustrativos"}
-        </span>
-        <div className="qxv2-seg">
-          {PERIODS.map((p) => (
-            <button
-              key={p}
-              className={p === period ? "on" : ""}
-              onClick={() => {
-                setPeriod(p);
-                setExpandedSegment(null);
-              }}
-            >
-              {HERO_PERIOD_LABELS[p]}
-            </button>
-          ))}
-        </div>
-        <QuironAiButton
-          topic="cash-deviation"
-          variant="ghost"
-          size="sm"
-          style={{ marginLeft: "auto" }}
-        />
-      </div>
+      {header}
       <div className="qxv2-nums">
         <div className="qxv2-num">
           <div className="qxv2-n-label">Esperado del período</div>
-          <div className="qxv2-n-val">{estimatedStr}</div>
+          <div className="qxv2-n-val">
+            {formatAmount(realData.estimatedAmount)}
+          </div>
         </div>
         <div className="qxv2-num">
           <div className="qxv2-n-label">Recaudado real</div>
-          <div className="qxv2-n-val">{collectedStr}</div>
+          <div className="qxv2-n-val">
+            {formatAmount(realData.collectedAmount)}
+          </div>
         </div>
         <div className="qxv2-num neg">
           <div className="qxv2-n-label">Desviación</div>
           <div className="qxv2-n-val">
             {deviationStr}
-            <small>{deviationPctStr}</small>
+            <small>(−{realData.deviationPct}%)</small>
           </div>
         </div>
       </div>
       {hasNoDeviation ? (
-        <div className="qxv2-insight" style={{ background: "var(--qx-good-bg)", borderColor: "var(--qx-good-bg)" }}>
+        <div
+          className="qxv2-insight"
+          style={{
+            background: "var(--qx-good-bg)",
+            borderColor: "var(--qx-good-bg)",
+          }}
+        >
           <p>
-            <strong style={{ color: "var(--qx-good-tx)" }}>Sin brecha relevante en este período.</strong>{" "}
-            Lo recaudado está en línea con lo estimado: no hay facturas vencidas en litigio,
-            compromisos incumplidos, fase 1 sin gestión ni pagos sin aplicar que expliquen una diferencia.
+            <strong style={{ color: "var(--qx-good-tx)" }}>
+              Sin brecha relevante en este período.
+            </strong>{" "}
+            Lo recaudado está en línea con lo estimado: no hay facturas vencidas
+            en litigio, compromisos incumplidos, fase 1 sin gestión ni pagos sin
+            aplicar que expliquen una diferencia.
           </p>
         </div>
       ) : (
         <>
           <div className="qxv2-q-line">
-            ¿Dónde están los {deviationStr.replace("−", "")} que faltan? — cada tramo
-            se abre y muestra a los deudores que lo explican
+            ¿Dónde están los {deviationStr.replace("−", "")} que faltan? — cada
+            tramo se abre y muestra a los deudores que lo explican
           </div>
           <div className="qxv2-stack">
             {segments
@@ -343,7 +355,10 @@ export const HeroCashDeviationCard: React.FC = () => {
                   type="button"
                   className={`qxv2-segb${expandedSegment === s.key ? " qxv2-segb-active" : ""}`}
                   key={s.key}
-                  style={{ width: `${Math.max(s.pct, 1)}%`, background: s.color }}
+                  style={{
+                    width: `${Math.max(s.pct, 1)}%`,
+                    background: s.color,
+                  }}
                   title={`${s.label} · ${s.amountStr}`}
                   onClick={() =>
                     setExpandedSegment(expandedSegment === s.key ? null : s.key)
@@ -378,14 +393,20 @@ export const HeroCashDeviationCard: React.FC = () => {
           ) : null}
           <div className="qxv2-insight">
             <p>
-              Tramo mayor: <strong>{insightLabel} — {insightAmountStr} en {insightDebtors} deudores</strong>.
-              Esa caja no se cobra insistiendo: se cobra resolviendo la causa raíz.
+              Tramo mayor:{" "}
+              <strong>
+                {realData.insight?.topSegmentLabel || "—"} —{" "}
+                {formatAmount(realData.insight?.topSegmentAmount || 0)} en{" "}
+                {realData.insight?.topSegmentDebtorsCount ?? 0} deudores
+              </strong>
+              . Esa caja no se cobra insistiendo: se cobra resolviendo la causa
+              raíz.
             </p>
             <button className="qxv2-btn-orange">Enviar a gestión →</button>
           </div>
         </>
       )}
-      <EstimatedVsCollectedChart period={period} chartData={realData?.chart} />
+      {hasChart && <EstimatedVsCollectedChart chartData={realData.chart} />}
     </div>
   );
 };

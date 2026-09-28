@@ -1,25 +1,33 @@
 import { formatNumber } from "@/lib/utils";
 import { DebtorConcentrationItem } from "../types";
 import { QuironAiButton } from "./ai/quiron-buttons";
+import { CardMessage, loadingOrEmpty } from "./card-message";
+
+const TOP_DEBTORS = 5;
 
 interface DebtorConcentrationCardProps {
-  data?: DebtorConcentrationItem[];
+  data?: DebtorConcentrationItem[] | null;
   isLoading?: boolean;
 }
 
 export const DebtorConcentrationCard: React.FC<
   DebtorConcentrationCardProps
-> = ({ data = [], isLoading }) => {
-  const total = data.reduce((a, d) => a + d.amount, 0);
-  const max = Math.max(1, ...data.map((d) => d.amount));
+> = ({ data, isLoading }) => {
+  const top = [...(data ?? [])]
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, TOP_DEBTORS);
+  const total = top.reduce((a, d) => a + d.amount, 0);
+  const max = Math.max(1, ...top.map((d) => d.amount));
 
   return (
     <div className="qxv2-card qxv2-v2-card">
       <div className="qxv2-card-h">
         <h3>Concentración de la mora</h3>
-        <span className="qxv2-h-sub">
-          {data.length} deudores · {formatNumber(total)}
-        </span>
+        {top.length > 0 && (
+          <span className="qxv2-h-sub">
+            Top {top.length} · {formatNumber(total)}
+          </span>
+        )}
         <QuironAiButton
           topic="debtor-concentration"
           variant="ghost"
@@ -28,10 +36,10 @@ export const DebtorConcentrationCard: React.FC<
         />
       </div>
       <div className="qxv2-body">
-        {isLoading ? (
-          <div className="qxv2-h-sub">Cargando...</div>
+        {top.length === 0 ? (
+          <CardMessage>{loadingOrEmpty(isLoading)}</CardMessage>
         ) : (
-          data.map((item, index) => (
+          top.map((item, index) => (
             <div className="qxv2-conc-row" key={item.debtorId}>
               <span className="qxv2-c-rk">{index + 1}</span>
               <span className="qxv2-c-nm">

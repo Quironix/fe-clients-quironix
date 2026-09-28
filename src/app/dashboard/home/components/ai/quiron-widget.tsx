@@ -21,6 +21,7 @@ import {
   useCashDeviationByPhase,
   useDebtorConcentration,
   useExecutiveSummary,
+  useQuironscore,
 } from "../../hooks/useDashboardAggregates";
 import { useQuironChatStore } from "../../store";
 import { DashboardType } from "../../types";
@@ -87,20 +88,13 @@ function autoQuestionForTopic(topic: string): string {
   }
 }
 
-const MOCK_QUIRONSCORE_CONTEXT = {
-  score: 78,
-  band: "Cartera en rango saludable",
-  deltaLabel: "+3 pts vs semana anterior",
-  history: [64, 67, 69, 70, 71, 73, 75, 76, 78],
-  isMock: true,
-};
-
 interface QuironDatasets {
   kpis: KPI[];
   agingBuckets?: unknown;
   debtorConcentration?: unknown;
   cashDeviation?: unknown;
   executiveSummary?: unknown;
+  quironscore?: unknown;
 }
 
 function toAiKpi(kpi: KPI): Omit<KPI, "invoices"> {
@@ -108,9 +102,18 @@ function toAiKpi(kpi: KPI): Omit<KPI, "invoices"> {
   return aiKpi;
 }
 
-function buildContextForTopic(topic: string, datasets: QuironDatasets): unknown {
-  const { kpis, agingBuckets, debtorConcentration, cashDeviation, executiveSummary } =
-    datasets;
+function buildContextForTopic(
+  topic: string,
+  datasets: QuironDatasets,
+): unknown {
+  const {
+    kpis,
+    agingBuckets,
+    debtorConcentration,
+    cashDeviation,
+    executiveSummary,
+    quironscore,
+  } = datasets;
   const aiKpis = kpis.map(toAiKpi);
 
   if (topic.startsWith("kpi::")) {
@@ -126,7 +129,7 @@ function buildContextForTopic(topic: string, datasets: QuironDatasets): unknown 
     case "debtor-concentration":
       return debtorConcentration;
     case "quironscore":
-      return MOCK_QUIRONSCORE_CONTEXT;
+      return quironscore;
     case "resumen":
     default:
       return { executiveSummary, kpis: aiKpis };
@@ -148,7 +151,8 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
   const effectiveTopic = topic || "resumen";
 
   const lastAutoAskedTokenRef = useRef(0);
-  const shouldAutoAsk = askToken > 0 && askToken !== lastAutoAskedTokenRef.current;
+  const shouldAutoAsk =
+    askToken > 0 && askToken !== lastAutoAskedTokenRef.current;
   const markAutoAsked = () => {
     lastAutoAskedTokenRef.current = askToken;
   };
@@ -177,6 +181,12 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
     enabled: isOpen && effectiveTopic === "cash-deviation",
   });
 
+  const { data: quironscore } = useQuironscore({
+    accessToken,
+    clientId,
+    enabled: isOpen && effectiveTopic === "quironscore",
+  });
+
   const context = useMemo(
     () =>
       buildContextForTopic(effectiveTopic, {
@@ -185,8 +195,17 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
         debtorConcentration,
         cashDeviation,
         executiveSummary,
+        quironscore,
       }),
-    [effectiveTopic, kpis, agingBuckets, debtorConcentration, cashDeviation, executiveSummary],
+    [
+      effectiveTopic,
+      kpis,
+      agingBuckets,
+      debtorConcentration,
+      cashDeviation,
+      executiveSummary,
+      quironscore,
+    ],
   );
 
   if (!enabled) return null;
@@ -417,7 +436,9 @@ const QuironAssistantMessage: FC = () => {
 };
 
 const QuironSuggestions: FC<{ topic: string }> = ({ topic }) => {
-  const messageCount = useAssistantState(({ thread }) => thread.messages.length);
+  const messageCount = useAssistantState(
+    ({ thread }) => thread.messages.length,
+  );
   const questions = SUGGESTED_QUESTIONS[topic] || SUGGESTED_QUESTIONS.resumen;
 
   if (messageCount !== 1) return null;
@@ -427,7 +448,13 @@ const QuironSuggestions: FC<{ topic: string }> = ({ topic }) => {
       <div className="qxv2-qs-label">Preguntas sugeridas</div>
       <div className="qxv2-qs-chips">
         {questions.map((q) => (
-          <ThreadPrimitive.Suggestion key={q} prompt={q} clearComposer send asChild>
+          <ThreadPrimitive.Suggestion
+            key={q}
+            prompt={q}
+            clearComposer
+            send
+            asChild
+          >
             <button type="button" className="qxv2-qs-chip">
               {q}
             </button>
@@ -455,7 +482,12 @@ const QuironComposer: FC = () => {
         </ComposerPrimitive.Send>
       </ThreadPrimitive.If>
       <ThreadPrimitive.If running>
-        <button type="button" disabled className="qxv2-q-send" aria-label="Enviar">
+        <button
+          type="button"
+          disabled
+          className="qxv2-q-send"
+          aria-label="Enviar"
+        >
           <Bot size={16} />
         </button>
       </ThreadPrimitive.If>

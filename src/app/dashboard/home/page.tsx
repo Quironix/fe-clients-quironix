@@ -40,9 +40,17 @@ const DashboardV2Content = () => {
   const clientId = profile?.client?.id || "";
   const currentUserId = profile?.id || "";
 
-  const availableTypes = useAvailableDashboardTypes(profile as { roles?: { dashboard_type?: "MANAGER" | "COLLECTION_MANAGER" | "EXECUTIVE" | null }[] } | null);
+  const availableTypes = useAvailableDashboardTypes(
+    profile as {
+      roles?: {
+        dashboard_type?: "MANAGER" | "COLLECTION_MANAGER" | "EXECUTIVE" | null;
+      }[];
+    } | null,
+  );
   const [activeType, setActiveType] = useActiveDashboardType(availableTypes);
 
+  const isResolvingView =
+    !profile || (availableTypes.length > 0 && !activeType);
   const isManager = activeType === "MANAGER";
   const isJefe = activeType === "COLLECTION_MANAGER";
   const isExecutive = activeType === "EXECUTIVE";
@@ -83,29 +91,32 @@ const DashboardV2Content = () => {
     enabled: isJefe || isExecutive,
   });
 
-  const { data: priorities, isLoading: prioritiesLoading } =
-    useTodayPriorities({
+  const { data: priorities, isLoading: prioritiesLoading } = useTodayPriorities(
+    {
       accessToken,
       clientId,
       executiveId: currentUserId,
       enabled: isExecutive,
-    });
+    },
+  );
 
   // Level 2 hooks
-  const { data: taskProgress, isLoading: taskProgressLoading } = useTaskProgress({
-    accessToken,
-    clientId,
-    executiveId: isExecutive ? currentUserId : undefined,
-    teamWide: isJefe,
-    enabled: isJefe || isExecutive,
-  });
+  const { data: taskProgress, isLoading: taskProgressLoading } =
+    useTaskProgress({
+      accessToken,
+      clientId,
+      executiveId: isExecutive ? currentUserId : undefined,
+      teamWide: isJefe,
+      enabled: isJefe || isExecutive,
+    });
 
-  const { data: commitmentsSummary } = useCommitmentsSummary({
-    accessToken,
-    clientId,
-    executiveId: isExecutive ? currentUserId : undefined,
-    enabled: isJefe || isExecutive,
-  });
+  const { data: commitmentsSummary, isLoading: commitmentsLoading } =
+    useCommitmentsSummary({
+      accessToken,
+      clientId,
+      executiveId: isExecutive ? currentUserId : undefined,
+      enabled: isJefe || isExecutive,
+    });
 
   const { data: contactEffectiveness, isLoading: contactEffectivenessLoading } =
     useContactEffectiveness({
@@ -116,13 +127,14 @@ const DashboardV2Content = () => {
       enabled: isJefe || isExecutive,
     });
 
-  const { data: invoicePhase } = useInvoicePhaseDistribution({
-    accessToken,
-    clientId,
-    executiveId: isExecutive ? currentUserId : undefined,
-    phase: 1,
-    enabled: isExecutive,
-  });
+  const { data: invoicePhase, isLoading: invoicePhaseLoading } =
+    useInvoicePhaseDistribution({
+      accessToken,
+      clientId,
+      executiveId: isExecutive ? currentUserId : undefined,
+      phase: 1,
+      enabled: isExecutive,
+    });
 
   const { data: upcomingCommitments, isLoading: upcomingLoading } =
     useUpcomingCommitments({
@@ -163,8 +175,22 @@ const DashboardV2Content = () => {
       commitmentsSummary,
       contactEffectiveness,
       invoicePhase,
+      isLoading:
+        taskProgressLoading ||
+        commitmentsLoading ||
+        contactEffectivenessLoading ||
+        invoicePhaseLoading,
     }),
-    [taskProgress, commitmentsSummary, contactEffectiveness, invoicePhase],
+    [
+      taskProgress,
+      commitmentsSummary,
+      contactEffectiveness,
+      invoicePhase,
+      taskProgressLoading,
+      commitmentsLoading,
+      contactEffectivenessLoading,
+      invoicePhaseLoading,
+    ],
   );
 
   const kpis = kpiData?.data || [];
@@ -193,7 +219,7 @@ const DashboardV2Content = () => {
             </div>
           )}
 
-          {isLoading ? (
+          {isLoading || isResolvingView ? (
             <div className="flex flex-col items-center justify-center gap-4 p-12">
               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500" />
               <p className="text-lg font-semibold text-gray-700">

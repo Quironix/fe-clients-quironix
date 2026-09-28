@@ -1,5 +1,4 @@
 import { formatNumber } from "@/lib/utils";
-import { MOCK_TEAM_TREND } from "../constants/mock-extras";
 import { TeamMemberRow } from "../types";
 
 interface TeamTableProps {
@@ -31,7 +30,10 @@ const Metric = ({ value }: { value?: number }) => {
       <span className="qxv2-tm-track">
         <span
           className="qxv2-tm-fill"
-          style={{ width: `${Math.min(value, 100)}%`, background: toneColor(value) }}
+          style={{
+            width: `${Math.min(value, 100)}%`,
+            background: toneColor(value),
+          }}
         />
       </span>
     </div>
@@ -52,19 +54,20 @@ const TrendSpark = ({ points, color }: { points: number[]; color: string }) => {
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-      <polyline points={line} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <polyline
+        points={line}
+        fill="none"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <circle cx={pts[n - 1][0]} cy={pts[n - 1][1]} r={2.4} fill={color} />
     </svg>
   );
 };
 
-const RankingDisplay = ({
-  ranking,
-  move,
-}: {
-  ranking?: number;
-  move?: "up" | "down" | "flat";
-}) => {
+const RankingDisplay = ({ ranking }: { ranking?: number }) => {
   if (ranking !== undefined && ranking > 0) {
     return (
       <span
@@ -78,10 +81,7 @@ const RankingDisplay = ({
       </span>
     );
   }
-  if (!move) return <span className="qxv2-t-rank-mv flat">—</span>;
-  if (move === "up") return <span className="qxv2-t-rank-mv up">▲ sube</span>;
-  if (move === "down") return <span className="qxv2-t-rank-mv down">▼ baja</span>;
-  return <span className="qxv2-t-rank-mv flat">— estable</span>;
+  return <span className="qxv2-t-rank-mv flat">—</span>;
 };
 
 const gridCols = {
@@ -98,12 +98,15 @@ export const TeamTable: React.FC<TeamTableProps> = ({
       <div className="qxv2-card-h">
         <h3>Desempeño del equipo</h3>
         <span className="qxv2-h-sub">
-          {data.length} ejecutivo{data.length === 1 ? "" : "s"} · semana en curso · tendencia 6 sem.
+          {data.length} ejecutivo{data.length === 1 ? "" : "s"} · semana en
+          curso · tendencia 6 sem.
         </span>
       </div>
       <div className="qxv2-team-rows">
         {isLoading ? (
-          <div className="qxv2-h-sub" style={{ padding: "16px" }}>Cargando datos del equipo...</div>
+          <div className="qxv2-h-sub" style={{ padding: "16px" }}>
+            Cargando datos del equipo...
+          </div>
         ) : (
           <>
             <div className="qxv2-team-head v2" style={gridCols}>
@@ -117,9 +120,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({
             </div>
             {data.map((row) => {
               const trendPoints =
-                row.trend && row.trend.length > 0
-                  ? row.trend
-                  : MOCK_TEAM_TREND[row.executiveId]?.trend;
+                row.trend && row.trend.length > 0 ? row.trend : undefined;
               const trendColor = trendPoints
                 ? toneColor(trendPoints[trendPoints.length - 1])
                 : "#98A2B3";
@@ -139,7 +140,9 @@ export const TeamTable: React.FC<TeamTableProps> = ({
                   key={row.executiveId}
                 >
                   <div className="qxv2-t-person">
-                    <span className="qxv2-t-av">{initials(row.executiveName)}</span>
+                    <span className="qxv2-t-av">
+                      {initials(row.executiveName)}
+                    </span>
                     <span className="qxv2-t-name">{row.executiveName}</span>
                   </div>
                   <Metric value={row.progressPercent} />
@@ -152,10 +155,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({
                       "—"
                     )}
                   </span>
-                  <RankingDisplay
-                    ranking={row.ranking}
-                    move={MOCK_TEAM_TREND[row.executiveId]?.move}
-                  />
+                  <RankingDisplay ranking={row.ranking} />
                   <span className="qxv2-t-caja">
                     {formatNumber(row.cashGenerated)}
                   </span>

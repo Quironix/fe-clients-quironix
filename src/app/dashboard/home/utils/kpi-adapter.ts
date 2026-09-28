@@ -20,7 +20,17 @@ export interface Level2KpiData {
   commitmentsSummary?: CommitmentsSummaryData;
   contactEffectiveness?: ContactEffectivenessData;
   invoicePhase?: InvoicePhaseDistributionData;
+  isLoading?: boolean;
 }
+
+const LEVEL2_SOURCED_KPIS = new Set([
+  "% Avance de Tareas",
+  "% Cumplimiento de Tareas",
+  "% Compromisos Cumplidos",
+  "Contactabilidad Efectiva",
+  "Llamadas Efectivas",
+  "% Facturas en Fase 1",
+]);
 
 const MOCK_TO_TECHNICAL_NAME: Record<string, string> = {
   DSO: "DSO",
@@ -47,18 +57,23 @@ const findRealKpi = (mockName: string, realKpis: KPI[]): KPI | undefined => {
   return realKpis.find((k) => k.name === displayName);
 };
 
-const mapKpiWithoutValue = (kpi: KPI, template: MockKpiDef): MockKpiDef => ({
+const withoutValue = (template: MockKpiDef, label: string): MockKpiDef => ({
   ...template,
   value: "—",
   unit: "",
-  badge: { tx: "Sin datos", tone: "none" },
+  badge: { tx: label, tone: "none" },
   status: "none",
-  meta: `Meta: ${kpi.target}${kpi.unit}`,
-  metaVal: kpi.target,
-  metaLabel: `Meta ${kpi.target}`,
   trend: [],
   pct: 0,
   num: 0,
+  done: 0,
+});
+
+const mapKpiWithoutValue = (kpi: KPI, template: MockKpiDef): MockKpiDef => ({
+  ...withoutValue(template, "Sin datos"),
+  meta: `Meta: ${kpi.target}${kpi.unit}`,
+  metaVal: kpi.target,
+  metaLabel: `Meta ${kpi.target}`,
 });
 
 const mapRealKpiToMockShape = (kpi: KPI, template: MockKpiDef): MockKpiDef => {
@@ -215,28 +230,23 @@ const mapLevel2Kpi = (
 };
 
 export const buildKpiGridItems = (
-  mockItems: MockKpiDef[],
+  templates: MockKpiDef[],
   realKpis: KPI[] | undefined,
   level2Data?: Level2KpiData,
-): MockKpiDef[] => {
-  return mockItems.map((item) => {
-    // 1. Try Level 1 real KPI first
-    if (realKpis && realKpis.length > 0) {
-      const realKpi = findRealKpi(item.name, realKpis);
-      if (realKpi) return mapRealKpiToMockShape(realKpi, item);
-    }
+): MockKpiDef[] =>
+  templates.map((item) => {
+    const realKpi = realKpis?.length
+      ? findRealKpi(item.name, realKpis)
+      : undefined;
+    if (realKpi) return mapRealKpiToMockShape(realKpi, item);
 
-    // 2. Try Level 2 real KPI data
     const level2Item = mapLevel2Kpi(item, level2Data);
     if (level2Item !== item) return level2Item;
 
-    // 3. Fallback to mock item — se marca explícitamente como ilustrativo (§3.8) para que
-    // el card correspondiente no sea indistinguible de uno con dato real.
-    if (typeof console !== "undefined") {
-      console.warn(
-        `[dashboard_v2] KPI "${item.name}" no tiene dato real (Nivel 1/2) disponible, mostrando mock`,
-      );
-    }
+    if (LEVEL2_SOURCED_KPIS.has(item.name) && level2Data?.isLoading)
+      return withoutValue(item, "Cargando");
+    if (MOCK_TO_TECHNICAL_NAME[item.name] || LEVEL2_SOURCED_KPIS.has(item.name))
+      return withoutValue(item, "Sin datos");
+
     return { ...item, _isMock: true };
   });
-};

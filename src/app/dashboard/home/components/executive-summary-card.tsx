@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
 import { useProfileContext } from "@/context/ProfileContext";
-import { MOCK_EXECUTIVE_SUMMARY } from "../constants/mock-extras";
 import { useExecutiveSummary } from "../hooks/useDashboardAggregates";
 import { QuironAiButton } from "./ai/quiron-buttons";
+import { CardMessage, loadingOrEmpty } from "./card-message";
 
 export const ExecutiveSummaryCard: React.FC = () => {
   const { session, profile } = useProfileContext();
@@ -14,18 +14,20 @@ export const ExecutiveSummaryCard: React.FC = () => {
     enabled: !!session?.token && !!profile?.client?.id,
   });
 
-  const s = realData || MOCK_EXECUTIVE_SUMMARY;
+  if (!realData) {
+    return (
+      <div className="qxv2-card qxv2-summary">
+        <div className="qxv2-sm-label">Resumen ejecutivo · Quirón</div>
+        <CardMessage>{loadingOrEmpty(isLoading)}</CardMessage>
+      </div>
+    );
+  }
+
+  const s = realData;
 
   return (
     <div className="qxv2-card qxv2-summary">
-      <div className="qxv2-sm-label">
-        Resumen ejecutivo · Quirón
-        {!realData && (
-          <span style={{ marginLeft: 8, fontWeight: 700, opacity: 0.7 }}>
-            {isLoading ? "· cargando…" : "· datos ilustrativos"}
-          </span>
-        )}
-      </div>
+      <div className="qxv2-sm-label">Resumen ejecutivo · Quirón</div>
       <p>{s.text}</p>
       <div className="qxv2-sm-acts-title">Acciones recomendadas</div>
       <div className="qxv2-q-actions">
@@ -37,7 +39,10 @@ export const ExecutiveSummaryCard: React.FC = () => {
         ))}
       </div>
       <div className="qxv2-sm-actions">
-        <QuironAiButton topic="resumen" label="Analizar estos datos con Quirón" />
+        <QuironAiButton
+          topic="resumen"
+          label="Analizar estos datos con Quirón"
+        />
         <span className="qxv2-sm-hint">
           Quirón podrá explicar el resumen y sugerir próximos pasos.
         </span>

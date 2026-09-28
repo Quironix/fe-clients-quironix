@@ -8,19 +8,33 @@ import { buildKpiGridItems } from "../utils/kpi-adapter";
 import { KPI } from "../../overview/services/types";
 
 describe("kpi-adapter (Dashboard V2)", () => {
-  it("should return mock items flagged as _isMock when real KPIs and level 2 data are undefined (§3.8)", () => {
+  it("KPIs with a real source never fall back to mock numbers; only sourceless ones stay illustrative", () => {
     const items = buildKpiGridItems(MOCK_KPIS_MANAGER, undefined, undefined);
-    expect(items).toEqual(
-      MOCK_KPIS_MANAGER.map((item) => ({ ...item, _isMock: true })),
-    );
-    expect(items.every((item) => item._isMock === true)).toBe(true);
+    expect(
+      items.map((i) => [i.name, i.value, i.badge.tx, !!i._isMock]),
+    ).toEqual([
+      ["DSO", "—", "Sin datos", false],
+      ["% Overdue Crítico", "—", "Sin datos", false],
+      ["Generación de Caja", "—", "Sin datos", false],
+      ["Credibilidad compuesta", "—", "Sin datos", false],
+      ["Calidad de Negociación", "58", "→ +0,8 pp", true],
+    ]);
+  });
+
+  it("while level 2 data is loading, its KPIs show 'Cargando' instead of mock numbers", () => {
+    const items = buildKpiGridItems(MOCK_KPIS_JEFE, undefined, {
+      isLoading: true,
+    });
+    const tasks = items.find((i) => i.name === "% Avance de Tareas");
+    expect(tasks).toMatchObject({ value: "—", badge: { tx: "Cargando" } });
+    expect(tasks?._isMock).toBeUndefined();
   });
 
   it("should adapt Level 1 real KPIs into MockKpiDef shape", () => {
     const realKpis: KPI[] = [
       {
         id: "dso-id",
-        name: "DSO (Días de Venta Pendientes)",
+        name: "DSO",
         value: 48.5,
         target: 35,
         unit: "d",
