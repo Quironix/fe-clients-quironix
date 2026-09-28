@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const KPI_NAME_MAP: Record<string, string> = {
   CASH_GENERATION: "Generación de Caja",
   CEI_PERCENTAGE: "% CEI",
-  CREDIBILITY_INDEX: "Índice Credibilidad",
+  CREDIBILITY_INDEX: "Credibilidad compuesta",
   QUIRONIX_BANK_RECONCILIATION: "Conciliación Bancaria Quironix",
   QUIRONIX_SERVICE_TIME_COMPENSATION: "Compensación Tiempo de Servicio - Quironix",
   LITIGATION_NORMALIZATION_PERCENTAGE: "% Normalización Litigios",
@@ -25,7 +25,7 @@ const KPI_NAME_MAP: Record<string, string> = {
 const KPI_DEFINITION_MAP: Record<string, string> = {
   CASH_GENERATION: "El Recaudado Real es la sumatoria de los pagos recibidos y debe excluir cheques a fecha, Ajustes y aplicaciones. Este debe mostrarse diariamente e ir con el acumulado mensual. Debe tener Cierre mensual.",
   CEI_PERCENTAGE: "Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.",
-  CREDIBILITY_INDEX: "Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera. No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.",
+  CREDIBILITY_INDEX: "Promedio de la nota de Credibilidad Compuesta de los deudores: el % de sus promesas y vencimientos de facturas de los últimos 12 meses que cumplieron (80% pagado dentro del plazo). Solo entran deudores con 3 o más obligaciones resueltas.",
   QUIRONIX_BANK_RECONCILIATION: "Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix",
   QUIRONIX_SERVICE_TIME_COMPENSATION: "Busca medir el % de pagos que fueron aplicados de forma automática en las primeras 24 horas desde el momento en que el pago ingresa en cartola o es registrado en la plataforma.",
   LITIGATION_NORMALIZATION_PERCENTAGE: "Mide el % de litigios que han sido normalizados.",

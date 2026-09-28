@@ -21,7 +21,7 @@ const MOCK_TO_TECHNICAL_NAME: Record<string, string> = {
   "% Overdue Crítico": "CRITICAL_OVER_DUE_PERCENTAGE",
   "Overdue Crítico": "CRITICAL_OVER_DUE_PERCENTAGE",
   "Generación de Caja": "CASH_GENERATION",
-  "Índice de Credibilidad": "CREDIBILITY_INDEX",
+  "Credibilidad compuesta": "CREDIBILITY_INDEX",
   "Efectividad de Negociación": "NEGOTIATION_EFFECTIVENESS",
 };
 

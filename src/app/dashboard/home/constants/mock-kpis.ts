@@ -71,7 +71,7 @@ export const MOCK_KPIS_MANAGER: MockKpiDef[] = [
     tag: "Calidad producida",
   },
   {
-    name: "Índice de Credibilidad",
+    name: "Credibilidad compuesta",
     viz: "trend",
     q: "¿Podemos confiar en lo que promete el deudor?",
     value: "71",

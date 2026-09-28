@@ -104,13 +104,13 @@ describe("kpi-adapter (Dashboard V2)", () => {
     const realKpis: KPI[] = [
       {
         id: "credibility-id",
-        name: "Índice credibilidad",
+        name: "Credibilidad compuesta",
         value: 0,
         target: 60,
         unit: "%",
         status: "error",
         category: "produced-quality",
-        description: "Índice de credibilidad",
+        description: "Credibilidad compuesta",
         formula: "CREDIBILITY_INDEX",
         thresholds: { good: 60, warning: 40, direction: "up" },
         history: [],
@@ -120,7 +120,7 @@ describe("kpi-adapter (Dashboard V2)", () => {
 
     const items = buildKpiGridItems(MOCK_KPIS_MANAGER, realKpis);
     const credibilityItem = items.find(
-      (i) => i.name === "Índice de Credibilidad",
+      (i) => i.name === "Credibilidad compuesta",
     );
 
     expect(credibilityItem).toBeDefined();

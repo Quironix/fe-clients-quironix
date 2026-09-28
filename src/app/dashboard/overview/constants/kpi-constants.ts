@@ -24,7 +24,7 @@ export type ViewType =
 export const KPI_NAME_MAP: Record<string, string> = {
   CASH_GENERATION: "Generación de caja",
   CEI_PERCENTAGE: "% CEI",
-  CREDIBILITY_INDEX: "Índice credibilidad",
+  CREDIBILITY_INDEX: "Credibilidad compuesta",
   QUIRONIX_BANK_RECONCILIATION: "Conciliación bancaria Quironix",
   QUIRONIX_SERVICE_TIME_COMPENSATION:
     "Compensación tiempo de servicio - Quironix",
@@ -48,7 +48,7 @@ export const KPI_DEFINITION_MAP: Record<string, string> = {
   CEI_PERCENTAGE:
     "Este Indicador representa el % que estoy logrando Cobrar de todo lo que se podía cobrar (deuda vencida). Lo importante es ir monitoreando su tendencia mes a mes para que se acerque al 100% que es el ideal.",
   CREDIBILITY_INDEX:
-    "Este indicador mide la confiabilidad y autonomía de pago de cada deudor, reflejando el costo de gobernabilidad de la cartera. No se limita a medir el atraso de pagos (DBT), sino el esfuerzo operativo necesario para que el cliente cumpla lo que aceptó.",
+    "Promedio de la nota de Credibilidad Compuesta de los deudores: el % de sus promesas y vencimientos de facturas de los últimos 12 meses que cumplieron (80% pagado dentro del plazo). Solo entran deudores con 3 o más obligaciones resueltas.",
   QUIRONIX_BANK_RECONCILIATION:
     "Este indicador busca medir el % de pagos de cartola que fueron aplicados de forma automática por Quironix",
   QUIRONIX_SERVICE_TIME_COMPENSATION:
