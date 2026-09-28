@@ -29,5 +29,5 @@ export const getDebtorKpis = async (
   );
   if (!response.ok) return null;
   const json = await response.json();
-  return (json?.data ?? json) as DebtorKpis;
+  return (json?.data ?? null) as DebtorKpis | null;
 };

@@ -337,10 +337,19 @@ export const getTeamCapacity = (accessToken: string, clientId: string) => {
   );
 };
 
-export const getQuironscore = (accessToken: string, clientId: string) => {
-  return safeFetch<QuironscoreData | null>(
-    `${API_URL}/v2/clients/${clientId}/reports/kpis/quironscore`,
-    accessToken,
-    null,
-  );
+export const getQuironscore = async (
+  accessToken: string,
+  clientId: string,
+): Promise<QuironscoreData | null> => {
+  try {
+    const response = await fetch(
+      `${API_URL}/v2/clients/${clientId}/reports/kpis/quironscore`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    if (!response.ok) return null;
+    const json = await response.json();
+    return json?.data ?? null;
+  } catch {
+    return null;
+  }
 };
