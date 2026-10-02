@@ -58,6 +58,7 @@ export interface CaseData {
 
   // Litigio
   litigationId?: string;
+  litigationIds?: string[];
   litigationData?: any;
 
   // Plan de pago

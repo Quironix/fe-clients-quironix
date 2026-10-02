@@ -1599,9 +1599,16 @@
       "sectionDescription": "Select the debtor's open litigations, indicate the normalization reason and resolve pending compensation cases.",
       "normalizeButton": "Normalize"
     },
+    "management": {
+      "date": "Next management date",
+      "time": "Next management time",
+      "sendEmail": "Send summary by email after saving.",
+      "emailSent": "Email sent to {email}",
+      "emailFailed": "Email to {email} could not be sent",
+      "contactWithoutEmail": "The selected contact has no email; the email was not sent",
+      "trackError": "The litigation was saved, but the management could not be registered in the history"
+    },
     "normalizeForm": {
-      "clientRequired": "Client is required",
-      "client": "Client",
       "debtor": "Debtor",
       "openLitigations": "Open litigations",
       "selected": "{count} selected",

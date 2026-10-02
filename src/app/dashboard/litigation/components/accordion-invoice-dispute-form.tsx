@@ -32,6 +32,22 @@ import { disputes, INVOICE_TYPES } from "../../data";
 import { getDTEsByDebtor } from "../../transactions/dte/services";
 import { DTE } from "../../transactions/dte/types";
 
+const toAmount = (value?: string | number) => {
+  const amount = parseInt(String(value ?? ""), 10);
+  return amount > 0 ? amount.toString() : "";
+};
+
+const typedAmount = (input: string) => toAmount(input.replace(/\D/g, ""));
+
+const formatAmount = (value?: string) => {
+  const amount = toAmount(value);
+  return amount
+    ? new Intl.NumberFormat("es-CL", { maximumFractionDigits: 0 }).format(
+        Number(amount)
+      )
+    : "";
+};
+
 interface AccordionInvoiceDisputeFormProps {
   form: UseFormReturn<any>;
   control: Control<any>;
@@ -389,44 +405,24 @@ const AccordionInvoiceDisputeForm = ({
                           value={litigationAmountDisplays[index] || ""}
                           disabled={dataToAdd && index === 0}
                           onChange={(e) => {
-                            // Remove non-numeric characters
-                            const rawValue = e.target.value.replace(
-                              /[^0-9]/g,
-                              ""
-                            );
-                            const numericValue = parseInt(rawValue) || 0;
+                            const amount = typedAmount(e.target.value);
 
-                            // Update form value
-                            field.onChange(numericValue.toString());
-
-                            // Update display value
+                            field.onChange(amount);
                             setLitigationAmountDisplays((prev) => ({
                               ...prev,
-                              [index]: e.target.value,
+                              [index]: amount,
                             }));
                           }}
                           onBlur={() => {
-                            // Format value on blur
-                            const value = parseInt(field.value) || 0;
-                            const formattedAmount = new Intl.NumberFormat(
-                              "es-CL",
-                              {
-                                style: "decimal",
-                                maximumFractionDigits: 0,
-                                minimumFractionDigits: 0,
-                              }
-                            ).format(value);
                             setLitigationAmountDisplays((prev) => ({
                               ...prev,
-                              [index]: formattedAmount,
+                              [index]: formatAmount(field.value),
                             }));
                           }}
                           onFocus={() => {
-                            // Show raw number on focus for easier editing
-                            const value = parseInt(field.value) || 0;
                             setLitigationAmountDisplays((prev) => ({
                               ...prev,
-                              [index]: value.toString(),
+                              [index]: toAmount(field.value),
                             }));
                           }}
                         />
@@ -455,40 +451,26 @@ const AccordionInvoiceDisputeForm = ({
                           <Input
                             type="text"
                             placeholder="0.00"
-                            value={litigationAmountLitigioDisplays[index] || field.value || ""}
+                            value={litigationAmountLitigioDisplays[index] ?? field.value ?? ""}
                             onChange={(e) => {
-                              // Remove non-numeric characters
-                              const rawValue = e.target.value.replace(/[^0-9]/g, "");
-                              const numericValue = parseInt(rawValue) || 0;
+                              const amount = typedAmount(e.target.value);
 
-                              // Update form value
-                              field.onChange(numericValue.toString());
-
-                              // Update display value
+                              field.onChange(amount);
                               setLitigationAmountLitigioDisplays((prev) => ({
                                 ...prev,
-                                [index]: e.target.value,
+                                [index]: amount,
                               }));
                             }}
                             onBlur={() => {
-                              // Format value on blur
-                              const value = parseInt(field.value) || 0;
-                              const formattedAmount = new Intl.NumberFormat("es-CL", {
-                                style: "decimal",
-                                maximumFractionDigits: 0,
-                                minimumFractionDigits: 0,
-                              }).format(value);
                               setLitigationAmountLitigioDisplays((prev) => ({
                                 ...prev,
-                                [index]: formattedAmount,
+                                [index]: formatAmount(field.value),
                               }));
                             }}
                             onFocus={() => {
-                              // Show raw number on focus for easier editing
-                              const value = parseInt(field.value) || 0;
                               setLitigationAmountLitigioDisplays((prev) => ({
                                 ...prev,
-                                [index]: value.toString(),
+                                [index]: toAmount(field.value),
                               }));
                             }}
                             className={isExceeding ? "border-red-500 focus:border-red-500" : ""}

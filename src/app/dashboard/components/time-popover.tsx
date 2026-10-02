@@ -34,6 +34,7 @@ interface TimePopoverProps {
   startHour?: number;
   endHour?: number;
   interval?: number;
+  modal?: boolean;
 }
 
 const generateTimeOptions = (
@@ -63,6 +64,7 @@ export const TimePopover = ({
   startHour = 8,
   endHour = 22,
   interval = 15,
+  modal = false,
 }: TimePopoverProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const timeOptions = generateTimeOptions(startHour, endHour, interval);
@@ -73,7 +75,11 @@ export const TimePopover = ({
       <FormLabel>
         {label} {required && <span className="text-red-500">*</span>}
       </FormLabel>
-      <Popover open={open || false} onOpenChange={(isOpen) => setOpen(isOpen)}>
+      <Popover
+        open={open || false}
+        onOpenChange={(isOpen) => setOpen(isOpen)}
+        modal={modal}
+      >
         <PopoverTrigger asChild>
           <FormControl>
             <Button

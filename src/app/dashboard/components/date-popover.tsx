@@ -16,6 +16,7 @@ import {
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
 import { ControllerRenderProps } from "react-hook-form";
 import type { Matcher } from "react-day-picker";
 
@@ -25,6 +26,7 @@ interface DatePopoverProps {
   placeholder?: string;
   required?: boolean;
   disabled?: boolean | Matcher | Matcher[];
+  modal?: boolean;
 }
 
 export const DatePopover = ({
@@ -33,7 +35,9 @@ export const DatePopover = ({
   placeholder = "DD-MM-AAAA",
   required = false,
   disabled = false,
+  modal = false,
 }: DatePopoverProps) => {
+  const [open, setOpen] = useState(false);
   const isTriggerDisabled = typeof disabled === "boolean" ? disabled : false;
 
   return (
@@ -41,7 +45,7 @@ export const DatePopover = ({
       <FormLabel>
         {label} {required && <span className="text-red-500">*</span>}
       </FormLabel>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen} modal={modal}>
         <PopoverTrigger asChild>
           <FormControl>
             <Button
@@ -62,7 +66,10 @@ export const DatePopover = ({
           <Calendar
             mode="single"
             selected={field.value}
-            onSelect={field.onChange}
+            onSelect={(date) => {
+              field.onChange(date);
+              setOpen(false);
+            }}
             locale={es}
             initialFocus
             disabled={disabled}

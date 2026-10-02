@@ -1599,9 +1599,16 @@
       "sectionDescription": "Selecciona los litigios abiertos del deudor, indica la razón de normalización y resuelve los casos de compensación pendientes.",
       "normalizeButton": "Normalizar"
     },
+    "management": {
+      "date": "Fecha próxima gestión",
+      "time": "Hora próxima gestión",
+      "sendEmail": "Enviar resumen por email después de guardar.",
+      "emailSent": "Email enviado a {email}",
+      "emailFailed": "Email a {email} no pudo enviarse",
+      "contactWithoutEmail": "El contacto seleccionado no tiene email; no se envió el correo",
+      "trackError": "El litigio se guardó, pero no se pudo registrar la gestión en el histórico"
+    },
     "normalizeForm": {
-      "clientRequired": "El cliente es requerido",
-      "client": "Cliente",
       "debtor": "Deudor",
       "openLitigations": "Litigios abiertos",
       "selected": "{count} seleccionado",
