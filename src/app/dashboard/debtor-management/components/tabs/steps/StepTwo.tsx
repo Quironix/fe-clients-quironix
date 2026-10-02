@@ -73,7 +73,7 @@ import { cn, formatNumber } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
 
 import { Invoice } from "@/app/dashboard/payment-plans/store";
-import { getHolidays } from "@/app/dashboard/debtor-management/services/business-days";
+import { useHolidaySet } from "@/app/dashboard/debtor-management/hooks/useHolidaySet";
 import {
   computeDueDateCap,
   isNextManagementDateDisabled as checkNextManagementDateDisabled,
@@ -446,31 +446,8 @@ export const StepTwo = ({
 
   // Fecha próxima gestión: fines de semana + feriados chilenos + fechas
   // pasadas + tope por vencimiento. Ver PRD_tareas_validacion_fecha_y_pdf_facturas.md §8.
-  const [holidaySet, setHolidaySet] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!session?.token || !profile?.client_id) return;
-
-    const currentYear = new Date().getFullYear();
-
-    Promise.all([
-      getHolidays(session.token, profile.client_id, currentYear),
-      getHolidays(session.token, profile.client_id, currentYear + 1),
-    ])
-      .then(([currentYearHolidays, nextYearHolidays]) => {
-        setHolidaySet(
-          new Set([
-            ...currentYearHolidays.holidays,
-            ...nextYearHolidays.holidays,
-          ])
-        );
-      })
-      .catch((error) => {
-        // Fail open: never block scheduling because the holidays fetch
-        // failed — only weekend/past-date/due-date-cap rules still apply.
-        console.error("Error al obtener feriados:", error);
-      });
-  }, [session?.token, profile?.client_id]);
+  // Si la carga de feriados falla, el resto de las reglas sigue aplicando.
+  const holidaySet = useHolidaySet(session?.token, profile?.client_id);
 
   const dueDateCap = useMemo(
     () => computeDueDateCap(selectedInvoices || [], holidaySet),

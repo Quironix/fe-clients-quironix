@@ -33,7 +33,7 @@ interface DebtorContactSelectFormItemProps {
   multiple?: boolean;
 }
 
-function buildContactLabel(contact: any): string {
+export function buildContactLabel(contact: any): string {
   return `${contact.name} ${
     contact.email ? `- ${contact.email}` : contact.phone ? `- ${contact.phone}` : ""
   }`;
