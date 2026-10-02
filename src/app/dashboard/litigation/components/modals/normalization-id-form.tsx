@@ -27,14 +27,21 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import { useLitigationManagement } from "../../hooks/useLitigationManagement";
 import { normalization } from "../../services";
+import {
+  managementDefaults,
+  managementShape,
+} from "../../services/litigation-tracks";
 import { LitigationItem } from "../../types";
+import ManagementFields from "../management-fields";
 
 const litigationEditSchema = z.object({
   normalization_reason: z.string(),
   normalization_by_contact: z.string(),
   comment: z.string(),
   is_important_comment: z.boolean(),
+  ...managementShape,
 });
 
 type LitigationEditForm = z.infer<typeof litigationEditSchema>;
@@ -55,6 +62,7 @@ const NormalizationFormId = ({
   const { data: session } = useSession();
   const { profile } = useProfileContext();
   const t = useTranslations("litigation");
+  const registerManagement = useLitigationManagement();
   const tCommon = useTranslations("common");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,6 +70,7 @@ const NormalizationFormId = ({
   const form = useForm<LitigationEditForm>({
     resolver: zodResolver(litigationEditSchema) as any,
     defaultValues: {
+      ...managementDefaults,
       normalization_reason: "",
       normalization_by_contact: "",
       comment: "",
@@ -100,6 +109,20 @@ const NormalizationFormId = ({
 
       if (response.success) {
         toast.success(response.message);
+
+        await registerManagement({
+          kind: "NORMALIZATION",
+          debtorId: litigation.debtor_id,
+          invoiceIds: [litigation.invoice_id],
+          litigationIds: [litigationId],
+          observation: data.comment,
+          contacts: litigation.debtor.contacts,
+          selectedContact: data.normalization_by_contact,
+          nextManagementDate: data.nextManagementDate,
+          nextManagementTime: data.nextManagementTime,
+          sendEmail: data.sendEmail,
+        });
+
         onOpenChange(false);
         reset();
         if (onRefetch) {
@@ -251,6 +274,8 @@ const NormalizationFormId = ({
               </FormItem>
             )}
           />
+
+          <ManagementFields control={control} />
 
           <div className=" bg-[#FF8113] h-0.5 max-w-full mt-5"></div>
 

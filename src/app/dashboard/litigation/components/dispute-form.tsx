@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import * as z from "zod";
 
@@ -24,15 +24,21 @@ import { DataTableDynamicColumns } from "../../components/data-table-dynamic-col
 import DebtorContactSelectFormItem from "../../components/debtor-contact-select-form-item";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
 import LoaderTable from "../../components/loader-table";
-import SelectClient from "../../components/select-client";
+import { DISPUTE_MESSAGES } from "../../data";
 import { useDebtorsStore } from "../../debtors/store";
 import { useDTEs } from "../../transactions/dte/hooks/useDTEs";
+import { useLitigationManagement } from "../hooks/useLitigationManagement";
 import { createLitigation, GetAllLitigationByDebtorId } from "../services";
+import {
+  managementDefaults,
+  managementShape,
+} from "../services/litigation-tracks";
 import { usePaymentNettingStore } from "../../payment-netting/store";
 import AccordionInvoiceDisputeForm from "./accordion-invoice-dispute-form";
 import { columnsLitigationEntry } from "./columns-litigation-entry";
 import EmptyLitigations from "./empty-litigations";
 import LitigationDialogConfirm from "./litigation-dialog-confirm";
+import ManagementFields from "./management-fields";
 
 const invoiceSchema = z
   .object({
@@ -66,22 +72,18 @@ const invoiceSchema = z
     }
   );
 
-const litigationSchema = (isFactoring: boolean) => {
-  return z.object({
-    client: isFactoring
-      ? z.string().min(1, "El cliente es requerido")
-      : z.string().optional().nullable(),
-    debtorId: z.string().min(1, "El deudor es requerido"),
-    contact: z.string().min(1, "El contacto es requerido"),
-    initial_comment: z.string().optional(),
-    invoices: z
-      .array(invoiceSchema)
-      .min(1, "Al menos una factura es requerida")
-      .max(10, "No puedes agregar más de 10 facturas"),
-  });
-};
+const litigationSchema = z.object({
+  debtorId: z.string().min(1, "El deudor es requerido"),
+  contact: z.string().min(1, "El contacto es requerido"),
+  initial_comment: z.string().optional(),
+  invoices: z
+    .array(invoiceSchema)
+    .min(1, "Al menos una factura es requerida")
+    .max(10, "No puedes agregar más de 10 facturas"),
+  ...managementShape,
+});
 
-type LitigationForm = z.infer<ReturnType<typeof litigationSchema>>;
+type LitigationForm = z.infer<typeof litigationSchema>;
 
 const DisputeForm = ({
   handleClose,
@@ -96,23 +98,18 @@ const DisputeForm = ({
   const [showDialog, setShowDialog] = useState(false);
   const { profile } = useProfileContext();
   const t = useTranslations("litigation");
+  const registerManagement = useLitigationManagement();
   const tCommon = useTranslations("common");
   const [litigationsByDebtor, setLitigationsByDebtor] = useState([]);
   const [selectedDebtor, setSelectedDebtor] = useState<any>(null);
   const { fetchDebtorById, dataDebtor, isFetchingDebtor } = useDebtorsStore();
   const { totalInvoices, totalPayments } = usePaymentNettingStore();
 
-  const isFactoring = profile?.client?.type === "FACTORING";
-  const litigationFormSchema = useMemo(
-    () => litigationSchema(isFactoring),
-    [isFactoring]
-  );
-
   const form = useForm<LitigationForm>({
-    resolver: zodResolver(litigationFormSchema) as any,
+    resolver: zodResolver(litigationSchema) as any,
     mode: "onSubmit",
     defaultValues: {
-      client: isFactoring ? "" : null,
+      ...managementDefaults,
       debtorId: "",
       contact: "",
       initial_comment: "",
@@ -203,19 +200,17 @@ const DisputeForm = ({
     }
   }, [dataDebtor]);
 
-  // Efecto para limpiar campo cliente cuando no es Factoring
-  useEffect(() => {
-    if (!isFactoring) {
-      form.setValue("client", null);
-    }
-  }, [isFactoring, form]);
-
-  const onSubmit = async (data: LitigationForm) => {
+  const onSubmit = async ({
+    nextManagementDate,
+    nextManagementTime,
+    sendEmail,
+    ...litigationData
+  }: LitigationForm) => {
     try {
       const res = await createLitigation({
         accessToken: session.token,
         clientId: profile.client_id,
-        dataToInsert: data,
+        dataToInsert: litigationData,
       });
 
       if (!res.success) {
@@ -223,7 +218,33 @@ const DisputeForm = ({
         return;
       }
 
+      const createdLitigations: { id: string; invoice_id: string }[] =
+        res.data?.successes ?? [];
+
+      if (createdLitigations.length === 0) {
+        const errorCode = res.data?.errors?.[0]?.error;
+        toast.error(
+          DISPUTE_MESSAGES[errorCode as keyof typeof DISPUTE_MESSAGES] ||
+            "Error al crear litigio"
+        );
+        return;
+      }
+
       toast.success(res.message);
+
+      await registerManagement({
+        kind: "ENTRY",
+        debtorId: litigationData.debtorId,
+        invoiceIds: createdLitigations.map(({ invoice_id }) => invoice_id),
+        litigationIds: createdLitigations.map(({ id }) => id),
+        observation: litigationData.initial_comment,
+        contacts: selectedDebtor?.contacts,
+        selectedContact: litigationData.contact,
+        nextManagementDate,
+        nextManagementTime,
+        sendEmail,
+      });
+
       // Solo ejecutar refetch y cerrar modal en caso de éxito
       if (onRefetch) {
         onRefetch();
@@ -280,44 +301,24 @@ const DisputeForm = ({
     <>
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div
-            className={`grid ${isFactoring ? "grid-cols-2" : "grid-cols-1"} gap-4`}
-          >
-            {isFactoring && (
-              <FormField
-                control={control}
-                name="client"
-                render={({ field }) => (
-                  <SelectClient
-                    field={field}
-                    title="Cliente"
-                    singleClient
-                    required
-                    modal
-                  />
-                )}
-              />
-            )}
-
-            <FormField
-              control={control}
-              name="debtorId"
-              render={({ field }) => (
-                dataToAdd?.debtor?.name ? (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Deudor *
-                    </label>
-                    <div className="flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
-                      {dataToAdd.debtor.name}
-                    </div>
+          <FormField
+            control={control}
+            name="debtorId"
+            render={({ field }) => (
+              dataToAdd?.debtor?.name ? (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Deudor *
+                  </label>
+                  <div className="flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
+                    {dataToAdd.debtor.name}
                   </div>
-                ) : (
-                  <DebtorsSelectFormItem field={field} title="Deudor" required modal />
-                )
-              )}
-            />
-          </div>
+                </div>
+              ) : (
+                <DebtorsSelectFormItem field={field} title="Deudor" required modal />
+              )
+            )}
+          />
 
           <AccordionInvoiceDisputeForm
             form={form}
@@ -386,6 +387,8 @@ const DisputeForm = ({
               </FormItem>
             )}
           />
+
+          <ManagementFields control={control} />
 
           <div className="flex items-center justify-center border-t border-orange-500 pt-4 w-full">
             <Button

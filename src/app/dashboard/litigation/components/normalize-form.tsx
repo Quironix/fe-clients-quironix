@@ -36,31 +36,32 @@ import { toast } from "sonner";
 import DebtorContactSelectFormItem from "../../components/debtor-contact-select-form-item";
 import DebtorsSelectFormItem from "../../components/debtors-select-form-item";
 import DocumentTypeBadge from "../../payment-netting/components/document-type-badge";
-import SelectClient from "../../components/select-client";
 import { NORMALIZATION_REASONS } from "../../data";
+import { useLitigationManagement } from "../hooks/useLitigationManagement";
 import { bulkLitigatiions, getLitigationsByDebtor } from "../services";
+import {
+  managementDefaults,
+  managementShape,
+} from "../services/litigation-tracks";
 import { useDisputeStore } from "../store/disputeStore";
 import { useLitigationStore } from "../store/litigation-store";
 import { LitigationItem } from "../types";
 import { getMotivoLabel, getSubmotivoLabel } from "./columns";
 import EmptyLitigations from "./empty-litigations";
+import ManagementFields from "./management-fields";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const litigationSchema = (isFactoring: boolean) => {
-  return z.object({
-    client_id: isFactoring
-      ? z.string().min(1, "El cliente es requerido")
-      : z.string().optional().nullable(),
-    litigation_ids: z.array(z.string()).optional(),
-    normalization_reason: z.string().optional(),
-    normalization_by_contact: z.string().optional(),
-    comment: z.string().optional(),
-    debtorId: z.string().optional(),
-  });
-};
+const litigationSchema = z.object({
+  litigation_ids: z.array(z.string()).optional(),
+  normalization_reason: z.string().optional(),
+  normalization_by_contact: z.string().optional(),
+  comment: z.string().optional(),
+  debtorId: z.string().optional(),
+  ...managementShape,
+});
 
-type LitigationForm = z.infer<ReturnType<typeof litigationSchema>>;
+type LitigationForm = z.infer<typeof litigationSchema>;
 
 interface NormalizeFormProps {
   onSuccess?: () => void;
@@ -73,7 +74,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
   const { litigiosIngresados, addLitigio } = useLitigationStore();
   const tNorm = useTranslations("litigation.normalizeForm");
   const tCommon = useTranslations("common.buttons");
-  const isFactoring = profile?.client?.type === "FACTORING";
+  const registerManagement = useLitigationManagement();
 
   const [currentLitigation, setCurrentLitigation] = useState<LitigationItem[]>(
     []
@@ -83,13 +84,13 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
   );
 
   const form = useForm<LitigationForm>({
-    resolver: zodResolver(litigationSchema(isFactoring)) as any,
+    resolver: zodResolver(litigationSchema) as any,
     defaultValues: {
+      ...managementDefaults,
       litigation_ids: [],
       normalization_reason: "",
       normalization_by_contact: "",
       comment: "",
-      client_id: "",
     },
   });
 
@@ -188,15 +189,37 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
         profile?.client_id,
         payload
       );
-      if (response.success) {
-        toast.success(response.message);
-        reset();
-        setSelectedLitigationIds([]);
-        // Cerrar el dialog si es exitoso
-        onSuccess?.();
-      } else {
+      if (!response.success) {
         toast.error(response.message);
+        return;
       }
+
+      const normalizedLitigations: LitigationItem[] =
+        response.data?.successful ?? [];
+
+      if (normalizedLitigations.length === 0) {
+        toast.error(response.data?.failed?.[0]?.details || tNorm("saveError"));
+        return;
+      }
+
+      toast.success(response.message);
+
+      await registerManagement({
+        kind: "NORMALIZATION",
+        debtorId: data.debtorId,
+        invoiceIds: normalizedLitigations.map(({ invoice_id }) => invoice_id),
+        litigationIds: normalizedLitigations.map(({ id }) => id),
+        observation: data.comment,
+        contacts: currentLitigation[0]?.debtor?.contacts,
+        selectedContact: data.normalization_by_contact,
+        nextManagementDate: data.nextManagementDate,
+        nextManagementTime: data.nextManagementTime,
+        sendEmail: data.sendEmail,
+      });
+
+      reset();
+      setSelectedLitigationIds([]);
+      onSuccess?.();
     } catch (error) {
       console.error(error);
       toast.error(tNorm("saveError"));
@@ -211,26 +234,13 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-6"
         >
-          {/* Cliente y Deudor */}
-          <div className="grid grid-cols-2 gap-4">
-            {isFactoring && (
-              <FormField
-                control={control}
-                name="client_id"
-                render={({ field }) => (
-                  <SelectClient field={field} title={tNorm("client")} singleClient modal />
-                )}
-              />
+          <FormField
+            control={control}
+            name="debtorId"
+            render={({ field }) => (
+              <DebtorsSelectFormItem field={field} title={tNorm("debtor")} modal />
             )}
-
-            <FormField
-              control={control}
-              name="debtorId"
-              render={({ field }) => (
-                <DebtorsSelectFormItem field={field} title={tNorm("debtor")} modal />
-              )}
-            />
-          </div>
+          />
           Tabla de litigios
           {currentLitigation.length === 0 ? (
             <EmptyLitigations />
@@ -367,6 +377,7 @@ const NormalizeForm = ({ onSuccess }: NormalizeFormProps = {}) => {
               className="min-h-[40px]"
             />
           </div>
+          <ManagementFields control={control} />
           <div className=" bg-[#FF8113] h-0.5 max-w-full"></div>
           {/* Botón */}
           <div className="grid grid-cols-3 gap-4 items-center justify-center">
