@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { ChunkLoadErrorGuard } from "@/components/chunk-load-error-guard";
 import { IdleSessionGuard } from "@/components/idle-session-guard";
 import { ProfileProvider } from "@/context/ProfileContext";
 import type { Metadata } from "next";
@@ -44,6 +45,8 @@ export default async function RootLayout({
             })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
           `}
         </Script>
+
+        <ChunkLoadErrorGuard />
 
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
