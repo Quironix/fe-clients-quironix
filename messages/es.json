@@ -163,6 +163,11 @@
     "description": "Vas a ser desconectado automáticamente por inactividad en:",
     "stayLoggedIn": "Continuar sesión"
   },
+  "errorScreen": {
+    "title": "Algo salió mal",
+    "description": "Ocurrió un error inesperado al cargar la página. Recárgala para continuar.",
+    "reload": "Recargar página"
+  },
   "auth": {
     "login": {
       "title": "Bienvenidos/as",
