@@ -163,6 +163,11 @@
     "description": "You will be automatically logged out due to inactivity in:",
     "stayLoggedIn": "Stay logged in"
   },
+  "errorScreen": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred while loading the page. Reload it to continue.",
+    "reload": "Reload page"
+  },
   "auth": {
     "login": {
       "title": "Welcome",
