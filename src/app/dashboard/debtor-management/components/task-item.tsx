@@ -15,8 +15,9 @@ interface TaskItemProps {
   debtorId: string; // UUID del deudor
   code: string; // debtor_code para mostrar
   name: string;
-  incidents: number;
-  incidentsLabel: string;
+  incidents?: number;
+  incidentsLabel?: string;
+  detail?: string;
   debt: number;
   debtLabel: string;
   status: string;
@@ -32,6 +33,7 @@ export const TaskItem = ({
   name,
   incidents,
   incidentsLabel,
+  detail,
   debt,
   debtLabel,
   status,
@@ -98,10 +100,20 @@ export const TaskItem = ({
 
         {/* Incumplimientos - ancho fijo centrado */}
         <div className="flex flex-col items-center w-[120px] shrink-0">
-          <span className="text-2xl font-bold text-red-500">{incidents}</span>
-          <span className="text-[10px] text-gray-500 -mt-1">
-            {incidentsLabel}
-          </span>
+          {incidents === undefined ? (
+            <span className="text-[11px] text-gray-600 text-center">
+              {detail}
+            </span>
+          ) : (
+            <>
+              <span className="text-2xl font-bold text-red-500">
+                {incidents}
+              </span>
+              <span className="text-[10px] text-gray-500 -mt-1">
+                {incidentsLabel}
+              </span>
+            </>
+          )}
         </div>
 
         {/* Separador */}

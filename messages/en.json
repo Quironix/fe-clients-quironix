@@ -1308,6 +1308,23 @@
       "viewHistory": "View history",
       "viewCurrentAccount": "Current Account",
       "viewAllDebtorsCurrentAccount": "Current account for all debtors"
+    },
+    "dailyPlan": {
+      "invoiceProgress": "{done} of {total} invoices with a result",
+      "reasons": {
+        "BROKEN_COMMITMENT": "Broken commitment",
+        "INSTALLMENT_UNPAID": "Unpaid installment",
+        "CRITICAL_EVENT_OPEN": "Critical event",
+        "PAYMENT_ALLOCATION_PENDING": "Payment to allocate",
+        "CREDIT_CAPACITY_AT_RISK": "Credit line at risk",
+        "FORWARD_RISK_MATERIAL": "Forward risk",
+        "PORTFOLIO_CASH_DEVIATION": "Cash deviation",
+        "DUE_DEBT_FOLLOWUP": "Overdue debt",
+        "INBOUND_INTERPRETATION_PENDING": "Reply to review",
+        "COMMITMENT_WAIT": "Waiting on commitment",
+        "LITIGATION_WORKFLOW": "Litigation",
+        "CONTRACTUAL_COVERAGE": "Contractual coverage"
+      }
     }
   },
   "paymentPlans": {

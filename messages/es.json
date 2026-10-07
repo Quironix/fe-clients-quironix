@@ -1308,6 +1308,23 @@
       "viewHistory": "Ver historial",
       "viewCurrentAccount": "Cuenta Corriente",
       "viewAllDebtorsCurrentAccount": "Cuenta corriente de todos los deudores"
+    },
+    "dailyPlan": {
+      "invoiceProgress": "{done} de {total} facturas con resultado",
+      "reasons": {
+        "BROKEN_COMMITMENT": "Compromiso incumplido",
+        "INSTALLMENT_UNPAID": "Cuota impaga",
+        "CRITICAL_EVENT_OPEN": "Evento crítico",
+        "PAYMENT_ALLOCATION_PENDING": "Pago por imputar",
+        "CREDIT_CAPACITY_AT_RISK": "Línea de crédito en riesgo",
+        "FORWARD_RISK_MATERIAL": "Riesgo futuro",
+        "PORTFOLIO_CASH_DEVIATION": "Desvío de caja",
+        "DUE_DEBT_FOLLOWUP": "Deuda vencida",
+        "INBOUND_INTERPRETATION_PENDING": "Respuesta por revisar",
+        "COMMITMENT_WAIT": "Espera de compromiso",
+        "LITIGATION_WORKFLOW": "Litigio",
+        "CONTRACTUAL_COVERAGE": "Cobertura contractual"
+      }
     }
   },
   "paymentPlans": {
