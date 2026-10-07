@@ -4,7 +4,6 @@ import { Invoice } from "@/app/dashboard/payment-plans/store";
 import { ManagementFormData } from "../components/tabs/add-management-tab";
 import { ManagementCombination } from "../config/management-types";
 import { EmailAttachment, EmailInvoice, EmailPayload } from "../types/email";
-import { generateBodyDescriptionByDebtorComment } from "../utils/email-messages";
 import { generateBankInfoHTML } from "./bank-info-formatter";
 
 interface BuildEmailPayloadParams {
@@ -170,33 +169,7 @@ export function buildEmailPayload({
     process.env.NEXT_SG_SINGLE_MANAGEMENT ||
     "d-2ab3e2439491440c951a1cf46fdec7aa";
 
-  // Generate dynamic body_description based on debtor_comment and executive_comment
-  const rawBodyDescription = generateBodyDescriptionByDebtorComment({
-    debtorComment: managementFormData.debtorComment || "",
-    executiveComment: managementFormData.executiveComment || "",
-    isFactoring,
-    caseData: managementFormData.caseData,
-  });
-
-  const commitmentDate = managementFormData.caseData?.commitmentDate
-    ? formatDate(managementFormData.caseData.commitmentDate)
-    : managementFormData.caseData?.paymentDate
-      ? formatDate(managementFormData.caseData.paymentDate)
-      : managementFormData.caseData?.pickupDate
-        ? formatDate(managementFormData.caseData.pickupDate)
-        : "";
-
-  // {bank_account_info} and {email_company} are intentionally left in place
-  // here — the backend (SendManagementEmail, see
-  // PRD_comunicaciones_mensajes_pago_ejecutivo.md §8) replaces them with
-  // server-built bank data and the client's invoice inbox alias
-  // ({alias}@finanzas.quironix.com), so the frontend no longer needs the
-  // client.onboarding.banks scope, and doesn't fall back to the client's
-  // generic contact email (a different address, not meant for payments).
-  const bodyDescription = rawBodyDescription
-    .replace(/\{amount\}/g, `<strong>$${formatCurrency(displayAmount)}</strong>`)
-    .replace(/\{date\}/g, `<strong>${commitmentDate}</strong>`)
-    .replace(/\{name_client\}/g, `<strong>${contactName}</strong>`);
+  const bodyDescription = "{management_text}";
 
   const clientName = (profile as any)?.client?.name || "Quironix";
 
@@ -271,6 +244,10 @@ export function buildEmailPayload({
       email_company: clientEmail,
     },
     trackId,
+    management: {
+      debtorComment: managementFormData.debtorComment || "",
+      executiveComment: managementFormData.executiveComment || "",
+    },
     attachments: attachments && attachments.length > 0
       ? attachments
       : attachment
