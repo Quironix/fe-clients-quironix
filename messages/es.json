@@ -801,6 +801,64 @@
     }
   },
   "debtorManagement": {
+    "taskNeeds": {
+      "title": "Qué necesito hoy",
+      "progress": "{done} de {total} facturas con resultado",
+      "completed": "Tarea cumplida",
+      "register": "Registrar",
+      "registerPending": "Registrar pendientes ({count})",
+      "pending": "Pendiente",
+      "answered": "Respondido",
+      "returns": "vuelve el {date}",
+      "dueOn": "vence {date}",
+      "waitsUntil": "espera hasta {date}",
+      "waitingTitle": "Facturas que hoy no se exigen ({count})",
+      "needs": {
+        "RECOVER_BROKEN_COMMITMENT": "Compromiso incumplido: pago hoy o fecha nueva con monto",
+        "COLLECT_INSTALLMENT": "Cuota impaga: cobrar la cuota",
+        "CONFIRM_REPORTED_PAYMENT": "Pago informado: confirmar que llegó",
+        "ALLOCATE_FUNDS": "Fondos sin imputar: imputar el pago",
+        "OBTAIN_COMMITMENT": "Vencida sin compromiso: obtener compromiso",
+        "LOCATE_CONTACT": "Localizar contacto: probar otro teléfono o pedir datos al cliente",
+        "REACH_DECISION_MAKER": "Llegar a quien decide el pago",
+        "WAIT_COMMITMENT": "Compromiso vigente",
+        "WAIT_RESULT": "Esperando el resultado registrado",
+        "NOT_DUE": "Por vencer",
+        "RESPOND_INBOUND": "Responder el correo del deudor"
+      },
+      "results": {
+        "COMMITMENT": "Compromiso",
+        "PAYMENT_REPORTED": "Pago informado",
+        "RECEPTION_OR_ACCOUNTING": "Recepción o contabilización",
+        "LITIGATION": "Litigio",
+        "NO_CONTACT": "Sin contacto",
+        "PROBLEM_WITH_DATE": "Problema con fecha",
+        "SPOKE_NO_DATE": "Hablé, sin fecha"
+      },
+      "reasons": {
+        "BALANCE_ZERO": "saldo en 0",
+        "LITIGATION": "pasó a litigio",
+        "COMMITMENT": "tiene compromiso",
+        "NOT_EXIGIBLE": "ya no se exige"
+      },
+      "file": {
+        "title": "Ficha incompleta: falta {fields}",
+        "complete": "Completar ficha",
+        "didNotKnow": "El deudor no lo sabía",
+        "awaiting": "Esperando respuesta del deudor",
+        "statusRequested": "ficha solicitada",
+        "statusCompleted": "ficha completa",
+        "requested": "Quedó registrado que pediste los datos",
+        "error": "No se pudo registrar"
+      },
+      "fields": {
+        "paymentMethod": "medio de pago",
+        "preferredChannel": "canal preferido",
+        "schedule": "horario de pago",
+        "contact": "correo o teléfono",
+        "defaultContact": "contacto principal"
+      }
+    },
     "title": "Gestión de deudores",
     "description": "Visualización de tareas asignadas",
     "subDescription": "Gestión de deudores",
@@ -1074,6 +1132,9 @@
       "columnFilterDescription": "Selecciona las columnas que deseas mostrar en la tabla de facturas."
     },
     "stepTwo": {
+      "noResultDate": "El deudor no dio fecha",
+      "noDateReason": "¿Con quién hablaste y por qué no hay fecha?",
+      "validationNoDateReason": "Indica por qué no hay fecha",
       "managementSelection": "Selección de Gestión",
       "managementType": "Tipo de gestión",
       "selectManagementType": "Selecciona un tipo de gestión",

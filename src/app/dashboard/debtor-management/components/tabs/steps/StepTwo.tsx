@@ -86,6 +86,7 @@ interface StepTwoProps {
   selectedInvoices?: Invoice[];
   onValidationChange?: (isValid: boolean) => void;
   onNoEmailContact?: (hasNoEmail: boolean) => void;
+  allowNoResultDate?: boolean;
 }
 
 const createFormSchema = (
@@ -93,7 +94,8 @@ const createFormSchema = (
   selectedCombination: any,
   t: (key: string, values?: Record<string, string>) => string,
   totalizeSelectedInvoices: number = 0,
-  isNextManagementDateDisabled?: (date: Date) => boolean
+  isNextManagementDateDisabled?: (date: Date) => boolean,
+  noResultDate: boolean = false
 ) => {
   const baseSchema: any = {
     managementType: z.string().min(1, t("validationManagementType")),
@@ -130,6 +132,15 @@ const createFormSchema = (
     baseSchema.nextManagementTime = z
       .string()
       .min(1, t("validationTime"));
+
+    if (noResultDate) {
+      baseSchema.observation = z
+        .string()
+        .trim()
+        .min(1, t("validationNoDateReason"));
+      baseSchema.nextManagementDate = z.any().optional();
+      baseSchema.nextManagementTime = z.any().optional();
+    }
 
     if (selectedCombination?.executive_comment === "DOCUMENT_IN_LITIGATION") {
       baseSchema.caseData = z.object({
@@ -420,8 +431,10 @@ export const StepTwo = ({
   selectedInvoices = [],
   onValidationChange,
   onNoEmailContact,
+  allowNoResultDate = false,
 }: StepTwoProps) => {
   const t = useTranslations("debtorManagement.stepTwo");
+  const noResultDate = !!formData.noResultDate;
   const [showNoEmailAlert, setShowNoEmailAlert] = useState(false);
 
   const managementTypeLabels: Record<string, string> = {
@@ -545,7 +558,8 @@ export const StepTwo = ({
         selectedCombination,
         t,
         totalizeSelectedInvoices,
-        isNextManagementDateDisabled
+        isNextManagementDateDisabled,
+        noResultDate
       ),
     [
       hasCompleteSelection,
@@ -553,6 +567,7 @@ export const StepTwo = ({
       t,
       totalizeSelectedInvoices,
       isNextManagementDateDisabled,
+      noResultDate,
     ]
   );
 
@@ -727,6 +742,10 @@ export const StepTwo = ({
     totalizeSelectedInvoices,
     form,
   ]);
+
+  useEffect(() => {
+    if (hasCompleteSelection) form.trigger();
+  }, [noResultDate]);
 
   useEffect(() => {
     const isValid = form.formState.isValid;
@@ -1094,13 +1113,19 @@ export const StepTwo = ({
                     <FormField
                       control={form.control}
                       name="observation"
-                      disabled
+                      disabled={!noResultDate}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("interactionDescription")}</FormLabel>
+                          <FormLabel>
+                            {noResultDate
+                              ? t("noDateReason")
+                              : t("interactionDescription")}
+                          </FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder={t("aiGeneratedText")}
+                              placeholder={
+                                noResultDate ? "" : t("aiGeneratedText")
+                              }
                               {...field}
                               className="min-h-[120px] resize-none"
                             />
@@ -1116,7 +1141,23 @@ export const StepTwo = ({
                       <CalendarClock className="w-4 h-4" />
                       {t("nextManagement")}
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full items-start">
+                    {allowNoResultDate && (
+                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                        <Checkbox
+                          checked={noResultDate}
+                          onCheckedChange={(checked) =>
+                            onFormChange({ noResultDate: checked === true })
+                          }
+                        />
+                        {t("noResultDate")}
+                      </label>
+                    )}
+                    <div
+                      className={cn(
+                        "grid grid-cols-1 md:grid-cols-2 gap-6 w-full items-start",
+                        noResultDate && "hidden"
+                      )}
+                    >
                       <FormField
                         control={form.control}
                         name="nextManagementDate"

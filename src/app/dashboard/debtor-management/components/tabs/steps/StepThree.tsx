@@ -845,7 +845,11 @@ export const StepThree = ({
                 <IconDescription
                   icon={<Calendar className="w-6 h-6 text-blue-600" />}
                   description={t("dateLabel")}
-                  value={formatDate(formData.nextManagementDate as any)}
+                  value={
+                    formData.noResultDate
+                      ? "-"
+                      : formatDate(formData.nextManagementDate as any)
+                  }
                 />{" "}
                 <IconDescription
                   icon={<Clock1 className="w-6 h-6 text-blue-600" />}

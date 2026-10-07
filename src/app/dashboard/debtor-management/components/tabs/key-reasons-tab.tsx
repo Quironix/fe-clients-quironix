@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { ReactNode } from "react";
 import { CollectionProfile } from "../../types";
 import CreditRisk from "../credit-risk";
 import { DebtorChatbot } from "../debtor-chatbot";
@@ -28,6 +29,7 @@ interface KeyReasonsTabProps {
   isFetchingCollectionProfile: boolean;
   callBrief: string | null;
   isFetchingCallBrief: boolean;
+  taskNeeds?: ReactNode;
 }
 
 export const KeyReasonsTab = ({
@@ -36,10 +38,13 @@ export const KeyReasonsTab = ({
   isFetchingCollectionProfile,
   callBrief,
   isFetchingCallBrief,
+  taskNeeds,
 }: KeyReasonsTabProps) => {
   const t = useTranslations("debtorManagement.keyReasonsTab");
   const tDetail = useTranslations("debtorManagement.detail");
-  const tLastManagements = useTranslations("debtorManagement.lastManagementsCard");
+  const tLastManagements = useTranslations(
+    "debtorManagement.lastManagementsCard",
+  );
   const router = useRouter();
   if (isFetchingCollectionProfile) {
     return (
@@ -95,7 +100,12 @@ export const KeyReasonsTab = ({
 
   return (
     <div className="flex gap-5 h-full w-full mt-5">
-      <div className="h-full w-full overflow-y-auto">
+      <div className="h-full w-full overflow-y-auto flex flex-col gap-3">
+        {taskNeeds && (
+          <div className="bg-white rounded-md border overflow-hidden">
+            {taskNeeds}
+          </div>
+        )}
         <div className="bg-white rounded-md border overflow-hidden">
           <DebtorChatbot
             debtorId={debtorId}

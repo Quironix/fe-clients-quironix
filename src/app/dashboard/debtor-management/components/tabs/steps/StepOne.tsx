@@ -28,9 +28,10 @@ interface StepOneProps {
   selectedInvoices?: Invoice[];
   onInvoicesSelected?: (invoices: Invoice[]) => void;
   onValidationChange?: (isValid: boolean) => void;
+  preselectedInvoiceIds?: string[];
 }
 
-export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected, onValidationChange }: StepOneProps) => {
+export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected, onValidationChange, preselectedInvoiceIds = [] }: StepOneProps) => {
   const t = useTranslations("debtorManagement.stepOne");
   const { data: session } = useSession();
   const { profile } = useProfileContext();
@@ -71,8 +72,21 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
 
   const invoices: Invoice[] = invoicesResponse?.data?.data || [];
 
+  useEffect(() => {
+    if (preselectedInvoiceIds.length === 0 || invoices.length === 0) return;
+    onInvoicesSelectedRef.current?.(
+      invoices.filter((invoice) => preselectedInvoiceIds.includes(invoice.id))
+    );
+  }, [preselectedInvoiceIds, invoicesResponse]);
+
   const filteredInvoices = useMemo(() => {
-    if (!searchTerm) return invoices;
+    if (!searchTerm) {
+      const isPreselected = (invoice: Invoice) =>
+        preselectedInvoiceIds.includes(invoice.id) ? 0 : 1;
+      return [...invoices].sort(
+        (a, b) => isPreselected(a) - isPreselected(b)
+      );
+    }
 
     const lowerSearch = searchTerm.toLowerCase();
     return invoices.filter((invoice) => {
@@ -83,7 +97,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
         invoice.amount?.toString().includes(lowerSearch)
       );
     });
-  }, [invoices, searchTerm]);
+  }, [invoices, searchTerm, preselectedInvoiceIds]);
 
   const calculateDelay = (dueDate: string) => {
     if (!dueDate) return 0;
@@ -276,21 +290,19 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
   }, [filteredInvoices, currentPage, pageSize]);
 
   const initialRowSelection = useMemo(() => {
-    if (!selectedInvoices || selectedInvoices.length === 0) return {};
+    const selectedIds = selectedInvoices.length
+      ? selectedInvoices.map((invoice) => invoice?.id)
+      : preselectedInvoiceIds;
+    if (selectedIds.length === 0) return {};
 
     const selection: RowSelectionState = {};
-    selectedInvoices.forEach((selectedInvoice) => {
-      if (!selectedInvoice?.id) return;
-
-      const index = paginatedData.findIndex((invoice) =>
-        invoice?.id && invoice.id === selectedInvoice.id
-      );
-      if (index !== -1) {
+    paginatedData.forEach((invoice, index) => {
+      if (invoice?.id && selectedIds.includes(invoice.id)) {
         selection[index] = true;
       }
     });
     return selection;
-  }, [selectedInvoices, paginatedData]);
+  }, [selectedInvoices, preselectedInvoiceIds, paginatedData]);
 
   // Keep ref in sync synchronously so handleRowSelectionChange always reads current data
   paginatedDataRef.current = paginatedData;
@@ -372,6 +384,7 @@ export const StepOne = ({ dataDebtor, selectedInvoices = [], onInvoicesSelected,
   return (
     <div className="space-y-4">
       <DataTableDynamicColumns
+        key={isLoading ? "loading" : "ready"}
         columns={columns}
         data={paginatedData}
         isLoading={isLoading}

@@ -11,6 +11,8 @@ import { ContactType } from "../config/management-types";
 export interface TrackContact {
   type: ContactType;
   value: string;
+  contactId?: string;
+  name?: string;
 }
 
 /**
@@ -83,7 +85,7 @@ export interface CreateTrackPayload {
   observation: string;
   debtor_comment: string;
   executive_comment: string;
-  next_management_date: string; // ISO 8601 format
+  next_management_date?: string; // ISO 8601 format
   case_data?: CaseData;
   invoice_ids: string[];
   metadata?: {

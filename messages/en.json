@@ -801,6 +801,64 @@
     }
   },
   "debtorManagement": {
+    "taskNeeds": {
+      "title": "What I need today",
+      "progress": "{done} of {total} invoices with a result",
+      "completed": "Task completed",
+      "register": "Register",
+      "registerPending": "Register pending ({count})",
+      "pending": "Pending",
+      "answered": "Answered",
+      "returns": "returns on {date}",
+      "dueOn": "due {date}",
+      "waitsUntil": "waiting until {date}",
+      "waitingTitle": "Invoices not required today ({count})",
+      "needs": {
+        "RECOVER_BROKEN_COMMITMENT": "Broken commitment: payment today or a new date with amount",
+        "COLLECT_INSTALLMENT": "Unpaid installment: collect it",
+        "CONFIRM_REPORTED_PAYMENT": "Reported payment: confirm it arrived",
+        "ALLOCATE_FUNDS": "Unapplied funds: apply the payment",
+        "OBTAIN_COMMITMENT": "Overdue without commitment: get a commitment",
+        "LOCATE_CONTACT": "Locate contact: try another phone or ask the client for data",
+        "REACH_DECISION_MAKER": "Reach whoever decides the payment",
+        "WAIT_COMMITMENT": "Active commitment",
+        "WAIT_RESULT": "Waiting for the registered result",
+        "NOT_DUE": "Not due yet",
+        "RESPOND_INBOUND": "Reply to the debtor's email"
+      },
+      "results": {
+        "COMMITMENT": "Commitment",
+        "PAYMENT_REPORTED": "Payment reported",
+        "RECEPTION_OR_ACCOUNTING": "Reception or accounting",
+        "LITIGATION": "Litigation",
+        "NO_CONTACT": "No contact",
+        "PROBLEM_WITH_DATE": "Problem with date",
+        "SPOKE_NO_DATE": "Spoke, no date"
+      },
+      "reasons": {
+        "BALANCE_ZERO": "balance at 0",
+        "LITIGATION": "moved to litigation",
+        "COMMITMENT": "has a commitment",
+        "NOT_EXIGIBLE": "no longer required"
+      },
+      "file": {
+        "title": "Incomplete file: missing {fields}",
+        "complete": "Complete file",
+        "didNotKnow": "The debtor did not know",
+        "awaiting": "Waiting for the debtor's answer",
+        "statusRequested": "file requested",
+        "statusCompleted": "file complete",
+        "requested": "Your request for the data was recorded",
+        "error": "Could not record it"
+      },
+      "fields": {
+        "paymentMethod": "payment method",
+        "preferredChannel": "preferred channel",
+        "schedule": "payment schedule",
+        "contact": "email or phone",
+        "defaultContact": "main contact"
+      }
+    },
     "title": "Debtor management",
     "description": "Assigned tasks view",
     "subDescription": "Debtor management",
@@ -1074,6 +1132,9 @@
       "columnFilterDescription": "Select the columns you want to display in the invoices table."
     },
     "stepTwo": {
+      "noResultDate": "The debtor gave no date",
+      "noDateReason": "Who did you talk to and why is there no date?",
+      "validationNoDateReason": "Explain why there is no date",
       "managementSelection": "Management Selection",
       "managementType": "Management type",
       "selectManagementType": "Select a management type",
