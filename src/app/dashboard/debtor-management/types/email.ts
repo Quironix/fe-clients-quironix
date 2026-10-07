@@ -50,6 +50,7 @@ export interface EmailPayload {
   dynamicTemplateData: EmailDynamicTemplateData;
   trackId?: string;
   attachments?: EmailAttachment[];
+  management?: { debtorComment: string; executiveComment: string };
 }
 
 export interface EmailManagement {

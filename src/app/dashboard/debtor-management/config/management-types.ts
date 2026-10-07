@@ -1519,6 +1519,17 @@ export const NORMAL_CLIENTS = [
     ],
   },
   {
+    label: "Pago Parcial",
+    code: "PARTIAL_PAYMENT",
+    executive_comments: [
+      {
+        label: "Pago parcial o detalle incompleto",
+        code: "PARTIAL_PAYMENT_OR_INCOMPLETE_DETAIL",
+        fase: 1,
+      },
+    ],
+  },
+  {
     label: "Solicito envío de Notas de Crédito",
     code: "REQUEST_CREDIT_NOTES_SENDING",
     executive_comments: [
