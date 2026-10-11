@@ -12,17 +12,27 @@ import {
   resolveInboundEmailReply,
   type TrackEmailMessage,
 } from "@/services/inbound-email-replies";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 const INBOUND_INVOICE_EMAILS_QUERY_KEY = "inbound-invoice-emails";
 const INBOUND_EMAIL_REPLIES_QUERY_KEY = "inbound-email-replies";
 const INVOICE_INBOX_QUERY_KEY = "invoice-inbox";
 
-export function useInboundEmailReplies(accessToken: string, clientId: string) {
+export function useInboundEmailReplies(
+  accessToken: string,
+  clientId: string,
+  search?: string,
+) {
   return useQuery<TrackEmailMessage[]>({
-    queryKey: [INBOUND_EMAIL_REPLIES_QUERY_KEY, clientId],
-    queryFn: () => getInboundEmailReplies(accessToken, clientId),
+    queryKey: [INBOUND_EMAIL_REPLIES_QUERY_KEY, clientId, search ?? ""],
+    queryFn: () => getInboundEmailReplies(accessToken, clientId, { search }),
     enabled: !!accessToken && !!clientId,
+    placeholderData: keepPreviousData,
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
   });
@@ -46,12 +56,12 @@ export function useResolveInboundEmail(accessToken: string, clientId: string) {
           ? INBOUND_INVOICE_EMAILS_QUERY_KEY
           : INBOUND_EMAIL_REPLIES_QUERY_KEY;
       const nextResolvedAt = resolved ? new Date().toISOString() : null;
-      queryClient.setQueriesData<Array<{ id: string; resolved_at?: string | null }>>(
-        { queryKey: [key, clientId] },
-        (old) =>
-          old?.map((row) =>
-            row.id === id ? { ...row, resolved_at: nextResolvedAt } : row,
-          ),
+      queryClient.setQueriesData<
+        Array<{ id: string; resolved_at?: string | null }>
+      >({ queryKey: [key, clientId] }, (old) =>
+        old?.map((row) =>
+          row.id === id ? { ...row, resolved_at: nextResolvedAt } : row,
+        ),
       );
       queryClient.invalidateQueries({
         queryKey: [INBOUND_INVOICE_EMAILS_QUERY_KEY, clientId],
@@ -69,11 +79,19 @@ export function useInboundInvoiceEmails(
   accessToken: string,
   clientId: string,
   status?: InboundInvoiceEmailStatus,
+  search?: string,
 ) {
   return useQuery<InboundInvoiceEmail[]>({
-    queryKey: [INBOUND_INVOICE_EMAILS_QUERY_KEY, clientId, status ?? "all"],
-    queryFn: () => getInboundInvoiceEmails(accessToken, clientId, status),
+    queryKey: [
+      INBOUND_INVOICE_EMAILS_QUERY_KEY,
+      clientId,
+      status ?? "all",
+      search ?? "",
+    ],
+    queryFn: () =>
+      getInboundInvoiceEmails(accessToken, clientId, { status, search }),
     enabled: !!accessToken && !!clientId,
+    placeholderData: keepPreviousData,
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
   });

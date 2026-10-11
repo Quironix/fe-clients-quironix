@@ -11,6 +11,7 @@ export interface GetInboundEmailRepliesFilters {
     | "ESCALATED_TO_HUMAN"
     | "SHADOW_ONLY";
   read?: boolean;
+  search?: string;
   page?: number;
   limit?: number;
 }
@@ -55,6 +56,7 @@ export async function getInboundEmailReplies(
   const qs = new URLSearchParams();
   if (f.agentStatus) qs.set("agent_status", f.agentStatus);
   if (f.read !== undefined) qs.set("read", String(f.read));
+  if (f.search) qs.set("search", f.search);
   if (f.page) qs.set("page", String(f.page));
   if (f.limit) qs.set("limit", String(f.limit));
   const params = qs.toString() ? `?${qs.toString()}` : "";
