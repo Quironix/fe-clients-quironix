@@ -114,6 +114,7 @@ export interface GetInboundInvoiceEmailsFilters {
   status?: InboundInvoiceEmailStatus;
   intent?: InboundEmailIntent;
   agentStatus?: InboundEmailAgentStatus;
+  search?: string;
   page?: number;
   limit?: number;
 }
@@ -160,6 +161,7 @@ export async function getInboundInvoiceEmails(
   if (f.status) qs.set("status", f.status);
   if (f.intent) qs.set("intent", f.intent);
   if (f.agentStatus) qs.set("agent_status", f.agentStatus);
+  if (f.search) qs.set("search", f.search);
   if (f.page) qs.set("page", String(f.page));
   if (f.limit) qs.set("limit", String(f.limit));
   const params = qs.toString() ? `?${qs.toString()}` : "";

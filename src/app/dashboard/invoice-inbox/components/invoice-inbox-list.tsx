@@ -1,5 +1,6 @@
 "use client";
 import { InvoiceInboxDetailSheet } from "@/app/dashboard/components/invoice-inbox-detail-sheet";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileContext } from "@/context/ProfileContext";
 import {
@@ -9,7 +10,8 @@ import {
 import { cn, formatDateTime } from "@/lib/utils";
 import { InboundInvoiceEmail } from "@/services/inbound-invoice-emails";
 import { type TrackEmailMessage } from "@/services/inbound-email-replies";
-import { IconFile } from "@tabler/icons-react";
+import useDebounce from "@/app/dashboard/hooks/useDebounce";
+import { IconFile, IconSearch } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { IntentBadge } from "@/components/quiron/intent-badge";
@@ -27,6 +29,10 @@ import {
   type UnifiedRow,
 } from "@/app/dashboard/invoice-inbox/lib/unified-inbox";
 
+const SEARCH_DEBOUNCE_MS = 300;
+// Igual que el servidor: con menos no hay búsqueda indexada.
+const SEARCH_MIN_LENGTH = 3;
+
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
   const t = useTranslations("dashboard.invoice_inbox");
@@ -34,6 +40,10 @@ export const InvoiceInboxList = () => {
   const accessToken = session?.token as string;
   const clientId = profile?.client?.id as string;
 
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search.trim(), SEARCH_DEBOUNCE_MS);
+  const searchTerm =
+    debouncedSearch.length >= SEARCH_MIN_LENGTH ? debouncedSearch : undefined;
   const [filterId, setFilterId] = useState<InboxFilterId>("ALL");
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
     null,
@@ -43,9 +53,9 @@ export const InvoiceInboxList = () => {
   const [detailOpen, setDetailOpen] = useState(false);
 
   const { data: finanzasEmails = [], isLoading: loadingFinanzas } =
-    useInboundInvoiceEmails(accessToken, clientId);
+    useInboundInvoiceEmails(accessToken, clientId, undefined, searchTerm);
   const { data: cobranzaReplies = [], isLoading: loadingCobranza } =
-    useInboundEmailReplies(accessToken, clientId);
+    useInboundEmailReplies(accessToken, clientId, searchTerm);
 
   const rows = useMemo(
     () => mergeRows(finanzasEmails, cobranzaReplies),
@@ -76,6 +86,18 @@ export const InvoiceInboxList = () => {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="relative">
+        <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={t("search_placeholder")}
+          aria-label={t("search_placeholder")}
+          className="pl-9"
+        />
+      </div>
+
       <Tabs
         value={filterId}
         onValueChange={(value) => setFilterId(value as InboxFilterId)}
@@ -111,7 +133,7 @@ export const InvoiceInboxList = () => {
 
       {!isLoading && visibleRows.length === 0 && (
         <div className="py-10 text-center text-sm text-muted-foreground">
-          {t("empty_filter")}
+          {searchTerm ? t("empty_search") : t("empty_filter")}
         </div>
       )}
 
