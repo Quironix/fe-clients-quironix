@@ -23,6 +23,13 @@ describe("emailOriginalSrcDoc", () => {
     );
   });
 
+  it("keeps standards mode when the email declares a doctype", () => {
+    expect(
+      emailOriginalSrcDoc("\n<!DOCTYPE html><p>hola</p>", [], false),
+    ).toMatch(/^<!doctype html><meta /);
+    expect(emailOriginalSrcDoc("<p>hola</p>", [], false)).toMatch(/^<meta /);
+  });
+
   it("drops attachment urls that would break the policy", () => {
     const srcDoc = emailOriginalSrcDoc(
       "<p>hola</p>",

@@ -50,7 +50,13 @@ export async function getEmailOriginal(
     `${API_URL}/v2/clients/${clientId}/${EMAIL_RESOURCE_BY_CHANNEL[channel]}/${id}/original`,
     { headers: { Authorization: `Bearer ${accessToken}` } },
   );
-  return handleResponse<EmailOriginal>(response);
+  const original = await handleResponse<
+    EmailOriginal | { message?: string }
+  >(response);
+  if (!("html" in original)) {
+    throw new Error(original.message || "Error al cargar el correo original");
+  }
+  return original;
 }
 
 export async function resolveInboundEmailReply(

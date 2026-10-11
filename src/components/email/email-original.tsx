@@ -25,7 +25,9 @@ export const emailOriginalSrcDoc = (
     ? ["data:", "https:", "http:"]
     : ["data:", ...inlineImageUrls.map(cspImageSource).filter(Boolean)];
 
-  return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src ${imageSources.join(" ")}"><base target="_blank">${html}`;
+  const doctype = /^\s*<!doctype/i.test(html) ? "<!doctype html>" : "";
+
+  return `${doctype}<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src ${imageSources.join(" ")}"><base target="_blank">${html}`;
 };
 
 interface EmailOriginalProps {
