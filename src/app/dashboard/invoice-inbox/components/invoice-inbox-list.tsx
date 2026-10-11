@@ -30,6 +30,8 @@ import {
 } from "@/app/dashboard/invoice-inbox/lib/unified-inbox";
 
 const SEARCH_DEBOUNCE_MS = 300;
+// Igual que el servidor: con menos no hay búsqueda indexada.
+const SEARCH_MIN_LENGTH = 3;
 
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
@@ -39,7 +41,9 @@ export const InvoiceInboxList = () => {
   const clientId = profile?.client?.id as string;
 
   const [search, setSearch] = useState("");
-  const searchTerm = useDebounce(search.trim(), SEARCH_DEBOUNCE_MS);
+  const debouncedSearch = useDebounce(search.trim(), SEARCH_DEBOUNCE_MS);
+  const searchTerm =
+    debouncedSearch.length >= SEARCH_MIN_LENGTH ? debouncedSearch : undefined;
   const [filterId, setFilterId] = useState<InboxFilterId>("ALL");
   const [selectedEmail, setSelectedEmail] = useState<InboundInvoiceEmail | null>(
     null,
