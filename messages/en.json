@@ -386,6 +386,8 @@
       "status_linked": "Linked",
       "loading": "Loading...",
       "empty_filter": "No emails match this filter.",
+      "search_placeholder": "Search by sender, subject or debtor (name, code or RUT)",
+      "empty_search": "No emails match your search.",
       "intent": {
         "COMPROBANTE_PAGO": "Receipt",
         "SOLICITUD_FACTURA": "Invoice request",
