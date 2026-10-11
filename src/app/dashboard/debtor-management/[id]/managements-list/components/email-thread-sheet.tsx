@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { sendTrackEmail } from "../../../services/email-sender";
 import { TrackEmailMessage } from "../../../types/debtor-tracks";
+import { EmailOriginal } from "@/components/email/email-original";
 import { QuironVerdict } from "@/components/quiron/quiron-verdict";
 import { EmailPayload } from "../../../types/email";
 
@@ -71,6 +72,9 @@ export const EmailThreadSheet = ({
   const [replyText, setReplyText] = useState("");
   const [replyPrefilled, setReplyPrefilled] = useState(false);
   const [sending, setSending] = useState(false);
+  const [originalMessageId, setOriginalMessageId] = useState<string | null>(
+    null,
+  );
 
   const lastInboundMessage = [...messages]
     .reverse()
@@ -198,6 +202,13 @@ export const EmailThreadSheet = ({
             messages.map((message) => {
               const isInbound = message.direction === "IN";
               const attachments = message.attachments || [];
+              const hasOriginal =
+                isInbound &&
+                !!accessToken &&
+                !!clientId &&
+                !!(message.body_html || message.body_text_original);
+              const showOriginal =
+                hasOriginal && originalMessageId === message.id;
 
               return (
                 <div
@@ -234,7 +245,29 @@ export const EmailThreadSheet = ({
                       <p className="font-semibold mb-1">{message.subject}</p>
                     )}
 
-                    {isInbound ? (
+                    {hasOriginal && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOriginalMessageId(
+                            showOriginal ? null : message.id,
+                          )
+                        }
+                        className="mb-1 text-xs font-medium text-emerald-700 hover:underline"
+                      >
+                        {showOriginal ? "Ver mensaje" : "Ver original"}
+                      </button>
+                    )}
+
+                    {showOriginal ? (
+                      <EmailOriginal
+                        accessToken={accessToken}
+                        clientId={clientId}
+                        channel="COBRANZA"
+                        emailId={message.id}
+                        attachments={attachments}
+                      />
+                    ) : isInbound ? (
                       <p className="whitespace-pre-wrap break-words text-gray-700">
                         {message.body_text || "-"}
                       </p>
