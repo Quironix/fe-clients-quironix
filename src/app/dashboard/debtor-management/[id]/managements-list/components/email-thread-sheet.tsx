@@ -307,7 +307,6 @@ export const EmailThreadSheet = ({
                           secondaryIntents={message.agent_secondary_intents}
                           agentStatus={message.agent_status}
                           guardrailTriggered={message.agent_guardrail_triggered}
-                          toolsUsed={message.agent_tools_used}
                           summary={message.agent_summary}
                           extracted={
                             message.agent_extracted as Record<string, unknown>

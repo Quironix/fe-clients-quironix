@@ -416,7 +416,6 @@
         "suggestion": "Sugerencia disponible",
         "review_guardrail": "A revisión · guardrail",
         "review": "A revisión",
-        "matching": "Ruteado a matching",
         "shadow": "Registrado en modo sombra",
         "contact_review": "Contacto por revisar",
         "contact_review_note": "El remitente avisó que ya no gestiona las cuentas por pagar. Queda un pendiente para que el ejecutivo actualice los contactos del deudor."
@@ -2901,7 +2900,6 @@
     "disputed_amount": "El deudor manifiesta desacuerdo con el monto",
     "tools": "Herramientas usadas",
     "confidence": "Confianza {value}%",
-    "threshold": "umbral {value}%",
     "secondary": "Intenciones secundarias",
     "view_track": "Ver gestión en el historial →",
     "shadow": "Registrado en modo sombra",
@@ -2932,7 +2930,8 @@
       "close": "Cerrar Quirón",
       "subtitle": "IA de cobranza: lee, gestiona y registra en el historial",
       "live": "● Al día",
-      "placeholder": "Pregúntale a Quirón…"
+      "placeholder": "Pregúntale a Quirón…",
+      "thinking": "Quirón está pensando…"
     }
   }
 }
