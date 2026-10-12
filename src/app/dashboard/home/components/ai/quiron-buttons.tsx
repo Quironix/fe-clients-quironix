@@ -1,5 +1,5 @@
 "use client";
-import { Sparkles } from "lucide-react";
+import { QuironIcon } from "@/components/quiron/quiron-icon";
 import { CSSProperties } from "react";
 import { useQuiron } from "./quiron-context";
 
@@ -41,7 +41,7 @@ export const QuironAiButton = ({
       style={style}
       onClick={() => openWithTopic(topic)}
     >
-      <Sparkles size={size === "sm" ? 13 : 15} />
+      <QuironIcon tone="current" size={size === "sm" ? 13 : 15} />
       {label}
     </button>
   );
@@ -61,7 +61,7 @@ export const QuironMiniButton = ({ topic }: { topic: string }) => {
         openWithTopic(topic);
       }}
     >
-      <Sparkles size={13} />
+      <QuironIcon tone="current" size={13} />
     </button>
   );
 };
