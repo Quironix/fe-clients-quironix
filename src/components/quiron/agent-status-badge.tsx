@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
-export type AgentBadgeKind =
+type AgentBadgeKind =
   | "answered"
   | "suggestion"
   | "review_guardrail"
@@ -17,7 +17,7 @@ interface AgentStatusInput {
   suggestedReply?: string | null;
 }
 
-export const agentBadgeKind = ({
+const agentBadgeKind = ({
   agentStatus,
   guardrailTriggered,
   suggestedReply,

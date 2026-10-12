@@ -21,7 +21,7 @@ const InvoiceInboxPage = () => {
           icon={<IconMail color="white" />}
           subDescription={t("title")}
         />
-        <div className="mt-5 rounded-md border border-gray-200 p-4">
+        <div className="mt-5 overflow-hidden rounded-md border border-gray-200 bg-white">
           <InvoiceInboxList />
         </div>
       </Main>

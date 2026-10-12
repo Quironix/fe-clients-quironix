@@ -135,13 +135,6 @@ export function useInboundInvoiceEmails(
   });
 }
 
-export function usePendingInboundInvoiceEmails(
-  accessToken: string,
-  clientId: string,
-) {
-  return useInboundInvoiceEmails(accessToken, clientId, "PENDING_REVIEW");
-}
-
 export function useInvoiceInbox(accessToken: string, clientId: string) {
   return useQuery<InvoiceInbox>({
     queryKey: [INVOICE_INBOX_QUERY_KEY, clientId],
