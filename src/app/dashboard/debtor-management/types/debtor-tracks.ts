@@ -194,6 +194,9 @@ export interface TrackEmailMessage {
   to_addresses?: string[] | null;
   template_id?: string | null;
   sent_by_executive_id?: string | null;
+  sent_by_executive_name?: string | null;
+  sent_by_agent?: boolean;
+  collector_execution_log_id?: string | null;
   read_at?: string | null;
   created_at: string;
   agent_status?: AgentReplyStatus | null;

@@ -26,6 +26,7 @@ import {
   AgentStatusBadge,
   ContactReviewBadge,
   IntentBadge,
+  SentByBadge,
 } from "@/app/dashboard/invoice-inbox/components/inbox-badges";
 import { EmailOriginal } from "@/components/email/email-original";
 import { QuironVerdict } from "@/components/quiron/quiron-verdict";
@@ -178,7 +179,13 @@ export const InvoiceInboxDetailSheet = ({
 
   if (!view) return null;
 
-  const senderInitial = view.from.charAt(0).toUpperCase();
+  const isSent = cobranza?.direction === "OUT";
+  const counterpart = isSent
+    ? `${t("sent.to")}: ${(cobranza.to_addresses ?? []).join(", ")}`
+    : view.from;
+  const senderInitial = ((isSent && cobranza.to_addresses?.[0]) || view.from)
+    .charAt(0)
+    .toUpperCase();
   const showPicker =
     view.kind === "FINANZAS" && email ? !isLinked || isEditingLink : false;
 
@@ -249,13 +256,14 @@ export const InvoiceInboxDetailSheet = ({
               </div>
               <div className="min-w-0">
                 <p className="truncate font-medium text-foreground">
-                  {view.from}
+                  {counterpart}
                 </p>
                 <p className="text-xs">{formatDateTime(view.createdAt)}</p>
               </div>
             </div>
           </SheetDescription>
           <div className="flex flex-wrap items-center gap-1.5">
+            {cobranza && <SentByBadge message={cobranza} />}
             {email ? (
               <>
                 <IntentBadge intent={email.intent} />
@@ -312,7 +320,7 @@ export const InvoiceInboxDetailSheet = ({
               <p className="text-xs font-medium text-muted-foreground">
                 {t("message")}
               </p>
-              {view.hasOriginal && (
+              {view.hasOriginal && !isSent && (
                 <button
                   type="button"
                   onClick={() => setShowOriginal((shown) => !shown)}
@@ -322,7 +330,12 @@ export const InvoiceInboxDetailSheet = ({
                 </button>
               )}
             </div>
-            {showOriginal ? (
+            {isSent && (
+              <p className="mb-1.5 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+                {t("sent.partial_view")}
+              </p>
+            )}
+            {showOriginal || (isSent && view.hasOriginal) ? (
               <EmailOriginal
                 key={view.id}
                 accessToken={accessToken}
@@ -378,7 +391,7 @@ export const InvoiceInboxDetailSheet = ({
             </div>
           )}
 
-          {!view.autoHandled && !view.needsMatching && (
+          {!isSent && !view.autoHandled && !view.needsMatching && (
             <div className="flex flex-col gap-2 border-t pt-4">
               {view.resolvedAt ? (
                 <>
