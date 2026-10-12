@@ -12,6 +12,7 @@ export interface GetInboundEmailRepliesFilters {
     | "SHADOW_ONLY";
   read?: boolean;
   search?: string;
+  direction?: "IN" | "OUT";
   page?: number;
   limit?: number;
 }
@@ -89,6 +90,7 @@ export async function getInboundEmailReplies(
   if (f.agentStatus) qs.set("agent_status", f.agentStatus);
   if (f.read !== undefined) qs.set("read", String(f.read));
   if (f.search) qs.set("search", f.search);
+  if (f.direction) qs.set("direction", f.direction);
   if (f.page) qs.set("page", String(f.page));
   if (f.limit) qs.set("limit", String(f.limit));
   const params = qs.toString() ? `?${qs.toString()}` : "";
