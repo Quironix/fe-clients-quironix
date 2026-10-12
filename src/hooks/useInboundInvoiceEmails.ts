@@ -8,8 +8,11 @@ import {
   resolveInboundInvoiceEmail,
 } from "@/services/inbound-invoice-emails";
 import {
+  getEmailOriginal,
   getInboundEmailReplies,
   resolveInboundEmailReply,
+  type EmailChannel,
+  type EmailOriginal,
   type TrackEmailMessage,
 } from "@/services/inbound-email-replies";
 import {
@@ -22,6 +25,21 @@ import {
 const INBOUND_INVOICE_EMAILS_QUERY_KEY = "inbound-invoice-emails";
 const INBOUND_EMAIL_REPLIES_QUERY_KEY = "inbound-email-replies";
 const INVOICE_INBOX_QUERY_KEY = "invoice-inbox";
+const EMAIL_ORIGINAL_QUERY_KEY = "email-original";
+
+export function useEmailOriginal(
+  accessToken: string,
+  clientId: string,
+  channel: EmailChannel,
+  id: string,
+) {
+  return useQuery<EmailOriginal>({
+    queryKey: [EMAIL_ORIGINAL_QUERY_KEY, clientId, channel, id],
+    queryFn: () => getEmailOriginal(accessToken, clientId, channel, id),
+    enabled: !!accessToken && !!clientId && !!id,
+    staleTime: Infinity,
+  });
+}
 
 export function useInboundEmailReplies(
   accessToken: string,

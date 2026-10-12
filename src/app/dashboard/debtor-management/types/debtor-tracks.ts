@@ -187,6 +187,7 @@ export interface TrackEmailMessage {
   from_address: string;
   subject?: string | null;
   body_text?: string | null;
+  body_text_original?: string | null;
   body_html?: string | null;
   track_id?: string | null;
   attachments?: EmailMessageAttachment[];
