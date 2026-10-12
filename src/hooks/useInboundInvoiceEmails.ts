@@ -26,6 +26,7 @@ const INBOUND_INVOICE_EMAILS_QUERY_KEY = "inbound-invoice-emails";
 const INBOUND_EMAIL_REPLIES_QUERY_KEY = "inbound-email-replies";
 const INVOICE_INBOX_QUERY_KEY = "invoice-inbox";
 const EMAIL_ORIGINAL_QUERY_KEY = "email-original";
+const SENT_EMAILS_QUERY_KEY = "sent-emails";
 
 export function useEmailOriginal(
   accessToken: string,
@@ -53,6 +54,25 @@ export function useInboundEmailReplies(
     placeholderData: keepPreviousData,
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
+  });
+}
+
+export function useSentEmails(
+  accessToken: string,
+  clientId: string,
+  search: string | undefined,
+  limit: number,
+) {
+  return useQuery<TrackEmailMessage[]>({
+    queryKey: [SENT_EMAILS_QUERY_KEY, clientId, search ?? "", limit],
+    queryFn: () =>
+      getInboundEmailReplies(accessToken, clientId, {
+        search,
+        direction: "OUT",
+        limit,
+      }),
+    enabled: !!accessToken && !!clientId,
+    placeholderData: keepPreviousData,
   });
 }
 

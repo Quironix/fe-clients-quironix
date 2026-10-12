@@ -1,11 +1,13 @@
 "use client";
 import { InvoiceInboxDetailSheet } from "@/app/dashboard/components/invoice-inbox-detail-sheet";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileContext } from "@/context/ProfileContext";
 import {
   useInboundEmailReplies,
   useInboundInvoiceEmails,
+  useSentEmails,
 } from "@/hooks/useInboundInvoiceEmails";
 import { cn, formatDateTime } from "@/lib/utils";
 import { InboundInvoiceEmail } from "@/services/inbound-invoice-emails";
@@ -20,9 +22,11 @@ import {
   ContactReviewBadge,
 } from "@/components/quiron/agent-status-badge";
 import { QuironMark } from "@/components/quiron/quiron-mark";
+import { SentByBadge } from "@/app/dashboard/invoice-inbox/components/inbox-badges";
 import {
   INBOX_FILTERS,
   isHandled,
+  isSent,
   isPending,
   mergeRows,
   type InboxFilterId,
@@ -32,6 +36,7 @@ import {
 const SEARCH_DEBOUNCE_MS = 300;
 // Igual que el servidor: con menos no hay búsqueda indexada.
 const SEARCH_MIN_LENGTH = 3;
+const SENT_PAGE_SIZE = 100;
 
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
@@ -57,12 +62,20 @@ export const InvoiceInboxList = () => {
   const { data: cobranzaReplies = [], isLoading: loadingCobranza } =
     useInboundEmailReplies(accessToken, clientId, searchTerm);
 
+  const [sentLimit, setSentLimit] = useState(SENT_PAGE_SIZE);
+  const {
+    data: sentEmails = [],
+    isLoading: loadingSent,
+    isFetching: fetchingSent,
+  } = useSentEmails(accessToken, clientId, searchTerm, sentLimit);
+  const hasMoreSent = filterId !== "PENDING" && sentEmails.length >= sentLimit;
+
   const rows = useMemo(
-    () => mergeRows(finanzasEmails, cobranzaReplies),
-    [finanzasEmails, cobranzaReplies],
+    () => mergeRows(finanzasEmails, [...cobranzaReplies, ...sentEmails]),
+    [finanzasEmails, cobranzaReplies, sentEmails],
   );
 
-  const isLoading = loadingFinanzas || loadingCobranza;
+  const isLoading = loadingFinanzas || loadingCobranza || loadingSent;
 
   const filter =
     INBOX_FILTERS.find((item) => item.id === filterId) ?? INBOX_FILTERS[0];
@@ -109,16 +122,18 @@ export const InvoiceInboxList = () => {
             return (
               <TabsTrigger key={item.id} value={item.id}>
                 {t(item.labelKey)}
-                <span
-                  className={cn(
-                    "ml-2 rounded-full px-1.5 text-[10px] font-bold",
-                    highlight
-                      ? "bg-red-100 text-red-700"
-                      : "bg-gray-200 text-gray-400",
-                  )}
-                >
-                  {count}
-                </span>
+                {item.id !== "SENT" && (
+                  <span
+                    className={cn(
+                      "ml-2 rounded-full px-1.5 text-[10px] font-bold",
+                      highlight
+                        ? "bg-red-100 text-red-700"
+                        : "bg-gray-200 text-gray-400",
+                    )}
+                  >
+                    {count}
+                  </span>
+                )}
               </TabsTrigger>
             );
           })}
@@ -133,7 +148,11 @@ export const InvoiceInboxList = () => {
 
       {!isLoading && visibleRows.length === 0 && (
         <div className="py-10 text-center text-sm text-muted-foreground">
-          {searchTerm ? t("empty_search") : t("empty_filter")}
+          {searchTerm
+            ? t("empty_search")
+            : filterId === "SENT"
+              ? t("sent.empty")
+              : t("empty_filter")}
         </div>
       )}
 
@@ -165,9 +184,12 @@ export const InvoiceInboxList = () => {
                 </span>
               </span>
               <p className="truncate text-xs text-muted-foreground">
-                {row.fromAddress}
+                {isSent(row)
+                  ? `${t("sent.to")}: ${(row.cobranza?.to_addresses ?? []).join(", ")}`
+                  : row.fromAddress}
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {row.cobranza && <SentByBadge message={row.cobranza} />}
                 <IntentBadge intent={row.intent} />
                 <AgentStatusBadge
                   agentStatus={row.agentStatus}
@@ -192,6 +214,17 @@ export const InvoiceInboxList = () => {
           );
         })}
       </div>
+
+      {hasMoreSent && (
+        <Button
+          variant="outline"
+          className="self-center"
+          disabled={fetchingSent}
+          onClick={() => setSentLimit((limit) => limit + SENT_PAGE_SIZE)}
+        >
+          {t("sent.load_more")}
+        </Button>
+      )}
 
       <InvoiceInboxDetailSheet
         email={selectedEmail}

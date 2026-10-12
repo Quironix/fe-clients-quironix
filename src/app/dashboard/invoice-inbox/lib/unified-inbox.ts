@@ -82,6 +82,17 @@ export const mergeRows = (
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
+export type SentBy = "QUIRON" | "EXECUTIVE" | "COLLECTOR";
+
+export const isSent = (row: UnifiedRow) => row.cobranza?.direction === "OUT";
+
+export const sentBy = (message: TrackEmailMessage): SentBy | null => {
+  if (message.direction !== "OUT") return null;
+  if (message.sent_by_agent) return "QUIRON";
+  if (message.sent_by_executive_id) return "EXECUTIVE";
+  return message.collector_execution_log_id ? "COLLECTOR" : null;
+};
+
 // Cómo quedó resuelto el correo:
 //  - "pending": el ejecutivo todavía tiene que hacer algo.
 //  - "auto":    lo resolvió el sistema — la cascada matcheó el deudor
@@ -105,11 +116,11 @@ export const resolutionKind = (row: UnifiedRow): ResolutionKind => {
 export const isHandled = (row: UnifiedRow) =>
   resolutionKind(row) !== "pending";
 export const isPending = (row: UnifiedRow) =>
-  resolutionKind(row) === "pending";
+  !isSent(row) && resolutionKind(row) === "pending";
 
 // La bandeja es una sola lista: comprobantes y gestiones mezclados, ordenados
 // por fecha. Los dos únicos filtros miran el estado del correo, no su ruta.
-export type InboxFilterId = "PENDING" | "ALL";
+export type InboxFilterId = "PENDING" | "ALL" | "SENT";
 
 export interface InboxFilter {
   id: InboxFilterId;
@@ -119,5 +130,6 @@ export interface InboxFilter {
 
 export const INBOX_FILTERS: InboxFilter[] = [
   { id: "PENDING", labelKey: "filter.unhandled", match: isPending },
+  { id: "SENT", labelKey: "filter.sent", match: isSent },
   { id: "ALL", labelKey: "filter.all", match: () => true },
 ];

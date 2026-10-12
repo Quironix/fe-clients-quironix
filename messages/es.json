@@ -431,9 +431,19 @@
         "suggested_reply": "Borrador sugerido",
         "suggested_reply_hint": "Generado por el clasificador — no se envía en esta fase"
       },
+      "sent": {
+        "to": "Para",
+        "QUIRON": "Quirón",
+        "COLLECTOR": "Collector",
+        "EXECUTIVE": "Ejecutivo",
+        "partial_view": "Vista parcial: de este envío solo se guardó el texto variable, no la plantilla completa.",
+        "empty": "No hay correos enviados.",
+        "load_more": "Cargar más enviados"
+      },
       "filter": {
         "unhandled": "No gestionados",
-        "all": "Todos"
+        "all": "Todos",
+        "sent": "Enviados"
       }
     },
     "accessDenied": {
