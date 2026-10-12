@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
-export type QuironIntent =
+type QuironIntent =
   | "COMPROBANTE_PAGO"
   | "SOLICITUD_FACTURA"
   | "CONSULTA_DATOS_DE_PAGO"
@@ -65,5 +65,3 @@ export const IntentBadge = ({
     </span>
   );
 };
-
-export default IntentBadge;

@@ -24,7 +24,7 @@ import {
   AgentStatusBadge,
   ContactReviewBadge,
 } from "@/components/quiron/agent-status-badge";
-import { QuironMark } from "@/components/quiron/quiron-mark";
+import { QuironIcon } from "@/components/quiron/quiron-icon";
 import { SentByBadge } from "@/app/dashboard/invoice-inbox/components/inbox-badges";
 import {
   INBOX_FILTERS,
@@ -198,7 +198,7 @@ export const InvoiceInboxList = () => {
                 </span>
                 <span className="flex w-full items-center gap-1.5">
                   {isHandled(row) && row.agentStatus === "HANDLED_BY_AGENT" && (
-                    <QuironMark size="sm" />
+                    <QuironIcon label="Quirón" />
                   )}
                   <span className="min-w-0 flex-1 truncate font-medium">
                     {row.subject || t("no_subject")}
