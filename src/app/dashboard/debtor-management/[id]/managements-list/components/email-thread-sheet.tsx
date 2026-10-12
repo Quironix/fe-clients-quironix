@@ -203,10 +203,11 @@ export const EmailThreadSheet = ({
               const isInbound = message.direction === "IN";
               const attachments = message.attachments || [];
               const hasOriginal =
-                isInbound &&
                 !!accessToken &&
                 !!clientId &&
-                !!(message.body_html || message.body_text_original);
+                !!(isInbound
+                  ? message.body_html || message.body_text_original
+                  : message.has_original_html);
               const showOriginal =
                 hasOriginal && originalMessageId === message.id;
 
@@ -285,7 +286,7 @@ export const EmailThreadSheet = ({
                         {attachments.map((attachment, index) => (
                           <a
                             key={`${attachment.storage_url}-${index}`}
-                            href={attachment.storage_url}
+                            href={attachment.storage_url || undefined}
                             target="_blank"
                             rel="noopener noreferrer"
                             download

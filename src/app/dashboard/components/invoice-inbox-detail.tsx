@@ -163,7 +163,11 @@ export const InvoiceInboxDetail = ({
           shadowPayload: cobranza.agent_shadow_payload ?? null,
           contactReview: cobranza.agent_requires_contact_review ?? null,
           body: cobranza.body_text ?? null,
-          hasOriginal: !!(cobranza.body_html || cobranza.body_text_original),
+          hasOriginal: !!(
+            cobranza.body_html ||
+            cobranza.body_text_original ||
+            cobranza.has_original_html
+          ),
           attachments: cobranza.attachments ?? [],
           debtorId: cobranza.debtor_id ?? null,
         }
@@ -473,7 +477,7 @@ export const InvoiceInboxDetail = ({
               </TabsList>
             </Tabs>
           )}
-          {isSent && (
+          {isSent && !cobranza.has_original_html && (
             <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
               {t("sent.partial_view")}
             </p>
@@ -501,13 +505,16 @@ export const InvoiceInboxDetail = ({
                 {t("attachments")} ({view.attachments.length})
               </p>
               <div className="flex flex-wrap gap-2">
-                {view.attachments.map((attachment) => (
+                {view.attachments.map((attachment, index) => (
                   <a
-                    key={attachment.storage_path}
-                    href={attachment.storage_url}
+                    key={`${attachment.storage_path}-${index}`}
+                    // Un enviado antiguo no guardó el archivo: se lista sin enlace.
+                    href={attachment.storage_url || undefined}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex min-h-11 min-w-0 flex-[0_1_280px] items-center gap-2.5 rounded-md border px-2.5 py-2 text-[13px] hover:bg-gray-50"
+                    className={`flex min-h-11 min-w-0 flex-[0_1_280px] items-center gap-2.5 rounded-md border px-2.5 py-2 text-[13px] ${
+                      attachment.storage_url ? "hover:bg-gray-50" : ""
+                    }`}
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-red-50 text-red-600">
                       <IconFile className="h-4 w-4" />
@@ -520,7 +527,9 @@ export const InvoiceInboxDetail = ({
                         {formatFileSize(attachment.size_bytes)}
                       </p>
                     </div>
-                    <IconDownload className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    {attachment.storage_url && (
+                      <IconDownload className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    )}
                   </a>
                 ))}
               </div>
