@@ -207,7 +207,7 @@ export const EmailThreadSheet = ({
                 !!clientId &&
                 !!(isInbound
                   ? message.body_html || message.body_text_original
-                  : message.original_html_url);
+                  : message.has_original_html);
               const showOriginal =
                 hasOriginal && originalMessageId === message.id;
 

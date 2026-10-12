@@ -166,7 +166,7 @@ export const InvoiceInboxDetail = ({
           hasOriginal: !!(
             cobranza.body_html ||
             cobranza.body_text_original ||
-            cobranza.original_html_url
+            cobranza.has_original_html
           ),
           attachments: cobranza.attachments ?? [],
           debtorId: cobranza.debtor_id ?? null,
@@ -477,7 +477,7 @@ export const InvoiceInboxDetail = ({
               </TabsList>
             </Tabs>
           )}
-          {isSent && !cobranza.original_html_url && (
+          {isSent && !cobranza.has_original_html && (
             <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
               {t("sent.partial_view")}
             </p>
@@ -512,7 +512,9 @@ export const InvoiceInboxDetail = ({
                     href={attachment.storage_url || undefined}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex min-h-11 min-w-0 flex-[0_1_280px] items-center gap-2.5 rounded-md border px-2.5 py-2 text-[13px] hover:bg-gray-50"
+                    className={`flex min-h-11 min-w-0 flex-[0_1_280px] items-center gap-2.5 rounded-md border px-2.5 py-2 text-[13px] ${
+                      attachment.storage_url ? "hover:bg-gray-50" : ""
+                    }`}
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-red-50 text-red-600">
                       <IconFile className="h-4 w-4" />
