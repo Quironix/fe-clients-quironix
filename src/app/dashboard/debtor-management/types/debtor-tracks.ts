@@ -189,6 +189,8 @@ export interface TrackEmailMessage {
   body_text?: string | null;
   body_text_original?: string | null;
   body_html?: string | null;
+  // Solo enviados: archivo con el correo tal cual salió. Sin él, la copia es parcial.
+  original_html_url?: string | null;
   track_id?: string | null;
   attachments?: EmailMessageAttachment[];
   to_addresses?: string[] | null;
