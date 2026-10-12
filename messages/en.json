@@ -361,6 +361,14 @@
       "view_all": "View all",
       "no_subject": "(no subject)",
       "no_body": "This email has no text content",
+      "original": {
+        "show": "View original",
+        "hide": "View message",
+        "show_images": "Show images",
+        "loading": "Loading the original email…",
+        "unavailable": "The original email could not be loaded",
+        "title": "Original email"
+      },
       "message": "Message",
       "attachments": "Attachments",
       "link_to_debtor": "Link to a debtor",

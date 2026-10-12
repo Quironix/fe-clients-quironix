@@ -27,6 +27,38 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
+export type EmailChannel = "FINANZAS" | "COBRANZA";
+
+export interface EmailOriginal {
+  html: string | null;
+  text: string | null;
+  has_external_images: boolean;
+}
+
+const EMAIL_RESOURCE_BY_CHANNEL: Record<EmailChannel, string> = {
+  FINANZAS: "inbound-invoice-emails",
+  COBRANZA: "inbound-email-replies",
+};
+
+export async function getEmailOriginal(
+  accessToken: string,
+  clientId: string,
+  channel: EmailChannel,
+  id: string,
+): Promise<EmailOriginal> {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/${EMAIL_RESOURCE_BY_CHANNEL[channel]}/${id}/original`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  const original = await handleResponse<
+    EmailOriginal | { message?: string }
+  >(response);
+  if (!("html" in original)) {
+    throw new Error(original.message || "Error al cargar el correo original");
+  }
+  return original;
+}
+
 export async function resolveInboundEmailReply(
   accessToken: string,
   clientId: string,

@@ -27,6 +27,7 @@ import {
   ContactReviewBadge,
   IntentBadge,
 } from "@/app/dashboard/invoice-inbox/components/inbox-badges";
+import { EmailOriginal } from "@/components/email/email-original";
 import { QuironVerdict } from "@/components/quiron/quiron-verdict";
 import { AgentStatusBadge as PrimitiveAgentStatusBadge } from "@/components/quiron/agent-status-badge";
 import { IntentBadge as PrimitiveIntentBadge } from "@/components/quiron/intent-badge";
@@ -82,6 +83,7 @@ export const InvoiceInboxDetailSheet = ({
     { id: string; name: string; debtor_code: string } | null
   >(null);
   const [isEditingLink, setIsEditingLink] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
 
   const { debtors, handleSearchChange, isLoading: isSearchingDebtors } =
     useDebtors({ accessToken, clientId, initialLimit: 8 });
@@ -108,6 +110,7 @@ export const InvoiceInboxDetailSheet = ({
   useEffect(() => {
     setIsEditingLink(false);
     setSelectedDebtor(null);
+    setShowOriginal(false);
   }, [email?.id, cobranza?.id]);
 
   const view = email
@@ -139,6 +142,7 @@ export const InvoiceInboxDetailSheet = ({
         shadowPayload: email.agent_shadow_payload ?? null,
         contactReview: email.agent_requires_contact_review ?? null,
         body: email.body_text ?? null,
+        hasOriginal: !!email.body_html,
         attachments: email.attachments ?? [],
         debtorId: email.debtor_id ?? null,
       }
@@ -166,6 +170,7 @@ export const InvoiceInboxDetailSheet = ({
           shadowPayload: cobranza.agent_shadow_payload ?? null,
           contactReview: cobranza.agent_requires_contact_review ?? null,
           body: cobranza.body_text ?? null,
+          hasOriginal: !!(cobranza.body_html || cobranza.body_text_original),
           attachments: cobranza.attachments ?? [],
           debtorId: cobranza.debtor_id ?? null,
         }
@@ -303,14 +308,36 @@ export const InvoiceInboxDetailSheet = ({
           )}
 
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-              {t("message")}
-            </p>
-            <div className="rounded-md border bg-gray-50/50 p-3 text-sm whitespace-pre-wrap">
-              {view.body || (
-                <span className="text-muted-foreground">{t("no_body")}</span>
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <p className="text-xs font-medium text-muted-foreground">
+                {t("message")}
+              </p>
+              {view.hasOriginal && (
+                <button
+                  type="button"
+                  onClick={() => setShowOriginal((shown) => !shown)}
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  {showOriginal ? t("original.hide") : t("original.show")}
+                </button>
               )}
             </div>
+            {showOriginal ? (
+              <EmailOriginal
+                key={view.id}
+                accessToken={accessToken}
+                clientId={clientId}
+                channel={view.kind}
+                emailId={view.id}
+                attachments={view.attachments}
+              />
+            ) : (
+              <div className="rounded-md border bg-gray-50/50 p-3 text-sm whitespace-pre-wrap">
+                {view.body || (
+                  <span className="text-muted-foreground">{t("no_body")}</span>
+                )}
+              </div>
+            )}
           </div>
 
           {view.attachments.length > 0 && (

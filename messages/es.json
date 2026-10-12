@@ -361,6 +361,14 @@
       "view_all": "Ver todos",
       "no_subject": "(sin asunto)",
       "no_body": "Este correo no tiene contenido de texto",
+      "original": {
+        "show": "Ver original",
+        "hide": "Ver mensaje",
+        "show_images": "Mostrar imágenes",
+        "loading": "Cargando el correo original…",
+        "unavailable": "No se pudo cargar el correo original",
+        "title": "Correo original"
+      },
       "message": "Mensaje",
       "attachments": "Adjuntos",
       "link_to_debtor": "Vincular a un deudor",
