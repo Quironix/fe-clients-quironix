@@ -24,6 +24,7 @@ const harmonic: Curve = (t) => [
 const STATES = [circle, infinity, wave, harmonic];
 const STATE_SECONDS = 2.6;
 const HOLD_RATIO = 0.6;
+const FIRST_MORPH_SECONDS = STATE_SECONDS * HOLD_RATIO;
 const HEAD_RADIANS_PER_SECOND = 1.7;
 const TRAIL = FULL_TURN * 0.9;
 const TRAIL_SEGMENTS = 200;
@@ -68,9 +69,13 @@ export const QuironLoader = ({
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const start = performance.now();
+    let start: number | undefined;
     let frame = requestAnimationFrame(function draw(now) {
-      pathRef.current?.setAttribute("d", loaderPath((now - start) / 1000));
+      start ??= now;
+      pathRef.current?.setAttribute(
+        "d",
+        loaderPath(FIRST_MORPH_SECONDS + (now - start) / 1000),
+      );
       frame = requestAnimationFrame(draw);
     });
     return () => cancelAnimationFrame(frame);

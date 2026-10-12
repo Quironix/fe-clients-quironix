@@ -401,7 +401,6 @@ const QuironAssistantMessage: FC = () => {
   if (isRunning && !hasContent) {
     return (
       <div className="qxv2-msg-row ai">
-        <QuironAvatar />
         <div className="qxv2-bub ai qxv2-bub-typing" role="status">
           <QuironLoader />
           {tw("thinking")}
