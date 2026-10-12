@@ -1,6 +1,6 @@
 import type { TrackEmailMessage } from "@/services/inbound-email-replies";
 import { describe, expect, it } from "vitest";
-import { fromCobranza, isPending, sentBy } from "./unified-inbox";
+import { fromCobranza, isPending, sentBy, shortDate } from "./unified-inbox";
 
 const message = (overrides: Partial<TrackEmailMessage>): TrackEmailMessage => ({
   id: "m1",
@@ -35,5 +35,14 @@ describe("isPending", () => {
   it("never counts a sent email as pending", () => {
     expect(isPending(fromCobranza(message({})))).toBe(false);
     expect(isPending(fromCobranza(message({ direction: "IN" })))).toBe(true);
+  });
+});
+
+describe("shortDate", () => {
+  const now = new Date("2026-10-12T18:00:00");
+
+  it("shows the time for today and the day for older emails", () => {
+    expect(shortDate("2026-10-12T10:18:00", now)).toBe("10:18");
+    expect(shortDate("2026-10-09T10:18:00", now)).toBe("09-10");
   });
 });

@@ -4,6 +4,9 @@ import {
   isEmailLinked,
 } from "@/services/inbound-invoice-emails";
 import { type TrackEmailMessage } from "@/services/inbound-email-replies";
+import { formatDateTime } from "@/lib/utils";
+
+const SNIPPET_LENGTH = 200;
 
 // Una sola fila de la bandeja de correos, sin importar de qué canal viene
 // (inbound-invoice-emails de finanzas o inbound-email-replies de cobranza+).
@@ -12,6 +15,7 @@ export interface UnifiedRow {
   origin: "FINANZAS" | "COBRANZA";
   subject: string | null;
   fromAddress: string;
+  snippet: string | null;
   createdAt: string;
   attachmentsCount: number;
   intent: string | null;
@@ -32,6 +36,7 @@ export const fromFinanzas = (email: InboundInvoiceEmail): UnifiedRow => ({
   origin: "FINANZAS",
   subject: email.subject,
   fromAddress: email.from_address,
+  snippet: email.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
   createdAt: email.created_at,
   attachmentsCount: email.attachments?.length ?? 0,
   intent: email.intent ?? null,
@@ -51,6 +56,7 @@ export const fromCobranza = (message: TrackEmailMessage): UnifiedRow => ({
   origin: "COBRANZA",
   subject: message.subject ?? null,
   fromAddress: message.from_address,
+  snippet: message.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
   createdAt: message.created_at,
   attachmentsCount: message.attachments?.length ?? 0,
   intent: message.agent_category ?? null,
@@ -81,6 +87,12 @@ export const mergeRows = (
     (a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
+
+export const shortDate = (date: string, now = new Date()) => {
+  const [day, time] = formatDateTime(date).split(" ");
+  const [today] = formatDateTime(now.toISOString()).split(" ");
+  return day === today ? time : day.slice(0, 5);
+};
 
 export type SentBy = "QUIRON" | "EXECUTIVE" | "COLLECTOR";
 
