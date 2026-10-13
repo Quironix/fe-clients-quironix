@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blendCurves, Curve, tracePath } from "./quiron-curves";
-import { LAZO_Q_PATH } from "./quiron-icon";
+import { QUIRON_ICON_PATH } from "./quiron-icon";
 import { loaderPath } from "./quiron-loader";
 
 const pointsOf = (path: string) =>
@@ -35,12 +35,14 @@ describe("blendCurves", () => {
   });
 });
 
-describe("LAZO_Q_PATH", () => {
+describe("QUIRON_ICON_PATH", () => {
   it("is a closed loop inside the viewBox", () => {
-    const points = pointsOf(LAZO_Q_PATH);
-    expect(LAZO_Q_PATH.endsWith("Z")).toBe(true);
-    expect(points[0]).toEqual(points[points.length - 1]);
-    expect(staysInViewBox(LAZO_Q_PATH)).toBe(true);
+    const points = pointsOf(QUIRON_ICON_PATH);
+    expect(QUIRON_ICON_PATH.endsWith("Z")).toBe(true);
+    const [startX, startY] = points[0];
+    const [endX, endY] = points[points.length - 1];
+    expect(Math.hypot(endX - startX, endY - startY)).toBe(0);
+    expect(staysInViewBox(QUIRON_ICON_PATH)).toBe(true);
   });
 });
 

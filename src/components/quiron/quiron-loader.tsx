@@ -5,6 +5,7 @@ import {
   Curve,
   FULL_TURN,
   blendCurves,
+  harmonic,
   scaleCurve,
   tracePath,
 } from "./quiron-curves";
@@ -16,12 +17,7 @@ const wave: Curve = (t) => [
   0.92 * Math.sin(t),
   0.5 * Math.sin(4 * t) * (1 - 0.35 * Math.sin(t) ** 2),
 ];
-const harmonic: Curve = (t) => [
-  0.85 * Math.sin(3 * t + Math.PI / 2),
-  0.85 * Math.sin(2 * t),
-];
-
-const STATES = [circle, infinity, wave, harmonic];
+const STATES = [circle, infinity, wave, scaleCurve(harmonic, 0.85)];
 const STATE_SECONDS = 2.6;
 const HOLD_RATIO = 0.6;
 const FIRST_MORPH_SECONDS = STATE_SECONDS * HOLD_RATIO;
