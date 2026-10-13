@@ -3,6 +3,11 @@ export type Curve = (t: number) => Point;
 
 export const FULL_TURN = 2 * Math.PI;
 
+export const harmonic: Curve = (t) => [
+  Math.sin(3 * t + Math.PI / 2),
+  Math.sin(2 * t),
+];
+
 export const scaleCurve =
   (curve: Curve, radius: number): Curve =>
   (t) => {

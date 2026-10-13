@@ -1,26 +1,17 @@
 import { cn } from "@/lib/utils";
 import { useId } from "react";
-import { Curve, FULL_TURN, scaleCurve, tracePath } from "./quiron-curves";
+import { FULL_TURN, harmonic, scaleCurve, tracePath } from "./quiron-curves";
 import { QUIRON_VIEW_BOX, QuironGradient } from "./quiron-gradient";
 
-const LOOP_RADIUS = 66;
-const LOOP_SEGMENTS = 240;
-const LOBE_IMBALANCE = 0.45;
+const ICON_RADIUS = 72;
+const ICON_SEGMENTS = 240;
 
-const lazoQ: Curve = (t) => {
-  const lobe = 1 - LOBE_IMBALANCE * Math.sin(t);
-  const x = Math.sin(t) * lobe + LOBE_IMBALANCE;
-  const y = 0.55 * Math.sin(2 * t) * lobe;
-  return [(x - y) * Math.SQRT1_2, (x + y) * Math.SQRT1_2];
-};
-
-export const LAZO_Q_PATH = `${tracePath(scaleCurve(lazoQ, LOOP_RADIUS), 0, FULL_TURN, LOOP_SEGMENTS)}Z`;
+export const QUIRON_ICON_PATH = `${tracePath(scaleCurve(harmonic, ICON_RADIUS), 0, FULL_TURN, ICON_SEGMENTS)}Z`;
 
 const strokeWidthFor = (size: number) => {
-  if (size <= 12) return 30;
-  if (size <= 16) return 28;
-  if (size <= 24) return 26;
-  return 22;
+  if (size <= 16) return 24;
+  if (size <= 24) return 22;
+  return 20;
 };
 
 interface QuironIconProps {
@@ -55,7 +46,7 @@ export const QuironIcon = ({
         </defs>
       )}
       <path
-        d={LAZO_Q_PATH}
+        d={QUIRON_ICON_PATH}
         stroke={isBrand ? `url(#${gradientId})` : "currentColor"}
         strokeWidth={strokeWidthFor(size)}
         strokeLinecap="round"
