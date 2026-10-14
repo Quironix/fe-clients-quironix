@@ -151,19 +151,8 @@ export function useLinkInboundInvoiceEmail(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      id,
-      debtorId,
-      invoiceId,
-    }: {
-      id: string;
-      debtorId: string;
-      invoiceId?: string;
-    }) =>
-      linkInboundInvoiceEmail(accessToken, clientId, id, {
-        debtorId,
-        invoiceId,
-      }),
+    mutationFn: ({ id, debtorId }: { id: string; debtorId: string }) =>
+      linkInboundInvoiceEmail(accessToken, clientId, id, { debtorId }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [INBOUND_INVOICE_EMAILS_QUERY_KEY, clientId],
