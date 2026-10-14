@@ -61,9 +61,10 @@ const getDebtorCommentLabel = (comment: string): string => {
 const INBOUND_TYPES = new Set(["MAIL_IN", "CALL_IN"]);
 const OUTBOUND_TYPES = new Set(["MAIL_OUT", "MAIL_OUT_REPLY", "CALL_OUT"]);
 // Filas sintéticas de correo (armadas en frontend, sin gestión/Track propia):
-// entrante (MAIL_IN) y respuestas salientes dentro de un hilo (MAIL_OUT_REPLY).
-// Se tratan igual que MAIL_IN para comentarios vacíos y mostrar subject/body.
-const SYNTHETIC_EMAIL_TYPES = new Set(["MAIL_IN", "MAIL_OUT_REPLY"]);
+// se reconocen por `type`, no por managementType, porque la gestión real de
+// Quirón también es MAIL_IN y sí trae comentarios y observación.
+const isSyntheticEmailRow = (row: InvoiceWithTrack) =>
+  row.type === "EMAIL_REPLY" || row.type === "EMAIL_REPLY_OUT";
 
 const getManagementTypeBadgeClass = (type: string) => {
   if (INBOUND_TYPES.has(type)) {
@@ -284,7 +285,7 @@ export const createInvoiceColumns = (
       accessorKey: "debtorComment",
       header: "Comentario deudor",
       cell: ({ row }) => {
-        if (SYNTHETIC_EMAIL_TYPES.has(row.original.track?.managementType || "")) {
+        if (isSyntheticEmailRow(row.original)) {
           return <div className="text-xs">-</div>;
         }
         return (
@@ -298,7 +299,7 @@ export const createInvoiceColumns = (
       accessorKey: "executiveComment",
       header: "Comentario Analista",
       cell: ({ row }) => {
-        if (SYNTHETIC_EMAIL_TYPES.has(row.original.track?.managementType || "")) {
+        if (isSyntheticEmailRow(row.original)) {
           return <div className="text-xs">-</div>;
         }
         return (
@@ -337,9 +338,7 @@ export const createInvoiceColumns = (
       size: 350,
       cell: ({ row }) => {
         const track = row.original.track;
-        const isSyntheticEmail = SYNTHETIC_EMAIL_TYPES.has(
-          track?.managementType || "",
-        );
+        const isSyntheticEmail = isSyntheticEmailRow(row.original);
         return (
           <div className="text-xs w-[350px] whitespace-normal break-words space-y-1">
             {isSyntheticEmail && track?.emailSubject && (
