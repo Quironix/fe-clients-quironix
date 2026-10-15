@@ -84,7 +84,6 @@ export interface InboundInvoiceEmail {
     | "MANUAL"
     | null;
   matched_invoice_id: string | null;
-  linked_invoice_id: string | null;
   reviewed_by_user_id: string | null;
   reviewed_at: string | null;
   created_at: string;
@@ -96,10 +95,7 @@ export interface InboundInvoiceEmail {
   intent_confidence?: number | null;
   agent_status?: InboundEmailAgentStatus | null;
   agent_suggested_reply?: string | null;
-  agent_guardrail_triggered?: boolean | null;
   agent_requires_contact_review?: boolean | null;
-  agent_confidence?: number | null;
-  agent_category?: string | null;
   agent_tools_used?: string[] | null;
   agent_summary?: string | null;
   agent_extracted?: AgentExtracted | null;
@@ -181,7 +177,7 @@ export async function linkInboundInvoiceEmail(
   accessToken: string,
   clientId: string,
   id: string,
-  data: { debtorId: string; invoiceId?: string },
+  data: { debtorId: string },
 ): Promise<InboundInvoiceEmail> {
   const response = await fetch(
     `${API_URL}/v2/clients/${clientId}/inbound-invoice-emails/${id}/link`,

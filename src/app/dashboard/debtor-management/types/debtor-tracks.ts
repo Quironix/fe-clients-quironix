@@ -207,7 +207,6 @@ export interface TrackEmailMessage {
   agent_secondary_intents?: string[] | null;
   agent_guardrail_triggered?: boolean | null;
   agent_tools_used?: string[] | null;
-  agent_suggested_reply?: string | null;
   agent_requires_contact_review?: boolean | null;
   agent_management_track_id?: string | null;
   agent_summary?: string | null;
