@@ -41,7 +41,7 @@ export const fromFinanzas = (email: InboundInvoiceEmail): UnifiedRow => ({
   attachmentsCount: email.attachments?.length ?? 0,
   intent: email.intent ?? null,
   agentStatus: email.agent_status ?? null,
-  guardrailTriggered: email.agent_guardrail_triggered ?? null,
+  guardrailTriggered: null,
   suggestedReply: email.agent_suggested_reply ?? null,
   requiresContactReview: email.agent_requires_contact_review ?? null,
   route: emailRoute(email) === "MATCHING" ? "MATCHING" : "AGENT",
@@ -62,7 +62,7 @@ export const fromCobranza = (message: TrackEmailMessage): UnifiedRow => ({
   intent: message.agent_category ?? null,
   agentStatus: message.agent_status ?? null,
   guardrailTriggered: message.agent_guardrail_triggered ?? null,
-  suggestedReply: message.agent_suggested_reply ?? null,
+  suggestedReply: null,
   requiresContactReview: message.agent_requires_contact_review ?? null,
   route:
     message.agent_category === "CONFIRMA_PAGO_CON_COMPROBANTE"

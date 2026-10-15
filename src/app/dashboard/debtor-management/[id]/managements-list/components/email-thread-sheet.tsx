@@ -11,7 +11,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { Loader2, Mail, Paperclip, Send } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { sendTrackEmail } from "../../../services/email-sender";
 import { TrackEmailMessage } from "../../../types/debtor-tracks";
@@ -70,7 +70,6 @@ export const EmailThreadSheet = ({
   executiveProfile,
 }: EmailThreadSheetProps) => {
   const [replyText, setReplyText] = useState("");
-  const [replyPrefilled, setReplyPrefilled] = useState(false);
   const [sending, setSending] = useState(false);
   const [originalMessageId, setOriginalMessageId] = useState<string | null>(
     null,
@@ -80,16 +79,6 @@ export const EmailThreadSheet = ({
     .reverse()
     .find((m) => m.direction === "IN");
 
-  useEffect(() => {
-    if (
-      !replyPrefilled &&
-      !replyText &&
-      lastInboundMessage?.agent_suggested_reply
-    ) {
-      setReplyText(lastInboundMessage.agent_suggested_reply);
-      setReplyPrefilled(true);
-    }
-  }, [lastInboundMessage, replyPrefilled, replyText]);
   const lastOutboundMessage = [...messages]
     .reverse()
     .find((m) => m.direction === "OUT");
