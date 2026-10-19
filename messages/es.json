@@ -409,6 +409,7 @@
         "AUSENCIA_TEMPORAL": "Fuera de oficina",
         "DEUDA_DESCONOCIDA": "Desconoce la deuda",
         "FACTURA_RECLAMADA": "Factura reclamada",
+        "FACTURA_CONTABILIZADA": "Factura contabilizada",
         "OTRA": "Otra / a revisión"
       },
       "agent": {

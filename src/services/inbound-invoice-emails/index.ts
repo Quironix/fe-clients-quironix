@@ -29,6 +29,8 @@ export type InboundEmailIntent =
   // PRD_07 O5 — el deudor que dice que no debe.
   | "DEUDA_DESCONOCIDA"
   | "FACTURA_RECLAMADA"
+  // PRD_11 §5.6.
+  | "FACTURA_CONTABILIZADA"
   | "OTRA";
 
 export type InboundEmailAgentStatus =
