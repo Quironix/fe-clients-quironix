@@ -118,7 +118,9 @@ export const InvoiceInboxDetail = ({
         // Un comprobante de finanzas se resuelve encontrando el deudor
         // (matching), no con el botón "Marcar como gestionado".
         needsMatching:
-          emailRoute(email) === "MATCHING" && !isEmailLinked(email),
+          emailRoute(email) === "MATCHING" &&
+          !isEmailLinked(email) &&
+          !email.debtor_id,
         subject: email.subject,
         from: email.from_address,
         createdAt: email.created_at,
@@ -183,8 +185,8 @@ export const InvoiceInboxDetail = ({
     .charAt(0)
     .toUpperCase();
   const isFinanzas = view.kind === "FINANZAS" && !!email;
-  const showLinkedBox = isFinanzas && isLinked && !isEditingLink;
-  const showPicker = isFinanzas && (!isLinked || isEditingLink);
+  const showLinkedBox = isFinanzas && !!resolvedDebtorId && !isEditingLink;
+  const showPicker = isFinanzas && (!resolvedDebtorId || isEditingLink);
   const showResolve = !isSent && !view.autoHandled && !view.needsMatching;
   const showThread = view.kind === "COBRANZA";
   const hasVerdict = !!(view.intent || view.agentStatus);
@@ -341,7 +343,11 @@ export const InvoiceInboxDetail = ({
             <IconCircleCheck className="h-5 w-5 shrink-0 text-emerald-600" />
             <div className="min-w-0 flex-[1_1_220px]">
               <p className="truncate text-sm font-medium text-emerald-800">
-                {isAutoMatched ? t("auto_linked_to") : t("linked_to")}
+                {isAutoMatched
+                  ? t("auto_linked_to")
+                  : isLinked
+                    ? t("linked_to")
+                    : t("identified_debtor")}
                 {" · "}
                 <button
                   type="button"
