@@ -312,13 +312,16 @@ export const createInvoiceColumns = (
     {
       accessorKey: "paymentCommitmentDate",
       header: "Fecha de compromiso de pago",
-      cell: ({ row }) => (
-        <div className="text-sm">
-          {row.original.track?.caseData?.commitmentDate
-            ? formatDate(row.original.track.caseData.commitmentDate as string)
-            : "-"}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const commitmentDate =
+          row.original.track?.caseData?.paymentCommitmentDate ??
+          row.original.track?.caseData?.commitmentDate;
+        return (
+          <div className="text-sm">
+            {commitmentDate ? formatDate(commitmentDate as string) : "-"}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "caseData",
