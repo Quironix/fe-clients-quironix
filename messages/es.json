@@ -373,6 +373,7 @@
       "link_to_debtor": "Vincular a un deudor",
       "linked_to": "Vinculado",
       "auto_linked_to": "Vinculado automáticamente",
+      "identified_debtor": "Deudor identificado",
       "matched_by_folio": "por el folio detectado en el correo",
       "matched_by_domain": "por el dominio del remitente",
       "matched_by_rut": "por el RUT detectado",
