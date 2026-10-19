@@ -165,6 +165,26 @@ export const MANAGEMENT_COMBINATIONS: ManagementCombination[] = [
     fields: [],
   },
   {
+    id: "information_sent_bank_details_sent",
+    label: "Envío de información",
+    description: "Envío de información",
+    management_type: "CALL_OUT",
+    debtor_comment: "BANK_DETAILS_SENT",
+    executive_comment: "INFORMATION_SENT",
+    targetPhase: 1,
+    fields: [],
+  },
+  {
+    id: "contact_disabled_contact_no_longer_valid",
+    label: "Contacto inhabilitado",
+    description: "Contacto inhabilitado",
+    management_type: "CALL_OUT",
+    debtor_comment: "CONTACT_NO_LONGER_VALID",
+    executive_comment: "CONTACT_DISABLED",
+    targetPhase: 1,
+    fields: [],
+  },
+  {
     id: "information_sent_statement_sent",
     label: "Envío de información",
     description: "Envío de información",
@@ -771,6 +791,8 @@ export const MANAGEMENT_TYPES = [
   { value: "DEPOSITED_OR_TRANSFERRED", label: "Depositó o transfirió" },
   { value: "CONTACT_NOT_RESPONDING", label: "Contacto no responde" },
   { value: "STATEMENT_SENT", label: "Envío Estado de Cuenta" },
+  { value: "BANK_DETAILS_SENT", label: "Envío datos bancarios" },
+  { value: "CONTACT_NO_LONGER_VALID", label: "Contacto no vigente" },
   {
     value: "PAYMENT_MADE_AND_IDENTIFIED",
     label: "Pago realizado e identificado",
@@ -867,6 +889,16 @@ export const DEBTOR_COMMENTS = [
     value: "STATEMENT_SENT",
     label: "Envío estado de cuenta",
     managementType: "STATEMENT_SENT",
+  },
+  {
+    value: "BANK_DETAILS_SENT",
+    label: "Envío datos bancarios",
+    managementType: "BANK_DETAILS_SENT",
+  },
+  {
+    value: "CONTACT_NO_LONGER_VALID",
+    label: "Contacto no vigente",
+    managementType: "CONTACT_NO_LONGER_VALID",
   },
   {
     value: "PAYMENT_MADE_AND_IDENTIFIED",
@@ -1004,6 +1036,16 @@ export const DEBTOR_COMMENTS = [
  * Opciones para executive_comment (tercer nivel)
  */
 export const EXECUTIVE_COMMENTS = [
+  {
+    value: "INFORMATION_SENT",
+    label: "Envío de información",
+    debtorComment: "BANK_DETAILS_SENT",
+  },
+  {
+    value: "CONTACT_DISABLED",
+    label: "Contacto inhabilitado",
+    debtorComment: "CONTACT_NO_LONGER_VALID",
+  },
   {
     value: "AUTOMATED_COMMUNICATION",
     label: "Automatizado por collector",
@@ -1446,6 +1488,28 @@ export const NORMAL_CLIENTS = [
     ],
   },
   {
+    label: "Envío datos bancarios",
+    code: "BANK_DETAILS_SENT",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Contacto no vigente",
+    code: "CONTACT_NO_LONGER_VALID",
+    executive_comments: [
+      {
+        label: "Contacto inhabilitado",
+        code: "CONTACT_DISABLED",
+        fase: 1,
+      },
+    ],
+  },
+  {
     label: "Envío estado de cuenta",
     code: "STATEMENT_SENT",
     executive_comments: [
@@ -1823,6 +1887,28 @@ export const FACTORING_CLIENTS = [
       {
         label: "Se sugiere enviar a Dicom",
         code: "SUGGEST_SEND_TO_DICOM",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Envío datos bancarios",
+    code: "BANK_DETAILS_SENT",
+    executive_comments: [
+      {
+        label: "Envío de información",
+        code: "INFORMATION_SENT",
+        fase: 1,
+      },
+    ],
+  },
+  {
+    label: "Contacto no vigente",
+    code: "CONTACT_NO_LONGER_VALID",
+    executive_comments: [
+      {
+        label: "Contacto inhabilitado",
+        code: "CONTACT_DISABLED",
         fase: 1,
       },
     ],

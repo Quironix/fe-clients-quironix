@@ -409,6 +409,7 @@
         "AUSENCIA_TEMPORAL": "Out of office",
         "DEUDA_DESCONOCIDA": "Denies the debt",
         "FACTURA_RECLAMADA": "Invoice disputed",
+        "FACTURA_CONTABILIZADA": "Invoice accounted",
         "OTRA": "Other / needs review"
       },
       "agent": {
