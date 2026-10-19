@@ -15,6 +15,7 @@ type QuironIntent =
   | "AUSENCIA_TEMPORAL"
   | "DEUDA_DESCONOCIDA"
   | "FACTURA_RECLAMADA"
+  | "FACTURA_CONTABILIZADA"
   | "OTRA";
 
 const INTENT_STYLE: Record<string, string> = {
@@ -31,6 +32,7 @@ const INTENT_STYLE: Record<string, string> = {
   AUSENCIA_TEMPORAL: "bg-amber-100 text-amber-700",
   DEUDA_DESCONOCIDA: "bg-red-100 text-red-700",
   FACTURA_RECLAMADA: "bg-orange-100 text-orange-700",
+  FACTURA_CONTABILIZADA: "bg-sky-100 text-sky-700",
   OTRA: "bg-red-100 text-red-700",
 };
 
