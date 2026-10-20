@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getInvoicePhaseLabel } from "@/app/dashboard/data";
-import { formatDate, formatDateTime, formatDateTimeUTC, formatNumber } from "@/lib/utils";
+import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { ChevronDown, ChevronUp, Eye, Link2 } from "lucide-react";
 import { useState } from "react";
@@ -215,7 +215,7 @@ export const createInvoiceColumns = (
       header: "Fecha y hora de gestión",
       cell: ({ row }) => (
         <div className="text-sm">
-          {formatDateTimeUTC(row.original.track?.createdAt)}
+          {formatDateTime(row.original.track?.createdAt)}
         </div>
       ),
     },
