@@ -36,7 +36,7 @@ export interface PaymentNetting {
   updated_at: string;
   metadata: null;
   square: string;
-  debtor_suggestions: null;
+  debtor_suggestions: (string | { debtor_code: string; debtor_id: string })[] | null;
   payment: Payment;
 }
 
