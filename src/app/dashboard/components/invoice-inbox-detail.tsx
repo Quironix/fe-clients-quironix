@@ -83,8 +83,6 @@ export const InvoiceInboxDetail = ({
   const { debtors, handleSearchChange, isLoading: isSearchingDebtors } =
     useDebtors({ accessToken, clientId, initialLimit: 8 });
 
-  const isLinked = email ? isEmailLinked(email) : false;
-  const isAutoMatched = email?.status === "MATCHED";
 
   // El deudor que Quirón resolvió: en cobranza+ siempre viene (es un hilo de un
   // deudor); en finanzas se setea cuando el agente lo matcheó (aunque no se
@@ -185,7 +183,6 @@ export const InvoiceInboxDetail = ({
     .charAt(0)
     .toUpperCase();
   const isFinanzas = view.kind === "FINANZAS" && !!email;
-  const showLinkedBox = isFinanzas && !!resolvedDebtorId && !isEditingLink;
   const showPicker = isFinanzas && (!resolvedDebtorId || isEditingLink);
   const showResolve = !isSent && !view.autoHandled && !view.needsMatching;
   const showThread = view.kind === "COBRANZA";
@@ -326,56 +323,27 @@ export const InvoiceInboxDetail = ({
           </div>
         </div>
 
-        {resolvedDebtorId && !showLinkedBox && (
-          <button
-            type="button"
-            onClick={goToThread}
-            disabled={!view.debtorId}
-            className="flex h-8 w-fit items-center gap-1.5 rounded-md border bg-muted/40 px-2.5 text-xs font-medium hover:bg-muted disabled:cursor-default disabled:hover:bg-muted/40"
-          >
-            <span className="text-muted-foreground">{t("linked_to")}:</span>
-            {debtorLabel ?? resolvedDebtorId}
-          </button>
-        )}
-
-        {showLinkedBox && (
-          <div className="flex flex-wrap items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
-            <IconCircleCheck className="h-5 w-5 shrink-0 text-emerald-600" />
-            <div className="min-w-0 flex-[1_1_220px]">
-              <p className="truncate text-sm font-medium text-emerald-800">
-                {isAutoMatched
-                  ? t("auto_linked_to")
-                  : isLinked
-                    ? t("linked_to")
-                    : t("identified_debtor")}
-                {" · "}
-                <button
-                  type="button"
-                  onClick={goToThread}
-                  className="font-medium hover:underline"
-                >
-                  {debtorLabel ?? t("already_linked")}
-                </button>
-              </p>
-              <p className="text-xs text-emerald-700">
-                {[
-                  isAutoMatched &&
-                    email.matched_by &&
-                    t(`matched_by_${email.matched_by.toLowerCase()}`),
-                  email.reviewed_at && formatDateTime(email.reviewed_at),
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="shrink-0 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
-              onClick={handleStartEdit}
+        {resolvedDebtorId && !showPicker && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={goToThread}
+              disabled={!view.debtorId}
+              className="flex h-8 w-fit items-center gap-1.5 rounded-md border bg-muted/40 px-2.5 text-xs font-medium hover:bg-muted disabled:cursor-default disabled:hover:bg-muted/40"
             >
-              {t("change_debtor")}
-            </Button>
+              <span className="text-muted-foreground">{t("linked_to")}:</span>
+              {debtorLabel ?? resolvedDebtorId}
+            </button>
+            {isFinanzas && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs text-muted-foreground"
+                onClick={handleStartEdit}
+              >
+                {t("change_debtor")}
+              </Button>
+            )}
           </div>
         )}
 
