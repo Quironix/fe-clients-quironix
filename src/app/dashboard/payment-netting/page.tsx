@@ -380,19 +380,21 @@ export default function PaymentNettingPage() {
                         )}`}
                       />
                     </div>
-                    <div>
-                      <div className="bg-red-100 border border-red-500 p-4 rounded-lg flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <TriangleAlert className="w-4 h-4" />
-                          <span className="font-bold">
-                            {t("infoNotFound")}
+                    {selectedPayments.some((p) => !p.payment?.debtor?.id) && (
+                      <div>
+                        <div className="bg-red-100 border border-red-500 p-4 rounded-lg flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <TriangleAlert className="w-4 h-4" />
+                            <span className="font-bold">
+                              {t("infoNotFound")}
+                            </span>
+                          </div>
+                          <span>
+                            {t("paymentNotAssociated")}
                           </span>
                         </div>
-                        <span>
-                          {t("paymentNotAssociated")}
-                        </span>
                       </div>
-                    </div>
+                    )}
                     <FormAssignDebtor
                       selectedMovements={selectedPayments}
                       handleClose={() => {
