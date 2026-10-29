@@ -36,7 +36,7 @@ export const fromFinanzas = (email: InboundInvoiceEmail): UnifiedRow => ({
   origin: "FINANZAS",
   subject: email.subject,
   fromAddress: email.from_address,
-  snippet: email.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
+  snippet: email.snippet ?? email.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
   createdAt: email.created_at,
   attachmentsCount: email.attachments?.length ?? 0,
   intent: email.intent ?? null,
@@ -56,7 +56,8 @@ export const fromCobranza = (message: TrackEmailMessage): UnifiedRow => ({
   origin: "COBRANZA",
   subject: message.subject ?? null,
   fromAddress: message.from_address,
-  snippet: message.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
+  snippet:
+    message.snippet ?? message.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
   createdAt: message.created_at,
   attachmentsCount: message.attachments?.length ?? 0,
   intent: message.agent_category ?? null,
@@ -87,6 +88,42 @@ export const mergeRows = (
     (a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
+
+// La primera página (`head`) se refresca sola; las anteriores (`pages`) se
+// bajaron una vez. Lo que cae en el rango de `head` sale de `head`, que es lo
+// fresco. `hasGap`: llegaron más correos que una página y hay que releer `pages`.
+export const mergeInboxPages = <T extends { cursor?: string }>(
+  head: T[] | undefined,
+  pages: T[][],
+  pageSize: number,
+): { emails: T[]; hasGap: boolean } => {
+  const older = pages.flat();
+  if (!head) return { emails: older, hasGap: false };
+  if (head.length < pageSize) return { emails: head, hasGap: false };
+  const edge = head[head.length - 1].cursor ?? "";
+  const newestOlder = older[0]?.cursor;
+  return {
+    emails: [...head, ...older.filter((email) => (email.cursor ?? "") < edge)],
+    hasGap: !!newestOlder && newestOlder < edge,
+  };
+};
+
+// Mezclar fuentes paginadas por separado: lo más viejo que la última fila
+// cargada de una fuente con páginas pendientes quedaría fuera de orden; se
+// muestra al bajar más.
+export const withinLoadedRange = (
+  rows: UnifiedRow[],
+  sources: { data: { created_at: string }[]; hasNextPage: boolean }[],
+): UnifiedRow[] => {
+  const edges = sources
+    .filter((source) => source.hasNextPage && source.data.length)
+    .map((source) =>
+      new Date(source.data[source.data.length - 1].created_at).getTime(),
+    );
+  if (!edges.length) return rows;
+  const cutoff = Math.max(...edges);
+  return rows.filter((row) => new Date(row.createdAt).getTime() >= cutoff);
+};
 
 export const shortDate = (date: string, now = new Date()) => {
   const [day, time] = formatDateTime(date).split(" ");

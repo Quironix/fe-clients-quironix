@@ -18,7 +18,7 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { IntentBadge } from "@/components/quiron/intent-badge";
 import {
   AgentStatusBadge,
@@ -33,13 +33,22 @@ import {
   isPending,
   mergeRows,
   shortDate,
+  withinLoadedRange,
   type InboxFilterId,
+  type UnifiedRow,
 } from "@/app/dashboard/invoice-inbox/lib/unified-inbox";
 
 const SEARCH_DEBOUNCE_MS = 300;
 // Igual que el servidor: con menos no hay búsqueda indexada.
 const SEARCH_MIN_LENGTH = 3;
-const SENT_PAGE_SIZE = 100;
+
+interface InboxSource {
+  data: { created_at: string }[];
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  isLoading: boolean;
+  fetchNextPage: () => unknown;
+}
 
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
@@ -55,30 +64,48 @@ export const InvoiceInboxList = () => {
   const [filterId, setFilterId] = useState<InboxFilterId>("ALL");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
-  const { data: finanzasEmails = [], isLoading: loadingFinanzas } =
-    useInboundInvoiceEmails(accessToken, clientId, undefined, searchTerm);
-  const { data: cobranzaReplies = [], isLoading: loadingCobranza } =
-    useInboundEmailReplies(accessToken, clientId, searchTerm);
+  const allFinanzas = useInboundInvoiceEmails(accessToken, clientId, {
+    search: searchTerm,
+  });
+  const pendingFinanzas = useInboundInvoiceEmails(accessToken, clientId, {
+    search: searchTerm,
+    pending: true,
+  });
+  const allCobranza = useInboundEmailReplies(accessToken, clientId, {
+    search: searchTerm,
+  });
+  const pendingCobranza = useInboundEmailReplies(accessToken, clientId, {
+    search: searchTerm,
+    pending: true,
+  });
+  const sent = useSentEmails(accessToken, clientId, searchTerm);
 
-  const [sentLimit, setSentLimit] = useState(SENT_PAGE_SIZE);
-  const {
-    data: sentEmails = [],
-    isLoading: loadingSent,
-    isFetching: fetchingSent,
-  } = useSentEmails(accessToken, clientId, searchTerm, sentLimit);
-  const hasMoreSent = filterId !== "PENDING" && sentEmails.length >= sentLimit;
+  const sourcesByFilter: Record<InboxFilterId, InboxSource[]> = {
+    ALL: [allFinanzas, allCobranza, sent],
+    PENDING: [pendingFinanzas, pendingCobranza],
+    SENT: [sent],
+  };
+  const rowsByFilter: Record<InboxFilterId, UnifiedRow[]> = {
+    ALL: withinLoadedRange(
+      mergeRows(allFinanzas.data, [...allCobranza.data, ...sent.data]),
+      sourcesByFilter.ALL,
+    ),
+    PENDING: withinLoadedRange(
+      mergeRows(pendingFinanzas.data, pendingCobranza.data),
+      sourcesByFilter.PENDING,
+    ).filter(isPending),
+    SENT: withinLoadedRange(mergeRows([], sent.data), sourcesByFilter.SENT),
+  };
 
-  const rows = useMemo(
-    () => mergeRows(finanzasEmails, [...cobranzaReplies, ...sentEmails]),
-    [finanzasEmails, cobranzaReplies, sentEmails],
-  );
+  const hasMore = (id: InboxFilterId) =>
+    sourcesByFilter[id].some((source) => source.hasNextPage);
+  const sources = sourcesByFilter[filterId];
+  const fetchingMore = sources.some((source) => source.isFetchingNextPage);
+  const loadMore = () =>
+    sources.forEach((source) => source.hasNextPage && source.fetchNextPage());
+  const isLoading = sources.some((source) => source.isLoading);
 
-  const isLoading = loadingFinanzas || loadingCobranza || loadingSent;
-
-  const filter =
-    INBOX_FILTERS.find((item) => item.id === filterId) ?? INBOX_FILTERS[0];
-
-  const visibleRows = rows.filter((row) => filter.match(row));
+  const visibleRows = rowsByFilter[filterId];
   const selectedRow =
     visibleRows.find((row) => row.key === selectedKey) ?? visibleRows[0];
   const selectedIndex = visibleRows.indexOf(selectedRow);
@@ -102,7 +129,7 @@ export const InvoiceInboxList = () => {
         >
           <TabsList>
             {INBOX_FILTERS.map((item) => {
-              const count = rows.filter((row) => item.match(row)).length;
+              const count = rowsByFilter[item.id].length;
               const highlight = item.id === "PENDING" && count > 0;
               return (
                 <TabsTrigger key={item.id} value={item.id} className="px-3">
@@ -117,6 +144,7 @@ export const InvoiceInboxList = () => {
                       )}
                     >
                       {count}
+                      {hasMore(item.id) && "+"}
                     </span>
                   )}
                 </TabsTrigger>
@@ -233,14 +261,14 @@ export const InvoiceInboxList = () => {
             );
           })}
 
-          {hasMoreSent && (
+          {hasMore(filterId) && (
             <Button
               variant="outline"
               className="m-3 self-center"
-              disabled={fetchingSent}
-              onClick={() => setSentLimit((limit) => limit + SENT_PAGE_SIZE)}
+              disabled={fetchingMore}
+              onClick={loadMore}
             >
-              {t("sent.load_more")}
+              {t(filterId === "SENT" ? "sent.load_more" : "load_more")}
             </Button>
           )}
         </div>

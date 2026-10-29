@@ -13,6 +13,8 @@ export interface GetInboundEmailRepliesFilters {
   read?: boolean;
   search?: string;
   direction?: "IN" | "OUT";
+  pending?: boolean;
+  before?: string;
   page?: number;
   limit?: number;
 }
@@ -80,6 +82,18 @@ export async function resolveInboundEmailReply(
   return handleResponse<TrackEmailMessage>(response);
 }
 
+export async function getInboundEmailReply(
+  accessToken: string,
+  clientId: string,
+  id: string,
+): Promise<TrackEmailMessage> {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/inbound-email-replies/${id}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  return handleResponse<TrackEmailMessage>(response);
+}
+
 export async function getInboundEmailReplies(
   accessToken: string,
   clientId: string,
@@ -91,6 +105,8 @@ export async function getInboundEmailReplies(
   if (f.read !== undefined) qs.set("read", String(f.read));
   if (f.search) qs.set("search", f.search);
   if (f.direction) qs.set("direction", f.direction);
+  if (f.pending) qs.set("pending", "true");
+  if (f.before) qs.set("before", f.before);
   if (f.page) qs.set("page", String(f.page));
   if (f.limit) qs.set("limit", String(f.limit));
   const params = qs.toString() ? `?${qs.toString()}` : "";

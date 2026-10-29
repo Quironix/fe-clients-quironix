@@ -106,6 +106,10 @@ export interface InboundInvoiceEmail {
   agent_shadow_payload?: Record<string, unknown> | null;
   resolved_at?: string | null;
   resolved_by_user_id?: string | null;
+  // Solo en el listado, que no trae body_text, body_html ni los JSON del agente:
+  // el correo completo se pide por id al abrirlo.
+  snippet?: string | null;
+  cursor?: string;
 }
 
 export interface GetInboundInvoiceEmailsFilters {
@@ -113,6 +117,8 @@ export interface GetInboundInvoiceEmailsFilters {
   intent?: InboundEmailIntent;
   agentStatus?: InboundEmailAgentStatus;
   search?: string;
+  pending?: boolean;
+  before?: string;
   page?: number;
   limit?: number;
 }
@@ -160,6 +166,8 @@ export async function getInboundInvoiceEmails(
   if (f.intent) qs.set("intent", f.intent);
   if (f.agentStatus) qs.set("agent_status", f.agentStatus);
   if (f.search) qs.set("search", f.search);
+  if (f.pending) qs.set("pending", "true");
+  if (f.before) qs.set("before", f.before);
   if (f.page) qs.set("page", String(f.page));
   if (f.limit) qs.set("limit", String(f.limit));
   const params = qs.toString() ? `?${qs.toString()}` : "";
@@ -173,6 +181,23 @@ export async function getInboundInvoiceEmails(
   );
 
   return handleResponse<InboundInvoiceEmail[]>(response);
+}
+
+export async function getInboundInvoiceEmail(
+  accessToken: string,
+  clientId: string,
+  id: string,
+): Promise<InboundInvoiceEmail> {
+  const response = await fetch(
+    `${API_URL}/v2/clients/${clientId}/inbound-invoice-emails/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  return handleResponse<InboundInvoiceEmail>(response);
 }
 
 export async function linkInboundInvoiceEmail(

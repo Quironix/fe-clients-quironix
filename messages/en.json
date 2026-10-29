@@ -397,6 +397,7 @@
       "loading": "Loading...",
       "empty_filter": "No emails match this filter.",
       "search_placeholder": "Search by sender, subject or debtor (name, code or RUT)",
+      "load_more": "Load more",
       "empty_search": "No emails match your search.",
       "intent": {
         "COMPROBANTE_PAGO": "Receipt",

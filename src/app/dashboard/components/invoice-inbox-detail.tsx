@@ -13,6 +13,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useDebtor, useDebtors } from "@/hooks/useDebtors";
 import {
+  useInboundEmailReply,
+  useInboundInvoiceEmail,
   useLinkInboundInvoiceEmail,
   useResolveInboundEmail,
 } from "@/hooks/useInboundInvoiceEmails";
@@ -60,8 +62,8 @@ const formatFileSize = (bytes: number) => {
 };
 
 export const InvoiceInboxDetail = ({
-  email,
-  cobranza,
+  email: listEmail,
+  cobranza: listCobranza,
   navigation,
   onAction,
 }: InvoiceInboxDetailProps) => {
@@ -72,6 +74,27 @@ export const InvoiceInboxDetail = ({
 
   const accessToken = session?.token as string;
   const clientId = profile?.client?.id as string;
+
+  // La fila del listado no trae cuerpo ni JSON del agente: se piden por id. El
+  // estado (que se refresca con el listado) manda sobre el del detalle.
+  const { data: fullEmail } = useInboundInvoiceEmail(
+    accessToken,
+    clientId,
+    listEmail?.id,
+  );
+  const email =
+    listEmail && fullEmail?.id === listEmail.id
+      ? { ...fullEmail, ...listEmail }
+      : listEmail;
+  const { data: fullCobranza } = useInboundEmailReply(
+    accessToken,
+    clientId,
+    listCobranza?.id,
+  );
+  const cobranza =
+    listCobranza && fullCobranza?.id === listCobranza.id
+      ? { ...fullCobranza, ...listCobranza }
+      : listCobranza;
 
   const [debtorPickerOpen, setDebtorPickerOpen] = useState(false);
   const [selectedDebtor, setSelectedDebtor] = useState<

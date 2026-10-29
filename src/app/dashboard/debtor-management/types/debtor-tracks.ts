@@ -215,6 +215,9 @@ export interface TrackEmailMessage {
   agent_shadow_payload?: Record<string, unknown> | null;
   resolved_at?: string | null;
   resolved_by_user_id?: string | null;
+  // Solo en el listado de la bandeja, que no trae cuerpos ni JSON del agente.
+  snippet?: string | null;
+  cursor?: string;
 }
 
 export interface InvoiceTracksParams {

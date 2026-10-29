@@ -46,13 +46,15 @@ export const InvoiceInboxMailbox = () => {
     useState<TrackEmailMessage | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  const { data: finanzasEmails = [] } = useInboundInvoiceEmails(
+  const { data: finanzasEmails } = useInboundInvoiceEmails(
     accessToken,
     clientId,
+    { pending: true },
   );
-  const { data: cobranzaReplies = [] } = useInboundEmailReplies(
+  const { data: cobranzaReplies } = useInboundEmailReplies(
     accessToken,
     clientId,
+    { pending: true },
   );
   const { data: inbox } = useInvoiceInbox(accessToken, clientId);
 

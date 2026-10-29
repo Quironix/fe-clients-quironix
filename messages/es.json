@@ -397,6 +397,7 @@
       "loading": "Cargando...",
       "empty_filter": "No hay correos que coincidan con este filtro.",
       "search_placeholder": "Buscar por remitente, asunto o deudor (nombre, código o RUT)",
+      "load_more": "Cargar más",
       "empty_search": "No hay correos que coincidan con la búsqueda.",
       "intent": {
         "COMPROBANTE_PAGO": "Comprobante",
