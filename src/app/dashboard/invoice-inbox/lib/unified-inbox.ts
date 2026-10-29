@@ -36,7 +36,7 @@ export const fromFinanzas = (email: InboundInvoiceEmail): UnifiedRow => ({
   origin: "FINANZAS",
   subject: email.subject,
   fromAddress: email.from_address,
-  snippet: email.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
+  snippet: email.snippet ?? email.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
   createdAt: email.created_at,
   attachmentsCount: email.attachments?.length ?? 0,
   intent: email.intent ?? null,
@@ -88,7 +88,26 @@ export const mergeRows = (
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
-export const shortDate = (date: string, now = new Date()) => {
+// La primera página (`head`) se refresca sola; las anteriores (`pages`) se
+// bajaron una vez. Lo que cae en el rango de `head` sale de `head`, que es lo
+// fresco. `hasGap`: llegaron más correos que una página y hay que releer `pages`.
+export const mergeInboxPages = (
+  head: InboundInvoiceEmail[] | undefined,
+  pages: InboundInvoiceEmail[][],
+  pageSize: number,
+): { emails: InboundInvoiceEmail[]; hasGap: boolean } => {
+  const older = pages.flat();
+  if (!head) return { emails: older, hasGap: false };
+  if (head.length < pageSize) return { emails: head, hasGap: false };
+  const edge = head[head.length - 1].cursor ?? "";
+  const newestOlder = older[0]?.cursor;
+  return {
+    emails: [...head, ...older.filter((email) => (email.cursor ?? "") < edge)],
+    hasGap: !!newestOlder && newestOlder < edge,
+  };
+};
+
+export const shortDate =(date: string, now = new Date()) => {
   const [day, time] = formatDateTime(date).split(" ");
   const [today] = formatDateTime(now.toISOString()).split(" ");
   return day === today ? time : day.slice(0, 5);
