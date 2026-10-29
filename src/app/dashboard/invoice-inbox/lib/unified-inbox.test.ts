@@ -7,6 +7,7 @@ import {
   mergeInboxPages,
   sentBy,
   shortDate,
+  withinLoadedRange,
 } from "./unified-inbox";
 
 const message = (overrides: Partial<TrackEmailMessage>): TrackEmailMessage => ({
@@ -86,6 +87,34 @@ describe("mergeInboxPages", () => {
 
   it("flags a gap when more than a page arrived", () => {
     expect(mergeInboxPages(range(20, 17), [range(10, 7)], 4).hasGap).toBe(true);
+  });
+});
+
+describe("withinLoadedRange", () => {
+  const at = (day: number) =>
+    `2026-10-${String(day).padStart(2, "0")}T00:00:00Z`;
+  const rows = [12, 10, 8, 5].map((day) =>
+    fromCobranza(message({ id: `m${day}`, created_at: at(day) })),
+  );
+
+  it("hides rows older than the last loaded row of a source with more pages", () => {
+    const sources = [
+      { data: [{ created_at: at(9) }], hasNextPage: true },
+      { data: [{ created_at: at(4) }], hasNextPage: true },
+      { data: [{ created_at: at(11) }], hasNextPage: false },
+    ];
+    expect(withinLoadedRange(rows, sources).map((row) => row.key)).toEqual([
+      "c-m12",
+      "c-m10",
+    ]);
+  });
+
+  it("keeps everything when every source is complete", () => {
+    expect(
+      withinLoadedRange(rows, [
+        { data: [{ created_at: at(9) }], hasNextPage: false },
+      ]),
+    ).toBe(rows);
   });
 });
 

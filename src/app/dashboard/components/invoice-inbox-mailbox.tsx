@@ -51,9 +51,10 @@ export const InvoiceInboxMailbox = () => {
     clientId,
     { pending: true },
   );
-  const { data: cobranzaReplies = [] } = useInboundEmailReplies(
+  const { data: cobranzaReplies } = useInboundEmailReplies(
     accessToken,
     clientId,
+    { pending: true },
   );
   const { data: inbox } = useInvoiceInbox(accessToken, clientId);
 

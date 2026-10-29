@@ -33,6 +33,7 @@ import {
   isPending,
   mergeRows,
   shortDate,
+  withinLoadedRange,
   type InboxFilterId,
   type UnifiedRow,
 } from "@/app/dashboard/invoice-inbox/lib/unified-inbox";
@@ -40,7 +41,14 @@ import {
 const SEARCH_DEBOUNCE_MS = 300;
 // Igual que el servidor: con menos no hay búsqueda indexada.
 const SEARCH_MIN_LENGTH = 3;
-const SENT_PAGE_SIZE = 100;
+
+interface InboxSource {
+  data: { created_at: string }[];
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  isLoading: boolean;
+  fetchNextPage: () => unknown;
+}
 
 export const InvoiceInboxList = () => {
   const { profile, session } = useProfileContext();
@@ -63,57 +71,39 @@ export const InvoiceInboxList = () => {
     search: searchTerm,
     pending: true,
   });
-  const { data: cobranzaReplies = [], isLoading: loadingCobranza } =
-    useInboundEmailReplies(accessToken, clientId, searchTerm);
+  const allCobranza = useInboundEmailReplies(accessToken, clientId, {
+    search: searchTerm,
+  });
+  const pendingCobranza = useInboundEmailReplies(accessToken, clientId, {
+    search: searchTerm,
+    pending: true,
+  });
+  const sent = useSentEmails(accessToken, clientId, searchTerm);
 
-  const [sentLimit, setSentLimit] = useState(SENT_PAGE_SIZE);
-  const {
-    data: sentEmails = [],
-    isLoading: loadingSent,
-    isFetching: fetchingSent,
-  } = useSentEmails(accessToken, clientId, searchTerm, sentLimit);
-  const hasMoreSent = sentEmails.length >= sentLimit;
-
-  const others = [...cobranzaReplies, ...sentEmails];
-  const withFinanzas = (finanzas: typeof allFinanzas) => {
-    const rows = mergeRows(finanzas.data, others);
-    // Faltan páginas de finanzas: lo de otros canales más viejo que la última
-    // fila cargada quedaría fuera de orden, se muestra al bajar más.
-    const oldest = finanzas.data[finanzas.data.length - 1]?.created_at;
-    if (!finanzas.hasNextPage || !oldest) return rows;
-    const cutoff = new Date(oldest).getTime();
-    return rows.filter(
-      (row) =>
-        row.origin === "FINANZAS" ||
-        new Date(row.createdAt).getTime() >= cutoff,
-    );
+  const sourcesByFilter: Record<InboxFilterId, InboxSource[]> = {
+    ALL: [allFinanzas, allCobranza, sent],
+    PENDING: [pendingFinanzas, pendingCobranza],
+    SENT: [sent],
   };
   const rowsByFilter: Record<InboxFilterId, UnifiedRow[]> = {
-    ALL: withFinanzas(allFinanzas),
-    PENDING: withFinanzas(pendingFinanzas).filter(isPending),
-    SENT: mergeRows([], others).filter(isSent),
+    ALL: withinLoadedRange(
+      mergeRows(allFinanzas.data, [...allCobranza.data, ...sent.data]),
+      sourcesByFilter.ALL,
+    ),
+    PENDING: withinLoadedRange(
+      mergeRows(pendingFinanzas.data, pendingCobranza.data),
+      sourcesByFilter.PENDING,
+    ).filter(isPending),
+    SENT: withinLoadedRange(mergeRows([], sent.data), sourcesByFilter.SENT),
   };
 
-  const hasMoreByFilter: Record<InboxFilterId, boolean> = {
-    ALL: allFinanzas.hasNextPage || hasMoreSent,
-    PENDING: pendingFinanzas.hasNextPage,
-    SENT: hasMoreSent,
-  };
-  const fetchingMore =
-    fetchingSent ||
-    allFinanzas.isFetchingNextPage ||
-    pendingFinanzas.isFetchingNextPage;
-  const loadMore = () => {
-    if (filterId === "PENDING") return pendingFinanzas.fetchNextPage();
-    if (filterId === "ALL" && allFinanzas.hasNextPage)
-      allFinanzas.fetchNextPage();
-    if (hasMoreSent) setSentLimit((limit) => limit + SENT_PAGE_SIZE);
-  };
-
-  const isLoading =
-    (filterId === "PENDING" ? pendingFinanzas : allFinanzas).isLoading ||
-    loadingCobranza ||
-    loadingSent;
+  const hasMore = (id: InboxFilterId) =>
+    sourcesByFilter[id].some((source) => source.hasNextPage);
+  const sources = sourcesByFilter[filterId];
+  const fetchingMore = sources.some((source) => source.isFetchingNextPage);
+  const loadMore = () =>
+    sources.forEach((source) => source.hasNextPage && source.fetchNextPage());
+  const isLoading = sources.some((source) => source.isLoading);
 
   const visibleRows = rowsByFilter[filterId];
   const selectedRow =
@@ -154,7 +144,7 @@ export const InvoiceInboxList = () => {
                       )}
                     >
                       {count}
-                      {hasMoreByFilter[item.id] && "+"}
+                      {hasMore(item.id) && "+"}
                     </span>
                   )}
                 </TabsTrigger>
@@ -271,7 +261,7 @@ export const InvoiceInboxList = () => {
             );
           })}
 
-          {hasMoreByFilter[filterId] && (
+          {hasMore(filterId) && (
             <Button
               variant="outline"
               className="m-3 self-center"

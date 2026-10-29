@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useDebtor, useDebtors } from "@/hooks/useDebtors";
 import {
+  useInboundEmailReply,
   useInboundInvoiceEmail,
   useLinkInboundInvoiceEmail,
   useResolveInboundEmail,
@@ -62,7 +63,7 @@ const formatFileSize = (bytes: number) => {
 
 export const InvoiceInboxDetail = ({
   email: listEmail,
-  cobranza,
+  cobranza: listCobranza,
   navigation,
   onAction,
 }: InvoiceInboxDetailProps) => {
@@ -85,6 +86,15 @@ export const InvoiceInboxDetail = ({
     listEmail && fullEmail?.id === listEmail.id
       ? { ...fullEmail, ...listEmail }
       : listEmail;
+  const { data: fullCobranza } = useInboundEmailReply(
+    accessToken,
+    clientId,
+    listCobranza?.id,
+  );
+  const cobranza =
+    listCobranza && fullCobranza?.id === listCobranza.id
+      ? { ...fullCobranza, ...listCobranza }
+      : listCobranza;
 
   const [debtorPickerOpen, setDebtorPickerOpen] = useState(false);
   const [selectedDebtor, setSelectedDebtor] = useState<

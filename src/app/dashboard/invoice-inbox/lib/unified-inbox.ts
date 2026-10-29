@@ -56,7 +56,8 @@ export const fromCobranza = (message: TrackEmailMessage): UnifiedRow => ({
   origin: "COBRANZA",
   subject: message.subject ?? null,
   fromAddress: message.from_address,
-  snippet: message.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
+  snippet:
+    message.snippet ?? message.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
   createdAt: message.created_at,
   attachmentsCount: message.attachments?.length ?? 0,
   intent: message.agent_category ?? null,
@@ -91,11 +92,11 @@ export const mergeRows = (
 // La primera página (`head`) se refresca sola; las anteriores (`pages`) se
 // bajaron una vez. Lo que cae en el rango de `head` sale de `head`, que es lo
 // fresco. `hasGap`: llegaron más correos que una página y hay que releer `pages`.
-export const mergeInboxPages = (
-  head: InboundInvoiceEmail[] | undefined,
-  pages: InboundInvoiceEmail[][],
+export const mergeInboxPages = <T extends { cursor?: string }>(
+  head: T[] | undefined,
+  pages: T[][],
   pageSize: number,
-): { emails: InboundInvoiceEmail[]; hasGap: boolean } => {
+): { emails: T[]; hasGap: boolean } => {
   const older = pages.flat();
   if (!head) return { emails: older, hasGap: false };
   if (head.length < pageSize) return { emails: head, hasGap: false };
@@ -107,7 +108,24 @@ export const mergeInboxPages = (
   };
 };
 
-export const shortDate =(date: string, now = new Date()) => {
+// Mezclar fuentes paginadas por separado: lo más viejo que la última fila
+// cargada de una fuente con páginas pendientes quedaría fuera de orden; se
+// muestra al bajar más.
+export const withinLoadedRange = (
+  rows: UnifiedRow[],
+  sources: { data: { created_at: string }[]; hasNextPage: boolean }[],
+): UnifiedRow[] => {
+  const edges = sources
+    .filter((source) => source.hasNextPage && source.data.length)
+    .map((source) =>
+      new Date(source.data[source.data.length - 1].created_at).getTime(),
+    );
+  if (!edges.length) return rows;
+  const cutoff = Math.max(...edges);
+  return rows.filter((row) => new Date(row.createdAt).getTime() >= cutoff);
+};
+
+export const shortDate = (date: string, now = new Date()) => {
   const [day, time] = formatDateTime(date).split(" ");
   const [today] = formatDateTime(now.toISOString()).split(" ");
   return day === today ? time : day.slice(0, 5);
