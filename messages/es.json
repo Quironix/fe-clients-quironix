@@ -921,7 +921,7 @@
     "keyReasons": {
       "title": "Razones clave de llamada",
       "unfulfilledCommitment": "Compromiso incumplido",
-      "overdueDebt": "Deuda vencida",
+      "overdueDebt": "Deuda vencida total (con litigio)",
       "expired": "vencido",
       "cashEstimate": "Estimación de caja",
       "collected": "Recaudado",
