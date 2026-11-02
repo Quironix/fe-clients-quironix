@@ -1334,6 +1334,12 @@
     },
     "dailyPlan": {
       "invoiceProgress": "{done} of {total} invoices with a result",
+      "debtorNeeds": {
+        "COMPLETE_TECHNICAL_FILE": "Technical file pending",
+        "RESPOND_INBOUND": "Email to answer",
+        "ALLOCATE_UNAPPLIED_FUNDS": "Funds to allocate",
+        "FIND_VALID_CONTACT": "Find a valid contact"
+      },
       "reasons": {
         "BROKEN_COMMITMENT": "Broken commitment",
         "INSTALLMENT_UNPAID": "Unpaid installment",

@@ -1334,6 +1334,12 @@
     },
     "dailyPlan": {
       "invoiceProgress": "{done} de {total} facturas con resultado",
+      "debtorNeeds": {
+        "COMPLETE_TECHNICAL_FILE": "Ficha técnica pendiente",
+        "RESPOND_INBOUND": "Correo por responder",
+        "ALLOCATE_UNAPPLIED_FUNDS": "Fondos por imputar",
+        "FIND_VALID_CONTACT": "Buscar contacto vigente"
+      },
       "reasons": {
         "BROKEN_COMMITMENT": "Compromiso incumplido",
         "INSTALLMENT_UNPAID": "Cuota impaga",

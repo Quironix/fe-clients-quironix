@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { PaginationInfo } from "../../debtors/types/pagination";
-import { DailyPlanResponse } from "../types/daily-plan";
+import { DailyPlanItem, DailyPlanResponse } from "../types/daily-plan";
 import { TaskItem } from "./task-item";
 import { TasksPagination } from "./tasks-pagination";
 
@@ -45,6 +45,21 @@ export const DailyPlanList = ({
     );
   }
 
+  const detailOf = (item: DailyPlanItem) => {
+    const parts = item.pendingDebtorNeeds.map((need) =>
+      t(`dailyPlan.debtorNeeds.${need}`)
+    );
+    if (item.invoiceProgress.total > 0) {
+      parts.unshift(
+        t("dailyPlan.invoiceProgress", {
+          done: item.invoiceProgress.withResult,
+          total: item.invoiceProgress.total,
+        })
+      );
+    }
+    return parts.length > 0 ? parts.join(" · ") : undefined;
+  };
+
   const { page, totalPages } = data.pagination;
   const pagination = {
     ...data.pagination,
@@ -62,14 +77,7 @@ export const DailyPlanList = ({
             debtorId={item.debtorId}
             code={item.debtor.debtorCode || "-"}
             name={item.debtor.name}
-            detail={
-              item.invoiceProgress.total > 0
-                ? t("dailyPlan.invoiceProgress", {
-                    done: item.invoiceProgress.withResult,
-                    total: item.invoiceProgress.total,
-                  })
-                : undefined
-            }
+            detail={detailOf(item)}
             debt={Number(item.overdueAmount)}
             debtLabel={t("taskItem.overdueDebt")}
             status={

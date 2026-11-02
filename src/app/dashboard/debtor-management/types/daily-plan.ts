@@ -18,6 +18,7 @@ export interface DailyPlanItem {
   overdueAmount: string;
   planPosition: number | null;
   invoiceProgress: { withResult: number; total: number };
+  pendingDebtorNeeds: string[];
 }
 
 export interface DailyPlanResponse {
