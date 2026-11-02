@@ -1,7 +1,3 @@
-export type TechnicalFileOutcome =
-  | "FILE_DEBTOR_DID_NOT_KNOW"
-  | "FILE_AWAITING_DEBTOR";
-
 export interface TaskScopeItem {
   id: string;
   invoiceId: string | null;

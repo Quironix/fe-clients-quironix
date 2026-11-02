@@ -26,7 +26,6 @@ import TitleSection from "../../components/title-section";
 import { useDebtorsStore } from "../../debtors/store";
 import { DebtorContacts } from "../components/debtor-contacts";
 import { AddManagementTab } from "../components/tabs/add-management-tab";
-import { TaskNeedsSection } from "../components/task-needs-section";
 import { useTaskScope } from "../hooks/useTaskScope";
 import { KeyReasonsTab } from "../components/tabs/key-reasons-tab";
 
@@ -49,19 +48,12 @@ const Content = ({ params }: PageProps) => {
   const { profile, session } = useProfileContext();
   const [activeContact, setActiveContact] = useState<Contact | null>(null);
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [preselectedInvoiceIds, setPreselectedInvoiceIds] = useState<string[]>(
-    []
-  );
   const { data: taskScope } = useTaskScope({
     accessToken: session?.token,
     clientId: profile?.client?.id,
     debtorId: id,
   });
 
-  const handleRegister = (invoiceIds: string[]) => {
-    setPreselectedInvoiceIds(invoiceIds);
-    setActiveTab("add-management");
-  };
   const {
     fetchDebtorById,
     dataDebtor,
@@ -210,17 +202,6 @@ const Content = ({ params }: PageProps) => {
                 isFetchingCollectionProfile={isFetchingCollectionProfile}
                 callBrief={callBrief}
                 isFetchingCallBrief={isFetchingCallBrief}
-                taskNeeds={
-                  taskScope && (
-                    <TaskNeedsSection
-                      scope={taskScope}
-                      debtorId={id}
-                      clientId={profile?.client?.id ?? ""}
-                      accessToken={session?.token ?? ""}
-                      onRegister={handleRegister}
-                    />
-                  )
-                }
               />
             </TabsContent>
             <TabsContent value="add-management" className="flex-1">
@@ -229,7 +210,6 @@ const Content = ({ params }: PageProps) => {
                 session={session}
                 profile={profile}
                 activeContact={activeContact}
-                preselectedInvoiceIds={preselectedInvoiceIds}
                 taskScopeActive={!!taskScope}
               />
             </TabsContent>

@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { Handshake, Target, TriangleAlert } from "lucide-react";
+import { FileText, Handshake, Target, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface CallBriefField {
@@ -12,7 +12,7 @@ interface CallBriefSection {
   fields: CallBriefField[];
 }
 
-const SECTION_KEYS = ["situation", "focus", "negotiation"] as const;
+const SECTION_KEYS = ["situation", "focus", "negotiation", "needs"] as const;
 type SectionKey = (typeof SECTION_KEYS)[number];
 
 const SECTION_STYLES: Record<
@@ -42,6 +42,12 @@ const SECTION_STYLES: Record<
     headerColor: "text-green-700",
     labelColor: "text-green-700",
   },
+  needs: {
+    icon: FileText,
+    accent: "border-l-blue-500",
+    headerColor: "text-blue-700",
+    labelColor: "text-blue-700",
+  },
 };
 
 function stripMarkdownSyntax(raw: string): string {
@@ -61,7 +67,9 @@ function parseCallBrief(
     .replace(/\*\*/g, "");
 
   const sectionMatches = [
-    ...text.matchAll(/^(?!-)[^\n]*?\b(LECTURA|FOCO|CONTROL)\b[^\n]*$/gim),
+    ...text.matchAll(
+      /^(?!-)[^\n]*?\b(LECTURA|FOCO|CONTROL|NECESITA)\b[^\n]*$/gim
+    ),
   ];
   if (sectionMatches.length === 0) return null;
 
@@ -79,10 +87,15 @@ function parseCallBrief(
     if (keyword === "LECTURA") key = "situation";
     else if (keyword === "FOCO") key = "focus";
     else if (keyword === "CONTROL") key = "negotiation";
+    else if (keyword === "NECESITA") key = "needs";
     if (!key) continue;
 
     const fields: CallBriefField[] = [];
-    const fieldMatches = body.matchAll(/^-\s*([A-ZÁÉÍÓÚÑ0-9 ()]+?):\s*(.+)$/gm);
+    const fieldPattern =
+      key === "needs"
+        ? /^-\s*([^:\n]{1,40}?):\s*(.+)$/gm
+        : /^-\s*([A-ZÁÉÍÓÚÑ0-9 ()]+?):\s*(.+)$/gm;
+    const fieldMatches = body.matchAll(fieldPattern);
     for (const fieldMatch of fieldMatches) {
       const label = fieldMatch[1].trim();
       const value = fieldMatch[2].trim();
