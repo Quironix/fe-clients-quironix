@@ -187,12 +187,18 @@ export interface TrackEmailMessage {
   from_address: string;
   subject?: string | null;
   body_text?: string | null;
+  body_text_original?: string | null;
   body_html?: string | null;
+  // Solo enviados: se guardó el correo tal cual salió. Si no, la copia es parcial.
+  has_original_html?: boolean;
   track_id?: string | null;
   attachments?: EmailMessageAttachment[];
   to_addresses?: string[] | null;
   template_id?: string | null;
   sent_by_executive_id?: string | null;
+  sent_by_executive_name?: string | null;
+  sent_by_agent?: boolean;
+  collector_execution_log_id?: string | null;
   read_at?: string | null;
   created_at: string;
   agent_status?: AgentReplyStatus | null;
@@ -201,7 +207,6 @@ export interface TrackEmailMessage {
   agent_secondary_intents?: string[] | null;
   agent_guardrail_triggered?: boolean | null;
   agent_tools_used?: string[] | null;
-  agent_suggested_reply?: string | null;
   agent_requires_contact_review?: boolean | null;
   agent_management_track_id?: string | null;
   agent_summary?: string | null;

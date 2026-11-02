@@ -1,28 +1,14 @@
-import { cn } from "@/lib/utils";
-import { Sparkles } from "lucide-react";
+import { QuironIcon } from "./quiron-icon";
 
-interface QuironBadgeProps {
-  label?: string;
-  className?: string;
-}
-
-export const QuironBadge = ({
-  label = "Quirón",
-  className,
-}: QuironBadgeProps) => (
+export const QuironBadge = () => (
   <span
-    className={cn(
-      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold whitespace-nowrap",
-      className,
-    )}
+    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold whitespace-nowrap"
     style={{
       backgroundColor: "color-mix(in srgb, var(--quiron) 15%, transparent)",
       color: "var(--quiron-dark)",
     }}
   >
-    <Sparkles className="h-3 w-3" strokeWidth={2.5} />
-    {label}
+    <QuironIcon size={12} />
+    Quirón
   </span>
 );
-
-export default QuironBadge;

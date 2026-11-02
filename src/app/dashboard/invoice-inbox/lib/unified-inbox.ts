@@ -4,6 +4,9 @@ import {
   isEmailLinked,
 } from "@/services/inbound-invoice-emails";
 import { type TrackEmailMessage } from "@/services/inbound-email-replies";
+import { formatDateTime } from "@/lib/utils";
+
+const SNIPPET_LENGTH = 200;
 
 // Una sola fila de la bandeja de correos, sin importar de qué canal viene
 // (inbound-invoice-emails de finanzas o inbound-email-replies de cobranza+).
@@ -12,6 +15,7 @@ export interface UnifiedRow {
   origin: "FINANZAS" | "COBRANZA";
   subject: string | null;
   fromAddress: string;
+  snippet: string | null;
   createdAt: string;
   attachmentsCount: number;
   intent: string | null;
@@ -32,11 +36,12 @@ export const fromFinanzas = (email: InboundInvoiceEmail): UnifiedRow => ({
   origin: "FINANZAS",
   subject: email.subject,
   fromAddress: email.from_address,
+  snippet: email.snippet ?? email.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
   createdAt: email.created_at,
   attachmentsCount: email.attachments?.length ?? 0,
   intent: email.intent ?? null,
   agentStatus: email.agent_status ?? null,
-  guardrailTriggered: email.agent_guardrail_triggered ?? null,
+  guardrailTriggered: null,
   suggestedReply: email.agent_suggested_reply ?? null,
   requiresContactReview: email.agent_requires_contact_review ?? null,
   route: emailRoute(email) === "MATCHING" ? "MATCHING" : "AGENT",
@@ -51,12 +56,13 @@ export const fromCobranza = (message: TrackEmailMessage): UnifiedRow => ({
   origin: "COBRANZA",
   subject: message.subject ?? null,
   fromAddress: message.from_address,
+  snippet: message.body_text?.slice(0, SNIPPET_LENGTH) ?? null,
   createdAt: message.created_at,
   attachmentsCount: message.attachments?.length ?? 0,
   intent: message.agent_category ?? null,
   agentStatus: message.agent_status ?? null,
   guardrailTriggered: message.agent_guardrail_triggered ?? null,
-  suggestedReply: message.agent_suggested_reply ?? null,
+  suggestedReply: null,
   requiresContactReview: message.agent_requires_contact_review ?? null,
   route:
     message.agent_category === "CONFIRMA_PAGO_CON_COMPROBANTE"
@@ -82,6 +88,42 @@ export const mergeRows = (
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
+// La primera página (`head`) se refresca sola; las anteriores (`pages`) se
+// bajaron una vez. Lo que cae en el rango de `head` sale de `head`, que es lo
+// fresco. `hasGap`: llegaron más correos que una página y hay que releer `pages`.
+export const mergeInboxPages = (
+  head: InboundInvoiceEmail[] | undefined,
+  pages: InboundInvoiceEmail[][],
+  pageSize: number,
+): { emails: InboundInvoiceEmail[]; hasGap: boolean } => {
+  const older = pages.flat();
+  if (!head) return { emails: older, hasGap: false };
+  if (head.length < pageSize) return { emails: head, hasGap: false };
+  const edge = head[head.length - 1].cursor ?? "";
+  const newestOlder = older[0]?.cursor;
+  return {
+    emails: [...head, ...older.filter((email) => (email.cursor ?? "") < edge)],
+    hasGap: !!newestOlder && newestOlder < edge,
+  };
+};
+
+export const shortDate =(date: string, now = new Date()) => {
+  const [day, time] = formatDateTime(date).split(" ");
+  const [today] = formatDateTime(now.toISOString()).split(" ");
+  return day === today ? time : day.slice(0, 5);
+};
+
+export type SentBy = "QUIRON" | "EXECUTIVE" | "COLLECTOR";
+
+export const isSent = (row: UnifiedRow) => row.cobranza?.direction === "OUT";
+
+export const sentBy = (message: TrackEmailMessage): SentBy | null => {
+  if (message.direction !== "OUT") return null;
+  if (message.sent_by_agent) return "QUIRON";
+  if (message.sent_by_executive_id) return "EXECUTIVE";
+  return message.collector_execution_log_id ? "COLLECTOR" : null;
+};
+
 // Cómo quedó resuelto el correo:
 //  - "pending": el ejecutivo todavía tiene que hacer algo.
 //  - "auto":    lo resolvió el sistema — la cascada matcheó el deudor
@@ -105,11 +147,11 @@ export const resolutionKind = (row: UnifiedRow): ResolutionKind => {
 export const isHandled = (row: UnifiedRow) =>
   resolutionKind(row) !== "pending";
 export const isPending = (row: UnifiedRow) =>
-  resolutionKind(row) === "pending";
+  !isSent(row) && resolutionKind(row) === "pending";
 
 // La bandeja es una sola lista: comprobantes y gestiones mezclados, ordenados
 // por fecha. Los dos únicos filtros miran el estado del correo, no su ruta.
-export type InboxFilterId = "PENDING" | "ALL";
+export type InboxFilterId = "PENDING" | "ALL" | "SENT";
 
 export interface InboxFilter {
   id: InboxFilterId;
@@ -119,5 +161,6 @@ export interface InboxFilter {
 
 export const INBOX_FILTERS: InboxFilter[] = [
   { id: "PENDING", labelKey: "filter.unhandled", match: isPending },
+  { id: "SENT", labelKey: "filter.sent", match: isSent },
   { id: "ALL", labelKey: "filter.all", match: () => true },
 ];

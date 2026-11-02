@@ -71,22 +71,3 @@ export async function provisionWebRTC(
     throw error;
   }
 }
-
-export const TEST_CREDENTIALS = {
-  "6170": {
-    username: "6170",
-    password: "9c8c35689dca898e0cbad7fc622944ca",
-  },
-  "6171": {
-    username: "6171",
-    password: "9c8c35689dca898e0cbad7fc622944ca",
-  },
-  "6172": {
-    username: "6172",
-    password: "9c8c35689dca898e0cbad7fc622944ca",
-  },
-  "6173": {
-    username: "6173",
-    password: "9c8c35689dca898e0cbad7fc622944ca",
-  },
-};

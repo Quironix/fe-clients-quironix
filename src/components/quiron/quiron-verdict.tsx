@@ -1,7 +1,8 @@
 "use client";
-import { cn, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import { QuironMark } from "./quiron-mark";
+import { ReactNode } from "react";
+import { QuironIcon } from "./quiron-icon";
 import { IntentBadge } from "./intent-badge";
 import { AgentStatusBadge } from "./agent-status-badge";
 
@@ -18,29 +19,25 @@ interface ExtractedPaymentPromise {
   invoice_numbers?: string[] | null;
 }
 
-export interface QuironExtracted {
+interface QuironExtracted {
   payment_proof?: ExtractedPaymentProof | null;
   payment_promise?: ExtractedPaymentPromise | null;
   disputed_amount?: boolean | null;
 }
 
-export interface QuironVerdictProps {
+interface QuironVerdictProps {
   intent?: string | null;
   confidence?: number | null;
-  threshold?: number | null;
   secondaryIntents?: string[] | null;
   agentStatus?: string | null;
   guardrailTriggered?: boolean | null;
-  toolsUsed?: string[] | null;
   summary?: string | null;
   extracted?: QuironExtracted | null;
   combo?: string | null;
   linkedTrackId?: string | null;
-  suggestedReply?: string | null;
   shadowPayload?: Record<string, unknown> | null;
   onViewTrack?: () => void;
   compact?: boolean;
-  className?: string;
 }
 
 const pct = (v?: number | null) =>
@@ -52,23 +49,27 @@ const amount = (v?: number | string | null) => {
   return Number.isFinite(n) ? formatNumber(n as number) : String(v);
 };
 
+const Row = ({ label, value }: { label: string; value: ReactNode }) =>
+  value ? (
+    <div className="flex gap-2 text-xs">
+      <span className="text-muted-foreground min-w-24">{label}</span>
+      <span className="font-medium">{value}</span>
+    </div>
+  ) : null;
+
 export const QuironVerdict = ({
   intent,
   confidence,
-  threshold,
   secondaryIntents,
   agentStatus,
   guardrailTriggered,
-  toolsUsed,
   summary,
   extracted,
   combo,
   linkedTrackId,
-  suggestedReply,
   shadowPayload,
   onViewTrack,
   compact = false,
-  className,
 }: QuironVerdictProps) => {
   const t = useTranslations("quiron");
   const tv = useTranslations("dashboard.invoice_inbox.verdict");
@@ -85,28 +86,10 @@ export const QuironVerdict = ({
     | undefined;
   const draftCase = draft?.caseData ?? {};
   const confPct = pct(confidence);
-  const thrPct = pct(threshold);
-
-  const Row = ({
-    label,
-    value,
-  }: {
-    label: string;
-    value: React.ReactNode;
-  }) =>
-    value ? (
-      <div className="flex gap-2 text-xs">
-        <span className="text-muted-foreground min-w-24">{label}</span>
-        <span className="font-medium">{value}</span>
-      </div>
-    ) : null;
 
   return (
     <div
-      className={cn(
-        compact ? "space-y-2" : "space-y-3 rounded-lg border p-3",
-        className,
-      )}
+      className={compact ? "space-y-2" : "space-y-3 rounded-lg border p-3"}
       style={
         compact
           ? undefined
@@ -119,12 +102,11 @@ export const QuironVerdict = ({
       }
     >
       <div className="flex flex-wrap items-center gap-2">
-        <QuironMark size="sm" />
+        <QuironIcon />
         <span className="text-sm font-semibold">{t("verdict_title")}</span>
         <AgentStatusBadge
           agentStatus={agentStatus}
           guardrailTriggered={guardrailTriggered}
-          suggestedReply={suggestedReply}
         />
       </div>
 
@@ -133,7 +115,6 @@ export const QuironVerdict = ({
         {confPct != null && (
           <span className="text-[11px] text-muted-foreground">
             {t("confidence", { value: confPct })}
-            {thrPct != null ? ` · ${t("threshold", { value: thrPct })}` : ""}
           </span>
         )}
       </div>
@@ -271,5 +252,3 @@ export const QuironVerdict = ({
     </div>
   );
 };
-
-export default QuironVerdict;

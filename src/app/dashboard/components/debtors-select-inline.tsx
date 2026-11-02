@@ -15,6 +15,7 @@ export interface DebtorsSelectInlineProps {
   title?: string;
   required?: boolean;
   initialDebtor?: { id?: string; name?: string; debtor_code?: string };
+  suggestedDebtors?: { id: string; name: string; debtor_code?: string }[];
 }
 
 export default function DebtorsSelectInline({
@@ -22,6 +23,7 @@ export default function DebtorsSelectInline({
   title,
   required,
   initialDebtor,
+  suggestedDebtors = [],
 }: DebtorsSelectInlineProps) {
   const { debtors, fetchDebtorsPaginated, loading, isSearching } =
     useDebtorsStore();
@@ -118,7 +120,38 @@ export default function DebtorsSelectInline({
     return debtorsList;
   }, [debtors, initialDebtor, selectedDebtorData]);
 
-  const selectedDebtor = combinedDebtors.find((d) => d.id === field.value);
+  const selectedDebtor =
+    combinedDebtors.find((d) => d.id === field.value) ||
+    suggestedDebtors.find((d) => d.id === field.value);
+
+  const suggestedIds = new Set(suggestedDebtors.map((d) => d.id));
+  const otherDebtors = combinedDebtors.filter((d) => !suggestedIds.has(d.id));
+  const showSuggested = suggestedDebtors.length > 0 && !debouncedSearchText;
+
+  const renderOption = (debtor: { id: string; name: string; debtor_code?: string }) => (
+    <button
+      key={debtor.id}
+      type="button"
+      className={cn(
+        "relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none hover:bg-accent hover:text-accent-foreground",
+        debtor.id === field.value && "bg-accent"
+      )}
+      onClick={() => {
+        field.onChange(debtor.id);
+        setSelectedDebtorData(debtor);
+        setSearchText("");
+        setIsOpen(false);
+      }}
+    >
+      <span className="truncate">{debtor.name}</span>
+      <Check
+        className={cn(
+          "ml-auto h-4 w-4 shrink-0",
+          debtor.id === field.value ? "opacity-100" : "opacity-0"
+        )}
+      />
+    </button>
+  );
 
   return (
     <FormItem className="relative">
@@ -174,36 +207,25 @@ export default function DebtorsSelectInline({
                       Buscando...
                     </span>
                   </div>
-                ) : combinedDebtors.length === 0 ? (
+                ) : combinedDebtors.length === 0 && !showSuggested ? (
                   <div className="py-6 text-center text-sm">
                     No se encontró el elemento
                   </div>
                 ) : (
                   <div className="p-1">
-                    {combinedDebtors.map((debtor) => (
-                      <button
-                        key={debtor.id}
-                        type="button"
-                        className={cn(
-                          "relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none hover:bg-accent hover:text-accent-foreground",
-                          debtor.id === field.value && "bg-accent"
-                        )}
-                        onClick={() => {
-                          field.onChange(debtor.id);
-                          setSelectedDebtorData(debtor);
-                          setSearchText("");
-                          setIsOpen(false);
-                        }}
-                      >
-                        <span className="truncate">{debtor.name}</span>
-                        <Check
-                          className={cn(
-                            "ml-auto h-4 w-4 shrink-0",
-                            debtor.id === field.value ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                      </button>
-                    ))}
+                    {showSuggested && (
+                      <>
+                        <div className="px-2 py-1 text-xs font-semibold text-orange-600">
+                          Sugeridos por el motor
+                        </div>
+                        {suggestedDebtors.map(renderOption)}
+                        <div className="my-1 border-t" />
+                        <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                          Otros deudores
+                        </div>
+                      </>
+                    )}
+                    {(showSuggested ? otherDebtors : combinedDebtors).map(renderOption)}
                   </div>
                 )}
               </div>

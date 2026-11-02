@@ -2,12 +2,11 @@
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
-export type AgentBadgeKind =
+type AgentBadgeKind =
   | "answered"
   | "suggestion"
   | "review_guardrail"
   | "review"
-  | "matching"
   | "shadow"
   | null;
 
@@ -17,7 +16,7 @@ interface AgentStatusInput {
   suggestedReply?: string | null;
 }
 
-export const agentBadgeKind = ({
+const agentBadgeKind = ({
   agentStatus,
   guardrailTriggered,
   suggestedReply,
@@ -39,7 +38,6 @@ const AGENT_STYLE: Record<Exclude<AgentBadgeKind, null>, string> = {
   suggestion: "bg-amber-100 text-amber-700",
   review_guardrail: "bg-red-100 text-red-700",
   review: "bg-red-100 text-red-700",
-  matching: "bg-slate-100 text-slate-600",
   shadow: "bg-slate-100 text-slate-500",
 };
 
@@ -81,5 +79,3 @@ export const ContactReviewBadge = ({
     </span>
   );
 };
-
-export default AgentStatusBadge;

@@ -13,7 +13,7 @@ import { getPaymentPlanById } from "@/app/dashboard/payment-plans/services";
 import DocumentTypeBadge from "@/app/dashboard/payment-netting/components/document-type-badge";
 import IconDescription from "@/app/dashboard/payment-netting/components/icon-description";
 import DialogForm from "@/app/dashboard/components/dialog-form";
-import { QuironMark } from "@/components/quiron/quiron-mark";
+import { QuironIcon } from "@/components/quiron/quiron-icon";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -556,7 +556,7 @@ export const TrackDetailModal = ({
                   "color-mix(in srgb, var(--quiron) 5%, transparent)",
               }}
             >
-              <QuironMark size="sm" />
+              <QuironIcon />
               <span className="text-sm font-semibold">{tq("created_by")}</span>
               {trackData.agent_combo && (
                 <span className="text-xs font-medium">

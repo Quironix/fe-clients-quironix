@@ -11,10 +11,12 @@ import {
   AssistantChatTransport,
   useChatRuntime,
 } from "@assistant-ui/react-ai-sdk";
-import { Bot, Send, Sparkles, User, X } from "lucide-react";
+import { Bot, Send, User, X } from "lucide-react";
 import { FC, useEffect, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
+import { QuironIcon } from "@/components/quiron/quiron-icon";
+import { QuironLoader } from "@/components/quiron/quiron-loader";
 import { KPI } from "../../../overview/services/types";
 import {
   useAgingBuckets,
@@ -200,7 +202,7 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
         title={tw("open")}
         aria-label={tw("open")}
       >
-        <Sparkles className="qxv2-fab-ic" size={22} />
+        <QuironIcon tone="current" size={22} />
         <span className="qxv2-fab-tx">Quirón</span>
         <span className="qxv2-fab-dot" />
       </button>
@@ -208,7 +210,7 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
       <div className={`qxv2-quiron-widget${isOpen ? " open" : ""}`}>
         <div className="qxv2-qr-head">
           <div className="qxv2-q-tile">
-            <Sparkles size={18} color="#fff" />
+            <QuironIcon tone="current" size={22} className="text-white" />
           </div>
           <div>
             <h3>Quirón</h3>
@@ -382,7 +384,14 @@ const QuironUserMessage: FC = () => {
   );
 };
 
+const QuironAvatar: FC = () => (
+  <div className="qxv2-avatar ai">
+    <QuironIcon tone="current" size={14} />
+  </div>
+);
+
 const QuironAssistantMessage: FC = () => {
+  const tw = useTranslations("quiron.widget");
   const isRunning = useAssistantState(({ thread }) => thread.isRunning);
   const hasContent = useAssistantState(({ message }) => {
     const parts = message.parts;
@@ -392,13 +401,9 @@ const QuironAssistantMessage: FC = () => {
   if (isRunning && !hasContent) {
     return (
       <div className="qxv2-msg-row ai">
-        <div className="qxv2-avatar ai">
-          <Bot size={13} />
-        </div>
-        <div className="qxv2-bub ai qxv2-bub-typing">
-          <span className="qxv2-dot" />
-          <span className="qxv2-dot" />
-          <span className="qxv2-dot" />
+        <div className="qxv2-bub ai qxv2-bub-typing" role="status">
+          <QuironLoader />
+          {tw("thinking")}
         </div>
       </div>
     );
@@ -406,9 +411,7 @@ const QuironAssistantMessage: FC = () => {
 
   return (
     <MessagePrimitive.Root className="qxv2-msg-row ai">
-      <div className="qxv2-avatar ai">
-        <Bot size={13} />
-      </div>
+      <QuironAvatar />
       <div className="qxv2-bub ai">
         <MessagePrimitive.Content components={{ Text: MarkdownText }} />
       </div>

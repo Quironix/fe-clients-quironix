@@ -78,7 +78,11 @@
   --sidebar-ring: #2f6eff;
   --quiron: #406df6;
   --quiron-dark: #2040a6;
-  --quiron-foreground: #ffffff;
+  --quiron-flow-1: #1241ac;
+  --quiron-flow-2: #2040a6;
+  --quiron-flow-3: #406df6;
+  --quiron-flow-4: #2f9bff;
+  --quiron-flow-5: #22d3c8;
 }
 
 .dark {
@@ -115,7 +119,11 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
   --quiron: #5b83f7;
   --quiron-dark: #2040a6;
-  --quiron-foreground: #ffffff;
+  --quiron-flow-1: #406df6;
+  --quiron-flow-2: #4f8bff;
+  --quiron-flow-3: #2f9bff;
+  --quiron-flow-4: #22d3c8;
+  --quiron-flow-5: #9ff3e6;
 }
 
 @layer base {

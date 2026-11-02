@@ -1,30 +1,81 @@
+import { mergeInboxPages } from "@/app/dashboard/invoice-inbox/lib/unified-inbox";
 import {
   InboundInvoiceEmail,
-  InboundInvoiceEmailStatus,
   InvoiceInbox,
+  getInboundInvoiceEmail,
   getInboundInvoiceEmails,
   getInvoiceInbox,
   linkInboundInvoiceEmail,
   resolveInboundInvoiceEmail,
 } from "@/services/inbound-invoice-emails";
 import {
+  getEmailOriginal,
   getInboundEmailReplies,
   resolveInboundEmailReply,
+  type EmailChannel,
+  type EmailOriginal,
   type TrackEmailMessage,
 } from "@/services/inbound-email-replies";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 
 const INBOUND_INVOICE_EMAILS_QUERY_KEY = "inbound-invoice-emails";
 const INBOUND_EMAIL_REPLIES_QUERY_KEY = "inbound-email-replies";
 const INVOICE_INBOX_QUERY_KEY = "invoice-inbox";
+const EMAIL_ORIGINAL_QUERY_KEY = "email-original";
+const SENT_EMAILS_QUERY_KEY = "sent-emails";
 
-export function useInboundEmailReplies(accessToken: string, clientId: string) {
+export function useEmailOriginal(
+  accessToken: string,
+  clientId: string,
+  channel: EmailChannel,
+  id: string,
+) {
+  return useQuery<EmailOriginal>({
+    queryKey: [EMAIL_ORIGINAL_QUERY_KEY, clientId, channel, id],
+    queryFn: () => getEmailOriginal(accessToken, clientId, channel, id),
+    enabled: !!accessToken && !!clientId && !!id,
+    staleTime: Infinity,
+  });
+}
+
+export function useInboundEmailReplies(
+  accessToken: string,
+  clientId: string,
+  search?: string,
+) {
   return useQuery<TrackEmailMessage[]>({
-    queryKey: [INBOUND_EMAIL_REPLIES_QUERY_KEY, clientId],
-    queryFn: () => getInboundEmailReplies(accessToken, clientId),
+    queryKey: [INBOUND_EMAIL_REPLIES_QUERY_KEY, clientId, search ?? ""],
+    queryFn: () => getInboundEmailReplies(accessToken, clientId, { search }),
     enabled: !!accessToken && !!clientId,
+    placeholderData: keepPreviousData,
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
+  });
+}
+
+export function useSentEmails(
+  accessToken: string,
+  clientId: string,
+  search: string | undefined,
+  limit: number,
+) {
+  return useQuery<TrackEmailMessage[]>({
+    queryKey: [SENT_EMAILS_QUERY_KEY, clientId, search ?? "", limit],
+    queryFn: () =>
+      getInboundEmailReplies(accessToken, clientId, {
+        search,
+        direction: "OUT",
+        limit,
+      }),
+    enabled: !!accessToken && !!clientId,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -46,12 +97,19 @@ export function useResolveInboundEmail(accessToken: string, clientId: string) {
           ? INBOUND_INVOICE_EMAILS_QUERY_KEY
           : INBOUND_EMAIL_REPLIES_QUERY_KEY;
       const nextResolvedAt = resolved ? new Date().toISOString() : null;
-      queryClient.setQueriesData<Array<{ id: string; resolved_at?: string | null }>>(
+      type Row = { id: string; resolved_at?: string | null };
+      const patch = (row: Row) =>
+        row.id === id ? { ...row, resolved_at: nextResolvedAt } : row;
+      // Cachés con tres formas: lista, páginas (useInfiniteQuery) y detalle.
+      queryClient.setQueriesData<Row[] | { pages: Row[][] } | Row>(
         { queryKey: [key, clientId] },
-        (old) =>
-          old?.map((row) =>
-            row.id === id ? { ...row, resolved_at: nextResolvedAt } : row,
-          ),
+        (old) => {
+          if (!old) return old;
+          if (Array.isArray(old)) return old.map(patch);
+          if ("pages" in old)
+            return { ...old, pages: old.pages.map((page) => page.map(patch)) };
+          return patch(old);
+        },
       );
       queryClient.invalidateQueries({
         queryKey: [INBOUND_INVOICE_EMAILS_QUERY_KEY, clientId],
@@ -65,25 +123,79 @@ export function useResolveInboundEmail(accessToken: string, clientId: string) {
   });
 }
 
+export const INBOX_PAGE_SIZE = 100;
+
+// Paginado por cursor: solo la primera página se refresca cada 30 s; las
+// anteriores se bajan con `fetchNextPage` y se releen al invalidar.
 export function useInboundInvoiceEmails(
   accessToken: string,
   clientId: string,
-  status?: InboundInvoiceEmailStatus,
+  { search, pending }: { search?: string; pending?: boolean } = {},
 ) {
-  return useQuery<InboundInvoiceEmail[]>({
-    queryKey: [INBOUND_INVOICE_EMAILS_QUERY_KEY, clientId, status ?? "all"],
-    queryFn: () => getInboundInvoiceEmails(accessToken, clientId, status),
-    enabled: !!accessToken && !!clientId,
+  const key = [
+    INBOUND_INVOICE_EMAILS_QUERY_KEY,
+    clientId,
+    pending ? "pending" : "all",
+    search ?? "",
+  ];
+  const enabled = !!accessToken && !!clientId;
+  const fetchPage = (before?: string) =>
+    getInboundInvoiceEmails(accessToken, clientId, {
+      search,
+      pending,
+      before,
+      limit: INBOX_PAGE_SIZE,
+    });
+
+  const head = useQuery<InboundInvoiceEmail[]>({
+    queryKey: [...key, "head"],
+    queryFn: () => fetchPage(),
+    enabled,
+    placeholderData: keepPreviousData,
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
   });
+  const older = useInfiniteQuery({
+    queryKey: [...key, "pages"],
+    queryFn: ({ pageParam }) => fetchPage(pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last: InboundInvoiceEmail[]) =>
+      last.length === INBOX_PAGE_SIZE
+        ? last[last.length - 1].cursor
+        : undefined,
+    enabled,
+    placeholderData: keepPreviousData,
+  });
+
+  const { emails, hasGap } = useMemo(
+    () => mergeInboxPages(head.data, older.data?.pages ?? [], INBOX_PAGE_SIZE),
+    [head.data, older.data],
+  );
+  const { refetch } = older;
+  useEffect(() => {
+    if (hasGap) refetch();
+  }, [hasGap, refetch]);
+
+  return {
+    data: emails,
+    isLoading: head.isLoading,
+    hasNextPage:
+      (head.data?.length ?? 0) === INBOX_PAGE_SIZE && older.hasNextPage,
+    fetchNextPage: older.fetchNextPage,
+    isFetchingNextPage: older.isFetchingNextPage,
+  };
 }
 
-export function usePendingInboundInvoiceEmails(
+export function useInboundInvoiceEmail(
   accessToken: string,
   clientId: string,
+  id: string | undefined,
 ) {
-  return useInboundInvoiceEmails(accessToken, clientId, "PENDING_REVIEW");
+  return useQuery<InboundInvoiceEmail>({
+    queryKey: [INBOUND_INVOICE_EMAILS_QUERY_KEY, clientId, "detail", id],
+    queryFn: () => getInboundInvoiceEmail(accessToken, clientId, id as string),
+    enabled: !!accessToken && !!clientId && !!id,
+  });
 }
 
 export function useInvoiceInbox(accessToken: string, clientId: string) {
@@ -102,19 +214,8 @@ export function useLinkInboundInvoiceEmail(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      id,
-      debtorId,
-      invoiceId,
-    }: {
-      id: string;
-      debtorId: string;
-      invoiceId?: string;
-    }) =>
-      linkInboundInvoiceEmail(accessToken, clientId, id, {
-        debtorId,
-        invoiceId,
-      }),
+    mutationFn: ({ id, debtorId }: { id: string; debtorId: string }) =>
+      linkInboundInvoiceEmail(accessToken, clientId, id, { debtorId }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [INBOUND_INVOICE_EMAILS_QUERY_KEY, clientId],

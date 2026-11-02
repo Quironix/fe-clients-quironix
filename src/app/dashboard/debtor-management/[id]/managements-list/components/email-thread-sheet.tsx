@@ -11,10 +11,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { Loader2, Mail, Paperclip, Send } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { sendTrackEmail } from "../../../services/email-sender";
 import { TrackEmailMessage } from "../../../types/debtor-tracks";
+import { EmailOriginal } from "@/components/email/email-original";
 import { QuironVerdict } from "@/components/quiron/quiron-verdict";
 import { EmailPayload } from "../../../types/email";
 
@@ -69,23 +70,15 @@ export const EmailThreadSheet = ({
   executiveProfile,
 }: EmailThreadSheetProps) => {
   const [replyText, setReplyText] = useState("");
-  const [replyPrefilled, setReplyPrefilled] = useState(false);
   const [sending, setSending] = useState(false);
+  const [originalMessageId, setOriginalMessageId] = useState<string | null>(
+    null,
+  );
 
   const lastInboundMessage = [...messages]
     .reverse()
     .find((m) => m.direction === "IN");
 
-  useEffect(() => {
-    if (
-      !replyPrefilled &&
-      !replyText &&
-      lastInboundMessage?.agent_suggested_reply
-    ) {
-      setReplyText(lastInboundMessage.agent_suggested_reply);
-      setReplyPrefilled(true);
-    }
-  }, [lastInboundMessage, replyPrefilled, replyText]);
   const lastOutboundMessage = [...messages]
     .reverse()
     .find((m) => m.direction === "OUT");
@@ -198,6 +191,14 @@ export const EmailThreadSheet = ({
             messages.map((message) => {
               const isInbound = message.direction === "IN";
               const attachments = message.attachments || [];
+              const hasOriginal =
+                !!accessToken &&
+                !!clientId &&
+                !!(isInbound
+                  ? message.body_html || message.body_text_original
+                  : message.has_original_html);
+              const showOriginal =
+                hasOriginal && originalMessageId === message.id;
 
               return (
                 <div
@@ -234,7 +235,29 @@ export const EmailThreadSheet = ({
                       <p className="font-semibold mb-1">{message.subject}</p>
                     )}
 
-                    {isInbound ? (
+                    {hasOriginal && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOriginalMessageId(
+                            showOriginal ? null : message.id,
+                          )
+                        }
+                        className="mb-1 text-xs font-medium text-emerald-700 hover:underline"
+                      >
+                        {showOriginal ? "Ver mensaje" : "Ver original"}
+                      </button>
+                    )}
+
+                    {showOriginal ? (
+                      <EmailOriginal
+                        accessToken={accessToken}
+                        clientId={clientId}
+                        channel="COBRANZA"
+                        emailId={message.id}
+                        attachments={attachments}
+                      />
+                    ) : isInbound ? (
                       <p className="whitespace-pre-wrap break-words text-gray-700">
                         {message.body_text || "-"}
                       </p>
@@ -252,7 +275,7 @@ export const EmailThreadSheet = ({
                         {attachments.map((attachment, index) => (
                           <a
                             key={`${attachment.storage_url}-${index}`}
-                            href={attachment.storage_url}
+                            href={attachment.storage_url || undefined}
                             target="_blank"
                             rel="noopener noreferrer"
                             download
@@ -274,7 +297,6 @@ export const EmailThreadSheet = ({
                           secondaryIntents={message.agent_secondary_intents}
                           agentStatus={message.agent_status}
                           guardrailTriggered={message.agent_guardrail_triggered}
-                          toolsUsed={message.agent_tools_used}
                           summary={message.agent_summary}
                           extracted={
                             message.agent_extracted as Record<string, unknown>

@@ -361,11 +361,19 @@
       "view_all": "Ver todos",
       "no_subject": "(sin asunto)",
       "no_body": "Este correo no tiene contenido de texto",
+      "original": {
+        "label": "Original",
+        "show_images": "Mostrar imágenes",
+        "loading": "Cargando el correo original…",
+        "unavailable": "No se pudo cargar el correo original",
+        "title": "Correo original"
+      },
       "message": "Mensaje",
       "attachments": "Adjuntos",
       "link_to_debtor": "Vincular a un deudor",
       "linked_to": "Vinculado",
       "auto_linked_to": "Vinculado automáticamente",
+      "identified_debtor": "Deudor identificado",
       "matched_by_folio": "por el folio detectado en el correo",
       "matched_by_domain": "por el dominio del remitente",
       "matched_by_rut": "por el RUT detectado",
@@ -382,10 +390,15 @@
       "link_action": "Vincular",
       "linking": "Vinculando...",
       "linked_success": "Correo vinculado correctamente",
-      "status_pending": "Pendiente",
-      "status_linked": "Vinculado",
+      "link_pending_note": "Este comprobante queda pendiente hasta vincularlo.",
+      "previous_email": "Correo anterior",
+      "next_email": "Correo siguiente",
+      "position": "{current} de {total}",
       "loading": "Cargando...",
       "empty_filter": "No hay correos que coincidan con este filtro.",
+      "search_placeholder": "Buscar por remitente, asunto o deudor (nombre, código o RUT)",
+      "load_more": "Cargar más",
+      "empty_search": "No hay correos que coincidan con la búsqueda.",
       "intent": {
         "COMPROBANTE_PAGO": "Comprobante",
         "SOLICITUD_FACTURA": "Solicitud de factura",
@@ -398,6 +411,7 @@
         "AUSENCIA_TEMPORAL": "Fuera de oficina",
         "DEUDA_DESCONOCIDA": "Desconoce la deuda",
         "FACTURA_RECLAMADA": "Factura reclamada",
+        "FACTURA_CONTABILIZADA": "Factura contabilizada",
         "OTRA": "Otra / a revisión"
       },
       "agent": {
@@ -405,7 +419,6 @@
         "suggestion": "Sugerencia disponible",
         "review_guardrail": "A revisión · guardrail",
         "review": "A revisión",
-        "matching": "Ruteado a matching",
         "shadow": "Registrado en modo sombra",
         "contact_review": "Contacto por revisar",
         "contact_review_note": "El remitente avisó que ya no gestiona las cuentas por pagar. Queda un pendiente para que el ejecutivo actualice los contactos del deudor."
@@ -421,9 +434,19 @@
         "suggested_reply": "Borrador sugerido",
         "suggested_reply_hint": "Generado por el clasificador — no se envía en esta fase"
       },
+      "sent": {
+        "to": "Para",
+        "QUIRON": "Quirón",
+        "COLLECTOR": "Collector",
+        "EXECUTIVE": "Ejecutivo",
+        "partial_view": "Vista parcial: de este envío solo se guardó el texto variable, no la plantilla completa.",
+        "empty": "No hay correos enviados.",
+        "load_more": "Cargar más enviados"
+      },
       "filter": {
         "unhandled": "No gestionados",
-        "all": "Todos"
+        "all": "Todos",
+        "sent": "Enviados"
       }
     },
     "accessDenied": {
@@ -2958,7 +2981,6 @@
     "disputed_amount": "El deudor manifiesta desacuerdo con el monto",
     "tools": "Herramientas usadas",
     "confidence": "Confianza {value}%",
-    "threshold": "umbral {value}%",
     "secondary": "Intenciones secundarias",
     "view_track": "Ver gestión en el historial →",
     "shadow": "Registrado en modo sombra",
@@ -2989,7 +3011,8 @@
       "close": "Cerrar Quirón",
       "subtitle": "IA de cobranza: lee, gestiona y registra en el historial",
       "live": "● Al día",
-      "placeholder": "Pregúntale a Quirón…"
+      "placeholder": "Pregúntale a Quirón…",
+      "thinking": "Quirón está pensando…"
     }
   }
 }

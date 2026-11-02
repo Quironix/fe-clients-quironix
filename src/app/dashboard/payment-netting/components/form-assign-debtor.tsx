@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/table";
 import { getClientId, useProfileContext } from "@/context/ProfileContext";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueries } from "@tanstack/react-query";
+import { getDebtorById, getDebtors } from "../../debtors/services";
 import { Eye, Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useSession } from "next-auth/react";
@@ -49,6 +51,46 @@ const FormAssignDebtor = ({
     if (!debtor?.id) return null;
     return { id: debtor.id, name: debtor.name, debtor_code: debtor.debtor_code };
   }, [selectedMovements]);
+
+  const suggestions = useMemo(() => {
+    const seen = new Set<string>();
+    const list: { code?: string; id?: string }[] = [];
+    selectedMovements.forEach((m) =>
+      m.debtor_suggestions?.forEach((s: string | { debtor_code?: string; debtor_id?: string }) => {
+        const entry =
+          typeof s === "string"
+            ? { code: s }
+            : { code: s.debtor_code, id: s.debtor_id };
+        const key = entry.id || entry.code;
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          list.push(entry);
+        }
+      })
+    );
+    return list;
+  }, [selectedMovements]);
+
+  const clientId = getClientId(profile);
+  const suggestedQueries = useQueries({
+    queries: suggestions.map((s) => ({
+      queryKey: ["debtor-suggestion", clientId, s.id || s.code],
+      queryFn: async () => {
+        if (s.id) return getDebtorById(session?.token, clientId, s.id);
+        const res = await getDebtors(session?.token, clientId, {
+          search: s.code,
+          limit: 10,
+        });
+        return res.data.find((d: any) => d.debtor_code === s.code) ?? null;
+      },
+      enabled: !!session?.token && !!clientId,
+    })),
+  });
+
+  const suggestedDebtors = suggestedQueries
+    .map((q) => q.data)
+    .filter((d) => d?.id)
+    .map((d) => ({ id: d.id, name: d.name, debtor_code: d.debtor_code }));
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -202,7 +244,7 @@ const FormAssignDebtor = ({
           control={form.control}
           name="debtor_id"
           render={({ field }) => (
-            <DebtorsSelectInline field={field} title={tAssign("debtor")} required initialDebtor={existingDebtor} />
+            <DebtorsSelectInline field={field} title={tAssign("debtor")} required initialDebtor={existingDebtor} suggestedDebtors={suggestedDebtors} />
           )}
         />
         <div className="flex items-center justify-center border-t border-orange-500 pt-4 w-full">
