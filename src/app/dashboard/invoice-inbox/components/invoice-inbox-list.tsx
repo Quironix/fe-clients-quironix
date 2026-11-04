@@ -110,14 +110,6 @@ export const InvoiceInboxList = () => {
     visibleRows.find((row) => row.key === selectedKey) ?? visibleRows[0];
   const selectedIndex = visibleRows.indexOf(selectedRow);
 
-  const selectNextPending = () => {
-    const nextPending = [
-      ...visibleRows.slice(selectedIndex + 1),
-      ...visibleRows.slice(0, selectedIndex),
-    ].find(isPending);
-    if (nextPending) setSelectedKey(nextPending.key);
-  };
-
   if (!accessToken || !clientId) return null;
 
   return (
@@ -278,9 +270,7 @@ export const InvoiceInboxList = () => {
             <InvoiceInboxDetail
               email={selectedRow.finanzas ?? null}
               cobranza={selectedRow.cobranza ?? null}
-              onAction={(action) => {
-                if (action === "resolved") selectNextPending();
-              }}
+              markReadOnLeave={selectedKey === selectedRow.key}
               navigation={
                 <div className="flex items-center gap-1.5">
                   <Button

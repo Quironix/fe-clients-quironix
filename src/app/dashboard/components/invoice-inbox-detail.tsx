@@ -43,16 +43,17 @@ import {
 } from "@tabler/icons-react";
 import { cn, formatDateTime } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-type InboxDetailAction = "resolved" | "reopened" | "linked" | "navigated";
+type InboxDetailAction = "reopened" | "linked" | "navigated";
 
 interface InvoiceInboxDetailProps {
   email: InboundInvoiceEmail | null;
   cobranza?: TrackEmailMessage | null;
   navigation?: ReactNode;
   onAction?: (action: InboxDetailAction) => void;
+  markReadOnLeave?: boolean;
 }
 
 const formatFileSize = (bytes: number) => {
@@ -66,6 +67,7 @@ export const InvoiceInboxDetail = ({
   cobranza: listCobranza,
   navigation,
   onAction,
+  markReadOnLeave = true,
 }: InvoiceInboxDetailProps) => {
   const { profile, session } = useProfileContext();
   const t = useTranslations("dashboard.invoice_inbox");
@@ -196,9 +198,26 @@ export const InvoiceInboxDetail = ({
         }
       : null;
 
+  const isSent = cobranza?.direction === "OUT";
+  const showResolve =
+    !!view && !isSent && !view.autoHandled && !view.needsMatching;
+
+  // Se marca al salir (no al abrir) para que en "No gestionados" no desaparezca mientras se lee.
+  const reopenedRef = useRef(false);
+  const leaveRef = useRef<(() => void) | null>(null);
+  leaveRef.current =
+    markReadOnLeave && showResolve && !view.resolvedAt && !reopenedRef.current
+      ? () =>
+          resolveMutation.mutate({
+            id: view.id,
+            channel: view.kind,
+            resolved: true,
+          })
+      : null;
+  useEffect(() => () => leaveRef.current?.(), []);
+
   if (!view) return null;
 
-  const isSent = cobranza?.direction === "OUT";
   const counterpart = isSent
     ? `${t("sent.to")}: ${(cobranza.to_addresses ?? []).join(", ")}`
     : view.from;
@@ -207,7 +226,6 @@ export const InvoiceInboxDetail = ({
     .toUpperCase();
   const isFinanzas = view.kind === "FINANZAS" && !!email;
   const showPicker = isFinanzas && (!resolvedDebtorId || isEditingLink);
-  const showResolve = !isSent && !view.autoHandled && !view.needsMatching;
   const showThread = view.kind === "COBRANZA";
   const hasVerdict = !!(view.intent || view.agentStatus);
   const debtorLabel = isLoadingLinkedDebtor
@@ -255,17 +273,16 @@ export const InvoiceInboxDetail = ({
     );
   };
 
-  const handleResolve = (resolved: boolean) =>
+  const handleReopen = () => {
+    reopenedRef.current = true;
     resolveMutation.mutate(
-      { id: view.id, channel: view.kind, resolved },
+      { id: view.id, channel: view.kind, resolved: false },
       {
-        onSuccess: () => {
-          if (resolved) toast.success(tq("marked_handled"));
-          onAction?.(resolved ? "resolved" : "reopened");
-        },
+        onSuccess: () => onAction?.("reopened"),
         onError: (error: Error) => toast.error(error.message),
       },
     );
+  };
 
   return (
     <div className="flex flex-col">
@@ -289,7 +306,7 @@ export const InvoiceInboxDetail = ({
                   size="sm"
                   className="text-xs text-muted-foreground"
                   disabled={resolveMutation.isPending}
-                  onClick={() => handleResolve(false)}
+                  onClick={handleReopen}
                 >
                   {tq("mark_pending")}
                 </Button>
@@ -304,16 +321,6 @@ export const InvoiceInboxDetail = ({
               >
                 <IconMessage className="h-4 w-4" />
                 {tq("view_track")}
-              </Button>
-            )}
-            {showResolve && !view.resolvedAt && (
-              <Button
-                className="gap-2"
-                disabled={resolveMutation.isPending}
-                onClick={() => handleResolve(true)}
-              >
-                <IconCheck className="h-4 w-4" />
-                {tq("mark_handled")}
               </Button>
             )}
           </div>
