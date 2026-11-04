@@ -921,7 +921,7 @@
     "keyReasons": {
       "title": "Key call reasons",
       "unfulfilledCommitment": "Unfulfilled commitment",
-      "overdueDebt": "Overdue debt",
+      "overdueDebt": "Total overdue debt (incl. litigation)",
       "expired": "overdue",
       "cashEstimate": "Cash estimate",
       "collected": "Collected",
@@ -943,7 +943,8 @@
       "sections": {
         "situation": "5-second read",
         "focus": "Execution focus",
-        "negotiation": "Negotiation control"
+        "negotiation": "Negotiation control",
+        "needs": "What each invoice needs"
       }
     },
     "creditRisk": {
@@ -1097,6 +1098,9 @@
       "columnFilterDescription": "Select the columns you want to display in the invoices table."
     },
     "stepTwo": {
+      "noResultDate": "The debtor gave no date",
+      "noDateReason": "Who did you talk to and why is there no date?",
+      "validationNoDateReason": "Explain why there is no date",
       "managementSelection": "Management Selection",
       "managementType": "Management type",
       "selectManagementType": "Select a management type",
@@ -1270,6 +1274,29 @@
       "viewHistory": "View history",
       "viewCurrentAccount": "Current Account",
       "viewAllDebtorsCurrentAccount": "Current account for all debtors"
+    },
+    "dailyPlan": {
+      "invoiceProgress": "{done} of {total} invoices with a result",
+      "debtorNeeds": {
+        "COMPLETE_TECHNICAL_FILE": "Technical file pending",
+        "RESPOND_INBOUND": "Email to answer",
+        "ALLOCATE_UNAPPLIED_FUNDS": "Funds to allocate",
+        "FIND_VALID_CONTACT": "Find a valid contact"
+      },
+      "reasons": {
+        "BROKEN_COMMITMENT": "Broken commitment",
+        "INSTALLMENT_UNPAID": "Unpaid installment",
+        "CRITICAL_EVENT_OPEN": "Critical event",
+        "PAYMENT_ALLOCATION_PENDING": "Payment to allocate",
+        "CREDIT_CAPACITY_AT_RISK": "Credit line at risk",
+        "FORWARD_RISK_MATERIAL": "Forward risk",
+        "PORTFOLIO_CASH_DEVIATION": "Cash deviation",
+        "DUE_DEBT_FOLLOWUP": "Overdue debt",
+        "INBOUND_INTERPRETATION_PENDING": "Reply to review",
+        "COMMITMENT_WAIT": "Waiting on commitment",
+        "LITIGATION_WORKFLOW": "Litigation",
+        "CONTRACTUAL_COVERAGE": "Contractual coverage"
+      }
     }
   },
   "paymentPlans": {

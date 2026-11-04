@@ -4,6 +4,7 @@ import { Invoice } from "@/app/dashboard/payment-plans/store";
 import Stepper from "@/components/Stepper";
 import { Step } from "@/components/Stepper/types";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useWebRTCContext } from "@/context/WebRTCContext";
@@ -26,6 +27,7 @@ import {
   sendTrackEmail,
   sendMultipleManagementEmail,
 } from "../../services/email-sender";
+import { TASK_SCOPE_QUERY_KEY } from "../../hooks/useTaskScope";
 import { createPaymentPlan } from "../../services/payment-plan";
 import { createTrack } from "../../services/tracks";
 import { CaseData } from "../../types/track";
@@ -37,6 +39,8 @@ interface AddManagementTabProps {
   session?: any;
   profile?: any;
   activeContact?: Contact | null;
+  preselectedInvoiceIds?: string[];
+  taskScopeActive?: boolean;
 }
 
 export interface DebtorContact {
@@ -63,6 +67,7 @@ export interface ManagementFormData {
   observation: string;
   nextManagementDate: string | Date;
   nextManagementTime: string;
+  noResultDate?: boolean;
   caseData: CaseData;
   caseDataAutoValues?: Record<string, number | string>;
   files?: File[];
@@ -130,8 +135,11 @@ export const AddManagementTab = ({
   session,
   profile,
   activeContact,
+  preselectedInvoiceIds,
+  taskScopeActive = false,
 }: AddManagementTabProps) => {
   const t = useTranslations("debtorManagement.management");
+  const queryClient = useQueryClient();
   const { pendingCallUniqueIds, clearCallUniqueIds } = useWebRTCContext();
   const steps: Step[] = [
     { id: 1, label: t("step1"), completed: false },
@@ -174,6 +182,13 @@ export const AddManagementTab = ({
     step3: true,
   });
   const [contactHasNoEmail, setContactHasNoEmail] = useState(false);
+
+  useEffect(() => {
+    if (preselectedInvoiceIds?.length) setCurrentStep(0);
+  }, [preselectedInvoiceIds]);
+
+  const refreshTaskScope = () =>
+    queryClient.invalidateQueries({ queryKey: [TASK_SCOPE_QUERY_KEY] });
 
   const handleStep1ValidationChange = useCallback((isValid: boolean) => {
     setStepValidations((prev) => ({ ...prev, step1: isValid }));
@@ -244,6 +259,7 @@ export const AddManagementTab = ({
       observation: "",
       nextManagementDate: "",
       nextManagementTime: "",
+      noResultDate: false,
       caseData: {},
       caseDataAutoValues: {},
       files: [],
@@ -448,17 +464,25 @@ export const AddManagementTab = ({
     const time = managementFormData.nextManagementTime || "00:00";
     const nextManagementDateTime = `${dateISO}T${time}:00.000Z`;
 
+    const { selectedContact } = managementFormData;
+
     const payload: any = {
       debtor_id: dataDebtor.id,
       management_type: managementFormData.managementType,
       contact: {
         type: managementFormData.contactType,
         value: managementFormData.contactValue,
+        ...(selectedContact?.id && {
+          contactId: selectedContact.id,
+          name: selectedContact.name,
+        }),
       },
       observation: managementFormData.observation,
       debtor_comment: managementFormData.debtorComment,
       executive_comment: managementFormData.executiveComment,
-      next_management_date: nextManagementDateTime,
+      ...(!managementFormData.noResultDate && {
+        next_management_date: nextManagementDateTime,
+      }),
       invoice_ids: selectedInvoices.map((inv) => inv.id),
     };
 
@@ -601,6 +625,7 @@ export const AddManagementTab = ({
       );
 
       clearCallUniqueIds();
+      refreshTaskScope();
       toast.success(t("managementAdded"));
 
       const newManagement: SavedManagement = {
@@ -670,6 +695,7 @@ export const AddManagementTab = ({
       const result = await createTrack(session.token, profile.client_id, payload);
 
       clearCallUniqueIds();
+      refreshTaskScope();
       const currentManagement: SavedManagement = {
         id: result.track.id,
         formData: { ...managementFormData },
@@ -837,6 +863,7 @@ export const AddManagementTab = ({
             selectedInvoices={selectedInvoices}
             onInvoicesSelected={handleInvoicesSelected}
             onValidationChange={handleStep1ValidationChange}
+            preselectedInvoiceIds={preselectedInvoiceIds}
           />
         );
       case 1:
@@ -848,6 +875,7 @@ export const AddManagementTab = ({
             selectedInvoices={selectedInvoices}
             onValidationChange={handleStep2ValidationChange}
             onNoEmailContact={setContactHasNoEmail}
+            allowNoResultDate={taskScopeActive}
           />
         );
       case 2:
