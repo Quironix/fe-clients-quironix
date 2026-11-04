@@ -921,7 +921,7 @@
     "keyReasons": {
       "title": "Razones clave de llamada",
       "unfulfilledCommitment": "Compromiso incumplido",
-      "overdueDebt": "Deuda vencida",
+      "overdueDebt": "Deuda vencida total (con litigio)",
       "expired": "vencido",
       "cashEstimate": "Estimación de caja",
       "collected": "Recaudado",
@@ -943,7 +943,8 @@
       "sections": {
         "situation": "Lectura en 5 segundos",
         "focus": "Foco de ejecución",
-        "negotiation": "Control de negociación"
+        "negotiation": "Control de negociación",
+        "needs": "Qué necesita cada factura"
       }
     },
     "creditRisk": {
@@ -1097,6 +1098,9 @@
       "columnFilterDescription": "Selecciona las columnas que deseas mostrar en la tabla de facturas."
     },
     "stepTwo": {
+      "noResultDate": "El deudor no dio fecha",
+      "noDateReason": "¿Con quién hablaste y por qué no hay fecha?",
+      "validationNoDateReason": "Indica por qué no hay fecha",
       "managementSelection": "Selección de Gestión",
       "managementType": "Tipo de gestión",
       "selectManagementType": "Selecciona un tipo de gestión",
@@ -1270,6 +1274,29 @@
       "viewHistory": "Ver historial",
       "viewCurrentAccount": "Cuenta Corriente",
       "viewAllDebtorsCurrentAccount": "Cuenta corriente de todos los deudores"
+    },
+    "dailyPlan": {
+      "invoiceProgress": "{done} de {total} facturas con resultado",
+      "debtorNeeds": {
+        "COMPLETE_TECHNICAL_FILE": "Ficha técnica pendiente",
+        "RESPOND_INBOUND": "Correo por responder",
+        "ALLOCATE_UNAPPLIED_FUNDS": "Fondos por imputar",
+        "FIND_VALID_CONTACT": "Buscar contacto vigente"
+      },
+      "reasons": {
+        "BROKEN_COMMITMENT": "Compromiso incumplido",
+        "INSTALLMENT_UNPAID": "Cuota impaga",
+        "CRITICAL_EVENT_OPEN": "Evento crítico",
+        "PAYMENT_ALLOCATION_PENDING": "Pago por imputar",
+        "CREDIT_CAPACITY_AT_RISK": "Línea de crédito en riesgo",
+        "FORWARD_RISK_MATERIAL": "Riesgo futuro",
+        "PORTFOLIO_CASH_DEVIATION": "Desvío de caja",
+        "DUE_DEBT_FOLLOWUP": "Deuda vencida",
+        "INBOUND_INTERPRETATION_PENDING": "Respuesta por revisar",
+        "COMMITMENT_WAIT": "Espera de compromiso",
+        "LITIGATION_WORKFLOW": "Litigio",
+        "CONTRACTUAL_COVERAGE": "Cobertura contractual"
+      }
     }
   },
   "paymentPlans": {

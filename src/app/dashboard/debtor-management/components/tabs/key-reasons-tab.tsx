@@ -39,7 +39,9 @@ export const KeyReasonsTab = ({
 }: KeyReasonsTabProps) => {
   const t = useTranslations("debtorManagement.keyReasonsTab");
   const tDetail = useTranslations("debtorManagement.detail");
-  const tLastManagements = useTranslations("debtorManagement.lastManagementsCard");
+  const tLastManagements = useTranslations(
+    "debtorManagement.lastManagementsCard",
+  );
   const router = useRouter();
   if (isFetchingCollectionProfile) {
     return (
@@ -95,7 +97,7 @@ export const KeyReasonsTab = ({
 
   return (
     <div className="flex gap-5 h-full w-full mt-5">
-      <div className="h-full w-full overflow-y-auto">
+      <div className="h-full w-full overflow-y-auto flex flex-col gap-3">
         <div className="bg-white rounded-md border overflow-hidden">
           <DebtorChatbot
             debtorId={debtorId}

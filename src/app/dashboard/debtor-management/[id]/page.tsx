@@ -26,6 +26,7 @@ import TitleSection from "../../components/title-section";
 import { useDebtorsStore } from "../../debtors/store";
 import { DebtorContacts } from "../components/debtor-contacts";
 import { AddManagementTab } from "../components/tabs/add-management-tab";
+import { useTaskScope } from "../hooks/useTaskScope";
 import { KeyReasonsTab } from "../components/tabs/key-reasons-tab";
 
 interface PageProps {
@@ -46,6 +47,13 @@ const Content = ({ params }: PageProps) => {
 
   const { profile, session } = useProfileContext();
   const [activeContact, setActiveContact] = useState<Contact | null>(null);
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const { data: taskScope } = useTaskScope({
+    accessToken: session?.token,
+    clientId: profile?.client?.id,
+    debtorId: id,
+  });
+
   const {
     fetchDebtorById,
     dataDebtor,
@@ -178,7 +186,11 @@ const Content = ({ params }: PageProps) => {
         )}
 
         <div className="bg-white p-5 rounded-md shadow-xl mt-5 min-h-auto flex flex-col">
-          <Tabs defaultValue={initialTab} className="flex flex-col flex-1">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex flex-col flex-1"
+          >
             <TabsList>
               <TabsTrigger value="key-reasons">{t("tabs.keyReasons")}</TabsTrigger>
               <TabsTrigger value="add-management">{t("tabs.addManagement")}</TabsTrigger>
@@ -198,6 +210,7 @@ const Content = ({ params }: PageProps) => {
                 session={session}
                 profile={profile}
                 activeContact={activeContact}
+                taskScopeActive={!!taskScope}
               />
             </TabsContent>
           </Tabs>
