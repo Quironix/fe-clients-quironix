@@ -70,11 +70,15 @@ const useBeatClock = (enabled: boolean) => {
   return seconds;
 };
 
-const LAYERS = ["base", "hi", "glow"];
+const LAYERS = {
+  brand: ["base", "hi", "glow"],
+  ember: ["current", "glow"],
+  current: ["current"],
+};
 
 interface QuironIconProps {
   size?: number;
-  tone?: "brand" | "current";
+  tone?: keyof typeof LAYERS;
   label?: string;
   animated?: boolean;
   className?: string;
@@ -102,53 +106,50 @@ export const QuironIcon = ({
       aria-hidden={label ? undefined : true}
       className={cn("shrink-0", className)}
     >
-      {tone === "current" ? (
-        <path d={path} fill="currentColor" />
-      ) : (
-        <>
-          <defs>
-            <linearGradient
-              id={`${id}-base`}
-              gradientUnits="userSpaceOnUse"
-              x1="-70"
-              y1="-70"
-              x2="70"
-              y2="70"
-            >
-              <stop offset="0" style={{ stopColor: "var(--quiron-mark-1)" }} />
-              <stop
-                offset="0.55"
-                style={{ stopColor: "var(--quiron-mark-2)" }}
-              />
-              <stop offset="1" style={{ stopColor: "var(--quiron-mark-3)" }} />
-            </linearGradient>
-            <radialGradient
-              id={`${id}-hi`}
-              gradientUnits="userSpaceOnUse"
-              cx="-50"
-              cy="-50"
-              r="70"
-            >
-              <stop offset="0" stopColor="#7fa8ff" stopOpacity="0.5" />
-              <stop offset="1" stopColor="#7fa8ff" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient
-              id={`${id}-glow`}
-              gradientUnits="userSpaceOnUse"
-              cx="62"
-              cy="62"
-              r={(64 + 14 * flash).toFixed(1)}
-            >
-              <stop offset="0" stopColor="#ff8113" stopOpacity="0.95" />
-              <stop offset="0.5" stopColor="#ff8113" stopOpacity="0.43" />
-              <stop offset="1" stopColor="#ff8113" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          {LAYERS.map((layer) => (
-            <path key={layer} d={path} fill={`url(#${id}-${layer})`} />
-          ))}
-        </>
+      {tone !== "current" && (
+        <defs>
+          <linearGradient
+            id={`${id}-base`}
+            gradientUnits="userSpaceOnUse"
+            x1="-70"
+            y1="-70"
+            x2="70"
+            y2="70"
+          >
+            <stop offset="0" style={{ stopColor: "var(--quiron-mark-1)" }} />
+            <stop offset="0.55" style={{ stopColor: "var(--quiron-mark-2)" }} />
+            <stop offset="1" style={{ stopColor: "var(--quiron-mark-3)" }} />
+          </linearGradient>
+          <radialGradient
+            id={`${id}-hi`}
+            gradientUnits="userSpaceOnUse"
+            cx="-50"
+            cy="-50"
+            r="70"
+          >
+            <stop offset="0" stopColor="#7fa8ff" stopOpacity="0.5" />
+            <stop offset="1" stopColor="#7fa8ff" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient
+            id={`${id}-glow`}
+            gradientUnits="userSpaceOnUse"
+            cx="62"
+            cy="62"
+            r={(64 + 14 * flash).toFixed(1)}
+          >
+            <stop offset="0" stopColor="#ff8113" stopOpacity="0.95" />
+            <stop offset="0.5" stopColor="#ff8113" stopOpacity="0.43" />
+            <stop offset="1" stopColor="#ff8113" stopOpacity="0" />
+          </radialGradient>
+        </defs>
       )}
+      {LAYERS[tone].map((layer) => (
+        <path
+          key={layer}
+          d={path}
+          fill={layer === "current" ? "currentColor" : `url(#${id}-${layer})`}
+        />
+      ))}
     </svg>
   );
 };
