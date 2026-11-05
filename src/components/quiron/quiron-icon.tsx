@@ -1,5 +1,6 @@
+"use client";
 import { cn } from "@/lib/utils";
-import { useId } from "react";
+import { useEffect, useId, useState } from "react";
 import { QUIRON_VIEW_BOX } from "./quiron-gradient";
 
 const STRIPES = 7;
@@ -22,18 +23,52 @@ const ellipse = (cx: number, cy: number, rx: number, ry: number) => {
   return `${points.join("")}Z`;
 };
 
-export const QUIRON_ICON_PATH = Array.from({ length: STRIPES }, (_, i) => {
-  const dx = -Math.sin(ANGLE);
-  const dy = Math.cos(ANGLE);
-  const offset = RADIUS * 0.86 * ((2 * i) / (STRIPES - 1) - 1);
-  const tail = i === TAIL_STRIPE ? TAIL : 0;
-  return ellipse(
-    CENTER + dy * offset + dx * tail,
-    CENTER - dx * offset + dy * tail,
-    7,
-    Math.sqrt(RADIUS ** 2 - offset ** 2) + tail,
-  );
-}).join("");
+const BEAT_SECONDS = 1.8;
+
+const bump = (x: number) =>
+  (0.5 - 0.5 * Math.cos(2 * Math.PI * (x - Math.floor(x)))) ** 4;
+
+const stretchAt = (seconds: number, stripe: number) =>
+  1 +
+  (stripe === TAIL_STRIPE ? 0.2 : 0.12) *
+    bump(
+      seconds / BEAT_SECONDS -
+        (TAIL_STRIPE - Math.abs(stripe - TAIL_STRIPE)) * 0.07,
+    );
+
+export const quironIconPath = (seconds?: number) =>
+  Array.from({ length: STRIPES }, (_, i) => {
+    const dx = -Math.sin(ANGLE);
+    const dy = Math.cos(ANGLE);
+    const offset = RADIUS * 0.86 * ((2 * i) / (STRIPES - 1) - 1);
+    const tail = i === TAIL_STRIPE ? TAIL : 0;
+    const stretch = seconds === undefined ? 1 : stretchAt(seconds, i);
+    return ellipse(
+      CENTER + dy * offset + dx * tail,
+      CENTER - dx * offset + dy * tail,
+      7,
+      (Math.sqrt(RADIUS ** 2 - offset ** 2) + tail) * stretch,
+    );
+  }).join("");
+
+export const QUIRON_ICON_PATH = quironIconPath();
+
+const useBeatClock = (enabled: boolean) => {
+  const [seconds, setSeconds] = useState<number>();
+  useEffect(() => {
+    if (
+      !enabled ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    let frame = requestAnimationFrame(function tick(now) {
+      setSeconds(now / 1000);
+      frame = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [enabled]);
+  return seconds;
+};
 
 const LAYERS = ["base", "hi", "glow"];
 
@@ -41,6 +76,7 @@ interface QuironIconProps {
   size?: number;
   tone?: "brand" | "current";
   label?: string;
+  animated?: boolean;
   className?: string;
 }
 
@@ -48,9 +84,14 @@ export const QuironIcon = ({
   size = 20,
   tone = "brand",
   label,
+  animated = false,
   className,
 }: QuironIconProps) => {
   const id = useId();
+  const seconds = useBeatClock(animated);
+  const path =
+    seconds === undefined ? QUIRON_ICON_PATH : quironIconPath(seconds);
+  const flash = seconds === undefined ? 0 : bump(seconds / BEAT_SECONDS - 0.21);
   return (
     <svg
       viewBox={QUIRON_VIEW_BOX}
@@ -62,7 +103,7 @@ export const QuironIcon = ({
       className={cn("shrink-0", className)}
     >
       {tone === "current" ? (
-        <path d={QUIRON_ICON_PATH} fill="currentColor" />
+        <path d={path} fill="currentColor" />
       ) : (
         <>
           <defs>
@@ -96,7 +137,7 @@ export const QuironIcon = ({
               gradientUnits="userSpaceOnUse"
               cx="62"
               cy="62"
-              r="64"
+              r={(64 + 14 * flash).toFixed(1)}
             >
               <stop offset="0" stopColor="#ff8113" stopOpacity="0.95" />
               <stop offset="0.5" stopColor="#ff8113" stopOpacity="0.43" />
@@ -104,11 +145,7 @@ export const QuironIcon = ({
             </radialGradient>
           </defs>
           {LAYERS.map((layer) => (
-            <path
-              key={layer}
-              d={QUIRON_ICON_PATH}
-              fill={`url(#${id}-${layer})`}
-            />
+            <path key={layer} d={path} fill={`url(#${id}-${layer})`} />
           ))}
         </>
       )}

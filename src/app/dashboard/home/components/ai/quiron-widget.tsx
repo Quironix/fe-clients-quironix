@@ -202,7 +202,7 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
         title={tw("open")}
         aria-label={tw("open")}
       >
-        <QuironIcon tone="current" size={22} />
+        <QuironIcon tone="current" size={22} animated />
         <span className="qxv2-fab-tx">Quirón</span>
         <span className="qxv2-fab-dot" />
       </button>
