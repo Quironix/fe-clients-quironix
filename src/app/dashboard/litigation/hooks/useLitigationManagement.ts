@@ -16,12 +16,13 @@ export const useLitigationManagement = () => {
         {
           accessToken: session?.token,
           clientId: profile?.client_id,
-          profile: profile as any,
         },
         management
       );
 
-      if (email === "SENT") toast.success(t("emailSent", { email: recipient }));
+      if (email === "QUEUED") {
+        toast.success(t("emailQueued", { email: recipient }));
+      }
       if (email === "FAILED") {
         toast.warning(t("emailFailed", { email: recipient }));
       }
