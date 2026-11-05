@@ -21,7 +21,7 @@ export const useLitigationManagement = () => {
       );
 
       if (email === "QUEUED") {
-        toast.success(t("emailQueued", { email: recipient }));
+        toast.success(t("emailSent", { email: recipient }));
       }
       if (email === "FAILED") {
         toast.warning(t("emailFailed", { email: recipient }));

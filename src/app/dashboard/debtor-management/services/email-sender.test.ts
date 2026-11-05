@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { queueTrackSummaryEmail } from "./email-sender";
+import {
+  queueTrackSummaryEmail,
+  summaryEmailRecipients,
+} from "./email-sender";
 
 const fetchMock = vi.fn();
 
@@ -43,5 +46,21 @@ describe("queueTrackSummaryEmail", () => {
     const result = await queueTrackSummaryEmail(["x"], "token-1", "client-1");
 
     expect(result).toEqual({ success: false, message: "Track not found" });
+  });
+});
+
+describe("summaryEmailRecipients", () => {
+  it("cuenta las gestiones por contacto de correo, sin importar mayúsculas", () => {
+    expect(
+      summaryEmailRecipients([
+        { type: "EMAIL", value: "pagos@deudor.cl" },
+        { type: "EMAIL", value: "PAGOS@deudor.cl " },
+        { type: "EMAIL", value: "otro@deudor.cl" },
+        { type: "PHONE", value: "+56911111111" },
+      ])
+    ).toEqual([
+      { email: "pagos@deudor.cl", count: 2 },
+      { email: "otro@deudor.cl", count: 1 },
+    ]);
   });
 });

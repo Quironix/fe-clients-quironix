@@ -92,3 +92,18 @@ export async function queueTrackSummaryEmail(
     };
   }
 }
+
+// Los mismos destinatarios que arma services: un correo por contacto EMAIL.
+export function summaryEmailRecipients(
+  contacts: { type: string; value: string }[]
+): { email: string; count: number }[] {
+  const byEmail = new Map<string, { email: string; count: number }>();
+  for (const { type, value } of contacts) {
+    if (type !== "EMAIL" || !value.trim()) continue;
+    const key = value.trim().toLowerCase();
+    const recipient = byEmail.get(key) ?? { email: value.trim(), count: 0 };
+    recipient.count += 1;
+    byEmail.set(key, recipient);
+  }
+  return [...byEmail.values()];
+}
