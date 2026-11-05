@@ -20,7 +20,10 @@ import {
   FieldConfig,
   getManagementCombination,
 } from "../../config/management-types";
-import { queueTrackSummaryEmail } from "../../services/email-sender";
+import {
+  queueTrackSummaryEmail,
+  summaryEmailRecipients,
+} from "../../services/email-sender";
 import { TASK_SCOPE_QUERY_KEY } from "../../hooks/useTaskScope";
 import { createPaymentPlan } from "../../services/payment-plan";
 import { createTrack } from "../../services/tracks";
@@ -688,20 +691,30 @@ export const AddManagementTab = ({
         createdAt: new Date(result.track.created_at),
       };
 
-      const trackIdsToEmail = [...savedManagements, currentManagement]
-        .filter((management) => management.formData.sendEmail === true)
-        .map((management) => management.id);
+      const managementsToEmail = [...savedManagements, currentManagement].filter(
+        (management) => management.formData.sendEmail === true
+      );
 
-      if (trackIdsToEmail.length > 0) {
+      if (managementsToEmail.length > 0) {
         const queued = await queueTrackSummaryEmail(
-          trackIdsToEmail,
+          managementsToEmail.map((management) => management.id),
           session.token,
           profile.client_id
         );
-        if (queued.success) {
-          toast.success(t("emailQueued"));
-        } else {
-          toast.warning(t("emailQueueFailed"));
+        const recipients = summaryEmailRecipients(
+          managementsToEmail.map(({ formData }) => ({
+            type: formData.contactType,
+            value: formData.contactValue,
+          }))
+        );
+        for (const { email, count } of recipients) {
+          if (!queued.success) {
+            toast.warning(t("emailSendError", { email }));
+          } else if (count > 1) {
+            toast.success(t("emailMultipleSent", { count, email }));
+          } else {
+            toast.success(t("emailSent", { email }));
+          }
         }
       }
 
