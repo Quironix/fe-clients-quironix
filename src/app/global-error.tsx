@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import * as React from "react";
 
 import { ErrorScreen } from "@/components/error-screen";
@@ -12,6 +13,7 @@ interface GlobalErrorProps {
 
 export default function GlobalError({ error }: GlobalErrorProps) {
   React.useEffect(() => {
+    Sentry.captureException(error);
     reloadOnceOnChunkLoadError(error);
   }, [error]);
 

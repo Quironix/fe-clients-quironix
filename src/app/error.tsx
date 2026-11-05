@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import * as React from "react";
 import { useTranslations } from "next-intl";
 
@@ -14,6 +15,7 @@ export default function ErrorPage({ error }: ErrorPageProps) {
   const t = useTranslations("errorScreen");
 
   React.useEffect(() => {
+    Sentry.captureException(error);
     reloadOnceOnChunkLoadError(error);
   }, [error]);
 
