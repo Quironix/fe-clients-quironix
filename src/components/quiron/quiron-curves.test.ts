@@ -36,13 +36,10 @@ describe("blendCurves", () => {
 });
 
 describe("QUIRON_ICON_PATH", () => {
-  it("is a closed loop inside the viewBox", () => {
-    const points = pointsOf(QUIRON_ICON_PATH);
-    expect(QUIRON_ICON_PATH.endsWith("Z")).toBe(true);
-    const [startX, startY] = points[0];
-    const [endX, endY] = points[points.length - 1];
-    expect(Math.hypot(endX - startX, endY - startY)).toBe(0);
-    expect(staysInViewBox(QUIRON_ICON_PATH)).toBe(true);
+  it("draws seven closed stripes inside the viewBox", () => {
+    expect(QUIRON_ICON_PATH.match(/M/g)).toHaveLength(7);
+    expect(QUIRON_ICON_PATH.match(/Z/g)).toHaveLength(7);
+    expect(staysInViewBox(QUIRON_ICON_PATH.replace(/Z/g, ""))).toBe(true);
   });
 });
 
