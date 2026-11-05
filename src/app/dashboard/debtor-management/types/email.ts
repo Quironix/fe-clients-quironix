@@ -53,44 +53,6 @@ export interface EmailPayload {
   management?: { debtorComment: string; executiveComment: string };
 }
 
-export interface EmailManagement {
-  id: number;
-  header_text: string;
-  header_amount: string;
-  is_invoices: boolean;
-  invoices: EmailInvoice[];
-  body_html: string;
-}
-
-export interface EmailMultipleDynamicTemplateData {
-  subject?: string;
-  logo_client: string;
-  name_client: string;
-  body_description: string;
-  managements: EmailManagement[];
-  contact_phone: string;
-  contact_mail: string;
-  is_factoring: boolean;
-  bank_account_info?: string;
-}
-
-export interface EmailMultiplePayload {
-  to: string;
-  templateId: string;
-  subject?: string;
-  from?: {
-    name?: string;
-  };
-  personalizations?: Array<{
-    to: Array<{ email: string }>;
-    subject: string;
-    dynamicTemplateData: EmailMultipleDynamicTemplateData | any;
-  }>;
-  dynamicTemplateData: EmailMultipleDynamicTemplateData;
-  trackId?: string;
-  attachments?: EmailAttachment[];
-}
-
 export interface EmailResponse {
   success: boolean;
   message: string;

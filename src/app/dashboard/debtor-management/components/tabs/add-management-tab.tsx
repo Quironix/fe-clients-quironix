@@ -20,13 +20,7 @@ import {
   FieldConfig,
   getManagementCombination,
 } from "../../config/management-types";
-import { buildEmailPayload } from "../../services/email-builder";
-import { buildMultipleEmailPayload } from "../../services/email-builder-multiple";
-import type { EmailAttachment } from "../../types/email";
-import {
-  sendTrackEmail,
-  sendMultipleManagementEmail,
-} from "../../services/email-sender";
+import { queueTrackSummaryEmail } from "../../services/email-sender";
 import { TASK_SCOPE_QUERY_KEY } from "../../hooks/useTaskScope";
 import { createPaymentPlan } from "../../services/payment-plan";
 import { createTrack } from "../../services/tracks";
@@ -93,22 +87,6 @@ function fileToDataURI(file: File): Promise<string> {
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
-}
-
-/**
- * Converts a File to an EmailAttachment object (Flujo 2).
- * content = base64 without the data URI prefix.
- */
-async function fileToEmailAttachment(file: File): Promise<EmailAttachment> {
-  const dataURI = await fileToDataURI(file);
-  // dataURI format: "data:<type>;base64,<content>"
-  const content = dataURI.split(",")[1];
-  return {
-    content,
-    type: file.type,
-    filename: file.name,
-    disposition: "attachment",
-  };
 }
 
 const buildContactFromActive = (contact: Contact | null | undefined): Pick<ManagementFormData, "contactType" | "contactValue" | "selectedContact"> => {
@@ -465,6 +443,9 @@ export const AddManagementTab = ({
     const nextManagementDateTime = `${dateISO}T${time}:00.000Z`;
 
     const { selectedContact } = managementFormData;
+    const additionalEmails = (
+      managementFormData.additionalContactEmails || []
+    ).filter((email) => email && email !== managementFormData.contactValue);
 
     const payload: any = {
       debtor_id: dataDebtor.id,
@@ -476,6 +457,7 @@ export const AddManagementTab = ({
           contactId: selectedContact.id,
           name: selectedContact.name,
         }),
+        ...(additionalEmails.length > 0 && { additionalEmails }),
       },
       observation: managementFormData.observation,
       debtor_comment: managementFormData.debtorComment,
@@ -578,6 +560,9 @@ export const AddManagementTab = ({
     if (managementFormData.files && managementFormData.files.length > 0) {
       payload.track_attachments = await Promise.all(
         managementFormData.files.map((file) => fileToDataURI(file))
+      );
+      payload.track_attachment_names = managementFormData.files.map(
+        (file) => file.name
       );
     }
 
@@ -703,134 +688,20 @@ export const AddManagementTab = ({
         createdAt: new Date(result.track.created_at),
       };
 
-      const allManagements = [...savedManagements, currentManagement];
+      const trackIdsToEmail = [...savedManagements, currentManagement]
+        .filter((management) => management.formData.sendEmail === true)
+        .map((management) => management.id);
 
-      const managementsToEmail = allManagements.filter(
-        (m) => m.formData.sendEmail === true
-      );
-
-      if (managementsToEmail.length > 0) {
-        // bank_account_info is now built server-side from the authenticated
-        // client_id (see PRD_comunicaciones_mensajes_pago_ejecutivo.md §8) —
-        // no client-side fetch, no dependency on the client.onboarding.banks
-        // scope. The placeholder below is always overwritten by the backend.
-        const bankAccountInfoHTML = "";
-
-        const groupedByContact: Record<
-          string,
-          { managements: SavedManagement[]; contactName: string }
-        > = {};
-
-        managementsToEmail.forEach((management) => {
-          const contactEmail = management.formData.contactValue;
-          const contactName =
-            management.formData.selectedContact?.name ||
-            management.formData.selectedContact?.label ||
-            "Contacto";
-
-          if (!groupedByContact[contactEmail]) {
-            groupedByContact[contactEmail] = {
-              managements: [],
-              contactName,
-            };
-          }
-          groupedByContact[contactEmail].managements.push(management);
-        });
-
-        const sortedGroups = Object.entries(groupedByContact).map(
-          ([email, data]) => ({
-            email,
-            contactName: data.contactName,
-            managements: data.managements.sort(
-              (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
-            ),
-          })
+      if (trackIdsToEmail.length > 0) {
+        const queued = await queueTrackSummaryEmail(
+          trackIdsToEmail,
+          session.token,
+          profile.client_id
         );
-
-        for (const group of sortedGroups) {
-          try {
-            if (group.managements.length === 1) {
-              const management = group.managements[0];
-              const selectedCombination = getManagementCombination(
-                management.formData.managementType,
-                management.formData.debtorComment,
-                management.formData.executiveComment
-              );
-
-              if (selectedCombination) {
-                const emailAttachments: EmailAttachment[] =
-                  management.formData.files && management.formData.files.length > 0
-                    ? await Promise.all(
-                        management.formData.files.map((file) =>
-                          fileToEmailAttachment(file)
-                        )
-                      )
-                    : [];
-
-                const emailPayload = buildEmailPayload({
-                  managementFormData: management.formData,
-                  selectedInvoices: management.selectedInvoices,
-                  profile,
-                  managementCombination: selectedCombination,
-                  bankAccountInfo: bankAccountInfoHTML,
-                  trackId: management.id,
-                  debtorName: dataDebtor?.name,
-                  attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
-                });
-
-                const emailResult = await sendTrackEmail(emailPayload, session.token, profile.client_id);
-
-                if (emailResult.success) {
-                  toast.success(t("emailSent", { email: group.email }));
-                } else {
-                  toast.warning(
-                    t("emailFailed", { email: group.email })
-                  );
-                }
-              }
-            } else {
-              // For multiple managements, collect attachments from each one.
-              const emailAttachments: EmailAttachment[] = [];
-              for (const management of group.managements) {
-                if (management.formData.files && management.formData.files.length > 0) {
-                  const converted = await Promise.all(
-                    management.formData.files.map((file) =>
-                      fileToEmailAttachment(file)
-                    )
-                  );
-                  emailAttachments.push(...converted);
-                }
-              }
-
-              const emailPayload = buildMultipleEmailPayload({
-                managements: group.managements,
-                profile,
-                contactEmail: group.email,
-                contactName: group.contactName,
-                bankAccountInfo: bankAccountInfoHTML,
-                debtorName: dataDebtor?.name,
-                attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
-              });
-
-              const emailResult = await sendMultipleManagementEmail(
-                emailPayload,
-                session.token,
-                profile.client_id
-              );
-
-              if (emailResult.success) {
-                toast.success(
-                  t("emailMultipleSent", { count: group.managements.length, email: group.email })
-                );
-              } else {
-                toast.warning(
-                  t("emailFailed", { email: group.email })
-                );
-              }
-            }
-          } catch (error) {
-            toast.warning(t("emailSendError", { email: group.email }));
-          }
+        if (queued.success) {
+          toast.success(t("emailQueued"));
+        } else {
+          toast.warning(t("emailQueueFailed"));
         }
       }
 
