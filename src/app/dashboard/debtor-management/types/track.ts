@@ -13,6 +13,7 @@ export interface TrackContact {
   value: string;
   contactId?: string;
   name?: string;
+  additionalEmails?: string[];
 }
 
 /**
@@ -97,6 +98,7 @@ export interface CreateTrackPayload {
    * Optional — omit if there are no attachments.
    */
   track_attachments?: string[];
+  track_attachment_names?: string[];
 }
 
 /**
