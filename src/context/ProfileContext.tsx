@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useSession } from "next-auth/react";
 import {
   createContext,
@@ -138,6 +139,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       fetchProfile();
     }
   }, [status, session?.token, fetchProfile]);
+
+  useEffect(() => {
+    Sentry.setUser(profile ? { id: profile.id, email: profile.email } : null);
+    Sentry.setTag("client_id", getClientId(profile) || undefined);
+    Sentry.setTag("client_name", profile?.client?.name);
+  }, [profile]);
 
   return (
     <ProfileContext.Provider
