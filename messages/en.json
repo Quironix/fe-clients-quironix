@@ -335,6 +335,7 @@
       "paymentsIntegration": "Payments",
       "otherServices": "Other Services",
       "teamAndAccess": "Team & Access",
+      "actionsHistory": "Actions history",
       "billing": "Billing",
       "paymentPlansCreation": "Creation"
     },

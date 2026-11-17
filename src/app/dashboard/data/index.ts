@@ -231,6 +231,11 @@ export const getSidebarData = (profile: any, t: (key: string) => string) => {
                 scope: "client.users",
               },
               {
+                title: t("actionsHistory"),
+                url: "/dashboard/actions-history",
+                adminOnly: true,
+              },
+              {
                 disabled: true,
                 title: t("billing"),
                 url: "/dashboard/billing",
@@ -333,12 +338,11 @@ export const sidebarData: any = {
               url: "/dashboard/roles",
               scope: "client.users.roles",
             },
-            // {
-            //   disabled: true,
-            //   title: "Historial de acciones",
-            //   url: "/dashboard/actions-history",
-            //   scope: "client.users.actions_history",
-            // },
+            {
+              title: "Historial de acciones",
+              url: "/dashboard/actions-history",
+              adminOnly: true,
+            },
           ],
         },
         {
