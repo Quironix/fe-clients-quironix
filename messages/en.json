@@ -335,7 +335,6 @@
       "paymentsIntegration": "Payments",
       "otherServices": "Other Services",
       "teamAndAccess": "Team & Access",
-      "actionsHistory": "Actions history",
       "billing": "Billing",
       "paymentPlansCreation": "Creation"
     },
@@ -1589,6 +1588,32 @@
       "title": "Since when to import movements?",
       "description": "Select a date to import previous movements (maximum 30 days) or continue without selecting to use the current date.",
       "continuing": "Continuing..."
+    },
+    "connection": {
+      "disconnected": "{account} disconnected {ago}",
+      "disconnectedDetail": "Payments from this account are not being loaded.",
+      "disconnectedMany": "{count} accounts disconnected",
+      "disconnectedManyDetail": "Payments from these accounts are not being loaded.",
+      "providerDown": "{bank} has issues on Fintoc {ago}",
+      "providerDownDetail": "Movements may arrive late; they will be recovered automatically.",
+      "stale": "Movements from {account} delayed {ago}",
+      "staleDetail": "We are already looking into it.",
+      "warningMany": "{count} accounts with delayed movements",
+      "warningManyDetail": "They will be recovered once the bank responds again.",
+      "viewAccounts": "View accounts",
+      "dismiss": "Close",
+      "reconnect": "Reconnect",
+      "viewIncident": "View incident",
+      "lastRefreshed": "Updated {date}",
+      "status": {
+        "ACTIVE": "Connected",
+        "LOGIN_REQUIRED": "Disconnected",
+        "PROVIDER_DOWN": "Bank issues",
+        "STALE": "Delayed"
+      },
+      "tableHeader": "Connection",
+      "askAdmin": "Ask an administrator to reconnect it.",
+      "askAdminMany": "Ask an administrator to reconnect them."
     }
   },
   "litigation": {

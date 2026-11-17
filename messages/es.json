@@ -335,7 +335,6 @@
       "paymentsIntegration": "Pagos",
       "otherServices": "Otros servicios",
       "teamAndAccess": "Equipo y accesos",
-      "actionsHistory": "Historial de acciones",
       "billing": "Facturación",
       "paymentPlansCreation": "Creación"
     },
@@ -1589,6 +1588,32 @@
       "title": "¿Desde cuándo traer los movimientos?",
       "description": "Selecciona una fecha para importar movimientos anteriores (máximo 30 días) o continúa sin seleccionar para usar la fecha actual.",
       "continuing": "Continuar..."
+    },
+    "connection": {
+      "disconnected": "{account} desconectada {ago}",
+      "disconnectedDetail": "Los pagos de esa cuenta no se están cargando.",
+      "disconnectedMany": "{count} cuentas desconectadas",
+      "disconnectedManyDetail": "Los pagos de esas cuentas no se están cargando.",
+      "providerDown": "{bank} con problemas en Fintoc {ago}",
+      "providerDownDetail": "Los movimientos pueden llegar con atraso; se recuperan solos.",
+      "stale": "Movimientos de {account} con atraso {ago}",
+      "staleDetail": "Ya lo estamos revisando.",
+      "warningMany": "{count} cuentas con movimientos atrasados",
+      "warningManyDetail": "Se recuperan solos cuando el banco vuelva a responder.",
+      "viewAccounts": "Ver cuentas",
+      "dismiss": "Cerrar",
+      "reconnect": "Reconectar",
+      "viewIncident": "Ver incidente",
+      "lastRefreshed": "Actualizada {date}",
+      "status": {
+        "ACTIVE": "Conectada",
+        "LOGIN_REQUIRED": "Desconectada",
+        "PROVIDER_DOWN": "Banco con problemas",
+        "STALE": "Con atraso"
+      },
+      "tableHeader": "Conexión",
+      "askAdmin": "Avísale a un administrador para reconectarla.",
+      "askAdminMany": "Avísale a un administrador para reconectarlas."
     }
   },
   "litigation": {
