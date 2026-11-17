@@ -15,10 +15,11 @@ import {
 import { useProfileContext } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import { getFintoc } from "@fintoc/fintoc-js";
-import { Edit, FileText, Link, Loader2, Trash2 } from "lucide-react";
+import { Edit, FileText, Link, Loader2, Trash2, Unplug } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import BulletMenu, { BulletMenuItem } from "../components/bullet-menu";
@@ -29,7 +30,9 @@ import { Main } from "../components/main";
 import TitleSection from "../components/title-section";
 import Search from "../users/components/search";
 import BankDialog from "./components/bank-dialog";
+import FintocConnectionBadge from "./components/fintoc-connection-badge";
 import FintocDateDialog from "./components/fintoc-date-dialog";
+import { useFintocConnectionStatus } from "./hooks/use-fintoc-connection-status";
 import {
   createFintocLinkIntent,
   exchangeDataFintoc,
@@ -67,6 +70,12 @@ const BanksContent = () => {
   } = useBankInformationStore();
   const [loadFintoc, setLoadFintoc] = useState<any>(null);
   const widgetRef = useRef<any>(null);
+  const connections = useFintocConnectionStatus();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("reconnect") === "1") setIsFintocDateDialogOpen(true);
+  }, [searchParams]);
 
   useEffect(() => {
     if (session?.token && profile?.client?.id) {
@@ -229,13 +238,26 @@ const BanksContent = () => {
     ];
 
     if (bank.bank_provider) {
-      items.unshift({
-        id: "linked",
-        label: t("linkedAccount"),
-        icon: Link,
-        disabled: true,
-        onClick: () => {},
-      });
+      const disconnected =
+        connections.find((c) => c.bank_information_id === bank.id)
+          ?.connection_status === "LOGIN_REQUIRED";
+      items.unshift(
+        disconnected
+          ? {
+              id: "reconnect",
+              label: t("connection.reconnect"),
+              icon: Unplug,
+              disabled: isFintocProccessOpen,
+              onClick: () => setIsFintocDateDialogOpen(true),
+            }
+          : {
+              id: "linked",
+              label: t("linkedAccount"),
+              icon: Link,
+              disabled: true,
+              onClick: () => {},
+            },
+      );
     }
 
     return items;
@@ -309,6 +331,9 @@ const BanksContent = () => {
                           <TableHead className="text-primary">
                             {t("tableHeaders.ledgerAccount")}
                           </TableHead>
+                          <TableHead className="text-primary">
+                            {t("connection.tableHeader")}
+                          </TableHead>
                           <TableHead className="text-primary text-center">
                             {t("tableHeaders.actions")}
                           </TableHead>
@@ -317,13 +342,13 @@ const BanksContent = () => {
                       <TableBody>
                         {isLoading ? (
                           <>
-                            <LoaderTable cols={4} />
+                            <LoaderTable cols={5} />
                           </>
                         ) : (
                           <>
                             {banksInformations.length === 0 ? (
                               <TableRow>
-                                <TableCell colSpan={4} className="text-center">
+                                <TableCell colSpan={5} className="text-center">
                                   {t("emptyMessage")}
                                 </TableCell>
                               </TableRow>
@@ -334,6 +359,20 @@ const BanksContent = () => {
                                     <TableCell>{bank.bank}</TableCell>
                                     <TableCell>{bank.account_number}</TableCell>
                                     <TableCell>{bank.ledger_account}</TableCell>
+                                    <TableCell>
+                                      {bank.bank_provider ? (
+                                        <FintocConnectionBadge
+                                          connection={connections.find(
+                                            (c) =>
+                                              c.bank_information_id === bank.id,
+                                          )}
+                                        />
+                                      ) : (
+                                        <span className="text-muted-foreground">
+                                          -
+                                        </span>
+                                      )}
+                                    </TableCell>
                                     <TableCell className="text-center">
                                       <BulletMenu
                                         items={createMenuItems(bank)}
