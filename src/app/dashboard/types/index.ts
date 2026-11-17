@@ -16,6 +16,8 @@ interface BaseNavItem {
   icon?: React.ElementType;
   scope?: string;
   disabled?: boolean;
+  /** Solo lo ve el usuario ADMIN (no depende de scopes). */
+  adminOnly?: boolean;
 }
 
 type NavLink = BaseNavItem & {
@@ -24,7 +26,11 @@ type NavLink = BaseNavItem & {
 };
 
 type NavCollapsible = BaseNavItem & {
-  items: (BaseNavItem & { url: string; scope?: string })[];
+  items: (BaseNavItem & {
+    url: string;
+    scope?: string;
+    adminOnly?: boolean;
+  })[];
   url?: never;
 };
 

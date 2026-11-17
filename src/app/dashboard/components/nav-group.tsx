@@ -99,6 +99,7 @@ export function NavGroup({ title, items, isBottom, hideTitle }: NavGroup) {
 
   const userScopes =
     profile?.roles?.flatMap((role: any) => role.scopes || []) || [];
+  const isAdmin = profile?.type === "ADMIN";
 
   const filteredItems: NavItem[] = items
     .map((item): NavItem | null => {
@@ -108,6 +109,7 @@ export function NavGroup({ title, items, isBottom, hideTitle }: NavGroup) {
 
       if (item.items) {
         const filteredSubItems = item.items.filter((subItem) => {
+          if (subItem.adminOnly) return isAdmin;
           if (subItem.disabled) return true;
           if (!subItem.scope) return true;
           return hasAccessToItem(subItem.scope, userScopes);

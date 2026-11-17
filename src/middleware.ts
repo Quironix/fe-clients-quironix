@@ -23,7 +23,6 @@ const ROUTE_SCOPE_MAP: Record<string, string> = {
   // Users
   "/dashboard/users": "client.users.users",
   "/dashboard/roles": "client.users.roles",
-  "/dashboard/actions-history": "client.users.actions_history",
 
   // Settings account
   "/dashboard/debtors": "client.settings_account.debtors",
@@ -233,6 +232,19 @@ export default auth(async (req) => {
             redirectUrl.searchParams.set("reason", "client_type_not_factoring");
             return NextResponse.redirect(redirectUrl);
           }
+        }
+
+        // Historial de acciones: solo el usuario ADMIN, no es un permiso asignable a roles.
+        if (
+          currentPath.startsWith("/dashboard/actions-history") &&
+          profile?.type !== "ADMIN"
+        ) {
+          const redirectUrl = new URL(
+            "/dashboard/access-denied",
+            req.nextUrl.origin
+          );
+          redirectUrl.searchParams.set("route", currentPath);
+          return NextResponse.redirect(redirectUrl);
         }
 
         // Obtener todos los scopes del usuario desde sus roles
