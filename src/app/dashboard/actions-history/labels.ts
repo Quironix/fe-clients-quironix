@@ -96,6 +96,29 @@ const FIELD_LABELS: Record<string, string> = {
   motivo: "Motivo",
   submotivo: "Submotivo",
   normalization_reason: "Motivo de normalización",
+  normalization_by_contact: "Normalizado por",
+  annual_interest_rate: "Interés anual (%)",
+  approved_at: "Aprobado el",
+  rejected_at: "Rechazado el",
+  currency: "Moneda",
+  debt_concept: "Concepto de la deuda",
+  document_type: "Tipo de documento",
+  file: "Archivo",
+  ingress_type: "Tipo de ingreso",
+  initial_payment: "Pie",
+  installment_amount: "Monto cuota",
+  invoice_ids: "Facturas del plan",
+  is_fictitious: "Ficticia",
+  is_internal_document: "Documento interno",
+  litigation_balance: "Saldo en litigio",
+  payment_start_date: "Inicio de pagos",
+  payment_end_date: "Fin de pagos",
+  payment_frequency: "Frecuencia",
+  payment_method: "Medio de pago",
+  plan_start_date: "Inicio del plan",
+  sip_code: "Código SIP",
+  total_debt: "Deuda total",
+  estado: "Estado",
   first_name: "Nombre",
   last_name: "Apellido",
   password: "Contraseña",
@@ -166,6 +189,33 @@ const VALUE_LABELS: Record<string, string> = {
   DISCOUNT_NOT_APPLICABLE: "Descuento no aplica",
   COMMERCIAL_INVOICE_NOT_APPLICABLE: "Factura comercial no aplica",
   ADMINISTRATIVE_CREDIT_NOTE_ISSUED: "Nota de crédito emitida",
+  RISK_CLASSIFICATION: "Clasificación de riesgo",
+  CREDIT_LINE: "Línea de crédito",
+  CREDIT_LINE_AMOUNT: "Monto línea de crédito",
+  CREDIT_LINE_TOLERANCE: "Tolerancia línea de crédito",
+  CREDIT_STATUS: "Estado de crédito",
+  PAYMENT_METHOD: "Medio de pago",
+  PAYMENT_TERMS: "Condición de pago",
+  RISK_SCORE: "Puntaje de riesgo",
+  CUSTOM: "Dato personalizado",
+  manual_correction: "Corrección manual",
+  customer_dispute: "Disputa del cliente",
+  system_error: "Error del sistema",
+  accounting_adjustment: "Ajuste contable",
+  CLIENT: "Propio",
+  TEMPLATE: "Plantilla",
+  FREQ_7_DAYS: "Cada 7 días",
+  FREQ_15_DAYS: "Cada 15 días",
+  FREQ_30_DAYS: "Cada 30 días",
+  FREQ_45_DAYS: "Cada 45 días",
+  DEBTORS: "Deudores",
+  INVOICES: "Facturas",
+  PAYMENTS: "Pagos",
+  MOVEMENTS: "Movimientos bancarios",
+  COMPANIES: "Empresas",
+  EMAIL: "Correo",
+  BANK_TRANSFER: "Transferencia",
+  MANUAL: "Manual",
 };
 
 // Booleanos con un nombre mejor que Sí/No.
@@ -185,6 +235,7 @@ const MONEY_FIELDS = new Set([
 ]);
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
 export const fieldLabel = (field: string) => FIELD_LABELS[field] ?? field;
 
@@ -204,6 +255,7 @@ export const formatValue = (field: string, value: unknown): string => {
   if (typeof value === "string") {
     if (VALUE_LABELS[value]) return VALUE_LABELS[value];
     if (ISO_DATE.test(value)) return formatDateTime(value);
+    if (DATE_ONLY.test(value)) return value.split("-").reverse().join("-");
   }
   return String(value);
 };
