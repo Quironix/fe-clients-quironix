@@ -1,5 +1,6 @@
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { TeamMemberRow, UpcomingCommitmentDay } from "../types";
+import { cardBody, DashCard, DashCardHeader } from "./dash-card";
 
 interface MyRankingCardProps {
   team?: TeamMemberRow[];
@@ -29,22 +30,18 @@ export const MyRankingCard: React.FC<MyRankingCardProps> = ({
       : null;
 
   return (
-    <div className="qxv2-card qxv2-v2-card">
-      <div className="qxv2-card-h">
-        <h3>Mi posición en el equipo</h3>
-        <span className="qxv2-h-sub">Por caja recuperada</span>
-      </div>
-      <div className="qxv2-body">
+    <DashCard>
+      <DashCardHeader title="Mi posición en el equipo" sub="Por caja recuperada" />
+      <div className={cardBody}>
         {me && (
-          <div className="qxv2-rank-me">
-            <span className="qxv2-rm-pos">
-              {meIndex + 1}º<small> de {ranked.length}</small>
+          <div className="flex items-center gap-3.5 pt-1.5 pb-0.5">
+            <span className="flex-none whitespace-nowrap text-[34px] font-black tracking-[-0.02em] text-primary-bright">
+              {meIndex + 1}º<small className="text-[15px] text-gray-400"> de {ranked.length}</small>
             </span>
-            <span style={{ fontSize: 12.5, color: "var(--qx-muted)", fontWeight: 700 }}>
+            <span className="text-[12.5px] font-bold text-gray-500">
               {gap ? (
                 <>
-                  Estás a <strong style={{ color: "var(--qx-ink)" }}>{gap}</strong> del
-                  1er lugar.
+                  Estás a <strong className="text-gray-900">{gap}</strong> del 1er lugar.
                   {commitmentsToday && (
                     <>
                       {" "}
@@ -59,19 +56,27 @@ export const MyRankingCard: React.FC<MyRankingCardProps> = ({
             </span>
           </div>
         )}
-        <div className="qxv2-rank-list">
-          {ranked.map((r, i) => (
-            <div
-              className={`qxv2-rank-li ${i === meIndex ? "me" : ""}`}
-              key={r.executiveId}
-            >
-              <span className="qxv2-rl-rk">{i + 1}</span>
-              <span>{r.executiveName}</span>
-              <span className="qxv2-rl-ca">{formatNumber(r.cashGenerated)}</span>
-            </div>
-          ))}
+        <div className="mt-2.5 flex flex-col gap-0.5">
+          {ranked.map((r, i) => {
+            const isMe = i === meIndex;
+            return (
+              <div
+                className={cn(
+                  "grid grid-cols-[20px_1fr_auto] items-center gap-2.5 rounded-md px-2.5 py-2 text-[12.5px]",
+                  isMe && "bg-primary-soft font-black",
+                )}
+                key={r.executiveId}
+              >
+                <span className={cn("font-black", isMe ? "text-primary-bright" : "text-gray-400")}>
+                  {i + 1}
+                </span>
+                <span>{r.executiveName}</span>
+                <span className="font-black">{formatNumber(r.cashGenerated)}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
-    </div>
+    </DashCard>
   );
 };

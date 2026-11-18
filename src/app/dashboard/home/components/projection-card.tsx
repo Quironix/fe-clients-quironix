@@ -1,11 +1,15 @@
 import React from "react";
 import { MOCK_PROJECTION } from "../constants/mock-extras";
 import { DsoProjectionData } from "../types";
+import { cardBody, DashCard, DashCardHeader } from "./dash-card";
 
 export interface ProjectionCardProps {
   data?: DsoProjectionData;
   isLoading?: boolean;
 }
+
+const colLabel = "text-[10.5px] font-extrabold uppercase tracking-[0.05em] text-gray-400";
+const colNum = "mt-1 text-[30px] font-black tracking-[-0.02em]";
 
 export const ProjectionCard: React.FC<ProjectionCardProps> = ({
   data,
@@ -17,37 +21,42 @@ export const ProjectionCard: React.FC<ProjectionCardProps> = ({
   const note = data ? data.note : MOCK_PROJECTION.note;
 
   return (
-    <div className="qxv2-card qxv2-v2-card">
-      <div className="qxv2-card-h">
-        <h3>Proyección — si se resuelven los litigios</h3>
-        <span className="qxv2-h-sub">
-          {data ? "Escenario proyectado" : "Escenario simulado · datos ilustrativos"}
-        </span>
-      </div>
-      <div className="qxv2-body">
-        <div className="qxv2-proj">
-          <div className="qxv2-p-col qxv2-proj-col-bad">
-            <div className="qxv2-p-lbl">DSO Actual</div>
-            <div className="qxv2-p-num">{isLoading ? "..." : currentDso}</div>
+    <DashCard>
+      <DashCardHeader
+        title="Proyección — si se resuelven los litigios"
+        sub={data ? "Escenario proyectado" : "Escenario simulado · datos ilustrativos"}
+      />
+      <div className={cardBody}>
+        <div className="flex flex-wrap items-stretch gap-4">
+          <div className="min-w-[120px] flex-1">
+            <div className={colLabel}>DSO Actual</div>
+            <div className={`${colNum} text-bad-fg`}>{isLoading ? "..." : currentDso}</div>
           </div>
-          <div className="qxv2-p-arrow">
-            <svg viewBox="0 0 24 24" fill="none" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+          <div className="grid place-items-center">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              strokeWidth={2.4}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-[26px] text-good"
+            >
               <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" />
             </svg>
           </div>
-          <div className="qxv2-p-col qxv2-proj-col-good">
-            <div className="qxv2-p-lbl">DSO Sin Litigios</div>
-            <div className="qxv2-p-num">{isLoading ? "..." : projectedDso}</div>
+          <div className="min-w-[120px] flex-1">
+            <div className={colLabel}>DSO Sin Litigios</div>
+            <div className={`${colNum} text-good-fg`}>{isLoading ? "..." : projectedDso}</div>
           </div>
-          <div className="qxv2-p-col">
-            <div className="qxv2-p-lbl">Meta</div>
-            <div className="qxv2-p-num" style={{ color: "#98A2B3" }}>
-              {isLoading ? "..." : targetDso}
-            </div>
+          <div className="min-w-[120px] flex-1">
+            <div className={colLabel}>Meta</div>
+            <div className={`${colNum} text-gray-400`}>{isLoading ? "..." : targetDso}</div>
           </div>
         </div>
-        <div className="qxv2-proj-note">{note}</div>
+        <div className="mt-3.5 rounded-lg border border-good/25 bg-good-bg px-3.5 py-[11px] text-[12.5px] font-semibold text-green-800">
+          {note}
+        </div>
       </div>
-    </div>
+    </DashCard>
   );
 };

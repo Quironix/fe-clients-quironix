@@ -1,6 +1,7 @@
 import { formatNumber } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { TodayPriorityTask } from "../types";
+import { avatar, btnGhost, DashCard, DashCardHeader, subText } from "./dash-card";
 
 interface TodayPrioritiesProps {
   data?: TodayPriorityTask[];
@@ -17,31 +18,32 @@ export const TodayPriorities: React.FC<TodayPrioritiesProps> = ({
     .sort((a, b) => a.priority - b.priority);
 
   return (
-    <div className="qxv2-card">
-      <div className="qxv2-card-h">
-        <h3>Prioridades de hoy</h3>
-        <span className="qxv2-h-sub">
-          Ordenadas por impacto en caja · Motor de Tareas
-        </span>
-      </div>
-      <div className="qxv2-task-rows">
+    <DashCard>
+      <DashCardHeader
+        title="Prioridades de hoy"
+        sub="Ordenadas por impacto en caja · Motor de Tareas"
+      />
+      <div className="px-5 pt-1 pb-2">
         {isLoading ? (
-          <div className="qxv2-h-sub">Cargando...</div>
+          <div className={subText}>Cargando...</div>
         ) : sorted.length === 0 ? (
-          <div className="qxv2-seg-debtors-empty">
+          <div className="px-0.5 py-1.5 text-xs text-gray-500">
             No hay prioridades con monto pendiente para hoy.
           </div>
         ) : (
           sorted.map((task, i) => (
-            <div className="qxv2-task" key={task.id}>
-              <span className="qxv2-rank">{i + 1}</span>
-              <div className="qxv2-t-main">
-                <div className="qxv2-t-deudor">{task.debtorName}</div>
-                <div className="qxv2-t-sug">{task.description}</div>
+            <div
+              className="grid grid-cols-[26px_minmax(0,1.6fr)_auto_auto_auto] items-center gap-3.5 border-t border-gray-100 py-3 first:border-t-0"
+              key={task.id}
+            >
+              <span className={`${avatar} size-6 text-[11.5px] font-black`}>{i + 1}</span>
+              <div className="min-w-0">
+                <div className="text-[13.5px] font-extrabold">{task.debtorName}</div>
+                <div className="mt-px text-[11.5px] font-semibold text-gray-500">{task.description}</div>
               </div>
-              <span className="qxv2-t-monto">{formatNumber(task.amount)}</span>
+              <span className="text-right text-[14px] font-black">{formatNumber(task.amount)}</span>
               <button
-                className="qxv2-btn-ghost"
+                className={btnGhost}
                 disabled={!task.debtorId}
                 onClick={() =>
                   task.debtorId &&
@@ -56,6 +58,6 @@ export const TodayPriorities: React.FC<TodayPrioritiesProps> = ({
           ))
         )}
       </div>
-    </div>
+    </DashCard>
   );
 };

@@ -1,3 +1,4 @@
+import { viewRoot } from "../dash-card";
 import { DebtorConcentrationCard } from "../debtor-concentration-card";
 import { HeroCashDeviationCard } from "../hero-cash-deviation-card";
 import { KpiGridMock } from "../kpi-card-mock";
@@ -34,11 +35,11 @@ export const CollectionManagerView: React.FC<CollectionManagerViewProps> = ({
   teamCapacityLoading,
 }) => {
   return (
-    <div className="qxv2" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div className={viewRoot}>
       <HeroCashDeviationCard />
       <KpiGridMock items={buildKpiGridItems(MOCK_KPIS_JEFE, realKpis, level2Data)} />
       <TeamTable data={team} isLoading={teamLoading} />
-      <div className="qxv2-v2-grid">
+      <div className="grid grid-cols-1 items-start gap-4 min-[1081px]:grid-cols-2">
         <DebtorConcentrationCard
           data={debtorConcentration}
           isLoading={debtorConcentrationLoading}

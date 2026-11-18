@@ -1,6 +1,7 @@
 import React from "react";
 import { MOCK_MY_TREND } from "../constants/mock-extras";
 import { WeeklyCashTrendItem } from "../types";
+import { cardBody, DashCard, DashCardHeader } from "./dash-card";
 
 export interface MyTrendCardProps {
   data?: WeeklyCashTrendItem[];
@@ -24,7 +25,7 @@ export const MyTrendCard: React.FC<MyTrendCardProps> = ({
   const y = (v: number) => h - pad - ((v - min) / rg) * (h - pad * 2);
   const pts = series.map((v, i) => [x(i), y(v)] as const);
   const line = pts.map((p) => p.join(",")).join(" ");
-  const color = "#1FA35C";
+  const color = "var(--good)";
 
   const latestVal = series[n - 1] || 0;
   const latestFormatted =
@@ -33,25 +34,21 @@ export const MyTrendCard: React.FC<MyTrendCardProps> = ({
       : `$${Math.round(latestVal).toLocaleString("es-CL")}`;
 
   return (
-    <div className="qxv2-card qxv2-v2-card">
-      <div className="qxv2-card-h">
-        <h3>Mi tendencia</h3>
-        <span className="qxv2-h-sub">
-          {hasRealData ? "Caja recuperada por semana (últimas 8)" : `${MOCK_MY_TREND.label} · datos ilustrativos`}
-        </span>
-      </div>
-      <div className="qxv2-body">
+    <DashCard>
+      <DashCardHeader
+        title="Mi tendencia"
+        sub={
+          hasRealData
+            ? "Caja recuperada por semana (últimas 8)"
+            : `${MOCK_MY_TREND.label} · datos ilustrativos`
+        }
+      />
+      <div className={cardBody}>
         {isLoading ? (
-          <div style={{ padding: "16px", color: "#667085", fontSize: "13px" }}>
-            Cargando tendencia...
-          </div>
+          <div className="p-4 text-[13px] text-gray-500">Cargando tendencia...</div>
         ) : (
           <>
-            <svg
-              viewBox={`0 0 ${w} ${h}`}
-              preserveAspectRatio="none"
-              style={{ width: "100%", height: 60, display: "block" }}
-            >
+            <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="block h-[60px] w-full">
               <polygon points={`0,${h} ${line} ${w},${h}`} fill={color} opacity={0.08} />
               <polyline
                 points={line}
@@ -65,24 +62,13 @@ export const MyTrendCard: React.FC<MyTrendCardProps> = ({
                 <circle cx={pts[n - 1][0]} cy={pts[n - 1][1]} r={2.6} fill={color} />
               )}
             </svg>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: 6,
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#98A2B3",
-              }}
-            >
+            <div className="mt-1.5 flex justify-between text-[11px] font-extrabold text-gray-400">
               <span>hace {n} sem.</span>
-              <span style={{ color: "var(--qx-good-tx)" }}>
-                Esta semana: {latestFormatted}
-              </span>
+              <span className="text-good-fg">Esta semana: {latestFormatted}</span>
             </div>
           </>
         )}
       </div>
-    </div>
+    </DashCard>
   );
 };

@@ -1,6 +1,7 @@
-import { formatNumber } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { MOCK_TEAM_TREND } from "../constants/mock-extras";
 import { TeamMemberRow } from "../types";
+import { avatar, DashCard, DashCardHeader, subText, TONE_COLOR, track } from "./dash-card";
 
 interface TeamTableProps {
   data?: TeamMemberRow[];
@@ -17,20 +18,20 @@ const initials = (name: string) =>
     .join("");
 
 const toneColor = (v: number) =>
-  v < 50 ? "#EF4444" : v < 70 ? "#F59E0B" : "#1FA35C";
+  TONE_COLOR[v < 50 ? "bad" : v < 70 ? "warn" : "good"];
 
 const Metric = ({ value }: { value?: number }) => {
   if (value === undefined) {
-    return <span style={{ color: "#98A2B3", fontSize: 12.5 }}>—</span>;
+    return <span className="text-[12.5px] text-gray-400">—</span>;
   }
   return (
-    <div className="qxv2-t-metric">
-      <span className="qxv2-tm-val" style={{ color: toneColor(value) }}>
+    <div className="flex flex-col gap-1">
+      <span className="text-[12.5px] font-extrabold" style={{ color: toneColor(value) }}>
         {value}%
       </span>
-      <span className="qxv2-tm-track">
+      <span className={`${track} h-[5px]`}>
         <span
-          className="qxv2-tm-fill"
+          className="block h-full rounded-full"
           style={{ width: `${Math.min(value, 100)}%`, background: toneColor(value) }}
         />
       </span>
@@ -51,7 +52,7 @@ const TrendSpark = ({ points, color }: { points: number[]; color: string }) => {
   const line = pts.map((p) => p.join(",")).join(" ");
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="block h-[22px] w-[52px]">
       <polyline points={line} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
       <circle cx={pts[n - 1][0]} cy={pts[n - 1][1]} r={2.4} fill={color} />
     </svg>
@@ -67,26 +68,17 @@ const RankingDisplay = ({
 }) => {
   if (ranking !== undefined && ranking > 0) {
     return (
-      <span
-        style={{
-          fontSize: 12.5,
-          fontWeight: 800,
-          color: ranking === 1 ? "var(--qx-good-tx)" : "#475467",
-        }}
-      >
+      <span className={cn("text-[12.5px] font-extrabold", ranking === 1 ? "text-good-fg" : "text-gray-600")}>
         #{ranking} {ranking === 1 ? "🏆" : ""}
       </span>
     );
   }
-  if (!move) return <span className="qxv2-t-rank-mv flat">—</span>;
-  if (move === "up") return <span className="qxv2-t-rank-mv up">▲ sube</span>;
-  if (move === "down") return <span className="qxv2-t-rank-mv down">▼ baja</span>;
-  return <span className="qxv2-t-rank-mv flat">— estable</span>;
+  if (move === "up") return <span className="text-[11px] font-black text-good-fg">▲ sube</span>;
+  if (move === "down") return <span className="text-[11px] font-black text-bad-fg">▼ baja</span>;
+  return <span className="text-[11px] font-black text-gray-400">{move ? "— estable" : "—"}</span>;
 };
 
-const gridCols = {
-  gridTemplateColumns: "1.5fr .9fr .9fr .9fr .7fr .8fr auto",
-};
+const gridCols = "grid grid-cols-[1.5fr_0.9fr_0.9fr_0.9fr_0.7fr_0.8fr_auto] items-center gap-3";
 
 export const TeamTable: React.FC<TeamTableProps> = ({
   data = [],
@@ -94,19 +86,19 @@ export const TeamTable: React.FC<TeamTableProps> = ({
   highlightExecutiveId,
 }) => {
   return (
-    <div className="qxv2-card">
-      <div className="qxv2-card-h">
-        <h3>Desempeño del equipo</h3>
-        <span className="qxv2-h-sub">
-          {data.length} ejecutivo{data.length === 1 ? "" : "s"} · semana en curso · tendencia 6 sem.
-        </span>
-      </div>
-      <div className="qxv2-team-rows">
+    <DashCard>
+      <DashCardHeader
+        title="Desempeño del equipo"
+        sub={`${data.length} ejecutivo${data.length === 1 ? "" : "s"} · semana en curso · tendencia 6 sem.`}
+      />
+      <div className="px-5 pt-1.5 pb-2.5">
         {isLoading ? (
-          <div className="qxv2-h-sub" style={{ padding: "16px" }}>Cargando datos del equipo...</div>
+          <div className={`${subText} p-4`}>Cargando datos del equipo...</div>
         ) : (
           <>
-            <div className="qxv2-team-head v2" style={gridCols}>
+            <div
+              className={`${gridCols} pt-2.5 pb-2 text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-gray-400`}
+            >
               <span>Ejecutivo</span>
               <span>Avance</span>
               <span>Contact.</span>
@@ -122,30 +114,26 @@ export const TeamTable: React.FC<TeamTableProps> = ({
                   : MOCK_TEAM_TREND[row.executiveId]?.trend;
               const trendColor = trendPoints
                 ? toneColor(trendPoints[trendPoints.length - 1])
-                : "#98A2B3";
+                : "var(--color-gray-400)";
+              const highlighted = row.executiveId === highlightExecutiveId;
 
               return (
                 <div
-                  className="qxv2-team-row v2"
-                  style={{
-                    ...gridCols,
-                    background:
-                      row.executiveId === highlightExecutiveId
-                        ? "var(--qx-blue-soft)"
-                        : undefined,
-                    borderRadius:
-                      row.executiveId === highlightExecutiveId ? 10 : undefined,
-                  }}
+                  className={cn(
+                    gridCols,
+                    "border-t border-gray-100 py-[11px]",
+                    highlighted && "rounded-lg bg-primary-soft",
+                  )}
                   key={row.executiveId}
                 >
-                  <div className="qxv2-t-person">
-                    <span className="qxv2-t-av">{initials(row.executiveName)}</span>
-                    <span className="qxv2-t-name">{row.executiveName}</span>
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className={`${avatar} size-[30px] text-[11px]`}>{initials(row.executiveName)}</span>
+                    <span className="truncate text-[13px] font-extrabold">{row.executiveName}</span>
                   </div>
                   <Metric value={row.progressPercent} />
                   <Metric value={row.contactPercent} />
                   <Metric value={row.commitmentsFulfilledPercent} />
-                  <span className="qxv2-t-trend">
+                  <span className="flex items-center gap-1.5">
                     {trendPoints ? (
                       <TrendSpark points={trendPoints} color={trendColor} />
                     ) : (
@@ -156,7 +144,7 @@ export const TeamTable: React.FC<TeamTableProps> = ({
                     ranking={row.ranking}
                     move={MOCK_TEAM_TREND[row.executiveId]?.move}
                   />
-                  <span className="qxv2-t-caja">
+                  <span className="text-[13px] font-extrabold">
                     {formatNumber(row.cashGenerated)}
                   </span>
                 </div>
@@ -165,6 +153,6 @@ export const TeamTable: React.FC<TeamTableProps> = ({
           </>
         )}
       </div>
-    </div>
+    </DashCard>
   );
 };

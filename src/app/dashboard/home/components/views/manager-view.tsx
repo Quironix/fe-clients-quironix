@@ -1,3 +1,4 @@
+import { viewRoot } from "../dash-card";
 import { AgingBucketsCard } from "../aging-buckets-card";
 import { DebtorConcentrationCard } from "../debtor-concentration-card";
 import { ExecutiveSummaryCard } from "../executive-summary-card";
@@ -36,14 +37,14 @@ export const ManagerView: React.FC<ManagerViewProps> = ({
   level2Data,
 }) => {
   return (
-    <div className="qxv2" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div className="qxv2-hero-grid">
+    <div className={viewRoot}>
+      <div className="grid grid-cols-1 gap-4 min-[1181px]:grid-cols-[318px_minmax(0,1fr)]">
         <QuironscoreCard />
         <ExecutiveSummaryCard />
       </div>
       <HeroCashDeviationCard />
-      <div className="qxv2-v2-grid">
-        <div className="qxv2-v2-stack">
+      <div className="grid grid-cols-1 items-start gap-4 min-[1081px]:grid-cols-2">
+        <div className="flex min-w-0 flex-col gap-4">
           <AgingBucketsCard data={agingBuckets} isLoading={agingBucketsLoading} />
           <ProjectionCard data={dsoProjection} isLoading={dsoProjectionLoading} />
         </div>

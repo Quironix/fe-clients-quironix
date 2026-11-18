@@ -1,6 +1,7 @@
 import { formatNumber } from "@/lib/utils";
 import { DebtorConcentrationItem } from "../types";
 import { QuironAiButton } from "./ai/quiron-buttons";
+import { cardBody, DashCard, DashCardHeader, subText, track } from "./dash-card";
 
 interface DebtorConcentrationCardProps {
   data?: DebtorConcentrationItem[];
@@ -14,38 +15,47 @@ export const DebtorConcentrationCard: React.FC<
   const max = Math.max(1, ...data.map((d) => d.amount));
 
   return (
-    <div className="qxv2-card qxv2-v2-card">
-      <div className="qxv2-card-h">
-        <h3>Concentración de la mora</h3>
-        <span className="qxv2-h-sub">
-          {data.length} deudores · {formatNumber(total)}
-        </span>
+    <DashCard>
+      <DashCardHeader
+        title="Concentración de la mora"
+        sub={`${data.length} deudores · ${formatNumber(total)}`}
+      >
         <QuironAiButton
           topic="debtor-concentration"
           variant="ghost"
           size="sm"
-          style={{ marginLeft: "auto" }}
+          className="ml-auto"
         />
-      </div>
-      <div className="qxv2-body">
+      </DashCardHeader>
+      <div className={cardBody}>
         {isLoading ? (
-          <div className="qxv2-h-sub">Cargando...</div>
+          <div className={subText}>Cargando...</div>
         ) : (
           data.map((item, index) => (
-            <div className="qxv2-conc-row" key={item.debtorId}>
-              <span className="qxv2-c-rk">{index + 1}</span>
-              <span className="qxv2-c-nm">
-                {item.debtorName}
-                <small>{(item.share * 100).toFixed(1)}% de la mora</small>
+            <div
+              className="grid grid-cols-[20px_1fr_auto_auto] items-center gap-3 border-t border-gray-100 py-[11px] first:border-t-0"
+              key={item.debtorId}
+            >
+              <span className="grid size-5 place-items-center rounded-sm bg-primary-soft text-[11px] font-black text-primary">
+                {index + 1}
               </span>
-              <span className="qxv2-c-mo">{formatNumber(item.amount)}</span>
-              <span className="qxv2-conc-bar">
-                <span style={{ width: `${(item.amount / max) * 100}%` }} />
+              <span className="truncate text-[13px] font-extrabold">
+                {item.debtorName}
+                <small className="block text-[11px] font-bold text-gray-500">
+                  {(item.share * 100).toFixed(1)}% de la mora
+                </small>
+              </span>
+              <span className="text-right text-[13.5px] font-black">{formatNumber(item.amount)}</span>
+              <span className={`${track} col-[2/5] mt-0.5 h-[5px]`}>
+                <span
+                  className="block h-full rounded-full bg-primary-bright"
+                  style={{ width: `${(item.amount / max) * 100}%` }}
+                />
               </span>
             </div>
           ))
         )}
       </div>
-    </div>
+    </DashCard>
   );
 };
