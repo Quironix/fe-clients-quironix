@@ -202,7 +202,7 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
         title={tw("open")}
         aria-label={tw("open")}
       >
-        <QuironIcon tone="current" size={22} />
+        <QuironIcon tone="ember" size={22} animated />
         <span className="qxv2-fab-tx">Quirón</span>
         <span className="qxv2-fab-dot" />
       </button>
@@ -210,7 +210,7 @@ export const QuironWidget = ({ dashboardType, kpis }: QuironWidgetProps) => {
       <div className={`qxv2-quiron-widget${isOpen ? " open" : ""}`}>
         <div className="qxv2-qr-head">
           <div className="qxv2-q-tile">
-            <QuironIcon tone="current" size={22} className="text-white" />
+            <QuironIcon tone="ember" size={22} className="text-white" />
           </div>
           <div>
             <h3>Quirón</h3>
@@ -386,7 +386,7 @@ const QuironUserMessage: FC = () => {
 
 const QuironAvatar: FC = () => (
   <div className="qxv2-avatar ai">
-    <QuironIcon tone="current" size={14} />
+    <QuironIcon tone="ember" size={14} />
   </div>
 );
 

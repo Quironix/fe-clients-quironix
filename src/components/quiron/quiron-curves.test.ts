@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blendCurves, Curve, tracePath } from "./quiron-curves";
-import { QUIRON_ICON_PATH } from "./quiron-icon";
+import { QUIRON_ICON_PATH, quironIconPath } from "./quiron-icon";
 import { loaderPath } from "./quiron-loader";
 
 const pointsOf = (path: string) =>
@@ -36,13 +36,16 @@ describe("blendCurves", () => {
 });
 
 describe("QUIRON_ICON_PATH", () => {
-  it("is a closed loop inside the viewBox", () => {
-    const points = pointsOf(QUIRON_ICON_PATH);
-    expect(QUIRON_ICON_PATH.endsWith("Z")).toBe(true);
-    const [startX, startY] = points[0];
-    const [endX, endY] = points[points.length - 1];
-    expect(Math.hypot(endX - startX, endY - startY)).toBe(0);
-    expect(staysInViewBox(QUIRON_ICON_PATH)).toBe(true);
+  it("draws seven closed stripes inside the viewBox", () => {
+    expect(QUIRON_ICON_PATH.match(/M/g)).toHaveLength(7);
+    expect(QUIRON_ICON_PATH.match(/Z/g)).toHaveLength(7);
+    expect(staysInViewBox(QUIRON_ICON_PATH.replace(/Z/g, ""))).toBe(true);
+  });
+
+  it("stretches the tail on the beat and stays inside the viewBox", () => {
+    const beat = quironIconPath(1.8 * 0.71);
+    expect(beat).not.toBe(QUIRON_ICON_PATH);
+    expect(staysInViewBox(beat.replace(/Z/g, ""))).toBe(true);
   });
 });
 
