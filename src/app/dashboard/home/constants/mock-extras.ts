@@ -19,11 +19,11 @@ export interface CashDeviationSegmentDef {
 }
 
 export const HERO_CASH_DEVIATION_SEGMENTS: CashDeviationSegmentDef[] = [
-  { key: "litigio", label: "Litigio sin resolver", color: "#9333EA", pct: 35.3 },
-  { key: "compromiso", label: "Compromiso incumplido", color: "#DC2626", pct: 27.9 },
-  { key: "fase1", label: "Fase 1 vencida sin gestión", color: "#F27313", pct: 22.1 },
-  { key: "pago", label: "Pago sin compensar", color: "#3B82F6", pct: 13.2 },
-  { key: "otras", label: "Otras fases", color: "#94A3B8", pct: 1.5 },
+  { key: "litigio", label: "Litigio sin resolver", color: "var(--seg-litigio)", pct: 35.3 },
+  { key: "compromiso", label: "Compromiso incumplido", color: "var(--seg-compromiso)", pct: 27.9 },
+  { key: "fase1", label: "Fase 1 vencida sin gestión", color: "var(--seg-fase1)", pct: 22.1 },
+  { key: "pago", label: "Pago sin compensar", color: "var(--seg-pago)", pct: 13.2 },
+  { key: "otras", label: "Otras fases", color: "var(--seg-otras)", pct: 1.5 },
 ];
 
 export interface HeroCashDeviationPeriod {
