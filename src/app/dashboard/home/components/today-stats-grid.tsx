@@ -5,6 +5,7 @@ import {
   TaskProgressData,
   UpcomingCommitmentDay,
 } from "../types";
+import { DashCard, subText, Tone, TONE_TEXT } from "./dash-card";
 
 export interface TodayStatsGridProps {
   taskProgress?: TaskProgressData;
@@ -13,6 +14,20 @@ export interface TodayStatsGridProps {
   todayCash?: number;
   isLoading?: boolean;
 }
+
+const grid = "grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3.5";
+
+const StatTiles = ({ stats }: { stats: { label: string; value: string; tone: Tone; note: string }[] }) => (
+  <div className={grid}>
+    {stats.map((s) => (
+      <DashCard className="px-4 py-3.5" key={s.label}>
+        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-gray-400">{s.label}</div>
+        <div className={`mt-1 text-[24px] font-black tracking-[-0.01em] ${TONE_TEXT[s.tone]}`}>{s.value}</div>
+        <div className="mt-0.5 text-[11.5px] font-bold text-gray-500">{s.note}</div>
+      </DashCard>
+    ))}
+  </div>
+);
 
 export const TodayStatsGrid: React.FC<TodayStatsGridProps> = ({
   taskProgress,
@@ -25,10 +40,8 @@ export const TodayStatsGrid: React.FC<TodayStatsGridProps> = ({
 
   if (isLoading && !hasRealData) {
     return (
-      <div className="qxv2-today-grid">
-        <div className="qxv2-h-sub" style={{ padding: "16px" }}>
-          Cargando estadísticas de hoy...
-        </div>
+      <div className={grid}>
+        <div className={`${subText} p-4`}>Cargando estadísticas de hoy...</div>
       </div>
     );
   }
@@ -52,11 +65,11 @@ export const TodayStatsGrid: React.FC<TodayStatsGridProps> = ({
         ? `$${(todayCash / 1000000).toFixed(1)}M`
         : "—";
 
-    const stats = [
+    const stats: { label: string; value: string; tone: Tone; note: string }[] = [
       {
         label: "Tareas pendientes hoy",
         value: pendingTasks !== undefined ? `${pendingTasks}` : "—",
-        tone: pendingTasks !== undefined && pendingTasks <= 5 ? "qxv2-td-good" : "qxv2-td-warn",
+        tone: pendingTasks !== undefined && pendingTasks <= 5 ? "good" : "warn",
         note:
           completedTasks !== undefined && totalTasks !== undefined
             ? `${completedTasks} de ${totalTasks} completadas`
@@ -65,45 +78,25 @@ export const TodayStatsGrid: React.FC<TodayStatsGridProps> = ({
       {
         label: "Compromisos que vencen hoy",
         value: todayCommitmentsCount !== undefined ? `${todayCommitmentsCount}` : "—",
-        tone: "qxv2-td-warn",
+        tone: "warn",
         note: "Revisar transferencias",
       },
       {
         label: "Llamadas efectivas hoy",
         value: effectiveCalls !== undefined ? `${effectiveCalls}` : "—",
-        tone: effectiveCalls !== undefined && effectiveCalls >= 15 ? "qxv2-td-good" : "qxv2-td-warn",
+        tone: effectiveCalls !== undefined && effectiveCalls >= 15 ? "good" : "warn",
         note: totalCalls !== undefined ? `de ${totalCalls} meta diaria` : "Sin dato",
       },
       {
         label: "Caja recuperada hoy",
         value: formattedCash,
-        tone: "qxv2-td-good",
+        tone: "good",
         note: "Meta diaria $2,0M",
       },
     ];
 
-    return (
-      <div className="qxv2-today-grid">
-        {stats.map((s) => (
-          <div className={`qxv2-today ${s.tone}`} key={s.label}>
-            <div className="qxv2-td-label">{s.label}</div>
-            <div className="qxv2-td-val">{s.value}</div>
-            <div className="qxv2-td-sub">{s.note}</div>
-          </div>
-        ))}
-      </div>
-    );
+    return <StatTiles stats={stats} />;
   }
 
-  return (
-    <div className="qxv2-today-grid">
-      {MOCK_TODAY_STATS.map((s) => (
-        <div className={`qxv2-today ${s.tone}`} key={s.label}>
-          <div className="qxv2-td-label">{s.label}</div>
-          <div className="qxv2-td-val">{s.value}</div>
-          <div className="qxv2-td-sub">{s.note}</div>
-        </div>
-      ))}
-    </div>
-  );
+  return <StatTiles stats={MOCK_TODAY_STATS} />;
 };

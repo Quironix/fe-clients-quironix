@@ -1,5 +1,6 @@
 import { KPISummaryHeader } from "../../../overview/components/kpi-summary-header";
 import { Indicators, KPI } from "../../../overview/services/types";
+import { kpiGrid, viewRoot } from "../dash-card";
 import { KpiCard } from "../kpi-card";
 
 interface GenericViewProps {
@@ -12,9 +13,9 @@ export const GenericView: React.FC<GenericViewProps> = ({
   indicators,
 }) => {
   return (
-    <div className="qxv2" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div className={viewRoot}>
       <KPISummaryHeader indicators={indicators as Indicators} />
-      <div className="qxv2-kpi-grid">
+      <div className={kpiGrid}>
         {kpis.map((kpi) => (
           <KpiCard key={kpi.id} kpi={kpi} />
         ))}

@@ -1,5 +1,6 @@
 "use client";
 import { QuironIcon } from "@/components/quiron/quiron-icon";
+import { cn } from "@/lib/utils";
 import { CSSProperties } from "react";
 import { useQuiron } from "./quiron-context";
 
@@ -25,19 +26,17 @@ export const QuironAiButton = ({
   const { enabled, openWithTopic } = useQuiron();
   if (!enabled) return null;
 
-  const classes = [
-    "qxv2-btn-ai",
-    variant === "ghost" ? "ghost" : "",
-    size === "sm" ? "sm" : "",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
   return (
     <button
       type="button"
-      className={classes}
+      className={cn(
+        "inline-flex shrink-0 cursor-pointer items-center gap-[7px] rounded-md font-extrabold transition",
+        variant === "ghost"
+          ? "border-[1.5px] border-primary-bright/30 text-primary-bright hover:bg-primary-soft"
+          : "bg-linear-135 from-primary-bright to-primary text-white shadow-md shadow-primary/25 hover:-translate-y-px hover:shadow-lg hover:shadow-primary/40",
+        size === "sm" ? "rounded-[8px] px-3 py-1.5 text-[11.5px]" : "px-[15px] py-[9px] text-[13px]",
+        className,
+      )}
       style={style}
       onClick={() => openWithTopic(topic)}
     >
@@ -57,7 +56,7 @@ export const QuironMiniButton = ({ topic }: { topic: string }) => {
   return (
     <button
       type="button"
-      className="qxv2-k-ai"
+      className="absolute top-[11px] right-[11px] grid size-6 cursor-pointer place-items-center rounded-[7px] bg-primary-soft text-primary-bright opacity-0 transition group-hover:opacity-100 hover:bg-primary-bright/20"
       title="Analizar este indicador con Quirón"
       onClick={(e) => {
         e.stopPropagation();
