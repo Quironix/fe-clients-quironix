@@ -1,17 +1,12 @@
 import { MockKpiDef } from "../constants/mock-kpis";
 import { QuironMiniButton } from "./ai/quiron-buttons";
-
-const STATUS_HEX: Record<string, string> = {
-  good: "#1FA35C",
-  warn: "#F59E0B",
-  bad: "#EF4444",
-};
+import { badge, kpi as kc, kpiGrid, pill, TONE_BADGE, TONE_COLOR } from "./dash-card";
 
 const ValRow = ({ k }: { k: MockKpiDef }) => (
-  <div className="qxv2-k-val-row">
-    <span className="qxv2-k-val">{k.value}</span>
-    <span className="qxv2-k-unit">{k.unit}</span>
-    <span className={`qxv2-badge ${k.badge.tone}`}>{k.badge.tx}</span>
+  <div className={kc.valRow}>
+    <span className={kc.val}>{k.value}</span>
+    <span className={kc.unit}>{k.unit}</span>
+    <span className={`${badge} ${TONE_BADGE[k.badge.tone]}`}>{k.badge.tx}</span>
   </div>
 );
 
@@ -20,12 +15,12 @@ const BodyFill = ({ k, c }: { k: MockKpiDef; c: string }) => {
   return (
     <>
       <ValRow k={k} />
-      <div className="qxv2-k-meta">{k.meta}</div>
-      <div className="qxv2-fill-wrap">
-        <div className="qxv2-fill-track">
-          <div className="qxv2-fill-bar" style={{ width: `${pct}%`, background: c }} />
+      <div className={kc.meta}>{k.meta}</div>
+      <div className="mt-1.5">
+        <div className={kc.fillTrack}>
+          <div className={kc.fillBar} style={{ width: `${pct}%`, background: c }} />
         </div>
-        <span className="qxv2-fill-cap" style={{ color: c }}>
+        <span className={kc.fillCap} style={{ color: c }}>
           {(k.pct ?? 0).toFixed(2).replace(".", ",")}% de la meta
         </span>
       </div>
@@ -53,14 +48,14 @@ const BodyTrend = ({ k, c }: { k: MockKpiDef; c: string }) => {
   return (
     <>
       <ValRow k={k} />
-      <div className="qxv2-trend-box">
-        <svg className="qxv2-trend-svg" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-          <line x1={0} y1={my} x2={w} y2={my} stroke="#98A2B3" strokeWidth={1} strokeDasharray="3 3" />
+      <div className={kc.trendBox}>
+        <svg className={kc.trendSvg} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+          <line x1={0} y1={my} x2={w} y2={my} stroke="var(--color-gray-400)" strokeWidth={1} strokeDasharray="3 3" />
           <polygon points={`0,${h} ${line} ${w},${h}`} fill={c} opacity={0.1} />
           <polyline points={line} fill="none" stroke={c} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
           {pts.length > 0 && <circle cx={pts[n - 1][0]} cy={pts[n - 1][1]} r={3} fill={c} />}
         </svg>
-        <span className="qxv2-trend-lbl" style={{ top: `${(my / h) * 100}%` }}>
+        <span className={kc.trendLbl} style={{ top: `${(my / h) * 100}%` }}>
           {k.metaLabel}
         </span>
       </div>
@@ -84,9 +79,9 @@ const BodyGauge = ({ k, c }: { k: MockKpiDef; c: string }) => {
 
   return (
     <>
-      <div className="qxv2-gauge-wrap">
-        <svg viewBox="0 0 112 62" className="qxv2-gauge-svg">
-          <path d="M10 52 A46 46 0 0 1 102 52" fill="none" stroke="#EFF1F7" strokeWidth={9} strokeLinecap="round" />
+      <div className="relative mt-2 flex justify-center">
+        <svg viewBox="0 0 112 62" className="h-auto w-[150px] max-w-full">
+          <path d="M10 52 A46 46 0 0 1 102 52" fill="none" stroke="var(--color-gray-100)" strokeWidth={9} strokeLinecap="round" />
           <path
             d="M10 52 A46 46 0 0 1 102 52"
             fill="none"
@@ -96,16 +91,20 @@ const BodyGauge = ({ k, c }: { k: MockKpiDef; c: string }) => {
             strokeDasharray={C}
             strokeDashoffset={off}
           />
-          <line x1={tx1} y1={ty1} x2={tx2} y2={ty2} stroke="var(--qx-ink)" strokeWidth={2} />
+          <line x1={tx1} y1={ty1} x2={tx2} y2={ty2} stroke="var(--color-gray-900)" strokeWidth={2} />
         </svg>
-        <div className="qxv2-gauge-val">
-          <b style={{ color: c }}>{k.value}</b>
-          <span>{k.unit}</span>
+        <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-center leading-none">
+          <b className="text-[26px] font-black tracking-[-0.02em]" style={{ color: c }}>
+            {k.value}
+          </b>
+          <span className="ml-0.5 text-[11px] font-extrabold text-gray-400">{k.unit}</span>
         </div>
       </div>
-      <div className="qxv2-gauge-foot">
-        <span className={`qxv2-badge ${k.badge.tone}`}>{k.badge.tx}</span>
-        <span className="qxv2-gauge-meta">▲ {k.meta?.replace("Meta: ", "Meta ")}</span>
+      <div className="mt-1.5 flex items-center gap-2">
+        <span className={`${badge} ${TONE_BADGE[k.badge.tone]}`}>{k.badge.tx}</span>
+        <span className="ml-auto text-[11px] font-extrabold text-gray-500">
+          ▲ {k.meta?.replace("Meta: ", "Meta ")}
+        </span>
       </div>
     </>
   );
@@ -120,20 +119,20 @@ const BodyShare = ({ k, c }: { k: MockKpiDef; c: string }) => {
   return (
     <>
       <ValRow k={k} />
-      <div className="qxv2-share-cap">
+      <div className="mt-1.5 text-[11.5px] font-bold text-gray-500">
         {k.value}
         {k.unit === "%" ? "%" : ""} {k.shareLabel}
       </div>
-      <div className="qxv2-share-track">
-        <div className="qxv2-share-fill" style={{ width: `${val}%`, background: c }} />
-        <div className="qxv2-share-mark" style={{ left: `${target}%` }} />
+      <div className="relative mt-1.5 h-3.5 overflow-hidden rounded-sm bg-gray-100">
+        <div className="absolute inset-y-0 left-0 rounded-l-sm" style={{ width: `${val}%`, background: c }} />
+        <div className="absolute -top-0.5 -bottom-0.5 z-[2] w-0.5 bg-gray-900" style={{ left: `${target}%` }} />
       </div>
-      <div className="qxv2-share-scale">
-        <span>0%</span>
-        <span className="qxv2-share-tlbl" style={{ left: `${labelPos}%` }}>
+      <div className="relative mt-[3px] h-3.5 text-[9px] font-extrabold text-gray-400">
+        <span className="absolute left-0">0%</span>
+        <span className="absolute -translate-x-1/2 whitespace-nowrap text-gray-900" style={{ left: `${labelPos}%` }}>
           {k.targetLabel}
         </span>
-        <span>100%</span>
+        <span className="absolute right-0">100%</span>
       </div>
     </>
   );
@@ -145,17 +144,17 @@ const BodyTally = ({ k, c }: { k: MockKpiDef; c: string }) => {
   return (
     <>
       <ValRow k={k} />
-      <div className="qxv2-k-meta">{k.meta}</div>
-      <div className="qxv2-tally">
+      <div className={kc.meta}>{k.meta}</div>
+      <div className="mt-2 flex flex-wrap gap-[3px]">
         {Array.from({ length: total }).map((_, i) => (
           <span
             key={i}
-            className="qxv2-pip"
+            className="size-[11px] rounded-[3px] bg-gray-100"
             style={i < done ? { background: c } : undefined}
           />
         ))}
       </div>
-      <span className="qxv2-fill-cap" style={{ color: c }}>
+      <span className={kc.fillCap} style={{ color: c }}>
         {done} de {total} logradas hoy
       </span>
     </>
@@ -171,42 +170,28 @@ const BODY = {
 };
 
 export const KpiCardMock: React.FC<{ k: MockKpiDef }> = ({ k }) => {
-  const c = STATUS_HEX[k.status];
+  const c = TONE_COLOR[k.status];
   const Body = BODY[k.viz];
 
   return (
-    <article className="qxv2-kpi">
-      <div className="qxv2-k-head">
-        <h4>{k.name}</h4>
-        {k._isMock ? (
-          <span
-            className="qxv2-h-sub"
-            style={{
-              fontSize: 10.5,
-              background: "var(--qx-blue-soft)",
-              color: "var(--qx-blue-bright)",
-              fontWeight: 800,
-              padding: "3px 9px",
-              borderRadius: 999,
-            }}
-          >
-            Ilustrativo
-          </span>
-        ) : null}
-        <span className="qxv2-k-dot" style={{ background: c }} />
+    <article className={kc.card}>
+      <div className={kc.head}>
+        <h4 className={kc.title}>{k.name}</h4>
+        {k._isMock ? <span className={pill}>Ilustrativo</span> : null}
+        <span className={kc.dot} style={{ background: c }} />
       </div>
       <QuironMiniButton topic={`kpi::${k.name}`} />
-      <div className="qxv2-k-q">{k.q}</div>
+      <div className={kc.q}>{k.q}</div>
       <Body k={k} c={c} />
-      <div className="qxv2-k-foot">
-        <span className="qxv2-k-tag">{k.tag}</span>
+      <div className={kc.foot}>
+        <span className={kc.tag}>{k.tag}</span>
       </div>
     </article>
   );
 };
 
 export const KpiGridMock: React.FC<{ items: MockKpiDef[] }> = ({ items }) => (
-  <div className="qxv2-kpi-grid">
+  <div className={kpiGrid}>
     {items.map((k) => (
       <KpiCardMock key={k.name} k={k} />
     ))}

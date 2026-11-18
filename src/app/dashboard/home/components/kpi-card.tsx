@@ -6,6 +6,7 @@ import {
   getProgressPercentage,
 } from "../../overview/utils/kpi-utils";
 import { KPI } from "../../overview/services/types";
+import { badge, kpi as k, TONE_BADGE } from "./dash-card";
 
 interface KpiCardProps {
   kpi: KPI;
@@ -52,26 +53,18 @@ const TrendSpark = ({
   const my = y(metaVal);
 
   return (
-    <div className="qxv2-trend-box">
-      <svg
-        className="qxv2-trend-svg"
-        viewBox={`0 0 ${w} ${h}`}
-        preserveAspectRatio="none"
-      >
+    <div className={k.trendBox}>
+      <svg className={k.trendSvg} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
         <line
           x1={0}
           y1={my}
           x2={w}
           y2={my}
-          stroke="#98A2B3"
+          stroke="var(--color-gray-400)"
           strokeWidth={1}
           strokeDasharray="3 3"
         />
-        <polygon
-          points={`0,${h} ${line} ${w},${h}`}
-          fill={color}
-          opacity={0.1}
-        />
+        <polygon points={`0,${h} ${line} ${w},${h}`} fill={color} opacity={0.1} />
         <polyline
           points={line}
           fill="none"
@@ -82,10 +75,7 @@ const TrendSpark = ({
         />
         <circle cx={pts[n - 1][0]} cy={pts[n - 1][1]} r={3} fill={color} />
       </svg>
-      <span
-        className="qxv2-trend-lbl"
-        style={{ top: `${(my / h) * 100}%` }}
-      >
+      <span className={k.trendLbl} style={{ top: `${(my / h) * 100}%` }}>
         Meta {metaVal}
       </span>
     </div>
@@ -112,29 +102,29 @@ export const KpiCard: React.FC<KpiCardProps> = ({ kpi }) => {
   const badgeText = trend ? `${badgeArrow} ${trend.value}%` : status.label;
 
   return (
-    <article className="qxv2-kpi">
-      <div className="qxv2-k-head">
-        <h4>{kpi.name}</h4>
-        <span className="qxv2-k-dot" style={{ background: color }} />
+    <article className={k.card}>
+      <div className={k.head}>
+        <h4 className={k.title}>{kpi.name}</h4>
+        <span className={k.dot} style={{ background: color }} />
       </div>
       {kpi.definition && (
-        <div className="qxv2-k-q" title={kpi.definition}>
+        <div className={k.q} title={kpi.definition}>
           {shortenDefinition(kpi.definition)}
         </div>
       )}
-      <div className="qxv2-k-val-row">
-        <span className="qxv2-k-val">{kpi.value}</span>
-        <span className="qxv2-k-unit">{kpi.unit}</span>
-        <span className={`qxv2-badge ${badgeTone}`}>{badgeText}</span>
+      <div className={k.valRow}>
+        <span className={k.val}>{kpi.value}</span>
+        <span className={k.unit}>{kpi.unit}</span>
+        <span className={`${badge} ${TONE_BADGE[badgeTone]}`}>{badgeText}</span>
       </div>
       {history.length >= 2 ? (
         <TrendSpark points={history} metaVal={kpi.target} color={color} />
       ) : (
-        <div className="qxv2-fill-wrap">
-          <div className="qxv2-k-meta">Meta: {kpi.target}{kpi.unit}</div>
-          <div className="qxv2-fill-track">
+        <div className="mt-1.5">
+          <div className={k.meta}>Meta: {kpi.target}{kpi.unit}</div>
+          <div className={k.fillTrack}>
             <div
-              className="qxv2-fill-bar"
+              className={k.fillBar}
               style={{
                 width: `${Math.min(progressPercentage, 100)}%`,
                 background: color,
@@ -143,8 +133,8 @@ export const KpiCard: React.FC<KpiCardProps> = ({ kpi }) => {
           </div>
         </div>
       )}
-      <div className="qxv2-k-foot">
-        <span className="qxv2-k-tag">{kpi.type}</span>
+      <div className={k.foot}>
+        <span className={k.tag}>{kpi.type}</span>
       </div>
     </article>
   );
