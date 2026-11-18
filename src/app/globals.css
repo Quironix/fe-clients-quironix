@@ -98,6 +98,9 @@
   --quiron-flow-3: #406df6;
   --quiron-flow-4: #2f9bff;
   --quiron-flow-5: #22d3c8;
+  --quiron-mark-1: #0b2a8a;
+  --quiron-mark-2: #1249c7;
+  --quiron-mark-3: #3d7bff;
   --primary-bright: #406df6;
   --primary-ink: #1b2e7a;
   --primary-soft: #ebf0fe;
@@ -159,6 +162,9 @@
   --quiron-flow-3: #2f9bff;
   --quiron-flow-4: #22d3c8;
   --quiron-flow-5: #9ff3e6;
+  --quiron-mark-1: #1249c7;
+  --quiron-mark-2: #3d7bff;
+  --quiron-mark-3: #8fb3ff;
 }
 
 @layer base {

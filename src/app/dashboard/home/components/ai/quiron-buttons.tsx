@@ -40,7 +40,10 @@ export const QuironAiButton = ({
       style={style}
       onClick={() => openWithTopic(topic)}
     >
-      <QuironIcon tone="current" size={size === "sm" ? 13 : 15} />
+      <QuironIcon
+        tone={variant === "ghost" ? "current" : "ember"}
+        size={size === "sm" ? 13 : 15}
+      />
       {label}
     </button>
   );
