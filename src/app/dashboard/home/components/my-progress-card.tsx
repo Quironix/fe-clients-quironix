@@ -1,8 +1,9 @@
 import { MOCK_MY_PROGRESS } from "../constants/mock-extras";
 import { GoalMetric } from "../types";
+import { cardBody, DashCard, DashCardHeader, TONE_COLOR } from "./dash-card";
 
 const toneColor = (pct: number, mark: number) =>
-  pct >= mark ? "#1FA35C" : pct >= mark - 12 ? "#F59E0B" : "#EF4444";
+  TONE_COLOR[pct >= mark ? "good" : pct >= mark - 12 ? "warn" : "bad"];
 
 const formatAmount = (amount: number) =>
   Math.abs(amount) >= 1000000
@@ -16,6 +17,36 @@ export interface MyProgressCardProps {
   isLoading?: boolean;
 }
 
+const ProgressRow = ({
+  label,
+  value,
+  pct,
+  color,
+  mark,
+  note,
+}: {
+  label: string;
+  value: string;
+  pct: number;
+  color: string;
+  mark?: number;
+  note: string;
+}) => (
+  <div className="mb-[15px] flex flex-col gap-[5px] last:mb-0">
+    <div className="flex items-baseline justify-between">
+      <span className="text-[12.5px] font-extrabold text-gray-600">{label}</span>
+      <span className="text-[12.5px] font-black">{value}</span>
+    </div>
+    <div className="relative h-2.5 overflow-hidden rounded-full bg-gray-100">
+      <span className="block h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+      {mark !== undefined && (
+        <span className="absolute -top-[3px] -bottom-[3px] w-0.5 bg-gray-900" style={{ left: `${mark}%` }} />
+      )}
+    </div>
+    <span className="text-[11px] font-bold text-gray-400">{note}</span>
+  </div>
+);
+
 export const MyProgressCard: React.FC<MyProgressCardProps> = ({
   dailyGoal,
   weeklyGoal,
@@ -26,13 +57,10 @@ export const MyProgressCard: React.FC<MyProgressCardProps> = ({
 
   if (isLoading && !hasRealData) {
     return (
-      <div className="qxv2-card qxv2-v2-card">
-        <div className="qxv2-card-h">
-          <h3>Mi progreso</h3>
-          <span className="qxv2-h-sub">Cargando…</span>
-        </div>
-        <div className="qxv2-body" />
-      </div>
+      <DashCard>
+        <DashCardHeader title="Mi progreso" sub="Cargando…" />
+        <div className={cardBody} />
+      </DashCard>
     );
   }
 
@@ -44,65 +72,47 @@ export const MyProgressCard: React.FC<MyProgressCardProps> = ({
     ];
 
     return (
-      <div className="qxv2-card qxv2-v2-card">
-        <div className="qxv2-card-h">
-          <h3>Mi progreso</h3>
-          <span className="qxv2-h-sub">Hoy · semana · mes</span>
-        </div>
-        <div className="qxv2-body">
+      <DashCard>
+        <DashCardHeader title="Mi progreso" sub="Hoy · semana · mes" />
+        <div className={cardBody}>
           {rows.map((r) => {
             const pct = r.goal ? Math.min(100, Math.round(r.goal.percentage)) : 0;
-            const valueLabel = r.goal
-              ? `${formatAmount(r.goal.current_amount)} / ${formatAmount(r.goal.target_amount)}`
-              : "—";
-            const color = toneColor(pct, 70);
             return (
-              <div className="qxv2-prog-row" key={r.label}>
-                <div className="qxv2-prog-top">
-                  <span className="qxv2-pr-nm">{r.label}</span>
-                  <span className="qxv2-pr-vl">{valueLabel}</span>
-                </div>
-                <div className="qxv2-prog-track">
-                  <span
-                    className="qxv2-pr-fill"
-                    style={{ width: `${pct}%`, background: color }}
-                  />
-                </div>
-                <span className="qxv2-prog-sub">
-                  {r.goal ? `${pct}% de la meta` : "Sin dato"}
-                </span>
-              </div>
+              <ProgressRow
+                key={r.label}
+                label={r.label}
+                value={
+                  r.goal
+                    ? `${formatAmount(r.goal.current_amount)} / ${formatAmount(r.goal.target_amount)}`
+                    : "—"
+                }
+                pct={pct}
+                color={toneColor(pct, 70)}
+                note={r.goal ? `${pct}% de la meta` : "Sin dato"}
+              />
             );
           })}
         </div>
-      </div>
+      </DashCard>
     );
   }
 
   return (
-    <div className="qxv2-card qxv2-v2-card">
-      <div className="qxv2-card-h">
-        <h3>Mi progreso</h3>
-        <span className="qxv2-h-sub">Hoy · semana · mes · datos ilustrativos</span>
+    <DashCard>
+      <DashCardHeader title="Mi progreso" sub="Hoy · semana · mes · datos ilustrativos" />
+      <div className={cardBody}>
+        {MOCK_MY_PROGRESS.map((p) => (
+          <ProgressRow
+            key={p.label}
+            label={p.label}
+            value={p.valueLabel}
+            pct={p.pct}
+            color={toneColor(p.pct, p.mark)}
+            mark={p.mark}
+            note={p.note}
+          />
+        ))}
       </div>
-      <div className="qxv2-body">
-        {MOCK_MY_PROGRESS.map((p) => {
-          const color = toneColor(p.pct, p.mark);
-          return (
-            <div className="qxv2-prog-row" key={p.label}>
-              <div className="qxv2-prog-top">
-                <span className="qxv2-pr-nm">{p.label}</span>
-                <span className="qxv2-pr-vl">{p.valueLabel}</span>
-              </div>
-              <div className="qxv2-prog-track">
-                <span className="qxv2-pr-fill" style={{ width: `${p.pct}%`, background: color }} />
-                <span className="qxv2-pr-mark" style={{ left: `${p.mark}%` }} />
-              </div>
-              <span className="qxv2-prog-sub">{p.note}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    </DashCard>
   );
 };

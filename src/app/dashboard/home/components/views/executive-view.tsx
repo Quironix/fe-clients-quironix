@@ -1,3 +1,4 @@
+import { viewRoot } from "../dash-card";
 import { KpiGridMock } from "../kpi-card-mock";
 import { MyProgressCard } from "../my-progress-card";
 import { MyRankingCard } from "../my-ranking-card";
@@ -55,7 +56,7 @@ export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
   myProgressLoading,
 }) => {
   return (
-    <div className="qxv2" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div className={viewRoot}>
       <TodayStatsGrid
         taskProgress={taskProgress}
         contactEffectiveness={contactEffectiveness}
@@ -63,12 +64,12 @@ export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
         isLoading={todayStatsLoading}
       />
       <TodayPriorities data={priorities} isLoading={prioritiesLoading} />
-      <div className="qxv2-fwd-grid">
+      <div className="grid grid-cols-1 items-start gap-4 min-[1081px]:grid-cols-[1.1fr_0.9fr]">
         <PipelineCard
           data={upcomingCommitments}
           isLoading={upcomingCommitmentsLoading}
         />
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="flex flex-col gap-4">
           <MyProgressCard
             dailyGoal={myProgress?.daily_goal}
             weeklyGoal={myProgress?.weekly_goal}

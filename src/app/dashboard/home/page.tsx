@@ -1,5 +1,4 @@
 "use client";
-import "./dashboard-v2.css";
 import Language from "@/components/ui/language";
 import { useProfileContext } from "@/context/ProfileContext";
 import { LayoutGrid } from "lucide-react";
