@@ -162,7 +162,18 @@ const Content = ({ params }: PageProps) => {
                   (contact.channel as "email" | "phone" | "whatsapp") ||
                   "email",
               }))}
-            callSchedule={dataDebtor.attention_days_hours || t("contacts.notDefined")}
+            callSchedule={
+              (Array.isArray(dataDebtor.attention_days_hours)
+                ? dataDebtor.attention_days_hours
+                    .filter((d: any) => d?.day)
+                    .map((d: any) =>
+                      [d.day, [d.hour_start, d.hour_end].filter(Boolean).join(" - ")]
+                        .filter(Boolean)
+                        .join(" ")
+                    )
+                    .join(", ")
+                : dataDebtor.attention_days_hours) || t("contacts.notDefined")
+            }
             clientId={profile?.client?.id ?? ""}
             accessToken={session?.token ?? ""}
             onContactChange={setActiveContact}
