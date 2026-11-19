@@ -17,9 +17,15 @@ export interface Debtor {
   category: string;
   economic_activities: string[];
   sales_person: string;
-  attention_days_hours: string;
+  attention_days_hours: AttentionDayHours[] | null;
   executive_id?: string | null;
   executive?: Executive | null;
+}
+
+export interface AttentionDayHours {
+  day: string;
+  hour_start?: string;
+  hour_end?: string;
 }
 
 interface CompanyDebtor {
