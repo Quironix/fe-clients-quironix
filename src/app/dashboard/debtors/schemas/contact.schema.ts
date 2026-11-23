@@ -4,9 +4,11 @@ const PHONE_CHANNELS = ["phone", "whatsapp", "sms"] as const;
 
 export const contactSchema = z
   .object({
+    id: z.string().optional(),
+    contact_group_id: z.string().nullable().optional(),
     name: z.string().min(1),
-    role: z.string().min(1),
-    function: z.string().min(1),
+    role: z.string().optional().default(""),
+    function: z.string().optional().default(""),
     email: z.string().email().optional().or(z.literal("")),
     phone: z.string().optional(),
     channel: z.string().min(1),

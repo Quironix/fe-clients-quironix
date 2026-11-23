@@ -28,6 +28,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PaymentCalendarSection } from "@/app/dashboard/debtors/components/technical-file/payment-calendar-section";
+import type { PaymentCalendar } from "@/app/dashboard/debtors/types/technical-file";
 import { useProfileContext } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,6 +61,13 @@ const debtorFormSchema = z.object({
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               message: "Campo requerido",
+              path: ["hour_end"],
+            });
+          }
+          if (val.hour_start && val.hour_end && val.hour_start >= val.hour_end) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "La hora de inicio debe ser anterior a la hora de fin",
               path: ["hour_end"],
             });
           }
@@ -107,6 +116,8 @@ const AttentionStep: React.FC<StepProps> = ({
   const { session } = useProfileContext();
 
   const timeOptions = generateTimeOptions();
+  const [paymentCalendar, setPaymentCalendar] =
+    useState<PaymentCalendar | null>(dataDebtor?.payment_calendar ?? null);
 
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema) as any,
@@ -123,18 +134,20 @@ const AttentionStep: React.FC<StepProps> = ({
 
     //elimina los elementos undefined de data.attention_days_hours
     data.attention_days_hours = data.attention_days_hours.filter(
-      (item: any) => item.day !== undefined
+      (item: any) => !!item?.day
     );
 
     try {
-      if (data.attention_days_hours.length > 0 && dataDebtor?.id) {
+      if (dataDebtor?.id) {
         setDataDebtor({
           ...dataDebtor,
           attention_days_hours: data.attention_days_hours,
+          payment_calendar: paymentCalendar,
         });
         await updateDebtor(session?.token, profile?.client?.id, {
           id: dataDebtor?.id,
           attention_days_hours: data.attention_days_hours,
+          payment_calendar: paymentCalendar,
         });
       }
       if (onNext) {
@@ -394,6 +407,12 @@ const AttentionStep: React.FC<StepProps> = ({
                 </div>
               </div>
             </div>
+
+            <PaymentCalendarSection
+              debtorId={dataDebtor?.id}
+              value={paymentCalendar}
+              onChange={setPaymentCalendar}
+            />
 
             <div className="flex justify-end gap-2">
               {submitAttempted &&

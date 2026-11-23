@@ -1,3 +1,5 @@
+import type { AcceptedChannel, PaymentCalendar, Salesperson } from "./types/technical-file";
+
 export interface Debtor {
   id?: string;
   name: string;
@@ -5,6 +7,10 @@ export interface Debtor {
   debtorCompanies?: DebtorCompany[];
   channel: string | null;
   communication_channel: string | null;
+  accepted_channels?: AcceptedChannel[];
+  payment_calendar?: PaymentCalendar | null;
+  salesperson_id?: string | null;
+  salesperson?: Salesperson | null;
   debtor_code: string;
   addresses: Address[];
   dni: Dni;
@@ -34,6 +40,8 @@ interface CompanyDebtor {
 }
 
 export interface Contact {
+  id?: string;
+  contact_group_id?: string | null;
   name: string;
   role: string;
   email?: string;

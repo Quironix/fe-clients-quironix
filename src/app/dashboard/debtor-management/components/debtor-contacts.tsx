@@ -55,7 +55,8 @@ export const DebtorContacts = ({
 
   // El "Contacto principal" del panel es el preferente (default/preferred);
   // si ninguno lo es, se mantiene el orden original. Sin badge.
-  const preferredFirst = (list: Contact[] = []): Contact[] => {
+  const preferredFirst = (all: Contact[] = []): Contact[] => {
+    const list = all.filter((c) => c.enabled !== false);
     const idx = list.findIndex(
       (c: any) => c?.default === true || c?.preferred === true,
     );
@@ -221,7 +222,9 @@ export const DebtorContacts = ({
                       <h4 className="font-semibold text-gray-900">
                         {contact.name}
                       </h4>
-                      <p className="text-sm text-gray-600">{contact.role}</p>
+                      <p className="text-sm text-gray-600">
+                        {[contact.role, contact.function].filter(Boolean).join(" · ")}
+                      </p>
                     </div>
                   </div>
                   <div className="space-y-2">

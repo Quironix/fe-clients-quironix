@@ -1,14 +1,14 @@
 "use client";
 
+import { AcceptedChannelsField } from "@/app/dashboard/debtors/components/technical-file/accepted-channels-field";
+import { HabitualPaymentMethod } from "@/app/dashboard/debtors/components/technical-file/habitual-payment-method";
+import { SalespersonField } from "@/app/dashboard/debtors/components/technical-file/salesperson-field";
 import { useCompaniesStore } from "@/app/dashboard/companies/store";
 import CountriesSelectFormItem from "@/app/dashboard/components/countries-select-form-item";
-import PaymentMethodSelectFormItem from "@/app/dashboard/components/payment-method-select-form-item";
 import SelectClient from "@/app/dashboard/components/select-client";
 import {
   categories,
-  COMMUNICATION_CHANNEL,
   CREDIT_STATUS,
-  DEBTOR_PAYMENT_METHODS,
   PAYMENT_TERMS,
   PREFERRED_CHANNELS,
   RISK_CLASSIFICATION,
@@ -93,33 +93,10 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
       .optional()
       .nullable()
       .default(null),
-    channel_communication: z
-      .union([
-        z.enum(
-          COMMUNICATION_CHANNEL.map((channel) => channel.code) as [
-            string,
-            ...string[],
-          ],
-        ),
-        z.literal("__none__"),
-        z.null(),
-      ])
-      .optional()
-      .nullable()
-      .default(null),
-    payment_method: z
-      .union([
-        z.enum(
-          DEBTOR_PAYMENT_METHODS.map(
-            (paymentMethod) => paymentMethod.value,
-          ) as [string, ...string[]],
-        ),
-        z.literal("__none__"),
-        z.null(),
-      ])
-      .optional()
-      .nullable()
-      .default(null),
+    accepted_channels: z
+      .array(z.enum(["EMAIL", "PHONE", "WHATSAPP", "PORTAL"]))
+      .default([]),
+    salesperson_id: z.string().nullable().optional(),
     debtor_code: z.string().min(1, "Campo requerido"),
     addresses: z
       .array(
@@ -134,7 +111,6 @@ const createDebtorFormSchema = (isFactoring: boolean) =>
       )
       .optional()
       .nullable(),
-    sales_person: z.string().optional(),
     dni: z.object({
       type: z.enum(typeDocuments.map((doc) => doc) as [string, ...string[]]),
       dni: z.string().min(1, "Campo requerido"),
@@ -170,6 +146,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
     error: errorDebtor,
   } = useDebtorsStore();
   const t = useTranslations("debtors.debtorData");
+  const tTechnicalFile = useTranslations("debtors.technicalFile");
   const tValidation = useTranslations("debtors.validation");
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -195,10 +172,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
       name: "",
       companies: isFactoring ? [] : null,
       channel: null,
-      channel_communication: null,
+      accepted_channels: [],
       debtor_code: "",
-      payment_method: null,
-      sales_person: "",
+      salesperson_id: null,
       addresses: [
         {
           street: null,
@@ -274,13 +250,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
               }))
           : null,
         channel: dataDebtor.channel !== undefined ? dataDebtor.channel : null,
-        channel_communication:
-          dataDebtor.communication_channel !== undefined
-            ? dataDebtor.communication_channel
-            : null,
+        accepted_channels: dataDebtor.accepted_channels ?? [],
         debtor_code: dataDebtor.debtor_code || "",
-        payment_method: dataDebtor.payment_method || null,
-        sales_person: dataDebtor.sales_person || "",
+        salesperson_id: dataDebtor.salesperson_id ?? null,
         addresses: [
           {
             street: dataDebtor.addresses?.[0]?.street || null,
@@ -368,24 +340,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         if (formData.channel !== null && formData.channel !== undefined) {
           form.setValue("channel", formData.channel);
         }
-        if (
-          formData.channel_communication !== null &&
-          formData.channel_communication !== undefined
-        ) {
-          form.setValue(
-            "channel_communication",
-            formData.channel_communication,
-          );
-        }
-        if (
-          formData.payment_method !== null &&
-          formData.payment_method !== undefined
-        ) {
-          form.setValue("payment_method", formData.payment_method, {
-            shouldValidate: true,
-          });
-        }
-
         // Establecer valores de metadata manualmente
         if (
           formData.metadata?.[1]?.value !== undefined &&
@@ -413,29 +367,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
         setTimeout(() => {
           if (formData.channel !== null && formData.channel !== undefined) {
             form.setValue("channel", formData.channel, {
-              shouldValidate: true,
-            });
-          }
-
-          // Lógica especial para channel_communication
-          let channelCommValue = formData.channel_communication;
-
-          // Si channel_communication es null/undefined, intentar establecer un valor por defecto válido
-          if (channelCommValue === null || channelCommValue === undefined) {
-            // Verificar si WHOLESALE está disponible en COMMUNICATION_CHANNEL
-            const wholesaleAvailable = COMMUNICATION_CHANNEL.find(
-              (c) => c.code === "WHOLESALE",
-            );
-            if (wholesaleAvailable) {
-              channelCommValue = "WHOLESALE";
-            } else if (COMMUNICATION_CHANNEL.length > 0) {
-              // Si WHOLESALE no está disponible, usar el primer canal disponible
-              channelCommValue = COMMUNICATION_CHANNEL[0].code;
-            }
-          }
-
-          if (channelCommValue !== null && channelCommValue !== undefined) {
-            form.setValue("channel_communication", channelCommValue, {
               shouldValidate: true,
             });
           }
@@ -514,8 +445,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           ...dataDebtor,
           ...cleanedData,
           id: dataDebtor.id,
-          // Mapear channel_communication a communication_channel para el backend
-          communication_channel: cleanedData.channel_communication,
         };
 
         // Si es factoring y hay companies, convertir a debtorCompanies para edición
@@ -546,12 +475,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
           const hasChanges = Object.keys(data).some((key) => {
             const formValue = data[key as keyof typeof data];
-            let storeValue = dataDebtor[key as keyof typeof dataDebtor];
-
-            // Mapeo especial para channel_communication
-            if (key === "channel_communication") {
-              storeValue = dataDebtor.communication_channel;
-            }
+            const storeValue = dataDebtor[key as keyof typeof dataDebtor];
 
             const hasChange =
               JSON.stringify(formValue) !== JSON.stringify(storeValue);
@@ -571,12 +495,7 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           // Para casos sin companies o no factoring
           const hasChanges = Object.keys(data).some((key) => {
             const formValue = data[key as keyof typeof data];
-            let storeValue = dataDebtor[key as keyof typeof dataDebtor];
-
-            // Mapeo especial para channel_communication
-            if (key === "channel_communication") {
-              storeValue = dataDebtor.communication_channel;
-            }
+            const storeValue = dataDebtor[key as keyof typeof dataDebtor];
 
             const hasChange =
               JSON.stringify(formValue) !== JSON.stringify(storeValue);
@@ -671,6 +590,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
           >
             <div className="grid gap-6">
               <div className="grid grid-cols-3 gap-6 items-start">
+                <h3 className="col-span-3 mt-2 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-700">
+                  {tTechnicalFile("sectionIdentification")}
+                </h3>
                 {profile?.client?.type === "FACTORING" && (
                   <FormField
                     control={form.control}
@@ -761,6 +683,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                     </FormItem>
                   )}
                 />
+                <h3 className="col-span-3 mt-2 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-700">
+                  {tTechnicalFile("sectionAddress")}
+                </h3>
                 <FormField
                   control={form.control}
                   name="addresses.0.street"
@@ -848,6 +773,9 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                   )}
                 />
 
+                <h3 className="col-span-3 mt-2 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-700">
+                  {tTechnicalFile("sectionCommercial")}
+                </h3>
                 <FormField
                   control={form.control}
                   name="category"
@@ -993,46 +921,46 @@ const DebtorsDataStep: React.FC<StepProps> = ({
 
                 <FormField
                   control={form.control}
-                  name="channel_communication"
+                  name="salesperson_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("communicationChannel")}</FormLabel>
+                      <FormLabel>{t("salesPerson")}</FormLabel>
                       <FormControl>
-                        <Select
-                          onValueChange={(value) =>
-                            field.onChange(value === "__none__" ? null : value)
-                          }
-                          value={
-                            field.value !== null && field.value !== undefined
-                              ? field.value
-                              : "__none__"
-                          }
-                          key={field.value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder={t("selectChannel")} />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            <SelectItem value="__none__">
-                              {t("selectChannelDefault")}
-                            </SelectItem>
-                            {COMMUNICATION_CHANNEL.map((channel: any) => (
-                              <SelectItem
-                                key={channel.code}
-                                value={channel.code}
-                              >
-                                {channel.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <SalespersonField
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
+                <h3 className="col-span-3 mt-2 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-700">
+                  {tTechnicalFile("sectionChannelsPayment")}
+                </h3>
+                <FormField
+                  control={form.control}
+                  name="accepted_channels"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>
+                        {tTechnicalFile("acceptedChannels")}
+                      </FormLabel>
+                      <FormControl>
+                        <AcceptedChannelsField
+                          value={field.value ?? []}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <HabitualPaymentMethod debtorId={dataDebtor?.id} />
+                <h3 className="col-span-3 mt-2 border-b border-gray-200 pb-2 text-sm font-semibold text-gray-700">
+                  {tTechnicalFile("sectionCredit")}
+                </h3>
                 <FormField
                   control={form.control}
                   name="metadata.0.value"
@@ -1208,31 +1136,6 @@ const DebtorsDataStep: React.FC<StepProps> = ({
                             ))}
                           </SelectContent>
                         </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="payment_method"
-                  render={({ field }) => (
-                    <PaymentMethodSelectFormItem
-                      field={field}
-                      title={t("paymentMethod")}
-                    />
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="sales_person"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("salesPerson")}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

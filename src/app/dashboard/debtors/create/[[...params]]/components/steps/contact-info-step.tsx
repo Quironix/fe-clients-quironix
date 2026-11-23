@@ -14,7 +14,6 @@ import React, { useEffect, useState } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 
-import { functionsContact } from "@/app/dashboard/data";
 import TitleStep from "@/app/dashboard/settings/components/title-step";
 import { StepProps } from "@/app/dashboard/settings/types";
 import { getCountries } from "@/app/services";
@@ -35,6 +34,13 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useDebtorsStore } from "../../../../store";
+import { ContactsSummary } from "@/app/dashboard/debtors/components/technical-file/contacts-summary";
+import { CollectorCoverageAlert } from "@/app/dashboard/debtors/components/technical-file/collector-coverage-alert";
+import { ContactFunctionField } from "@/app/dashboard/debtors/components/technical-file/contact-function-field";
+import { ContactRoleField } from "@/app/dashboard/debtors/components/technical-file/contact-role-field";
+import { SharedContactActions } from "@/app/dashboard/debtors/components/technical-file/shared-contact-actions";
+import { getSharedContactImpact } from "@/app/dashboard/debtors/services/technical-file";
+import { isSavedContact } from "@/app/dashboard/debtors/utils/technical-file";
 
 import { NextBackButtons } from "@/app/dashboard/debtors/components/next-back-buttons";
 import { contactSchema } from "@/app/dashboard/debtors/schemas/contact.schema";
@@ -45,6 +51,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const debtorFormSchema = z.object({
@@ -52,6 +59,43 @@ const debtorFormSchema = z.object({
 });
 
 type DebtorFormValues = z.infer<typeof debtorFormSchema>;
+
+const ContactHeader = ({
+  index,
+  contact,
+}: {
+  index: number;
+  contact: {
+    name?: string;
+    role?: string;
+    default?: boolean;
+    enabled?: boolean;
+    contact_group_id?: string | null;
+  };
+}) => {
+  const t = useTranslations("debtors.technicalFile");
+  return (
+    <span className="flex flex-wrap items-center gap-2 text-left">
+      <span className="font-medium">
+        {contact?.name || t("contactFallbackName", { number: index + 1 })}
+      </span>
+      {contact?.role && (
+        <span className="text-sm font-normal text-muted-foreground">
+          {contact.role}
+        </span>
+      )}
+      {contact?.default && (
+        <Badge variant="secondary">{t("badgeDefault")}</Badge>
+      )}
+      {contact?.enabled === false && (
+        <Badge variant="outline">{t("badgeInactive")}</Badge>
+      )}
+      {contact?.contact_group_id && (
+        <Badge variant="outline">{t("badgeShared")}</Badge>
+      )}
+    </span>
+  );
+};
 
 const ContactInfoStep: React.FC<StepProps> = ({
   onNext,
@@ -64,6 +108,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
   profile,
 }) => {
   const t = useTranslations("debtors.contactStep");
+  const tTechnicalFile = useTranslations("debtors.technicalFile");
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState("item-0");
   const [countries, setCountries] = useState<
@@ -89,6 +134,8 @@ const ContactInfoStep: React.FC<StepProps> = ({
   // Función para procesar los contactos y normalizar los teléfonos
   const processContacts = (contacts: any[]) => {
     return contacts.map((contact) => ({
+      id: contact?.id,
+      contact_group_id: contact?.contact_group_id ?? null,
       name: contact?.name || "",
       role: contact?.role || "",
       function: contact?.function || "",
@@ -151,6 +198,24 @@ const ContactInfoStep: React.FC<StepProps> = ({
     // Abrir automáticamente el accordion del nuevo contacto
     setActiveAccordion(`item-${newIndex}`);
   };
+  const warnSharedImpact = async (index: number, enabled: boolean) => {
+    const contact = form.getValues(`contact_info.${index}`);
+    if (enabled || !contact.contact_group_id || !contact.id) return;
+    try {
+      const impact = await getSharedContactImpact(
+        session?.token,
+        profile?.client?.id,
+        dataDebtor.id,
+        contact.id,
+      );
+      toast.warning(
+        tTechnicalFile("impactOnDisable", { count: impact.affected_debtors }),
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const removeContact = (index: number) => {
     if (fields.length > 1) {
       remove(index);
@@ -180,6 +245,8 @@ const ContactInfoStep: React.FC<StepProps> = ({
       if (data.contact_info.length > 0 && dataDebtor?.id) {
         // Normalizar los números de teléfono antes de guardar
         const normalizedContacts = data.contact_info.map((contact) => ({
+          id: contact.id,
+          contact_group_id: contact.contact_group_id ?? null,
           name: contact.name || "",
           role: contact.role || "",
           email: contact.email || "",
@@ -215,10 +282,7 @@ const ContactInfoStep: React.FC<StepProps> = ({
       </div>
       <div className="space-y-4 border border-gray-200 rounded-md p-5">
         <div className="flex justify-between items-center">
-          <TitleStep
-            title={t("title")}
-            icon={<Mail size={16} />}
-          />
+          <TitleStep title={t("title")} icon={<Mail size={16} />} />
           <Button
             type="button"
             onClick={addContact}
@@ -237,6 +301,10 @@ const ContactInfoStep: React.FC<StepProps> = ({
             className="w-full space-y-6"
             autoComplete="off"
           >
+            <ContactsSummary contacts={form.watch("contact_info") as any} />
+            <CollectorCoverageAlert
+              contacts={form.watch("contact_info") as any}
+            />
             <Accordion
               type="single"
               collapsible
@@ -250,27 +318,29 @@ const ContactInfoStep: React.FC<StepProps> = ({
                   value={`item-${index}`}
                   className="border border-gray-200 rounded-md px-3 py-1 mb-1"
                 >
-                  <div className="grid grid-cols-[96%_4%] items-center gap-2 min-h-[48px]">
-                    <AccordionTrigger className="flex items-center justify-between h-full">
-                      <span>{t("contactNumber", { number: index + 1 })}</span>
+                  <div className="flex items-center gap-2 min-h-[48px]">
+                    <AccordionTrigger className="flex-1 py-2 hover:no-underline">
+                      <ContactHeader
+                        index={index}
+                        contact={form.watch(`contact_info.${index}`)}
+                      />
                     </AccordionTrigger>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeContact(index);
-                      }}
-                      disabled={fields.length === 1}
-                      className="bg-red-500 text-white hover:bg-red-600 hover:text-white flex items-center justify-center h-8 w-8"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
+                    {!isSavedContact(form.getValues(`contact_info.${index}`)) &&
+                      fields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeContact(index)}
+                          className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      )}
                   </div>
                   <AccordionContent className="flex flex-col gap-4 text-balance">
                     <div className="grid gap-6">
-                      <div className="grid grid-cols-3 gap-6">
+                      <div className="grid grid-cols-3 items-start gap-x-6 gap-y-5">
                         <FormField
                           control={form.control}
                           name={`contact_info.${index}.name`}
@@ -291,74 +361,61 @@ const ContactInfoStep: React.FC<StepProps> = ({
                             <FormItem>
                               <FormLabel>{t("role")}</FormLabel>
                               <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`contact_info.${index}.function`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t("function")}</FormLabel>
-                              <FormControl>
-                                <Select
-                                  onValueChange={field.onChange}
+                                <ContactRoleField
                                   value={field.value}
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder={t("selectFunction")} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {functionsContact.map((func) => (
-                                      <SelectItem
-                                        key={func.value}
-                                        value={func.value}
-                                      >
-                                        {func.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                  onChange={(role, derivedFunction) => {
+                                    field.onChange(role);
+                                    form.setValue(
+                                      `contact_info.${index}.function`,
+                                      derivedFunction,
+                                    );
+                                  }}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                        <FormItem>
+                          <FormLabel>{t("function")}</FormLabel>
+                          <ContactFunctionField
+                            role={form.watch(`contact_info.${index}.role`)}
+                          />
+                        </FormItem>
                         <FormField
                           control={form.control}
                           name={`contact_info.${index}.channel`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>
-                                {t("channel")}
-                              </FormLabel>
+                              <FormLabel>{t("channel")}</FormLabel>
                               <FormControl>
-                                 <Select
-                                   onValueChange={(value) => {
-                                     field.onChange(value);
-                                     form.trigger([
-                                       `contact_info.${index}.email`,
-                                       `contact_info.${index}.phone`,
-                                     ] as const);
-                                   }}
-                                   value={field.value}
+                                <Select
+                                  onValueChange={(value) => {
+                                    field.onChange(value);
+                                    form.trigger([
+                                      `contact_info.${index}.email`,
+                                      `contact_info.${index}.phone`,
+                                    ] as const);
+                                  }}
+                                  value={field.value}
                                 >
-                                   <SelectTrigger className="w-full">
-                                     <SelectValue placeholder={t("selectChannel")} />
-                                   </SelectTrigger>
-                                   <SelectContent>
-                                     <SelectItem value="email">{t("channelEmail")}</SelectItem>
-                                     <SelectItem value="phone">
-                                       {t("channelPhone")}
-                                     </SelectItem>
-                                     <SelectItem value="whatsapp">
-                                       {t("channelWhatsapp")}
-                                     </SelectItem>
-                                   </SelectContent>
-                                 </Select>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue
+                                      placeholder={t("selectChannel")}
+                                    />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="email">
+                                      {t("channelEmail")}
+                                    </SelectItem>
+                                    <SelectItem value="phone">
+                                      {t("channelPhone")}
+                                    </SelectItem>
+                                    <SelectItem value="whatsapp">
+                                      {t("channelWhatsapp")}
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -401,53 +458,63 @@ const ContactInfoStep: React.FC<StepProps> = ({
                             </FormItem>
                           )}
                         />
-                        <FormField
-                          control={form.control}
-                          name={`contact_info.${index}.default`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
-                                <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("defaultContact")}</FormLabel>
-                                <FormControl>
-                                  <Switch
-                                    checked={field.value ?? false}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        // Si se activa, desactivar todos los demás
-                                        fields.forEach((_, i) => {
-                                          if (i !== index) {
-                                            form.setValue(`contact_info.${i}.default`, false);
-                                          }
-                                        });
-                                      }
-                                      field.onChange(checked);
-                                    }}
-                                    className="data-[state=checked]:bg-orange-500"
-                                  />
-                                </FormControl>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`contact_info.${index}.enabled`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 w-fit">
-                                <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("enabledContact")}</FormLabel>
-                                <FormControl>
-                                  <Switch
-                                    checked={field.value ?? true}
-                                    onCheckedChange={field.onChange}
-                                    className="data-[state=checked]:bg-orange-500"
-                                  />
-                                </FormControl>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
+                        <div className="col-span-3 flex flex-wrap gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`contact_info.${index}.default`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 w-fit">
+                                  <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                                    {t("defaultContact")}
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value ?? false}
+                                      onCheckedChange={field.onChange}
+                                      className="data-[state=checked]:bg-orange-500"
+                                    />
+                                  </FormControl>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`contact_info.${index}.enabled`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 w-fit">
+                                  <FormLabel className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                                    {t("enabledContact")}
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value ?? true}
+                                      onCheckedChange={(checked) => {
+                                        field.onChange(checked);
+                                        warnSharedImpact(index, checked);
+                                      }}
+                                      className="data-[state=checked]:bg-orange-500"
+                                    />
+                                  </FormControl>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
+                      {dataDebtor?.id &&
+                        form.getValues(`contact_info.${index}.id`) && (
+                          <SharedContactActions
+                            debtorId={dataDebtor.id}
+                            contactId={
+                              form.getValues(
+                                `contact_info.${index}.id`,
+                              ) as string
+                            }
+                          />
+                        )}
                       <FormField
                         control={form.control}
                         name={`contact_info.${index}.collector_ids`}

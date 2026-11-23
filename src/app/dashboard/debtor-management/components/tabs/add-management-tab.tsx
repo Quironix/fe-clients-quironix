@@ -10,6 +10,11 @@ import { useTranslations } from "next-intl";
 import { useWebRTCContext } from "@/context/WebRTCContext";
 import { useCallback, useEffect, useState } from "react";
 import type { Contact } from "@/app/dashboard/debtors/types";
+import { getSuggestedContact } from "@/app/dashboard/debtors/services/technical-file";
+import {
+  isTechnicalFileRequirement,
+  TechnicalFileRequirementDialog,
+} from "./technical-file-requirement-dialog";
 import { toast } from "sonner";
 import {
   bulkLitigatiions,
@@ -163,6 +168,46 @@ export const AddManagementTab = ({
     step3: true,
   });
   const [contactHasNoEmail, setContactHasNoEmail] = useState(false);
+  const [requirement, setRequirement] = useState<{
+    code: string;
+    retry: () => void;
+  } | null>(null);
+
+  const reportSubmitError = (error: unknown, retry: () => void) => {
+    const message = error instanceof Error ? error.message : "";
+    if (isTechnicalFileRequirement(message)) {
+      setRequirement({ code: message, retry });
+      return;
+    }
+    toast.error(message || t("createError"));
+  };
+
+  const selectedInvoiceIds = selectedInvoices.map((invoice) => invoice.id);
+  const selectedInvoiceKey = selectedInvoiceIds.join(",");
+
+  useEffect(() => {
+    if (!dataDebtor?.id || !session?.token || !profile?.client_id) return;
+    if (managementFormData.selectedContact?.id) return;
+    getSuggestedContact(
+      session.token,
+      profile.client_id,
+      dataDebtor.id,
+      selectedInvoiceIds,
+    )
+      .then((suggestion) => {
+        const suggested = dataDebtor.contacts?.find(
+          (contact: Contact) => contact.id === suggestion?.contact_id,
+        );
+        if (suggested) {
+          setManagementFormData((prev) =>
+            prev.selectedContact?.id
+              ? prev
+              : { ...prev, ...buildContactFromActive(suggested) },
+          );
+        }
+      })
+      .catch(() => undefined);
+  }, [selectedInvoiceKey, dataDebtor?.id]);
 
   useEffect(() => {
     if (preselectedInvoiceIds?.length) setCurrentStep(0);
@@ -457,6 +502,7 @@ export const AddManagementTab = ({
         type: managementFormData.contactType,
         value: managementFormData.contactValue,
         ...(selectedContact?.id && {
+          contact_id: selectedContact.id,
           contactId: selectedContact.id,
           name: selectedContact.name,
         }),
@@ -632,9 +678,7 @@ export const AddManagementTab = ({
 
       setStepsState(steps.map((step) => ({ ...step, completed: false })));
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t("createError")
-      );
+      reportSubmitError(error, handleAddManagement);
     } finally {
       setIsSubmitting(false);
     }
@@ -727,11 +771,7 @@ export const AddManagementTab = ({
       setCurrentStep(0);
       setStepsState(steps.map((step) => ({ ...step, completed: false })));
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t("finalError")
-      );
+      reportSubmitError(error, handleFinish);
     } finally {
       setIsSubmitting(false);
     }
@@ -779,6 +819,18 @@ export const AddManagementTab = ({
   return (
     // <div className="bg-white p-6 rounded-md h-full border border-gray-300 mt-5">
     <div className="bg-white h-full  mt-5">
+      <TechnicalFileRequirementDialog
+        requirement={requirement?.code ?? null}
+        contactId={managementFormData.selectedContact?.id}
+        token={session?.token}
+        clientId={profile?.client_id}
+        onCancel={() => setRequirement(null)}
+        onCompleted={() => {
+          const retry = requirement?.retry;
+          setRequirement(null);
+          retry?.();
+        }}
+      />
       {/* Gestiones guardadas */}
       {savedManagements.length > 0 && (
         <div className="mb-4 space-y-2">

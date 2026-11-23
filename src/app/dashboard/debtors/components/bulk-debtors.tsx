@@ -106,10 +106,7 @@ const BulkDebtors = () => {
         <Button
           className="border-2 border-orange-500 bg-white text-orange-500 hover:bg-orange-500 hover:text-white"
           onClick={() => {
-            window.open(
-              `${process.env.NEXT_PUBLIC_URL_FILE_DEBTORS}`,
-              "_blank"
-            );
+            window.open("/templates/debtors_template.xlsx", "_blank");
           }}
         >
           <FileDown /> {t("downloadButton")}

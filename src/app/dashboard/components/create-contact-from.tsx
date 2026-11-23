@@ -27,7 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { functionsContact } from "../data";
+import { ContactFunctionField } from "../debtors/components/technical-file/contact-function-field";
+import { ContactRoleField } from "../debtors/components/technical-file/contact-role-field";
 import { useProfileContext } from "@/context/ProfileContext";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -84,14 +85,7 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
         collector_ids: data.collector_ids ?? [],
       };
 
-      // Si el nuevo contacto queda marcado como preferente, desmarcar los demás
-      // (solo puede existir un contacto preferente por deudor a la vez)
-      const existingContacts = newContact.default
-        ? (dataDebtor.contacts || []).map((c: any) => ({
-            ...c,
-            default: false,
-          }))
-        : dataDebtor.contacts || [];
+      const existingContacts = dataDebtor.contacts || [];
 
       // Agregar el nuevo contacto al array existente de contactos
       const updatedContacts = [...existingContacts, newContact];
@@ -162,39 +156,22 @@ const CreateContactForm = ({ onSuccess }: CreateContactFormProps) => {
                     <FormItem>
                       <FormLabel>{tCommon("labels.role")}</FormLabel>
                       <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="function"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{tCommon("labels.function")}</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
+                        <ContactRoleField
                           value={field.value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder={tCommon("placeholders.selectFunction")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {functionsContact.map((func) => (
-                              <SelectItem key={func.value} value={func.value}>
-                                {func.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          onChange={(role, derivedFunction) => {
+                            field.onChange(role);
+                            form.setValue("function", derivedFunction);
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <FormItem>
+                  <FormLabel>{tCommon("labels.function")}</FormLabel>
+                  <ContactFunctionField role={form.watch("role")} />
+                </FormItem>
                 <FormField
                   control={form.control}
                   name="channel"
