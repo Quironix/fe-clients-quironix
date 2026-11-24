@@ -21,15 +21,23 @@ interface WebRTCConfig {
   iceServers?: RTCIceServer[];
 }
 
+export interface CallStreams {
+  sessionId: string;
+  local: MediaStream;
+  remote: MediaStream;
+}
+
 interface WebRTCContextType {
   isRegistered: boolean;
   callStatus: CallStatus;
   currentNumber: string;
   config: WebRTCConfig | null;
+  callStreams: CallStreams | null;
   setConfig: (config: WebRTCConfig) => void;
   setCallStatus: (status: CallStatus) => void;
   setCurrentNumber: (number: string) => void;
   setIsRegistered: (registered: boolean) => void;
+  setCallStreams: (streams: CallStreams | null) => void;
   pendingCallUniqueIds: Array<string | null>;
   addCallUniqueId: (id: string | null) => void;
   clearCallUniqueIds: () => void;
@@ -44,6 +52,7 @@ export const WebRTCProvider: React.FC<{ children: React.ReactNode }> = ({
   const [callStatus, setCallStatus] = useState<CallStatus>("idle");
   const [currentNumber, setCurrentNumber] = useState("");
   const [config, setConfig] = useState<WebRTCConfig | null>(null);
+  const [callStreams, setCallStreams] = useState<CallStreams | null>(null);
   const [pendingCallUniqueIds, setPendingCallUniqueIds] = useState<Array<string | null>>([]);
 
   const addCallUniqueId = useCallback((id: string | null) => {
@@ -61,10 +70,12 @@ export const WebRTCProvider: React.FC<{ children: React.ReactNode }> = ({
         callStatus,
         currentNumber,
         config,
+        callStreams,
         setConfig,
         setCallStatus,
         setCurrentNumber,
         setIsRegistered,
+        setCallStreams,
         pendingCallUniqueIds,
         addCallUniqueId,
         clearCallUniqueIds,

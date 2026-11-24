@@ -21,6 +21,7 @@ export const useWebRTCPhone = () => {
     setIsRegistered,
     setCallStatus,
     setCurrentNumber,
+    setCallStreams,
   } = useWebRTCContext();
   const t = useTranslations("webrtc");
 
@@ -237,6 +238,7 @@ export const useWebRTCPhone = () => {
                 reason: e?.response?.reason_phrase,
               });
               setCallStatus("failed");
+              setCallStreams(null);
               toast.error(t("callFailed"));
               if (localStreamRef.current) {
                 localStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -247,6 +249,7 @@ export const useWebRTCPhone = () => {
             ended: (e: any) => {
               console.log("📴 [SIP] Llamada terminada →", e?.cause);
               setCallStatus("ended");
+              setCallStreams(null);
               toast.info(t("callEnded"));
               if (localStreamRef.current) {
                 localStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -259,6 +262,21 @@ export const useWebRTCPhone = () => {
               console.log("✅ [SIP] Llamada confirmada (200 OK)");
               setCallStatus("in-call");
               toast.success(t("callConnected"));
+              const connection: RTCPeerConnection | undefined =
+                currentSessionRef.current?.connection;
+              const sendTrack = connection
+                ?.getSenders()
+                .find((sender) => sender.track?.kind === "audio")?.track;
+              const receiveTrack = connection
+                ?.getReceivers()
+                .find((receiver) => receiver.track?.kind === "audio")?.track;
+              if (sendTrack && receiveTrack) {
+                setCallStreams({
+                  sessionId: crypto.randomUUID(),
+                  local: new MediaStream([sendTrack]),
+                  remote: new MediaStream([receiveTrack]),
+                });
+              }
             },
           },
         };
@@ -271,7 +289,7 @@ export const useWebRTCPhone = () => {
         toast.error(t("callError"));
       }
     },
-    [config, isRegistered, initMedia, setCallStatus, setCurrentNumber],
+    [config, isRegistered, initMedia, setCallStatus, setCurrentNumber, setCallStreams],
   );
 
   // Colgar llamada
@@ -306,6 +324,7 @@ export const useWebRTCPhone = () => {
       uaRef.current = null;
       setIsRegistered(false);
       setCallStatus("idle");
+      setCallStreams(null);
       toast.info(t("disconnected"));
     }
 
