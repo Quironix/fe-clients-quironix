@@ -24,6 +24,7 @@ import Header from "../../components/header";
 import { Main } from "../../components/main";
 import TitleSection from "../../components/title-section";
 import { useDebtorsStore } from "../../debtors/store";
+import { CallCopilotBar } from "../components/call-copilot-bar";
 import { DebtorContacts } from "../components/debtor-contacts";
 import { AddManagementTab } from "../components/tabs/add-management-tab";
 import { useTaskScope } from "../hooks/useTaskScope";
@@ -195,6 +196,13 @@ const Content = ({ params }: PageProps) => {
             onContactChange={setActiveContact}
           />
         )}
+
+        <CallCopilotBar
+          debtorId={id}
+          accessToken={session?.token ?? ""}
+          clientId={profile?.client?.id ?? ""}
+          onApply={() => setActiveTab("add-management")}
+        />
 
         <div className="bg-white p-5 rounded-md shadow-xl mt-5 min-h-auto flex flex-col">
           <Tabs

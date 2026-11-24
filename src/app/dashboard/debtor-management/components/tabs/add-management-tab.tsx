@@ -27,6 +27,7 @@ import {
 import { TASK_SCOPE_QUERY_KEY } from "../../hooks/useTaskScope";
 import { createPaymentPlan } from "../../services/payment-plan";
 import { createTrack } from "../../services/tracks";
+import { useCallCopilotStore } from "../../store/call-copilot";
 import { CaseData } from "../../types/track";
 import { SavedManagementCard } from "./saved-management-card";
 import { StepOne, StepThree, StepTwo } from "./steps";
@@ -614,6 +615,9 @@ export const AddManagementTab = ({
 
       clearCallUniqueIds();
       refreshTaskScope();
+      void useCallCopilotStore
+        .getState()
+        .reportTrackCreated(result.track.id, session.token, profile.client_id);
       toast.success(t("managementAdded"));
 
       const newManagement: SavedManagement = {
@@ -639,6 +643,102 @@ export const AddManagementTab = ({
       setIsSubmitting(false);
     }
   };
+
+  const pendingApply = useCallCopilotStore((state) => state.pendingApply);
+  const consumePending = useCallCopilotStore((state) => state.consumePending);
+  const [acceptRequested, setAcceptRequested] = useState<
+    false | "accept" | "save"
+  >(false);
+
+  useEffect(() => {
+    if (!pendingApply) return;
+    const { proposal, mode } = pendingApply;
+    const phone = useCallCopilotStore.getState().phone;
+    const digits = (value?: string) => (value || "").replace(/\D/g, "");
+    const phoneContact = (dataDebtor?.contacts ?? []).find(
+      (item: any) => digits(item.phone) && digits(item.phone) === digits(phone)
+    );
+    const emailContact =
+      phoneContact?.email && phoneContact.enabled !== false
+        ? phoneContact
+        : (dataDebtor?.contacts ?? [])
+            .filter((item: any) => item.email && item.enabled !== false)
+            .sort(
+              (a: any, b: any) =>
+                Number(b?.default === true || b?.preferred === true) -
+                Number(a?.default === true || a?.preferred === true)
+            )[0];
+    const contact = emailContact ?? phoneContact;
+    const contactIsEmail = Boolean(emailContact);
+    const caseData = Object.fromEntries(
+      Object.entries(proposal.caseData).map(([key, value]) => [
+        key,
+        key.endsWith("Date") ? new Date(value as string) : value,
+      ])
+    );
+    const contactValue = contactIsEmail
+      ? contact.email
+      : contact?.phone || phone;
+
+    setManagementFormData((prev) => ({
+      ...prev,
+      managementType: proposal.managementType,
+      debtorComment: proposal.debtorComment,
+      executiveComment: proposal.executiveComment,
+      observation: proposal.observation,
+      caseData: caseData as ManagementFormData["caseData"],
+      caseDataAutoValues: {},
+      nextManagementDate: proposal.nextManagementDate
+        ? new Date(proposal.nextManagementDate)
+        : "",
+      nextManagementTime: "09:00",
+      noResultDate: false,
+      contactType: contactIsEmail ? "EMAIL" : "PHONE",
+      contactValue,
+      selectedContact: contact
+        ? {
+            id: contact.id || "",
+            type: contactIsEmail ? "EMAIL" : "PHONE",
+            value: contactValue,
+            label: `${contact.name} - ${contactValue}`,
+            name: contact.name || "",
+          }
+        : null,
+      additionalContactEmails: [],
+      sendEmail: contactIsEmail,
+    }));
+    setSelectedInvoices(
+      proposal.invoices.map(
+        (invoice) =>
+          ({
+            id: invoice.id,
+            number: invoice.number,
+            balance: invoice.balance,
+            amount: String(invoice.balance),
+          }) as unknown as Invoice
+      )
+    );
+
+    if (mode === "accept" || mode === "save") {
+      setAcceptRequested(mode);
+    } else {
+      setStepsState((prev) =>
+        prev.map((step, index) =>
+          index === 0 ? { ...step, completed: true } : step
+        )
+      );
+      setStepValidations((prev) => ({ ...prev, step1: true }));
+      setCurrentStep(1);
+    }
+    consumePending();
+  }, [pendingApply]);
+
+  useEffect(() => {
+    if (!acceptRequested) return;
+    setAcceptRequested(false);
+    if (acceptRequested === "save") handleAddManagement();
+    else handleFinish();
+  }, [acceptRequested]);
 
   // Función para eliminar una gestión guardada
   const handleDeleteManagement = (id: string) => {
@@ -684,6 +784,9 @@ export const AddManagementTab = ({
 
       clearCallUniqueIds();
       refreshTaskScope();
+      void useCallCopilotStore
+        .getState()
+        .reportTrackCreated(result.track.id, session.token, profile.client_id);
       const currentManagement: SavedManagement = {
         id: result.track.id,
         formData: { ...managementFormData },
