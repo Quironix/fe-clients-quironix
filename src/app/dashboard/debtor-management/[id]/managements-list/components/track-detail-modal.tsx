@@ -1,6 +1,7 @@
 "use client";
 
 import { disputes, PAYMENT_FREQUENCY, DEBTOR_PAYMENT_METHODS } from "@/app/dashboard/data";
+import { isQuironTrack } from "@/app/dashboard/debtor-management/utils/quiron-track";
 import {
   DEBTOR_COMMENTS,
   EXECUTIVE_COMMENTS,
@@ -545,8 +546,7 @@ export const TrackDetailModal = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {(trackData.agentSource === "AI_EMAIL_READER" ||
-            trackData.metadata?.source === "AI_EMAIL_READER") && (
+          {isQuironTrack(trackData) && (
             <div
               className="flex flex-wrap items-center gap-2 rounded-lg border p-3"
               style={{
@@ -783,8 +783,7 @@ export const TrackDetailModal = ({
                       value={
                         trackData.executive
                           ? `${trackData.executive.first_name ?? ""} ${trackData.executive.last_name ?? ""}`.trim()
-                          : trackData.agentSource === "AI_EMAIL_READER" ||
-                              trackData.metadata?.source === "AI_EMAIL_READER"
+                          : isQuironTrack(trackData)
                             ? tq("name")
                             : "-"
                       }

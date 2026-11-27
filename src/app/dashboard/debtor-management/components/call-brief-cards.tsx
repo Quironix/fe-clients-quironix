@@ -1,6 +1,15 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Handshake, Target, TriangleAlert } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Handshake,
+  Target,
+  TriangleAlert,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 
 interface CallBriefField {
   label: string;
@@ -12,7 +21,7 @@ interface CallBriefSection {
   fields: CallBriefField[];
 }
 
-const SECTION_KEYS = ["situation", "focus", "negotiation", "needs"] as const;
+const SECTION_KEYS = ["needs", "focus", "negotiation", "situation"] as const;
 type SectionKey = (typeof SECTION_KEYS)[number];
 
 const SECTION_STYLES: Record<
@@ -50,6 +59,94 @@ const SECTION_STYLES: Record<
   },
 };
 
+const NEGOTIATION_PRIMARY = ["PREGUNTA CLAVE", "ACEPTA", "NO ACEPTA"];
+
+const NEED_MARKERS: Record<string, { dot: string; row: string }> = {
+  "🔴": { dot: "bg-red-500", row: "bg-red-50 border-red-200" },
+  "🟠": { dot: "bg-orange-400", row: "bg-orange-50 border-orange-200" },
+};
+
+const NEUTRAL_NEED = { dot: "bg-gray-300", row: "bg-gray-50 border-gray-200" };
+
+function NeedRow({ field }: { field: CallBriefField }) {
+  const marker = Object.keys(NEED_MARKERS).find((m) =>
+    field.label.startsWith(m),
+  );
+  const style = marker ? NEED_MARKERS[marker] : NEUTRAL_NEED;
+  const label = marker ? field.label.slice(marker.length).trim() : field.label;
+
+  return (
+    <div
+      className={cn(
+        "flex items-start gap-2 rounded-md border px-3 py-2 text-xs",
+        style.row,
+      )}
+    >
+      <span className={cn("mt-1 h-2 w-2 shrink-0 rounded-full", style.dot)} />
+      <span className="font-semibold text-gray-900 shrink-0">{label}</span>
+      <span className="text-gray-700">{field.value}</span>
+    </div>
+  );
+}
+
+function FieldLine({
+  field,
+  labelColor,
+}: {
+  field: CallBriefField;
+  labelColor: string;
+}) {
+  return (
+    <div className="text-xs">
+      <span className={`font-semibold uppercase ${labelColor}`}>
+        {field.label}:
+      </span>{" "}
+      <span className="text-gray-700">{field.value}</span>
+    </div>
+  );
+}
+
+function NegotiationFields({
+  fields,
+  labelColor,
+}: {
+  fields: CallBriefField[];
+  labelColor: string;
+}) {
+  const t = useTranslations("debtorManagement.callBrief");
+  const [expanded, setExpanded] = useState(false);
+  const isPrimary = (f: CallBriefField) =>
+    NEGOTIATION_PRIMARY.includes(f.label.toUpperCase());
+  const primary = fields.filter(isPrimary);
+  const secondary = fields.filter((f) => !isPrimary(f));
+  const visible = primary.length > 0 ? primary : fields;
+  const hidden = primary.length > 0 ? secondary : [];
+
+  return (
+    <div className="space-y-2">
+      {visible.map((field, idx) => (
+        <FieldLine key={idx} field={field} labelColor={labelColor} />
+      ))}
+      {hidden.length > 0 && (
+        <>
+          {expanded &&
+            hidden.map((field, idx) => (
+              <FieldLine key={idx} field={field} labelColor={labelColor} />
+            ))}
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-800"
+          >
+            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {expanded ? t("showLess") : t("showMore")}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 function stripMarkdownSyntax(raw: string): string {
   return raw
     .replace(/```markdown\n?/g, "")
@@ -59,7 +156,7 @@ function stripMarkdownSyntax(raw: string): string {
 }
 
 function parseCallBrief(
-  raw: string
+  raw: string,
 ): Partial<Record<SectionKey, CallBriefSection>> | null {
   const text = raw
     .replace(/```markdown\n?/g, "")
@@ -68,7 +165,7 @@ function parseCallBrief(
 
   const sectionMatches = [
     ...text.matchAll(
-      /^(?!-)[^\n]*?\b(LECTURA|FOCO|CONTROL|NECESITA)\b[^\n]*$/gim
+      /^(?!-)[^\n]*?\b(LECTURA|FOCO|CONTROL|NECESITA)\b[^\n]*$/gim,
     ),
   ];
   if (sectionMatches.length === 0) return null;
@@ -172,18 +269,28 @@ export function CallBriefCards({
               <Icon size={15} />
               {t(`sections.${key}`)}
             </h3>
-            <div className="space-y-2">
-              {section.fields.map((field, idx) => (
-                <div key={idx} className="text-xs">
-                  <span
-                    className={`font-semibold uppercase ${style.labelColor}`}
-                  >
-                    {field.label}:
-                  </span>{" "}
-                  <span className="text-gray-700">{field.value}</span>
-                </div>
-              ))}
-            </div>
+            {key === "needs" ? (
+              <div className="space-y-1.5">
+                {section.fields.map((field, idx) => (
+                  <NeedRow key={idx} field={field} />
+                ))}
+              </div>
+            ) : key === "negotiation" ? (
+              <NegotiationFields
+                fields={section.fields}
+                labelColor={style.labelColor}
+              />
+            ) : (
+              <div className="space-y-2">
+                {section.fields.map((field, idx) => (
+                  <FieldLine
+                    key={idx}
+                    field={field}
+                    labelColor={style.labelColor}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         );
       })}

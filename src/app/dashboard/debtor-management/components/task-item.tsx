@@ -18,6 +18,7 @@ interface TaskItemProps {
   incidents?: number;
   incidentsLabel?: string;
   detail?: string;
+  note?: string;
   debt: number;
   debtLabel: string;
   status: string;
@@ -34,6 +35,7 @@ export const TaskItem = ({
   incidents,
   incidentsLabel,
   detail,
+  note,
   debt,
   debtLabel,
   status,
@@ -93,6 +95,11 @@ export const TaskItem = ({
             </TooltipTrigger>
             <TooltipContent side="top">{name}</TooltipContent>
           </Tooltip>
+          {note && (
+            <span className="text-[11px] font-medium text-purple-600 truncate">
+              {note}
+            </span>
+          )}
         </div>
 
         {/* Separador */}

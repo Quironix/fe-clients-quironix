@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { isQuironTrack } from "@/app/dashboard/debtor-management/utils/quiron-track";
 import {
   Tooltip,
   TooltipContent,
@@ -253,8 +254,7 @@ export const createInvoiceColumns = (
           return <div className="text-sm">{collectorEngineLabel ?? "Collector engine"}</div>;
         }
         if (
-          track?.agentSource === "AI_EMAIL_READER" ||
-          track?.metadata?.source === "AI_EMAIL_READER"
+          isQuironTrack(track)
         ) {
           return <QuironBadge />;
         }
