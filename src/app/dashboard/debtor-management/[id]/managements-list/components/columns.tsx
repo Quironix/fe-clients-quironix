@@ -1,6 +1,7 @@
 "use client";
 
 import { formatNumber } from "@/lib/utils";
+import { isQuironTrack } from "@/app/dashboard/debtor-management/utils/quiron-track";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   DEBTOR_COMMENTS,
@@ -125,8 +126,7 @@ export const createColumns = (): ColumnDef<DebtorTrack>[] => [
     cell: ({ row }) => {
       const track = row.original;
       if (
-        (track as { agentSource?: string }).agentSource === "AI_EMAIL_READER" ||
-        track.metadata?.source === "AI_EMAIL_READER"
+        isQuironTrack(track as { agentSource?: string; metadata?: { source?: string } })
       ) {
         return <QuironBadge />;
       }

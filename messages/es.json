@@ -992,7 +992,9 @@
         "focus": "Foco de ejecución",
         "negotiation": "Control de negociación",
         "needs": "Qué necesita cada factura"
-      }
+      },
+      "showMore": "Ver argumento y alertas",
+      "showLess": "Ocultar argumento y alertas"
     },
     "creditRisk": {
       "currentCredit": "Crédito actual",
@@ -1323,6 +1325,8 @@
     },
     "dailyPlan": {
       "invoiceProgress": "{done} de {total} facturas con resultado",
+      "pendingInvoices": "Facturas por gestionar",
+      "otherTasks": "Otras tareas",
       "debtorNeeds": {
         "COMPLETE_TECHNICAL_FILE": "Ficha técnica pendiente",
         "RESPOND_INBOUND": "Correo por responder",
